@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace WhereIsMyData
+namespace WhereIsMyData.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for DataUsageSummaryV.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class DataUsageSummaryV : UserControl
     {
-        public MainWindow()
+        public DataUsageSummaryV()
         {
             InitializeComponent();
         }
