@@ -7,6 +7,80 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock Text="Data Usage Summary"/>
+        <Grid Grid.Row="1" Background="#F5F6FA">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Border Margin="25 25 25 25" Background="White" CornerRadius="10">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="20" Color="DarkGray" Opacity="0.4" Direction="280" ShadowDepth="0" />
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0"/>
+                        <Label Grid.Row="1" FontSize="30" x:Name="label" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding Seconds }"></Label>
+                        <Border CornerRadius="5" Width="30" Height="30" Background="#D5F8EC" Grid.Row="1" HorizontalAlignment="Right" 
+                                        VerticalAlignment="Top" Margin="0 0 5 0">
+                            <TextBlock Text="&#xe502;" FontSize="18" Foreground="#59E6B5" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Fonts/#iconfont"/>
+                        </Border>
+
+                        <StackPanel Grid.Row="2" VerticalAlignment="Center" Margin="10 0 0 0" Orientation="Horizontal">
+                            <TextBlock Text="&#xe78b;" Foreground="#59E6B5" FontFamily="Fonts/#iconfont"/>
+                            <TextBlock Text="5.27%" Foreground="#59E6B5" />
+                            <TextBlock Margin="5 0 0 0" Text="Slince last month"  Foreground="#A4ADB2" />
+                        </StackPanel>
+                    </Grid>
+
+                </Border>
+
+                <Border Grid.Column="2" Margin="25 25 25 25" Background="White" CornerRadius="10">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="20" Color="DarkGray" Opacity="0.4" Direction="280" ShadowDepth="0" />
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Total data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0"/>
+                        <TextBlock Text="11 GB" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" Margin="10 0 10 0" FontSize="30"/>
+                        <Border CornerRadius="5" Width="30" Height="30" Background="#D5F8EC" Grid.Row="1" HorizontalAlignment="Right" 
+                                        VerticalAlignment="Top" Margin="0 0 5 0">
+                            <TextBlock Text="&#xe502;" FontSize="18" Foreground="#59E6B5" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Fonts/#iconfont"/>
+                        </Border>
+
+                        <StackPanel Grid.Row="2" VerticalAlignment="Center" Margin="10 0 0 0" Orientation="Horizontal">
+                            <TextBlock Text="&#xe78b;" Foreground="#59E6B5" FontFamily="Fonts/#iconfont"/>
+                            <TextBlock Text="5.27%" Foreground="#59E6B5" />
+                            <TextBlock Margin="5 0 0 0" Text="Slince last month"  Foreground="#A4ADB2" />
+                        </StackPanel>
+                    </Grid>
+
+                </Border>
+                
+            </Grid>
+            
+            
+        </Grid>
+        <!--<Grid>
+            <TextBlock Text="Data Usage Summary"/>
+            <Label x:Name="label" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding Seconds }"></Label>
+        </Grid>-->
+        
     </Grid>
 </UserControl>

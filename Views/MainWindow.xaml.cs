@@ -11,7 +11,7 @@ namespace WhereIsMyData.Views
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new NavigationVM();
+            DataContext = new NavigationVM();
         }
     }
 }

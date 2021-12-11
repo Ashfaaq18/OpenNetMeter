@@ -25,13 +25,42 @@
 
     <DockPanel LastChildFill="True">
 
-        <StackPanel x:Name="navigation" DockPanel.Dock="Top" Orientation="Horizontal" Height="35">
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="500"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Text="WhereIsMyData" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" Foreground="#4F5050" Margin="20 0 0 0"/>
+
+            <UniformGrid Columns="4" Grid.Column="1">
+                <Button Background="White" BorderThickness="0" Command="{Binding DataUsageSumCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xe602;" FontSize="18" FontFamily="Fonts/#iconfont" VerticalAlignment="Center"/>
+                        <TextBlock Text="Summary" Margin="10 0 0 0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Background="White" BorderThickness="0" Command="{Binding DataUsageDetCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xe647;" FontSize="18" FontFamily="Fonts/#iconfont" VerticalAlignment="Center"/>
+                        <TextBlock Text="Detailed" Margin="10 0 0 0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+
+        </Grid>
+        
+        <!--<StackPanel x:Name="navigation" DockPanel.Dock="Top" Orientation="Horizontal" Height="35">
 
             <Button Content=" Data Usage Summary " Command="{Binding DataUsageSumCommand}"></Button>
 
             <Button Content=" Data Usage Detailed " Command="{Binding DataUsageDetCommand}"></Button>
 
-        </StackPanel>
+        </StackPanel>-->
 
         <ContentControl x:Name="Pages" DockPanel.Dock="Bottom" Content="{Binding SelectedViewModel}"/>
 
