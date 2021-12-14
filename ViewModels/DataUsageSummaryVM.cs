@@ -9,13 +9,13 @@ using WhereIsMyData.Models;
 
 namespace WhereIsMyData.ViewModels
 {
-    class DataUsageSummaryVM : INotifyPropertyChanged
+    public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private int seconds;
-        public int Seconds
+        private long currentSessionData;
+        public long CurrentSessionData
         {
-            get { return seconds; }
-            set { seconds = value; OnPropertyChanged("Seconds"); }
+            get { return currentSessionData; }
+            set { currentSessionData = value; OnPropertyChanged("CurrentSessionData"); }
         }
         public DataUsageSummaryVM()
         {
