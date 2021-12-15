@@ -11,9 +11,11 @@ namespace WhereIsMyData.Models
     public class NetworkInfo
     {
         private static DataUsageSummaryVM dusvm;
-        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref)
+        private static DataUsageDetailedVM dudvm;
+        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
         {
             dusvm = dusvm_ref;
+            dudvm = dudvm_ref;
             TotalBytesRecv = 0;
 
             using (TraceEventSession kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
@@ -31,39 +33,43 @@ namespace WhereIsMyData.Models
                 kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
                 kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
                 kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
-                kernelSession.Source.Kernel.ProcessStart += processStarted;
-                kernelSession.Source.Kernel.ProcessStop += processStopped;
 
                 kernelSession.Source.Process();
             }
         }
 
 
-        public static long TotalBytesRecv { get; set; }
+        public static ulong TotalBytesRecv { get; set; }
         private static void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
-            TotalBytesRecv += obj.size;
+            TotalBytesRecv += (ulong)obj.size;
             dusvm.CurrentSessionData = TotalBytesRecv / (1024) ;
+            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
             //Debug.WriteLine("UDP pid {0}, {1}", obj.ProcessID, obj.size);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            TotalBytesRecv += obj.size;
+            TotalBytesRecv += (ulong)obj.size;
             dusvm.CurrentSessionData = TotalBytesRecv / (1024);
+            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
         }
 
         private static void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
-            TotalBytesRecv += obj.size;
+            TotalBytesRecv += (ulong)obj.size;
+
             dusvm.CurrentSessionData = TotalBytesRecv / (1024);
+
+            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
             // Debug.WriteLine("TCP pid {0}, {1}", obj.ProcessID, obj.size);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            TotalBytesRecv += obj.size;
+            TotalBytesRecv += (ulong)obj.size;
             dusvm.CurrentSessionData = TotalBytesRecv / (1024);
+            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
         }
 
         private static void processStarted(ProcessTraceData data)

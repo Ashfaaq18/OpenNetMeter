@@ -11,8 +11,8 @@ namespace WhereIsMyData.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private long currentSessionData;
-        public long CurrentSessionData
+        private ulong currentSessionData;
+        public ulong CurrentSessionData
         {
             get { return currentSessionData; }
             set { currentSessionData = value; OnPropertyChanged("CurrentSessionData"); }

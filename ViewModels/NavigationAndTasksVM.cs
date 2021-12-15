@@ -11,8 +11,10 @@ namespace WhereIsMyData.ViewModels
 {
     class NavigationAndTasksVM : INotifyPropertyChanged
     {
-        NetworkInfo NI;
-        DataUsageSummaryVM dusvm;
+        private NetworkInfo NI;
+        private DataUsageSummaryVM dusvm;
+        private DataUsageDetailedVM dudvm;
+
         private BackgroundWorker[] backgroundWorkers;
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
@@ -31,33 +33,28 @@ namespace WhereIsMyData.ViewModels
             //initialize background workers
             backgroundWorkers = new BackgroundWorker[2];
 
-            //intial startup page
+            //initialize both pages
             dusvm = new DataUsageSummaryVM();
+            dudvm = new DataUsageDetailedVM();
+
+            //intial startup page
             SelectedViewModel = dusvm;
 
             //background thread to trace network info through NetworkInfo
             backgroundWorkers[0] = new BackgroundWorker { WorkerReportsProgress = true };
             backgroundWorkers[0].WorkerReportsProgress = true;
             backgroundWorkers[0].DoWork += RunNetworkInfo;
-            backgroundWorkers[0].ProgressChanged += AfterDetectingNewProcess;
             backgroundWorkers[0].RunWorkerAsync();
-
 
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
-
-            
-        }
-
-        private void AfterDetectingNewProcess(object sender, ProgressChangedEventArgs e)
-        {
-            Debug.WriteLine("PID: " + e.ProgressPercentage.ToString());
+          
         }
 
         private void RunNetworkInfo(object sender, DoWorkEventArgs e)
         {
-            NI = new NetworkInfo(ref dusvm);
+            NI = new NetworkInfo(ref dusvm, ref dudvm);
         }
 
         private void OpenDataUsageSum(object obj)
@@ -67,7 +64,7 @@ namespace WhereIsMyData.ViewModels
 
         private void OpenDataUsageDet(object obj)
         {
-            SelectedViewModel = new DataUsageDetailedVM();
+            SelectedViewModel = dudvm;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
