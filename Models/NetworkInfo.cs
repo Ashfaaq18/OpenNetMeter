@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
@@ -10,75 +11,74 @@ namespace WhereIsMyData.Models
 {
     public class NetworkInfo
     {
-        private static DataUsageSummaryVM dusvm;
-        private static DataUsageDetailedVM dudvm;
+        private DataUsageSummaryVM dusvm;
+        private DataUsageDetailedVM dudvm;
+        private TraceEventSession kernelSession;
+        private Stopwatch watch;
+        private double elapsedTime;
         public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
         {
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
             TotalBytesRecv = 0;
+            elapsedTime = 0;
 
-            using (TraceEventSession kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
+            Task.Run(() =>
             {
-                Console.CancelKeyPress += new ConsoleCancelEventHandler((object sender, ConsoleCancelEventArgs cancelArgs) =>
+                using (kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
                 {
-                    Console.WriteLine("Control C pressed");     // Note that if you hit Ctrl-C twice rapidly you may be called concurrently.  
-                    kernelSession.Dispose();                          // Note that this causes Process() to return.  
-                    cancelArgs.Cancel = true;                   // This says don't abort, since Process() will return we can terminate nicely.   
-                });
+                    kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+                    kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
+                    kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
+                    kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
+                    kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
 
-                kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+                    kernelSession.Source.Process();
+                }
+            });
+            
+        }
 
-                kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
-                kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
-                kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
-                kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
-
-                kernelSession.Source.Process();
-            }
+        ~NetworkInfo ()
+        {
+            kernelSession.Dispose();
         }
 
 
-        public static ulong TotalBytesRecv { get; set; }
-        private static void Kernel_UdpIpRecv(UdpIpTraceData obj)
+        public ulong TotalBytesRecv { get; set; }
+        private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
-            TotalBytesRecv += (ulong)obj.size;
-            dusvm.CurrentSessionData = TotalBytesRecv / (1024) ;
-            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
+            RecvProcess((ulong)obj.size);
+            //dudvm.Worker.RunWorkerAsync( (obj.ProcessName, (ulong)obj.size) );
             //Debug.WriteLine("UDP pid {0}, {1}", obj.ProcessID, obj.size);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            TotalBytesRecv += (ulong)obj.size;
-            dusvm.CurrentSessionData = TotalBytesRecv / (1024);
-            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
+            RecvProcess((ulong)obj.size);
+            //dudvm.Worker.RunWorkerAsync((obj.ProcessName, (ulong)obj.size));
         }
 
-        private static void Kernel_TcpIpRecv(TcpIpTraceData obj)
+        private void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
-            TotalBytesRecv += (ulong)obj.size;
-
-            dusvm.CurrentSessionData = TotalBytesRecv / (1024);
-
-            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
+            elapsedTime = RecvProcess((ulong)obj.size) + elapsedTime;
+            dudvm.EditProcessInfo( ref elapsedTime, obj.ProcessName, (ulong)obj.size);
+            //dudvm.Worker.RunWorkerAsync((obj.ProcessName, (ulong)obj.size));
             // Debug.WriteLine("TCP pid {0}, {1}", obj.ProcessID, obj.size);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            TotalBytesRecv += (ulong)obj.size;
-            dusvm.CurrentSessionData = TotalBytesRecv / (1024);
-            dudvm.EditProcessInfo(obj.ProcessName, (ulong)obj.size);
+            RecvProcess((ulong)obj.size);
         }
 
-        private static void processStarted(ProcessTraceData data)
+        private double RecvProcess(ulong size)
         {
-           // Debug.WriteLine("start");
-        }
-        private static void processStopped(ProcessTraceData data)
-        {
-           // Debug.WriteLine("stop");
+            watch = Stopwatch.StartNew();
+            TotalBytesRecv += size;
+            dusvm.CurrentSessionData = TotalBytesRecv / (1024);
+            watch.Stop();
+            return watch.Elapsed.TotalMilliseconds;
         }
 
     }
