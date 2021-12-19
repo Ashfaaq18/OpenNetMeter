@@ -48,28 +48,22 @@ namespace WhereIsMyData.Models
         public ulong TotalBytesRecv { get; set; }
         private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
-            RecvProcess((ulong)obj.size);
-            //dudvm.Worker.RunWorkerAsync( (obj.ProcessName, (ulong)obj.size) );
-            //Debug.WriteLine("UDP pid {0}, {1}", obj.ProcessID, obj.size);
+            dudvm.EditProcessInfo(RecvProcess((ulong)obj.size), obj.ProcessName, (ulong)obj.size);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            RecvProcess((ulong)obj.size);
-            //dudvm.Worker.RunWorkerAsync((obj.ProcessName, (ulong)obj.size));
+            dudvm.EditProcessInfo(RecvProcess((ulong)obj.size), obj.ProcessName, (ulong)obj.size);
         }
 
         private void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
-            elapsedTime = RecvProcess((ulong)obj.size) + elapsedTime;
-            dudvm.EditProcessInfo( ref elapsedTime, obj.ProcessName, (ulong)obj.size);
-            //dudvm.Worker.RunWorkerAsync((obj.ProcessName, (ulong)obj.size));
-            // Debug.WriteLine("TCP pid {0}, {1}", obj.ProcessID, obj.size);
+            dudvm.EditProcessInfo( RecvProcess((ulong)obj.size), obj.ProcessName, (ulong)obj.size);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            RecvProcess((ulong)obj.size);
+            dudvm.EditProcessInfo(RecvProcess((ulong)obj.size), obj.ProcessName, (ulong)obj.size);
         }
 
         private double RecvProcess(ulong size)

@@ -5,31 +5,40 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace WhereIsMyData.Models
 {
-    public class MyAppInfo
+    public class MyAppInfo : INotifyPropertyChanged
     {
-        private string name;
-
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
-
+        public string Name { get; set; }
 
         private ulong dataRecv;
-        public ulong DataRecv
-        {
+        public ulong DataRecv 
+        { 
             get { return dataRecv; }
-            set { dataRecv = value; }
+            set { dataRecv = value; OnPropertyChanged("DataRecv"); }
         }
 
-        public MyAppInfo(string name, ulong data)
+        public ImageSource Icon { get; set; }
+
+        public string Image { get; set; }
+        public MyAppInfo(string name, ulong data, System.Drawing.Icon icon)
         {
             Name = name;
             DataRecv = data;
+            ImageSource im = IconToImgSource.ToImageSource(icon);
+            Icon = im;
+            im.Freeze();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string propName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
         }
     }
 }
