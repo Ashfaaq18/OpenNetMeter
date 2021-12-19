@@ -6,8 +6,8 @@
              xmlns:local="clr-namespace:WhereIsMyData.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <ListView x:Name="AllAppsData" Margin="128,64,165,64" ItemsSource="{Binding MyApps}">
+    <Grid Background="#F5F6FA">
+        <ListView x:Name="AllAppsData" Margin="64,32,64,32" ItemsSource="{Binding MyApps}">
             <ListView.ItemTemplate>
 				<DataTemplate>
 					<Grid Margin="0,2">
@@ -17,8 +17,8 @@
 							<ColumnDefinition Width="200" />
 						</Grid.ColumnDefinitions>
                         <Image Source="{Binding Value.Icon}" Width ="32" Height="32" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Key}" Grid.Column="1"/>
-                        <TextBlock Text="{Binding Value.DataRecv}" Grid.Column="2"/>
+                        <TextBlock Text="{Binding Key}" Grid.Column="1" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Value.DataRecv}" VerticalAlignment="Center" Grid.Column="2"/>
                     </Grid>
 				</DataTemplate>
 			</ListView.ItemTemplate>

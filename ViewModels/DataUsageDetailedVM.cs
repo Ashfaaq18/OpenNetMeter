@@ -21,19 +21,17 @@ namespace WhereIsMyData.ViewModels
         public ObservableConcurrentDictionary<string, MyAppInfo> MyApps { get; set; }
         public void EditProcessInfo(double time, string name, ulong data)
         {
-            if (name == "")
-                name = "system";
             //var watch = Stopwatch.StartNew();
             if (MyApps.TryAdd(name, null))
             {
                 process = Process.GetProcessesByName(name);
-                if (process.Length > 0 && name != "system")
+                if (process.Length > 0 && name != "System" && name != "")
                 {
                     MyApps[name] = new MyAppInfo(name, data, System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName));
                     MyApps[name].Image = Image;
                    // Debug.WriteLine(process[0].MainModule.FileName);
                 }
-                else if (name == "system")
+                else if (name == "System" || name == "")
                 {
                     MyApps[name] = new MyAppInfo(name, data, null);
                 }

@@ -27,9 +27,12 @@ namespace WhereIsMyData.Models
         {
             Name = name;
             DataRecv = data;
-            ImageSource im = IconToImgSource.ToImageSource(icon);
-            Icon = im;
-            im.Freeze();
+            if(icon != null)
+            {
+                ImageSource im = IconToImgSource.ToImageSource(icon);
+                Icon = im;
+                im.Freeze();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

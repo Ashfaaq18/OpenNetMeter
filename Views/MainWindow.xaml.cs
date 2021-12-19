@@ -13,5 +13,15 @@ namespace WhereIsMyData.Views
             InitializeComponent();
             DataContext = new NavigationAndTasksVM();
         }
+
+        private void Grid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            DragMove();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }

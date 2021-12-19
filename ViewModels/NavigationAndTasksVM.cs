@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using WhereIsMyData.Models;
 
@@ -15,6 +16,13 @@ namespace WhereIsMyData.ViewModels
         private DataUsageDetailedVM dudvm;
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
+
+        private bool tabBtnToggle;
+        public bool TabBtnToggle 
+        { 
+            get { return tabBtnToggle; }
+            set { tabBtnToggle = value; OnPropertyChanged("TabBtnToggle"); }
+        }   
 
         private object selectedViewModel;
 
@@ -33,6 +41,7 @@ namespace WhereIsMyData.ViewModels
 
             //intial startup page
             SelectedViewModel = dusvm;
+            TabBtnToggle = true;
 
             new NetworkInfo(ref dusvm, ref dudvm);
 
@@ -45,11 +54,13 @@ namespace WhereIsMyData.ViewModels
         private void OpenDataUsageSum(object obj)
         {
             SelectedViewModel = dusvm;
+            TabBtnToggle = true;
         }
 
         private void OpenDataUsageDet(object obj)
         {
             SelectedViewModel = dudvm;
+            TabBtnToggle = false;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
