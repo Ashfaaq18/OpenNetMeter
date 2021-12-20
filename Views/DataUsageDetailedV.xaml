@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:WhereIsMyData.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="#F5F6FA">
+    <Grid Background="#f1f1f1">
         <ListView x:Name="AllAppsData" Margin="64,32,64,32" ItemsSource="{Binding MyApps}">
             <ListView.ItemTemplate>
 				<DataTemplate>

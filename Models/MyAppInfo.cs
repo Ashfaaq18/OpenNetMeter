@@ -14,19 +14,26 @@ namespace WhereIsMyData.Models
         public string Name { get; set; }
 
         private ulong dataRecv;
-        public ulong DataRecv 
-        { 
+        public ulong DataRecv
+        {
             get { return dataRecv; }
             set { dataRecv = value; OnPropertyChanged("DataRecv"); }
+        }
+        private ulong dataSend;
+        public ulong DataSend
+        {
+            get { return dataSend; }
+            set { dataSend = value; OnPropertyChanged("DataSend"); }
         }
 
         public ImageSource Icon { get; set; }
 
         public string Image { get; set; }
-        public MyAppInfo(string name, ulong data, System.Drawing.Icon icon)
+        public MyAppInfo(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon icon)
         {
-            Name = name;
-            DataRecv = data;
+            Name = nameP;
+            DataRecv = dataRecvP;
+            DataSend = dataSendP;
             if(icon != null)
             {
                 ImageSource im = IconToImgSource.ToImageSource(icon);

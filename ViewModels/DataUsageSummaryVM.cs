@@ -11,12 +11,19 @@ namespace WhereIsMyData.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private ulong currentSessionData;
-        public ulong CurrentSessionData
+        private ulong currentSessionDownloadData;
+        private ulong currentSessionUploadData;
+        public ulong CurrentSessionDownloadData
         {
-            get { return currentSessionData; }
-            set { currentSessionData = value; OnPropertyChanged("CurrentSessionData"); }
+            get { return currentSessionDownloadData; }
+            set { currentSessionDownloadData = value; OnPropertyChanged("CurrentSessionDownloadData"); }
         }
+        public ulong CurrentSessionUploadData
+        {
+            get { return currentSessionUploadData; }
+            set { currentSessionUploadData = value; OnPropertyChanged("CurrentSessionUploadData"); }
+        }
+
         public DataUsageSummaryVM()
         {
             

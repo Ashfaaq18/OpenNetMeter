@@ -16,39 +16,38 @@ namespace WhereIsMyData.ViewModels
 {
     public class DataUsageDetailedVM
     {
-        public string Image { get; set; }
         private Process[] process;
         public ObservableConcurrentDictionary<string, MyAppInfo> MyApps { get; set; }
-        public void EditProcessInfo(double time, string name, ulong data)
+        public void GetAppDataInfo(string name, ulong dataRecv, ulong dataSend)
         {
             //var watch = Stopwatch.StartNew();
             if (MyApps.TryAdd(name, null))
             {
                 process = Process.GetProcessesByName(name);
-                if (process.Length > 0 && name != "System" && name != "")
+                Icon ic = null;
+                
+                if (process.Length > 0)
                 {
-                    MyApps[name] = new MyAppInfo(name, data, System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName));
-                    MyApps[name].Image = Image;
-                   // Debug.WriteLine(process[0].MainModule.FileName);
-                }
-                else if (name == "System" || name == "")
-                {
-                    MyApps[name] = new MyAppInfo(name, data, null);
+                    try { ic = System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
+                    catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
+
+                    MyApps[name] = new MyAppInfo(name, dataRecv, dataSend, ic);
                 }
             }
             else
             {
-                MyApps[name].DataRecv = MyApps[name].DataRecv + data;
+                MyApps[name].DataRecv = MyApps[name].DataRecv + dataRecv;
+                MyApps[name].DataSend = MyApps[name].DataSend + dataSend;
             }
            // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/
         }
 
+
         public DataUsageDetailedVM()
         {
             MyApps = new ObservableConcurrentDictionary<string, MyAppInfo>();
-            Image = "D:\\docs\\time.png";
         }
 
         

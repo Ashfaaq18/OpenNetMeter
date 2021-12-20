@@ -28,12 +28,16 @@
         </DataTemplate>
 
     </Window.Resources>
-    <Border Background='Beige'
-                BorderBrush='LightBlue'
-                CornerRadius='10'>
+    <Border Margin="10">
+        <Border.Effect>
+            <DropShadowEffect Color="Black"
+                          Direction="270"
+                          BlurRadius="10"
+                          ShadowDepth="3" />
+        </Border.Effect>
         <DockPanel LastChildFill="True">
 
-            <Grid DockPanel.Dock="Top" Width="800" IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="Transparent">
+            <Grid DockPanel.Dock="Top" Width="800" IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="White">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="250"/>
@@ -48,10 +52,10 @@
                        FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
 
                 <UniformGrid Columns="4" Grid.Column="1" MouseDown="Grid_MouseDown">
-                    <Button Background="White" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
+                    <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
-                                <Setter Property="BorderBrush" Value="White"/>
+                                <Setter Property="BorderBrush" Value="#f1f1f1"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding TabBtnToggle}" Value="True">
                                         <Setter Property="BorderBrush" Value="Black"/>
@@ -65,10 +69,10 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Background="white" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageDetCommand}">
+                    <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageDetCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
-                                <Setter Property="BorderBrush" Value="White"/>
+                                <Setter Property="BorderBrush" Value="#f1f1f1"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding TabBtnToggle}" Value="False">
                                         <Setter Property="BorderBrush" Value="Black"/>
@@ -85,12 +89,12 @@
                 </UniformGrid>
 
                 <Button Grid.Column="2" Width="25" Height="25" VerticalAlignment="Center"
-                    HorizontalAlignment="Center" Click="Button_Click" Content="X"/>
+                    HorizontalAlignment="Center" Click="Button_Click" Content="x"/>
 
 
             </Grid>
 
-            <ContentControl x:Name="Pages" Margin="5,0,5,5" DockPanel.Dock="Bottom" Content="{Binding SelectedViewModel}"/>
+            <ContentControl x:Name="Pages" DockPanel.Dock="Bottom" Content="{Binding SelectedViewModel}"/>
 
         </DockPanel>
     </Border>
