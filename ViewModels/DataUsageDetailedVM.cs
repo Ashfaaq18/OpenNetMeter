@@ -18,9 +18,11 @@ namespace WhereIsMyData.ViewModels
     {
         private Process[] process;
         public ObservableConcurrentDictionary<string, MyAppInfo> MyApps { get; set; }
-        public void GetAppDataInfo(string name, ulong dataRecv, ulong dataSend)
+        public void GetAppDataInfo(string name, int dataRecv, int dataSend)
         {
             //var watch = Stopwatch.StartNew();
+            if (name == null)
+                name = "unknown1";
             if (MyApps.TryAdd(name, null))
             {
                 process = Process.GetProcessesByName(name);
@@ -36,8 +38,8 @@ namespace WhereIsMyData.ViewModels
             }
             else
             {
-                MyApps[name].DataRecv = MyApps[name].DataRecv + dataRecv;
-                MyApps[name].DataSend = MyApps[name].DataSend + dataSend;
+                MyApps[name].DataRecv = MyApps[name].DataRecv + (ulong)dataRecv;
+                MyApps[name].DataSend = MyApps[name].DataSend + (ulong)dataSend;
             }
            // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);

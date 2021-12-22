@@ -6,6 +6,9 @@
              xmlns:local="clr-namespace:WhereIsMyData.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <local:Converters x:Key="converter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid Grid.Row="1" Background="#f1f1f1">
             <Grid.RowDefinitions>
@@ -27,6 +30,8 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -34,9 +39,11 @@
                             <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0" Grid.ColumnSpan="2"/>
-                        <Label Grid.Row="1" FontSize="30" x:Name="downloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding CurrentSessionDownloadData }"></Label>
-                        <Label Grid.Column="1" Grid.Row="1" FontSize="30" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData }"></Label>
+                        <TextBlock Grid.ColumnSpan="5"  Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0" />
+                        <Label Grid.Row="1" FontSize="15" x:Name="downloadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding CurrentSessionDownloadData }"></Label>
+                        <Label Grid.Column="1" Grid.Row="1" Margin="10,0,0,0" FontSize="15" x:Name="downloadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding SuffixOfDownloadData, Converter={StaticResource converter}}" ></Label>
+                        <Label Grid.Column="2" Grid.Row="1" FontSize="15" x:Name="uploadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData }"></Label>
+                        <Label Grid.Column="3" Grid.Row="1" Margin="10,0,0,0" FontSize="15" x:Name="uploadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding SuffixOfUploadData, Converter={StaticResource converter}}" ></Label>
                     </Grid>
 
                 </Border>

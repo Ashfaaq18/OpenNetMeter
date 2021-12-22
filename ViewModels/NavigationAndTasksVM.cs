@@ -39,6 +39,9 @@ namespace WhereIsMyData.ViewModels
             dusvm = new DataUsageSummaryVM();
             dudvm = new DataUsageDetailedVM();
 
+            //Read file
+
+
             //intial startup page
             SelectedViewModel = dusvm;
             TabBtnToggle = true;

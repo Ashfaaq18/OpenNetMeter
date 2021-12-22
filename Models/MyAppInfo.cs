@@ -29,11 +29,11 @@ namespace WhereIsMyData.Models
         public ImageSource Icon { get; set; }
 
         public string Image { get; set; }
-        public MyAppInfo(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon icon)
+        public MyAppInfo(string nameP, int dataRecvP, int dataSendP, System.Drawing.Icon icon)
         {
             Name = nameP;
-            DataRecv = dataRecvP;
-            DataSend = dataSendP;
+            DataRecv = (ulong)dataRecvP;
+            DataSend = (ulong)dataSendP;
             if(icon != null)
             {
                 ImageSource im = IconToImgSource.ToImageSource(icon);

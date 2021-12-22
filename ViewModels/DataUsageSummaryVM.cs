@@ -1,32 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Data;
+using System.Windows.Input;
 using WhereIsMyData.Models;
 
 namespace WhereIsMyData.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private ulong currentSessionDownloadData;
-        private ulong currentSessionUploadData;
-        public ulong CurrentSessionDownloadData
+        private decimal currentSessionDownloadData;
+        private int suffixOfDownloadData;
+        private decimal currentSessionUploadData;
+        private int suffixOfUploadData;
+        public decimal CurrentSessionDownloadData
         {
             get { return currentSessionDownloadData; }
-            set { currentSessionDownloadData = value; OnPropertyChanged("CurrentSessionDownloadData"); }
+            set
+            {
+                currentSessionDownloadData = value; OnPropertyChanged("CurrentSessionDownloadData");
+            }
         }
-        public ulong CurrentSessionUploadData
+        public int SuffixOfDownloadData
+        {
+            get { return suffixOfDownloadData; }
+            set
+            {
+                suffixOfDownloadData = value; OnPropertyChanged("SuffixOfDownloadData");
+            }
+        }
+
+        public decimal CurrentSessionUploadData
         {
             get { return currentSessionUploadData; }
-            set { currentSessionUploadData = value; OnPropertyChanged("CurrentSessionUploadData"); }
+            set
+            {
+                currentSessionUploadData = value; OnPropertyChanged("CurrentSessionUploadData");
+            }
+        }
+        public int SuffixOfUploadData
+        {
+            get { return suffixOfUploadData; }
+            set
+            {
+                suffixOfUploadData = value; OnPropertyChanged("SuffixOfUploadData");
+            }
         }
 
         public DataUsageSummaryVM()
         {
-            
+            currentSessionDownloadData = 0;
+            currentSessionUploadData = 0;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -37,6 +66,5 @@ namespace WhereIsMyData.ViewModels
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
         }
-
     }
 }

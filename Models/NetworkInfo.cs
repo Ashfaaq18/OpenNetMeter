@@ -51,63 +51,69 @@ namespace WhereIsMyData.Models
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)
         {
-            SendProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, 0, (ulong)obj.size);
+            SendProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
         }
 
         private void Kernel_UdpIpSend(UdpIpTraceData obj)
         {
-            SendProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, 0, (ulong)obj.size);
+            SendProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
         }
 
         private void Kernel_TcpIpSendIPV6(TcpIpV6SendTraceData obj)
         {
-            SendProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, 0, (ulong)obj.size);
+            SendProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
         }
 
         private void Kernel_TcpIpSend(TcpIpSendTraceData obj)
         {
-            SendProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, 0, (ulong)obj.size);
+            SendProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
         }
  
         //download events    
         private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
-            RecvProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, (ulong)obj.size, 0);
+            RecvProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            RecvProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, (ulong)obj.size, 0);
+            RecvProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
         }
 
         private void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
-            RecvProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, (ulong)obj.size, 0);
+            RecvProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            RecvProcess((ulong)obj.size);
-            dudvm.GetAppDataInfo(obj.ProcessName, (ulong)obj.size, 0);
+            RecvProcess(obj.size);
+            dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
         }
 
-        private void RecvProcess(ulong size)
+        private void RecvProcess(int size)
         {
-            TotalBytesRecv += size;
-            dusvm.CurrentSessionDownloadData = TotalBytesRecv / (1024);
+            TotalBytesRecv += (ulong)size;
+            (decimal, int) temp = ConvBytesToOther.SizeSuffix(TotalBytesRecv);
+            dusvm.CurrentSessionDownloadData = temp.Item1;
+            dusvm.SuffixOfDownloadData = temp.Item2;
+            //dusvm.CurrentSessionDownloadData = TotalBytesRecv / (1024);
         }
 
-        private void SendProcess(ulong size)
+        private void SendProcess(int size)
         {
-            TotalBytesSend += size;
-            dusvm.CurrentSessionUploadData = TotalBytesSend / (1024);
+            TotalBytesSend += (ulong)size;
+            (decimal, int) temp = ConvBytesToOther.SizeSuffix(TotalBytesSend);
+            dusvm.CurrentSessionUploadData = temp.Item1;
+            dusvm.SuffixOfUploadData = temp.Item2;
+            // dusvm.CurrentSessionUploadData = TotalBytesSend / (1024);
         }
 
 
