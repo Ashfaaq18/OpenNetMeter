@@ -1,2 +1,2 @@
 # WhereIsMyData
-A Simple program to monitor the data usage for average windows users.
+A simple program to monitor your network/data usage. Made for the average windows user.
