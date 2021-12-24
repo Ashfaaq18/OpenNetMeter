@@ -69,10 +69,6 @@
             
             
         </Grid>
-        <!--<Grid>
-            <TextBlock Text="Data Usage Summary"/>
-            <Label x:Name="label" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding Seconds }"></Label>
-        </Grid>-->
-        
+
     </Grid>
 </UserControl>

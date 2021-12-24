@@ -21,7 +21,7 @@ namespace WhereIsMyData.ViewModels
         public void GetAppDataInfo(string name, int dataRecv, int dataSend)
         {
             //var watch = Stopwatch.StartNew();
-            if (name == null)
+            if (name == null || name == "")
                 name = "unknown1";
             if (MyApps.TryAdd(name, null))
             {
@@ -41,6 +41,7 @@ namespace WhereIsMyData.ViewModels
                 MyApps[name].DataRecv = MyApps[name].DataRecv + (ulong)dataRecv;
                 MyApps[name].DataSend = MyApps[name].DataSend + (ulong)dataSend;
             }
+
            // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/

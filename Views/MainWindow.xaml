@@ -35,9 +35,13 @@
                           BlurRadius="10"
                           ShadowDepth="3" />
         </Border.Effect>
-        <DockPanel LastChildFill="True">
-
-            <Grid DockPanel.Dock="Top" Width="800" IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="White">
+        <Grid Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <Grid   IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="White">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="250"/>
@@ -94,8 +98,16 @@
 
             </Grid>
 
-            <ContentControl x:Name="Pages" DockPanel.Dock="Bottom" Content="{Binding SelectedViewModel}"/>
+            <ContentControl x:Name="Pages" Grid.Row="1" Width="780" Content="{Binding SelectedViewModel}"/>
 
-        </DockPanel>
+            <Grid Grid.Row="2" DockPanel.Dock="Bottom" Background="White">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Content="{Binding NetworkStatus}" FontSize="15" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+            </Grid>
+
+        </Grid>
     </Border>
 </Window>

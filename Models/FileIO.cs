@@ -10,7 +10,7 @@ namespace WhereIsMyData.Models
     public class FileIO
     {
         //write all details of an app to a file
-        public static void WriteFile(MyAppInfo app, FileStream stream)
+        public static void WriteFile_AppInfo(MyAppInfo app, FileStream stream)
         {
             int size = 8 + 1 + app.Name.Length;
 
@@ -30,7 +30,7 @@ namespace WhereIsMyData.Models
         }
 
         //read the file data into a collection
-        public static void ReadFile(FileStream stream)
+        public static void ReadFile_AppInfo(FileStream stream)
         {
             int breakLength = 0;
             while (true)
@@ -65,5 +65,16 @@ namespace WhereIsMyData.Models
             }
         }
 
+        public static void ReadFile_AdapterInfo(FileStream stream)
+        {
+            while(stream.Position < stream.Length)
+            {
+                int nameLength = stream.ReadByte();
+                for (int i = 0; i < nameLength; i++)
+                {
+                    stream.ReadByte();
+                }
+            }
+        }
     }
 }
