@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using WhereIsMyData.Models;
 
 namespace WhereIsMyData.ViewModels
@@ -30,11 +22,10 @@ namespace WhereIsMyData.ViewModels
                 
                 if (process.Length > 0)
                 {
-                    try { ic = System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
+                    try { ic = Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
                     catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
-
-                    MyApps[name] = new MyAppInfo(name, dataRecv, dataSend, ic);
                 }
+                MyApps[name] = new MyAppInfo(name, (ulong)dataRecv, (ulong)dataSend, ic);
             }
             else
             {
@@ -46,7 +37,6 @@ namespace WhereIsMyData.ViewModels
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/
         }
-
 
         public DataUsageDetailedVM()
         {

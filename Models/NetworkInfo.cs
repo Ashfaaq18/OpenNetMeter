@@ -10,6 +10,7 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
 using WhereIsMyData.ViewModels;
+using System.Collections.Generic;
 
 namespace WhereIsMyData.Models
 {
@@ -17,6 +18,9 @@ namespace WhereIsMyData.Models
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
+
+        private HashSet<string> NetworkProfiles;
+
         private string isNetworkOnline;
         public string IsNetworkOnline
         {
@@ -32,9 +36,94 @@ namespace WhereIsMyData.Models
             dudvm = dudvm_ref;
             TotalBytesRecv = 0;
             TotalBytesSend = 0;
+            NetworkProfiles = new HashSet<string>();
+            NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);           
+        }
 
-            NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
 
+        private void SetNetworkStatus(bool isOnline, bool init)
+        {
+            string adapterName = "";
+            if (isOnline)
+            {
+                // var watch = Stopwatch.StartNew();
+                NetworkInterface[] networks = NetworkInterface.GetAllNetworkInterfaces();
+                NetworkInterface activeAdapter = networks.First(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback
+                    && x.NetworkInterfaceType != NetworkInterfaceType.Tunnel
+                    && x.OperationalStatus == OperationalStatus.Up
+                    && x.Name.StartsWith("vEthernet") == false);
+
+                adapterName = activeAdapter.Name;
+                IsNetworkOnline = "Connected : " + adapterName;
+
+                ReadFile(adapterName);
+                
+            }
+            else
+                IsNetworkOnline = "Disconnected";
+
+            Task.Run(async () => {
+                while (isOnline)
+                {
+                    WriteFile(adapterName);
+                    await Task.Delay(1000);
+                }
+            });
+        }
+        public void InitNetworkStatus()
+        {
+            SetNetworkStatus(NetworkInterface.GetIsNetworkAvailable(), true);
+        }
+
+        private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            SetNetworkStatus(e.IsAvailable, false);
+            if (e.IsAvailable)
+            { 
+                //start saving to file
+            }
+            else
+            { 
+                //stop saving to file
+            }
+        }
+
+
+        private void ReadFile(string name)
+        {
+            try
+            {
+                using (FileStream stream = new FileStream(name + ".WIMD", FileMode.Open, FileAccess.Read))
+                {
+                    (ulong, ulong) data;
+                    data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
+                    //Total bytes recieved
+                    (decimal, int) temp = ConvBytesToOther.SizeSuffix(data.Item1);
+                    dusvm.TotalDownloadData = temp.Item1;
+                    dusvm.SuffixOfTotalDownloadData = temp.Item2;
+                    //Total bytes sent
+                    temp = ConvBytesToOther.SizeSuffix(data.Item2);
+                    dusvm.TotalUploadData = temp.Item1;
+                    dusvm.SuffixOfTotalUploadData = temp.Item2;
+                }
+            }
+            catch (Exception e) { Debug.WriteLine("Error: " + e.Message); }
+        }
+
+        private void WriteFile(string name)
+        {
+            try
+            {
+                using (FileStream stream = new FileStream(name + ".WIMD", FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    FileIO.WriteFile_AppInfo(dudvm.MyApps, stream);
+                }
+            }
+            catch (Exception e) { Debug.WriteLine("Error: " + e.Message); }
+        }
+
+        public void CaptureNetworkPackets()
+        {
             Task.Run(() =>
             {
                 using (TraceEventSession kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
@@ -55,47 +144,6 @@ namespace WhereIsMyData.Models
             });
         }
 
-        public void GetNetworkStatus()
-        {
-            if (NetworkInterface.GetIsNetworkAvailable())
-            {
-                // var watch = Stopwatch.StartNew();
-                NetworkInterface[] networks = NetworkInterface.GetAllNetworkInterfaces();
-                NetworkInterface activeAdapter = networks.First(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback
-                    && x.NetworkInterfaceType != NetworkInterfaceType.Tunnel
-                    && x.OperationalStatus == OperationalStatus.Up
-                    && x.Name.StartsWith("vEthernet") == false);
-
-                IsNetworkOnline = "Connected : " + activeAdapter.Name;
-                /* try
-                 {
-                     using (var stream = new FileStream("NetworkProfiles.WIMD", FileMode.Open, FileAccess.Read))
-                     {
-                         FileIO.ReadFile_AdapterInfo(stream);
-                     }
-                 }
-                 catch (Exception e) { Debug.WriteLine("Error: " + e.Message); }*/
-                //watch.Stop();
-                //Debug.WriteLine(activeAdapter.Name + " , time: " + watch.ElapsedMilliseconds);
-            }
-            else
-                IsNetworkOnline = "Disconnected";
-        }
-
-        private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
-        {
-            if (e.IsAvailable)
-            {
-                NetworkInterface[] networks = NetworkInterface.GetAllNetworkInterfaces();
-                NetworkInterface activeAdapter = networks.First(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback
-                    && x.NetworkInterfaceType != NetworkInterfaceType.Tunnel
-                    && x.OperationalStatus == OperationalStatus.Up
-                    && x.Name.StartsWith("vEthernet") == false);
-                IsNetworkOnline = "Connected : " + activeAdapter.Name;
-            }
-            else
-                IsNetworkOnline = "Disconnected";
-        }
 
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)

@@ -39,7 +39,7 @@
                             <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.ColumnSpan="5"  Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0" />
+                        <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0" />
                         <Label Grid.Row="1" FontSize="15" x:Name="downloadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding CurrentSessionDownloadData }"></Label>
                         <Label Grid.Column="1" Grid.Row="1" Margin="10,0,0,0" FontSize="15" x:Name="downloadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding SuffixOfDownloadData, Converter={StaticResource converter}}" ></Label>
                         <Label Grid.Column="2" Grid.Row="1" FontSize="15" x:Name="uploadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData }"></Label>
@@ -53,14 +53,23 @@
                         <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
                     </Border.Effect>
                     <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                             <RowDefinition Height="2*"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Total data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0"/>
-                        <TextBlock Text="11 GB" Grid.Row="1" TextAlignment="Center" VerticalAlignment="Center" Margin="10 0 10 0" FontSize="30"/>
+                        <TextBlock Grid.ColumnSpan="4" Text="Total data usage from : " VerticalAlignment="Center" Foreground="#717171" Margin="10 0 0 0"/>
+                        <Label Grid.Row="1" FontSize="15" x:Name="TotaldownloadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding TotalDownloadData }"></Label>
+                        <Label Grid.Column="1" Grid.Row="1" Margin="10,0,0,0" FontSize="15" x:Name="TotaldownloadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding SuffixOfTotalDownloadData, Converter={StaticResource converter}}" ></Label>
+                        <Label Grid.Column="2" Grid.Row="1" FontSize="15" x:Name="TotaluploadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding TotalUploadData }"></Label>
+                        <Label Grid.Column="3" Grid.Row="1" Margin="10,0,0,0" FontSize="15" x:Name="TotaluploadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding SuffixOfTotalUploadData, Converter={StaticResource converter}}" ></Label>
                     </Grid>
 
                 </Border>

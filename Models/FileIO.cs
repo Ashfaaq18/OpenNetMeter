@@ -1,79 +1,111 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WhereIsMyData.Models
 {
     public class FileIO
     {
         //write all details of an app to a file
-        public static void WriteFile_AppInfo(MyAppInfo app, FileStream stream)
+        public static void WriteFile_AppInfo(ObservableConcurrentDictionary<string, MyAppInfo> apps, FileStream stream)
         {
-            int size = 8 + 1 + app.Name.Length;
-
-            byte[] Bytes = new byte[size];
-
-            int byteIndex = 7;
-
-            for (int i = byteIndex; i >= 0; i--)
-                Bytes[i] = (byte)(app.DataRecv >> 8 * i);
-
-            Bytes[byteIndex + 1] = (byte)(app.Name.Length);
-
-            for (int i = 0; i < app.Name.Length; i++)
-                Bytes[byteIndex + 2 + i] = (byte)app.Name[i];
-
-            stream.Write(Bytes, 0, Bytes.Length);
-        }
-
-        //read the file data into a collection
-        public static void ReadFile_AppInfo(FileStream stream)
-        {
-            int breakLength = 0;
-            while (true)
+            foreach(KeyValuePair<string, MyAppInfo> app in apps)
             {
-                int arraySize = 8;
-                byte[] Bytes = new byte[arraySize];
-                breakLength += arraySize;
-                for (int i = 0; i < arraySize; i++)
-                {
-                    Bytes[i] = (byte)stream.ReadByte();
-                    Console.WriteLine(Bytes[i]);
-                }
-                Console.WriteLine("converted bytes to int: " + BitConverter.ToUInt64(Bytes, 0));
-                breakLength += 1;
-                int nameLength = stream.ReadByte();
-                byte[] Bytes1 = new byte[nameLength];
-                breakLength += nameLength;
-                for (int i = 0; i < nameLength; i++)
-                {
-                    Bytes1[i] = (byte)stream.ReadByte();
-                    Console.WriteLine(Bytes1[i]);
-                }
-                for (int i = 0; i < Bytes1.Length; i++)
-                    Console.WriteLine("converted bytes to char: " + (char)Bytes1[i]);
+                byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
 
-                Console.WriteLine("\n");
-                if (breakLength >= stream.Length)
-                {
-                    break;
-                }
+                for (int i = 7 * 1; i >= 7 * 0; i--)
+                    Bytes[i] = (byte)(app.Value.DataRecv >> 8 * i);
 
+                for (int i = 7 * 2; i >= 7 * 1; i--)
+                    Bytes[i] = (byte)(app.Value.DataSend >> 8 * i);
+
+                Bytes[16] = (byte)app.Value.Name.Length;
+
+                for (int i = 0; i < app.Value.Name.Length; i++)
+                {
+                    Bytes[17 + i] = (byte)app.Value.Name[i];
+                }
+                stream.Write(Bytes, 0, Bytes.Length);
             }
         }
 
-        public static void ReadFile_AdapterInfo(FileStream stream)
+        //read the file data into a collection
+        public static (ulong,ulong) ReadFile_AppInfo(ObservableConcurrentDictionary<string, MyAppInfo> apps ,FileStream stream)
         {
-            while(stream.Position < stream.Length)
+            ulong TotalBytesRecv = 0;
+            ulong TotalBytesSend = 0;
+            while (stream.Position < stream.Length)
+            {
+                ulong dataRecv = 0;
+                ulong dataSend = 0;
+                byte[] uploadBytes = new byte[8];
+                byte[] downloadBytes = new byte[8];
+                for (int j = 0; j < 2; j++) // loop to get upload and download data
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if(j == 0)
+                            downloadBytes[i] = (byte)stream.ReadByte();
+                        else
+                            uploadBytes[i] = (byte)stream.ReadByte();
+
+                    }
+                    if(j == 0)
+                        dataRecv = BitConverter.ToUInt64(downloadBytes, 0);
+                    else
+                        dataSend = BitConverter.ToUInt64(uploadBytes, 0);
+                }
+
+                int temp = stream.ReadByte();
+                byte[] Bytes1 = new byte[temp];
+                string tempName = "";// = BitConverter.ToString(Bytes1);
+                for (int i = 0; i < temp; i++) // loop to get the name of the app
+                {
+                    Bytes1[i] = (byte)stream.ReadByte();
+                    tempName += (char)Bytes1[i];
+                }
+
+                Process[] process = Process.GetProcessesByName(tempName);
+                Icon ic = null;
+                if (process.Length > 0)
+                {
+                    try { ic = System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
+                    catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
+                }
+                
+                apps[tempName] = new MyAppInfo(tempName, dataRecv, dataSend, ic);
+                TotalBytesRecv += dataRecv;
+                TotalBytesSend += dataSend;
+            }
+            return (TotalBytesRecv, TotalBytesSend);
+        }
+
+        public static void ReadFile_AdapterInfo(FileStream stream, ref HashSet<string> profiles)
+        {
+            while (stream.Position < stream.Length)
             {
                 int nameLength = stream.ReadByte();
+                string temp = "";
                 for (int i = 0; i < nameLength; i++)
                 {
-                    stream.ReadByte();
+                    temp += (char)stream.ReadByte();
                 }
+                Debug.WriteLine("test : " + temp);
+                if (!profiles.Add(temp))
+                    Debug.WriteLine("profile exists");
+            }
+        }
+
+        public static void WriteFile_AdapterInfo(FileStream stream, ref HashSet<string> profiles)
+        {
+            foreach (string str in profiles)
+            {
+                stream.WriteByte((byte)str.Length);
+                for (int i = 0; i < str.Length; i++)
+                    stream.WriteByte((byte)str[i]);
             }
         }
     }

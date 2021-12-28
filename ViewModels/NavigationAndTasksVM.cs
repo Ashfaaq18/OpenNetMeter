@@ -16,6 +16,7 @@ namespace WhereIsMyData.ViewModels
         public HashSet<string> NetworkProfiles;
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
+        private readonly NetworkInfo netInfo;
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
 
@@ -43,7 +44,7 @@ namespace WhereIsMyData.ViewModels
             set
             {
                 networkStatus = value; 
-                OnPropertyChanged("NetworkStatus"); 
+                OnPropertyChanged("NetworkStatus");
             }
         }
 
@@ -54,27 +55,18 @@ namespace WhereIsMyData.ViewModels
             
             //initialize both pages
             dusvm = new DataUsageSummaryVM();
-            dudvm = new DataUsageDetailedVM();
-
-            //Read file
-           /* try
-            {
-                using (var stream = new FileStream("Data", FileMode.Open, FileAccess.Read))
-                {
-                    FileIO.ReadFile_AppInfo(stream);
-                }
-            }
-            catch (Exception e) { Debug.WriteLine("Error: " + e.Message); }*/
-            
+            dudvm = new DataUsageDetailedVM();         
 
             //intial startup page
             SelectedViewModel = dusvm;
             TabBtnToggle = true;
 
             //Network event runner
-            NetworkInfo netInfo = new NetworkInfo(ref dusvm, ref dudvm);
+            netInfo = new NetworkInfo(ref dusvm, ref dudvm);
             netInfo.PropertyChanged += NetInfo_PropertyChanged;
-            netInfo.GetNetworkStatus();
+            netInfo.InitNetworkStatus(); // update status bar with network status
+            //netInfo.ReadFile_NetworkProfiles(); // read the saved network profiles
+            netInfo.CaptureNetworkPackets();
 
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
@@ -84,8 +76,7 @@ namespace WhereIsMyData.ViewModels
 
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            NetworkInfo n = sender as NetworkInfo;
-            NetworkStatus = n.IsNetworkOnline;
+            NetworkStatus = netInfo.IsNetworkOnline;
         }
 
         private void OpenDataUsageSum(object obj)
