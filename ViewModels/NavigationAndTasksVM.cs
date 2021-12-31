@@ -21,11 +21,11 @@ namespace WhereIsMyData.ViewModels
         public ICommand DataUsageDetCommand { get; set; }
 
         private bool tabBtnToggle;
-        public bool TabBtnToggle 
-        { 
+        public bool TabBtnToggle
+        {
             get { return tabBtnToggle; }
             set { tabBtnToggle = value; OnPropertyChanged("TabBtnToggle"); }
-        }   
+        }
 
         private object selectedViewModel;
 

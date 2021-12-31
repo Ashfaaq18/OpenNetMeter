@@ -1,106 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Data;
-using System.Windows.Input;
+using System.Windows;
+using System.Windows.Media;
 using WhereIsMyData.Models;
 
 namespace WhereIsMyData.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private decimal totalDownloadData;
-        private int suffixOfTotalDownloadData;
-        private decimal totalUploadData;
-        private int suffixOfTotalUploadData;
-        public decimal TotalDownloadData
-        {
-            get { return totalDownloadData; }
-            set
-            {
-                totalDownloadData = value; OnPropertyChanged("TotalDownloadData");
-            }
-        }
+        public DataUnits TotalDownloadData { get; set; }
 
-        public int SuffixOfTotalDownloadData
-        {
-            get { return suffixOfTotalDownloadData; }
-            set
-            {
-                suffixOfTotalDownloadData = value; OnPropertyChanged("suffixOfTotalDownloadData");
-            }
-        }
+        public DataUnits TotalUploadData { get; set; }
 
-        public decimal TotalUploadData
-        {
-            get { return totalUploadData; }
-            set
-            {
-                totalUploadData = value; OnPropertyChanged("TotalUploadData");
-            }
-        }
+        public DataUnits CurrentSessionDownloadData { get; set; }
 
-        public int SuffixOfTotalUploadData
+        private PointCollection ltPoint;
+        public PointCollection LtPoint
         {
-            get { return suffixOfTotalUploadData; }
+            get { return ltPoint; }
             set
             {
-                suffixOfTotalUploadData = value; OnPropertyChanged("SuffixOfTotalUploadData");
+                ltPoint = value; OnPropertyChanged("LtPoint");
             }
         }
-
-        private decimal currentSessionDownloadData;
-        private int suffixOfDownloadData;
-        private decimal currentSessionUploadData;
-        private int suffixOfUploadData;
-        public decimal CurrentSessionDownloadData
-        {
-            get { return currentSessionDownloadData; }
-            set
-            {
-                currentSessionDownloadData = value; OnPropertyChanged("CurrentSessionDownloadData");
-            }
-        }
-        public int SuffixOfDownloadData
-        {
-            get { return suffixOfDownloadData; }
-            set
-            {
-                suffixOfDownloadData = value; OnPropertyChanged("SuffixOfDownloadData");
-            }
-        }
-
-        public decimal CurrentSessionUploadData
-        {
-            get { return currentSessionUploadData; }
-            set
-            {
-                currentSessionUploadData = value; OnPropertyChanged("CurrentSessionUploadData");
-            }
-        }
-        public int SuffixOfUploadData
-        {
-            get { return suffixOfUploadData; }
-            set
-            {
-                suffixOfUploadData = value; OnPropertyChanged("SuffixOfUploadData");
-            }
-        }
+        public DataUnits CurrentSessionUploadData { get; set; }
 
         public DataUsageSummaryVM()
         {
-            currentSessionDownloadData = 0;
-            currentSessionUploadData = 0;
-            totalDownloadData = 0;
-            totalUploadData = 0;
+            TotalDownloadData = new DataUnits();
+            TotalUploadData = new DataUnits();
+            CurrentSessionDownloadData = new DataUnits();
+            CurrentSessionUploadData = new DataUnits();
+
+            LtPoint = new PointCollection();
+            LtPoint.Add(new Point(0, 120));
+            LtPoint.Add(new Point(50, 20));
+            LtPoint.Add(new Point(75, 20));
+            LtPoint.Add(new Point(550, 20));
         }
 
+        //------property changers---------------//
+
         public event PropertyChangedEventHandler PropertyChanged;
+
         private void OnPropertyChanged(string propName)
         {
             if (PropertyChanged != null)

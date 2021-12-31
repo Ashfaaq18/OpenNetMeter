@@ -11,6 +11,7 @@ using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
 using WhereIsMyData.ViewModels;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace WhereIsMyData.Models
 {
@@ -18,9 +19,9 @@ namespace WhereIsMyData.Models
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
-
-        private HashSet<string> NetworkProfiles;
-
+        private CancellationTokenSource cts;
+        private CancellationToken token;
+        private string adapterName;
         private string isNetworkOnline;
         public string IsNetworkOnline
         {
@@ -28,22 +29,27 @@ namespace WhereIsMyData.Models
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
 
-        public ulong TotalBytesRecv { get; set; }
-        public ulong TotalBytesSend { get; set; }
+        private ulong currentBytesRecv;
+        private ulong currentBytesSend;
+        private ulong TotalBytesRecv;
+        private ulong totalBytesSend;
         public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
         {
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
+            currentBytesRecv = 0;
+            currentBytesSend = 0;
             TotalBytesRecv = 0;
-            TotalBytesSend = 0;
-            NetworkProfiles = new HashSet<string>();
+            totalBytesSend = 0;
+            adapterName = "";
+            cts = new CancellationTokenSource();
+            token = cts.Token;
             NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);           
         }
 
 
-        private void SetNetworkStatus(bool isOnline, bool init)
+        private void SetNetworkStatus(bool isOnline)
         {
-            string adapterName = "";
             if (isOnline)
             {
                 // var watch = Stopwatch.StartNew();
@@ -57,35 +63,45 @@ namespace WhereIsMyData.Models
                 IsNetworkOnline = "Connected : " + adapterName;
 
                 ReadFile(adapterName);
-                
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        while (!token.IsCancellationRequested)
+                        {
+                            WriteFile(adapterName);
+                            await Task.Delay(1000, token);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Debug.WriteLine("Operation Cancelled");
+                        cts.Dispose();
+                        cts = new CancellationTokenSource();
+                        token = cts.Token;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("Critical error: " + ex.Message);
+                    }
+                });
             }
             else
+            {
                 IsNetworkOnline = "Disconnected";
-
-            Task.Run(async () => {
-                while (isOnline)
-                {
-                    WriteFile(adapterName);
-                    await Task.Delay(1000);
-                }
-            });
+                cts.Cancel();
+            }
         }
+
         public void InitNetworkStatus()
         {
-            SetNetworkStatus(NetworkInterface.GetIsNetworkAvailable(), true);
+            SetNetworkStatus(NetworkInterface.GetIsNetworkAvailable());
         }
 
         private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
-            SetNetworkStatus(e.IsAvailable, false);
-            if (e.IsAvailable)
-            { 
-                //start saving to file
-            }
-            else
-            { 
-                //stop saving to file
-            }
+            SetNetworkStatus(e.IsAvailable);
         }
 
 
@@ -97,17 +113,17 @@ namespace WhereIsMyData.Models
                 {
                     (ulong, ulong) data;
                     data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
-                    //Total bytes recieved
-                    (decimal, int) temp = ConvBytesToOther.SizeSuffix(data.Item1);
-                    dusvm.TotalDownloadData = temp.Item1;
-                    dusvm.SuffixOfTotalDownloadData = temp.Item2;
-                    //Total bytes sent
-                    temp = ConvBytesToOther.SizeSuffix(data.Item2);
-                    dusvm.TotalUploadData = temp.Item1;
-                    dusvm.SuffixOfTotalUploadData = temp.Item2;
+
+                    TotalBytesRecv = data.Item1;
+                    dusvm.TotalDownloadData.Conv(TotalBytesRecv);
+                    totalBytesSend = data.Item2;
+                    dusvm.TotalUploadData.Conv(totalBytesSend);
                 }
             }
-            catch (Exception e) { Debug.WriteLine("Error: " + e.Message); }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Error: " + e.Message);
+            }
         }
 
         private void WriteFile(string name)
@@ -144,6 +160,11 @@ namespace WhereIsMyData.Models
             });
         }
 
+        //implement network speed monitor
+        public void CaptureNetworkSpeed()
+        {
+
+        }
 
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)
@@ -220,21 +241,24 @@ namespace WhereIsMyData.Models
         }
 
 
-        //calculate the total Bytes sent and recieved
+        //calculate the Bytes sent and recieved
         private void RecvProcess(int size)
         {
             TotalBytesRecv += (ulong)size;
-            (decimal, int) temp = ConvBytesToOther.SizeSuffix(TotalBytesRecv);
-            dusvm.CurrentSessionDownloadData = temp.Item1;
-            dusvm.SuffixOfDownloadData = temp.Item2;
+            dusvm.TotalDownloadData.Conv(TotalBytesRecv);
+
+            currentBytesRecv += (ulong)size;
+            dusvm.CurrentSessionDownloadData.Conv(currentBytesRecv);
+
         }
 
         private void SendProcess(int size)
         {
-            TotalBytesSend += (ulong)size;
-            (decimal, int) temp = ConvBytesToOther.SizeSuffix(TotalBytesSend);
-            dusvm.CurrentSessionUploadData = temp.Item1;
-            dusvm.SuffixOfUploadData = temp.Item2;
+            totalBytesSend += (ulong)size;
+            dusvm.TotalUploadData.Conv(totalBytesSend);
+
+            currentBytesSend += (ulong)size;
+            dusvm.CurrentSessionUploadData.Conv(currentBytesSend);
         }
 
 

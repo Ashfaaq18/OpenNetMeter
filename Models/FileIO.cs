@@ -75,7 +75,7 @@ namespace WhereIsMyData.Models
                     try { ic = System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
                     catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
                 }
-                
+
                 apps[tempName] = new MyAppInfo(tempName, dataRecv, dataSend, ic);
                 TotalBytesRecv += dataRecv;
                 TotalBytesSend += dataSend;

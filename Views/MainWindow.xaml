@@ -12,7 +12,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         
-        Title="" Height="450" Width="800">
+        Title="" Height="470" Width="670">
     <Window.Resources>
 
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
@@ -33,7 +33,7 @@
             <DropShadowEffect Color="Black"
                           Direction="270"
                           BlurRadius="10"
-                          ShadowDepth="3" />
+                          ShadowDepth="2" />
         </Border.Effect>
         <Grid Background="Transparent">
             <Grid.RowDefinitions>
@@ -41,19 +41,19 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
-            <Grid   IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="White">
+
+            <Grid IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="White">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>
-                    <ColumnDefinition Width="500"/>
-                    <ColumnDefinition Width="25"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="450"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="WhereIsMyData" FontFamily="Segoe UI" FontWeight="Bold" 
-                       FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
+                       FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
 
                 <UniformGrid Columns="4" Grid.Column="1" MouseDown="Grid_MouseDown">
                     <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
@@ -68,8 +68,7 @@
                             </Style>
                         </Button.Style>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xe602;" FontSize="18" FontFamily="Fonts/#iconfont" VerticalAlignment="Center"/>
-                            <TextBlock FontFamily="Segoe UI" Text="Summary" Margin="10 0 0 0" VerticalAlignment="Center"/>
+                            <TextBlock FontFamily="Segoe UI" Text="Summary" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -85,20 +84,18 @@
                             </Style>
                         </Button.Style>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xe647;" FontSize="18" FontFamily="Fonts/#iconfont" VerticalAlignment="Center"/>
-                            <TextBlock FontFamily="Segoe UI" Text="Detailed" Margin="10 0 0 0" VerticalAlignment="Center"/>
+                            <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                 </UniformGrid>
-
-                <Button Grid.Column="2" Width="25" Height="25" VerticalAlignment="Center"
-                    HorizontalAlignment="Center" Click="Button_Click" Content="x"/>
-
-
             </Grid>
 
-            <ContentControl x:Name="Pages" Grid.Row="1" Width="780" Content="{Binding SelectedViewModel}"/>
+
+            <Button Width="40" Height="25" VerticalAlignment="Top"
+                    HorizontalAlignment="Right" Click="Button_Click" Content="x" FontSize="15" Background="White" BorderThickness="0"/>
+
+            <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
 
             <Grid Grid.Row="2" DockPanel.Dock="Bottom" Background="White">
                 <Grid.ColumnDefinitions>
