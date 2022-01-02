@@ -205,13 +205,11 @@ namespace WhereIsMyData.Models
                     Debug.WriteLine("Operation Started : Network speed");
                     while (!token_speed.IsCancellationRequested)
                     {
-                        ulong temp = Recv.CurrentBytes;
+                        ulong temp1 = Recv.CurrentBytes;
+                        ulong temp2 = Send.CurrentBytes;
                         await Task.Delay(1000, token_speed);
-                        dusvm.DownloadSpeed.Conv(Recv.CurrentBytes - temp);
-
-                        temp = Send.CurrentBytes;
-                        await Task.Delay(1000, token_speed);
-                        dusvm.UploadSpeed.Conv(Send.CurrentBytes - temp);
+                        dusvm.DownloadSpeed.Conv(Recv.CurrentBytes - temp1);
+                        dusvm.UploadSpeed.Conv(Send.CurrentBytes - temp2);
                     }
                 }
                 catch (OperationCanceledException)
