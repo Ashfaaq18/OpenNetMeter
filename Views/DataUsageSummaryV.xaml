@@ -81,10 +81,38 @@
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
                 </Border.Effect>
-                <Border Margin="25 25 25 25"  BorderThickness="1,0,0,1" BorderBrush="Gray"  >
-                    <Polyline Name="_myPolyline" Stroke="Blue" StrokeThickness="2" Points="{Binding LtPoint}" ></Polyline>
-                </Border>
-                
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="75"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="75"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
+                            <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataValue}"/>
+                            <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
+                            <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                        </WrapPanel>
+                        
+                        <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <WrapPanel Grid.Column="4" VerticalAlignment="Center">
+                            <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataValue}"/>
+                            <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
+                            <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                        </WrapPanel>
+                    </Grid>
+                    <Border Grid.Row="1" Margin="25 0 25 25"  BorderThickness="1,0,0,1" BorderBrush="Gray"  >
+                        <Polyline Name="_myPolyline" Stroke="Blue" StrokeThickness="2" Points="{Binding LtPoint}" ></Polyline>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
 

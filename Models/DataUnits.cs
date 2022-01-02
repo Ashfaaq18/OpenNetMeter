@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace WhereIsMyData.Models
         public decimal dataValue;
         public decimal DataValue {
             get { return dataValue; }
-            set { dataValue = value; OnPropertyChanged("DataValue"); } 
+            set { dataValue = value; OnPropertyChanged("DataValue"); }
         }
 
         public int dataSuffix;
@@ -36,7 +37,11 @@ namespace WhereIsMyData.Models
         private (decimal, int) SizeSuffix(ulong value, int decimalPlaces = 1)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
-            int mag = (int)Math.Log(value, 1024);
+            int mag;
+            if (value > 0)
+                mag = (int)Math.Log(value, 1024);
+            else
+                mag = (int)Math.Log(1, 1024);
 
             // 1L << (mag * 10) == 2 ^ (10 * mag) 
             // [i.e. the number of bytes in the unit corresponding to mag]

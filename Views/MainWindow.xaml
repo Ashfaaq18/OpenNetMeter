@@ -92,17 +92,13 @@
             </Grid>
 
 
-            <Button Width="40" Height="25" VerticalAlignment="Top"
+            <Button Width="40" Height="30" VerticalAlignment="Top"
                     HorizontalAlignment="Right" Click="Button_Click" Content="x" FontSize="15" Background="White" BorderThickness="0"/>
 
             <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
 
             <Grid Grid.Row="2" DockPanel.Dock="Bottom" Background="White">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Content="{Binding NetworkStatus}" FontSize="15" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+                <Label Content="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"></Label>
             </Grid>
 
         </Grid>
