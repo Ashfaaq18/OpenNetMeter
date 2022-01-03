@@ -95,11 +95,19 @@ namespace WhereIsMyData.Models
 
                             //points[i + 1] = new Random().Next(0, height);
                             points[i + 1] = ConvToGraphCoords((double)downloadSpeed.dataValue, downloadSpeed.dataSuffix, height);
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                            try
                             {
-                                Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
-                                Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
-                            }));
+                                await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                                {
+                                    Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
+                                    Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
+                                }));
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex.Message);
+                            }
+                            
                         }
                         await Task.Delay(1000);
                     }

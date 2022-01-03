@@ -18,13 +18,13 @@ namespace WhereIsMyData.ViewModels
         public DataUnits CurrentSessionDownloadData { get; set; }
         public DataUnits CurrentSessionUploadData { get; set; }
 
-        private PointCollection ltPoint;
-        public PointCollection LtPoint
+        private string date;
+        public string Date
         {
-            get { return ltPoint; }
+            get { return date; }
             set
             {
-                ltPoint = value; OnPropertyChanged("LtPoint");
+                date = value; OnPropertyChanged("Date");
             }
         }
 
@@ -37,14 +37,7 @@ namespace WhereIsMyData.ViewModels
             CurrentSessionDownloadData = new DataUnits();
             CurrentSessionUploadData = new DataUnits();
             SpeedGraph = new NetworkSpeedGraph(DownloadSpeed);
-
-            LtPoint = new PointCollection
-            {
-                new Point(0, 120),
-                new Point(50, 20),
-                new Point(75, 20),
-                new Point(550, 20)
-            };
+            Date = "";
         }
 
         //------property changers---------------//

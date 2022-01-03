@@ -152,6 +152,9 @@ namespace WhereIsMyData.Models
                     dusvm.TotalDownloadData.Conv(Recv.TotalBytes);
                     Send.TotalBytes = data.Item2;
                     dusvm.TotalUploadData.Conv(Send.TotalBytes);
+
+                    DateTime dateTime = File.GetCreationTime(name + ".WIMD");
+                    dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
                 }
             }
             catch (Exception e)
