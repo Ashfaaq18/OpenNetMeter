@@ -29,31 +29,9 @@ namespace WhereIsMyData.Models
 
         public void Conv(ulong value)
         {
-            (decimal, int) temp = SizeSuffix(value);
+            (decimal, int) temp = DataSizeSuffix.SizeSuffix(value);
             DataValue = temp.Item1;
             DataSuffix = temp.Item2;
-        }
-
-        private (decimal, int) SizeSuffix(ulong value, int decimalPlaces = 1)
-        {
-            // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
-            int mag;
-            if (value > 0)
-                mag = (int)Math.Log(value, 1024);
-            else
-                mag = (int)Math.Log(1, 1024);
-
-            // 1L << (mag * 10) == 2 ^ (10 * mag) 
-            // [i.e. the number of bytes in the unit corresponding to mag]
-            decimal adjustedSize = (decimal)value / (1L << (mag * 10));
-
-            if (Math.Round(adjustedSize, decimalPlaces) >= 1000)
-            {
-                mag += 1;
-                adjustedSize /= 1024;
-            }
-
-            return (Decimal.Round(adjustedSize, 2), mag);
         }
 
         //------property changers---------------//

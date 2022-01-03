@@ -14,7 +14,7 @@ namespace WhereIsMyData.ViewModels
         {
             //var watch = Stopwatch.StartNew();
             if (name == null || name == "")
-                name = "unknown1";
+                name = "System";
             if (MyApps.TryAdd(name, null))
             {
                 process = Process.GetProcessesByName(name);

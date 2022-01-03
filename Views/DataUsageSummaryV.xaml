@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
              mc:Ignorable="d" 
              UseLayoutRounding="True" 
-             d:DesignHeight="370" d:DesignWidth="650">
+             d:DesignHeight="400" d:DesignWidth="650">
     <!-- UseLayoutRounding="True" <fixes blurry text/> -->
     <UserControl.Resources>
         <vm:UnitConverter x:Key="converter"/>
@@ -85,23 +85,24 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="25"/>
                         <RowDefinition/>
+                        <RowDefinition Height="25"/>
                     </Grid.RowDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="270"/>
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="75"/>
-                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="75"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
                             <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataValue}"/>
                             <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
                             <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
                         </WrapPanel>
-                        
+
                         <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <WrapPanel Grid.Column="4" VerticalAlignment="Center">
                             <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataValue}"/>
@@ -109,9 +110,27 @@
                             <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
                         </WrapPanel>
                     </Grid>
-                    <Border Grid.Row="1" Margin="25 0 25 25"  BorderThickness="1,0,0,1" BorderBrush="Gray"  >
-                        <Polyline Name="_myPolyline" Stroke="Blue" StrokeThickness="2" Points="{Binding LtPoint}" ></Polyline>
-                    </Border>
+                    <Grid  Grid.Row="1" HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="550"/>
+                        </Grid.ColumnDefinitions>
+                        <ItemsControl Margin="0,-8,0,8" Grid.Column="0" Height="120" ItemsSource="{Binding SpeedGraph.Yaxis}" FontSize="10">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Grid.Column="0" ItemHeight="20" Orientation="Vertical" FlowDirection="RightToLeft" VerticalAlignment="Stretch" Height="120" Width="30"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <Image Grid.Column="1" Width="540" Height="120" Source="{Binding SpeedGraph.Graph}"></Image>
+                    </Grid>
+                    <ItemsControl Grid.Row="2" ItemsSource="{Binding SpeedGraph.Xaxis}" FontSize="10">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Margin="5,0,0,0" Width="540" Height="25" Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
                 </Grid>
             </Border>
         </Grid>

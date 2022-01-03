@@ -72,7 +72,7 @@ namespace WhereIsMyData.Models
                 Icon ic = null;
                 if (process.Length > 0)
                 {
-                    try { ic = System.Drawing.Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
+                    try { ic = Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
                     catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
                 }
 

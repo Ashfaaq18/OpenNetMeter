@@ -78,7 +78,7 @@ namespace WhereIsMyData.Models
                     && x.OperationalStatus == OperationalStatus.Up
                     && x.Name.StartsWith("vEthernet") == false);
 
-                //add option to filter when 2 connections are available
+                // -- future -- add option to filter when 2 connections are available
                 if (activeAdapter.Name == "Wi-Fi" && NativeWifi.EnumerateConnectedNetworkSsids().Select(x => x.ToString()).Count() == 1)
                     adapterName = activeAdapter.Name + "__" + NativeWifi.EnumerateConnectedNetworkSsids().Select(x => x.ToString()).First();
                 else
@@ -114,7 +114,7 @@ namespace WhereIsMyData.Models
                     }
                 });
             }
-            else
+            else //if network is disconnected
             {
                 IsNetworkOnline = "Disconnected";
                 cts_file.Cancel(); //cancel writing to file
@@ -123,7 +123,6 @@ namespace WhereIsMyData.Models
                 //reset speed
                 dusvm.DownloadSpeed.Conv(0);
                 dusvm.UploadSpeed.Conv(0);
-
             }
         }
 

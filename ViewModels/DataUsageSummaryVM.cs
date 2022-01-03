@@ -10,6 +10,7 @@ namespace WhereIsMyData.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
+        public NetworkSpeedGraph SpeedGraph { get; set; }
         public DataUnits DownloadSpeed { get; set; }
         public DataUnits UploadSpeed { get; set; }
         public DataUnits TotalDownloadData { get; set; }
@@ -35,6 +36,7 @@ namespace WhereIsMyData.ViewModels
             TotalUploadData = new DataUnits();
             CurrentSessionDownloadData = new DataUnits();
             CurrentSessionUploadData = new DataUnits();
+            SpeedGraph = new NetworkSpeedGraph(DownloadSpeed);
 
             LtPoint = new PointCollection
             {
