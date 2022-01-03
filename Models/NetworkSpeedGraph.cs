@@ -92,7 +92,6 @@ namespace WhereIsMyData.Models
                         else
                         {
                             points[i] = (width / ((resolution / 2) - 1)) * i / 2;
-
                             //points[i + 1] = new Random().Next(0, height);
                             points[i + 1] = ConvToGraphCoords((double)downloadSpeed.dataValue, downloadSpeed.dataSuffix, height);
                             try
@@ -150,10 +149,10 @@ namespace WhereIsMyData.Models
                         //shift graph halfway back and start plotting new to show continuation
                         for (int i = 0; i < resolution; i += 2)
                         {
-                            if (i < resolution / 2 + 1)
+                            if (i <= resolution / 2 )
                             {
-                                points[i + 1] = points[i + 7];
-                                points[i + 7] = 0;
+                                points[i + 1] = points[i + resolution / 2 ];
+                                points[i + resolution / 2 ] = 0;
                                 if (i == 0)
                                 {
                                     await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
