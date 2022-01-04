@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace WhereIsMyData.Models
+namespace WhereIsMyData.ViewModels
 {
     public class BaseCommand : ICommand
     {

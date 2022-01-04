@@ -30,6 +30,9 @@ namespace WhereIsMyData.Models
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
 
+        public DataUnits DownloadSpeed { get; set; }
+        public DataUnits UploadSpeed { get; set; }
+
         //token for write file
         private CancellationTokenSource cts_file;
         private CancellationToken token_file;
@@ -54,6 +57,9 @@ namespace WhereIsMyData.Models
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
 
+            DownloadSpeed = new DataUnits();
+            UploadSpeed = new DataUnits();
+
             Recv = new NetVar();
             Send = new NetVar();
 
@@ -63,9 +69,16 @@ namespace WhereIsMyData.Models
             cts_speed = new CancellationTokenSource();
             token_speed = cts_speed.Token;
 
-            NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);           
+            NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
         }
 
+        public static bool IsAdminMode()
+        {
+            if (TraceEventSession.IsElevated() != true)
+                return false;
+            else
+                return true;
+        }
 
         private void SetNetworkStatus(bool isOnline)
         {
@@ -84,7 +97,8 @@ namespace WhereIsMyData.Models
                 else
                     adapterName = activeAdapter.Name;
 
-                IsNetworkOnline = "Connected : " + adapterName;  
+                IsNetworkOnline = "Connected : " + adapterName;
+                dusvm.TotalUsageText = "Total data usage of " + adapterName + " since : ";
 
                 //read saved data of adapter
                 ReadFile(adapterName);
@@ -117,12 +131,12 @@ namespace WhereIsMyData.Models
             else //if network is disconnected
             {
                 IsNetworkOnline = "Disconnected";
-                cts_file.Cancel(); //cancel writing to file
-                cts_speed.Cancel(); //cancel calculating network speed
+                cts_file.Cancel(); //stop writing to file
+                cts_speed.Cancel(); //stop calculating network speed
 
-                //reset speed
-                dusvm.DownloadSpeed.Conv(0);
-                dusvm.UploadSpeed.Conv(0);
+                //reset speed counters
+                DownloadSpeed.Conv(0);
+                UploadSpeed.Conv(0);
             }
         }
 
@@ -197,7 +211,6 @@ namespace WhereIsMyData.Models
             });
         }
 
-        //implement network speed monitor
         public void CaptureNetworkSpeed()
         {
             Task.Run(async () =>
@@ -210,8 +223,8 @@ namespace WhereIsMyData.Models
                         ulong temp1 = Recv.CurrentBytes;
                         ulong temp2 = Send.CurrentBytes;
                         await Task.Delay(1000, token_speed);
-                        dusvm.DownloadSpeed.Conv(Recv.CurrentBytes - temp1);
-                        dusvm.UploadSpeed.Conv(Send.CurrentBytes - temp2);
+                        DownloadSpeed.Conv(Recv.CurrentBytes - temp1);
+                        UploadSpeed.Conv(Send.CurrentBytes - temp2);
                     }
                 }
                 catch (OperationCanceledException)

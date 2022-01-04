@@ -13,7 +13,6 @@ namespace WhereIsMyData.ViewModels
 {
     class NavigationAndTasksVM : INotifyPropertyChanged
     {
-        public HashSet<string> NetworkProfiles;
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
         private readonly NetworkInfo netInfo;
@@ -28,16 +27,16 @@ namespace WhereIsMyData.ViewModels
         }
 
         private object selectedViewModel;
-
         public object SelectedViewModel
         {
             get { return selectedViewModel; }
 
             set { selectedViewModel = value; OnPropertyChanged("SelectedViewModel"); }
         }
+        public DataUnits DownloadSpeed { get; set; }
+        public DataUnits UploadSpeed { get; set; }
 
         private string networkStatus;
-
         public string NetworkStatus
         {
             get { return networkStatus; }
@@ -50,9 +49,15 @@ namespace WhereIsMyData.ViewModels
 
         public NavigationAndTasksVM() //runs once during app init
         {
-            //store network profile names here to function as a lookup table
-            NetworkProfiles = new HashSet<string>();
-            
+            if (!NetworkInfo.IsAdminMode())
+            {
+                MessageBox.Show("Please run me as an Administrator");
+                Environment.Exit(0);
+            }
+
+            DownloadSpeed = new DataUnits();
+            UploadSpeed = new DataUnits();
+
             //initialize both pages
             dusvm = new DataUsageSummaryVM();
             dudvm = new DataUsageDetailedVM();
@@ -77,6 +82,11 @@ namespace WhereIsMyData.ViewModels
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             NetworkStatus = netInfo.IsNetworkOnline;
+            //update status bar speeds
+            DownloadSpeed = netInfo.DownloadSpeed;
+            UploadSpeed = netInfo.UploadSpeed;
+            //update graph data points
+            dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
         }
 
         private void OpenDataUsageSum(object obj)

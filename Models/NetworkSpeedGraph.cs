@@ -26,8 +26,8 @@ namespace WhereIsMyData.Models
 
         public List<string> Yaxis { get; set; }
         public ObservableCollection<int> Xaxis { get; set; }
-
-        public NetworkSpeedGraph(DataUnits downloadSpeed)
+        public DataUnits DownloadSpeed { get; set; }
+        public NetworkSpeedGraph()
         {
             Xaxis = new ObservableCollection<int>();
             Yaxis = new List<string>();
@@ -93,20 +93,20 @@ namespace WhereIsMyData.Models
                         {
                             points[i] = (width / ((resolution / 2) - 1)) * i / 2;
                             //points[i + 1] = new Random().Next(0, height);
-                            points[i + 1] = ConvToGraphCoords((double)downloadSpeed.dataValue, downloadSpeed.dataSuffix, height);
-                            try
+                            points[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValue, DownloadSpeed.dataSuffix, height);
+                            //Debug.WriteLine(downloadSpeed.dataValue);
+                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                             {
-                                await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                                try
                                 {
                                     Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
                                     Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
-                                }));
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine(ex.Message);
-                            }
-                            
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine(ex.Message);
+                                }
+                            }));                
                         }
                         await Task.Delay(1000);
                     }
@@ -170,7 +170,7 @@ namespace WhereIsMyData.Models
                             }
                             else
                             {
-                                points[i + 1] = ConvToGraphCoords((double)downloadSpeed.dataValue, downloadSpeed.dataSuffix, height);
+                                points[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValue, DownloadSpeed.dataSuffix, height);
                                 await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                                 {
                                     Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);

@@ -11,13 +11,22 @@ namespace WhereIsMyData.ViewModels
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
         public NetworkSpeedGraph SpeedGraph { get; set; }
-        public DataUnits DownloadSpeed { get; set; }
-        public DataUnits UploadSpeed { get; set; }
+        
         public DataUnits TotalDownloadData { get; set; }
         public DataUnits TotalUploadData { get; set; }
         public DataUnits CurrentSessionDownloadData { get; set; }
         public DataUnits CurrentSessionUploadData { get; set; }
 
+        private string totalUsageText;
+        public string TotalUsageText
+        {
+            get { return totalUsageText; }
+            set
+            {
+                totalUsageText = value; 
+                OnPropertyChanged("TotalUsageText"); 
+            }
+        }
         private string date;
         public string Date
         {
@@ -30,14 +39,14 @@ namespace WhereIsMyData.ViewModels
 
         public DataUsageSummaryVM()
         {
-            DownloadSpeed = new DataUnits();
-            UploadSpeed = new DataUnits();
+            //UploadSpeed = new DataUnits();
             TotalDownloadData = new DataUnits();
             TotalUploadData = new DataUnits();
             CurrentSessionDownloadData = new DataUnits();
             CurrentSessionUploadData = new DataUnits();
-            SpeedGraph = new NetworkSpeedGraph(DownloadSpeed);
+            SpeedGraph = new NetworkSpeedGraph();
             Date = "";
+            TotalUsageText = "";
         }
 
         //------property changers---------------//

@@ -14,7 +14,7 @@
         
         Title="" Height="470" Width="670">
     <Window.Resources>
-
+        <vm:UnitConverter x:Key="converter"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
             <v:DataUsageSummaryV/>
@@ -98,7 +98,29 @@
             <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
 
             <Grid Grid.Row="2" DockPanel.Dock="Bottom" Background="White">
-                <Label Content="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"></Label>
+                    <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="75"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0" Content="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"></Label>
+
+                    <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
+                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataValue}"/>
+                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
+                        <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    </WrapPanel>
+
+                    <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <WrapPanel Grid.Column="4" VerticalAlignment="Center">
+                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataValue}"/>
+                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
+                        <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    </WrapPanel>
             </Grid>
 
         </Grid>
