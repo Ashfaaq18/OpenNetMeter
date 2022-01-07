@@ -76,7 +76,7 @@ namespace WhereIsMyData.ViewModels
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
-          
+
         }
 
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)

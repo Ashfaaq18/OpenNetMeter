@@ -19,7 +19,12 @@ namespace WhereIsMyData.Views
             DragMove();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Minimize_Button_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+        
+        private void Exit_Button_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }

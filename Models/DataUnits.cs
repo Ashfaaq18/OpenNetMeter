@@ -10,10 +10,16 @@ namespace WhereIsMyData.Models
 {
     public class DataUnits : INotifyPropertyChanged
     {
-        public decimal dataValue;
-        public decimal DataValue {
-            get { return dataValue; }
-            set { dataValue = value; OnPropertyChanged("DataValue"); }
+        public decimal dataValueBytes;
+        public decimal DataValueBytes {
+            get { return dataValueBytes; }
+            set { dataValueBytes = value; OnPropertyChanged("DataValueBytes"); }
+        }
+        
+        public decimal dataValueBits;
+        public decimal DataValueBits {
+            get { return dataValueBits; }
+            set { dataValueBits = value; OnPropertyChanged("DataValueBits"); }
         }
 
         public int dataSuffix;
@@ -23,14 +29,22 @@ namespace WhereIsMyData.Models
         }
         public DataUnits()
         {
-            DataValue = 0;
+            DataValueBytes = 0;
+            DataValueBits = 0;
             DataSuffix = 0;
         }
 
-        public void Conv(ulong value)
+        public void Conv_Bytes(ulong value)
         {
             (decimal, int) temp = DataSizeSuffix.SizeSuffix(value);
-            DataValue = temp.Item1;
+            DataValueBytes = temp.Item1;
+            DataSuffix = temp.Item2;
+        }
+        
+        public void Conv_Bits(ulong value)
+        {
+            (decimal, int) temp = DataSizeSuffix.SizeSuffix(value*8);
+            DataValueBits = temp.Item1;
             DataSuffix = temp.Item2;
         }
 

@@ -30,6 +30,10 @@ namespace WhereIsMyData.Models
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
 
+        private IPAddressRange IP_10_;
+        private IPAddressRange IP_172_16;
+        private IPAddressRange IP_192_168;
+
         public DataUnits DownloadSpeed { get; set; }
         public DataUnits UploadSpeed { get; set; }
 
@@ -57,6 +61,10 @@ namespace WhereIsMyData.Models
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
 
+            IP_10_ = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.255.255.255"));
+            IP_172_16 = new IPAddressRange(IPAddress.Parse("172.16.0.0"), IPAddress.Parse("172.31.255.255"));
+            IP_192_168 = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
             DownloadSpeed = new DataUnits();
             UploadSpeed = new DataUnits();
 
@@ -64,12 +72,9 @@ namespace WhereIsMyData.Models
             Send = new NetVar();
 
             adapterName = "";
-            cts_file = new CancellationTokenSource();
-            token_file = cts_file.Token;
-            cts_speed = new CancellationTokenSource();
-            token_speed = cts_speed.Token;
 
             NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+
         }
 
         public static bool IsAdminMode()
@@ -103,6 +108,10 @@ namespace WhereIsMyData.Models
                 //read saved data of adapter
                 ReadFile(adapterName);
 
+                //init tokens
+                cts_file = new CancellationTokenSource();
+                token_file = cts_file.Token;
+
                 //start writing to file every second
                 Task.Run(async () =>
                 {
@@ -118,9 +127,7 @@ namespace WhereIsMyData.Models
                     catch (OperationCanceledException)
                     {
                         Debug.WriteLine("Operation Cancelled : Write file");
-                        cts_file.Dispose();
-                        cts_file = new CancellationTokenSource();
-                        token_file = cts_file.Token;
+                        cts_file.Dispose(); 
                     }
                     catch (Exception ex)
                     {
@@ -131,12 +138,15 @@ namespace WhereIsMyData.Models
             else //if network is disconnected
             {
                 IsNetworkOnline = "Disconnected";
-                cts_file.Cancel(); //stop writing to file
-                cts_speed.Cancel(); //stop calculating network speed
+
+                if(cts_file != null)
+                    cts_file.Cancel(); //stop writing to file
+                if(cts_speed != null)
+                    cts_speed.Cancel(); //stop calculating network speed
 
                 //reset speed counters
-                DownloadSpeed.Conv(0);
-                UploadSpeed.Conv(0);
+                DownloadSpeed.Conv_Bits(0);
+                UploadSpeed.Conv_Bits(0);
             }
         }
 
@@ -163,9 +173,9 @@ namespace WhereIsMyData.Models
                     data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
 
                     Recv.TotalBytes = data.Item1;
-                    dusvm.TotalDownloadData.Conv(Recv.TotalBytes);
+                    dusvm.TotalDownloadData.Conv_Bytes(Recv.TotalBytes);
                     Send.TotalBytes = data.Item2;
-                    dusvm.TotalUploadData.Conv(Send.TotalBytes);
+                    dusvm.TotalUploadData.Conv_Bytes(Send.TotalBytes);
 
                     DateTime dateTime = File.GetCreationTime(name + ".WIMD");
                     dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
@@ -213,6 +223,9 @@ namespace WhereIsMyData.Models
 
         public void CaptureNetworkSpeed()
         {
+            cts_speed = new CancellationTokenSource();
+            token_speed = cts_speed.Token;
+
             Task.Run(async () =>
             {
                 try
@@ -223,16 +236,14 @@ namespace WhereIsMyData.Models
                         ulong temp1 = Recv.CurrentBytes;
                         ulong temp2 = Send.CurrentBytes;
                         await Task.Delay(1000, token_speed);
-                        DownloadSpeed.Conv(Recv.CurrentBytes - temp1);
-                        UploadSpeed.Conv(Send.CurrentBytes - temp2);
+                        DownloadSpeed.Conv_Bits(Recv.CurrentBytes - temp1);
+                        UploadSpeed.Conv_Bits(Send.CurrentBytes - temp2);
                     }
                 }
                 catch (OperationCanceledException)
                 {
                     Debug.WriteLine("Operation Cancelled : Network speed");
                     cts_speed.Dispose();
-                    cts_speed = new CancellationTokenSource();
-                    token_speed = cts_speed.Token;
                 }
                 catch (Exception ex)
                 {
@@ -241,99 +252,82 @@ namespace WhereIsMyData.Models
             });
         }
 
+        private bool IsPrivateIP(IPAddress ip)
+        {
+            return IP_10_.IsInRange(ip) || IP_172_16.IsInRange(ip) || IP_192_168.IsInRange(ip);
+        }
+
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                SendProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
-            }
+            SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_UdpIpSend(UdpIpTraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                SendProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
-            }
+            SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpSendIPV6(TcpIpV6SendTraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                SendProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
-            }
+            SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpSend(TcpIpSendTraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                SendProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, 0, obj.size);
-            }
+            SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
  
         //download events    
         private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                RecvProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
-            }
+            RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                RecvProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
-            }
+            RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                RecvProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
-            }
+            RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            if (!IPAddress.IsLoopback(obj.daddr))
-            {
-                RecvProcess(obj.size);
-                dudvm.GetAppDataInfo(obj.ProcessName, obj.size, 0);
-            }
+            RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
 
         //calculate the Bytes sent and recieved
-        private void RecvProcess(int size)
+        private void RecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            Recv.TotalBytes += (ulong)size;
-            dusvm.TotalDownloadData.Conv(Recv.TotalBytes);
+            if(!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)) )
+            {
+                //Debug.WriteLine(src + "," + dest);
+                Recv.TotalBytes += (ulong)size;
+                dusvm.TotalDownloadData.Conv_Bytes(Recv.TotalBytes);
 
-            Recv.CurrentBytes += (ulong)size;
-            dusvm.CurrentSessionDownloadData.Conv(Recv.CurrentBytes);
+                Recv.CurrentBytes += (ulong)size;
+                dusvm.CurrentSessionDownloadData.Conv_Bytes(Recv.CurrentBytes);
 
+                dudvm.GetAppDataInfo(name, size, 0);
+            }
         }
 
-        private void SendProcess(int size)
+        private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            Send.TotalBytes += (ulong)size;
-            dusvm.TotalUploadData.Conv(Send.TotalBytes);
+            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)))
+            {
+                Send.TotalBytes += (ulong)size;
+                dusvm.TotalUploadData.Conv_Bytes(Send.TotalBytes);
 
-            Send.CurrentBytes += (ulong)size;
-            dusvm.CurrentSessionUploadData.Conv(Send.CurrentBytes);
+                Send.CurrentBytes += (ulong)size;
+                dusvm.CurrentSessionUploadData.Conv_Bytes(Send.CurrentBytes);
+
+                dudvm.GetAppDataInfo(name, 0, size);
+            }
         }
 
 

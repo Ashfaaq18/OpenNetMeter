@@ -10,11 +10,14 @@
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
+        UseLayoutRounding="True"
         Background="Transparent"
         
         Title="" Height="470" Width="670">
+    
     <Window.Resources>
-        <vm:UnitConverter x:Key="converter"/>
+        <vm:UnitConverterBytes x:Key="converterBytes"/>
+        <vm:UnitConverterBits x:Key="converterBits"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
             <v:DataUsageSummaryV/>
@@ -27,6 +30,28 @@
 
         </DataTemplate>
 
+        <Style x:Key="TransparentStyle" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="DarkGoldenrod"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid Background="Transparent">
+                                <ContentPresenter></ContentPresenter>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Border Margin="10">
         <Border.Effect>
@@ -42,7 +67,7 @@
                 <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
-            <Grid IsHitTestVisible="True" MouseDown="Grid_MouseDown" Background="White">
+            <Grid IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Background="White">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200"/>
@@ -53,9 +78,9 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="WhereIsMyData" FontFamily="Segoe UI" FontWeight="Bold" 
-                       FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
+                       FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
 
-                <UniformGrid Columns="4" Grid.Column="1" MouseDown="Grid_MouseDown">
+                <UniformGrid Columns="4" Grid.Column="1">
                     <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -90,11 +115,51 @@
 
                 </UniformGrid>
             </Grid>
-
-
-            <Button Width="40" Height="30" VerticalAlignment="Top"
-                    HorizontalAlignment="Right" Click="Button_Click" Content="x" FontSize="15" Background="White" BorderThickness="0"/>
-
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="100">
+                <Button Width="50" Height="32" VerticalAlignment="Top"
+                    HorizontalAlignment="Right" Click="Minimize_Button_Click" Background="White" BorderThickness="0">
+                    <Button.Content >
+                        <Grid Margin="18,0">
+                            <Line X1="0" Y1="0.5" Y2="0.5" X2="0.5" Stroke="Black" StrokeThickness="1" Stretch="Fill" />
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button Width="50" Height="32" VerticalAlignment="Top"
+                    HorizontalAlignment="Right" Click="Exit_Button_Click" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border>
+                                            <Border.Style>
+                                                <Style TargetType="{x:Type Border}">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#e81123"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid Background="Transparent">
+                                                <ContentPresenter></ContentPresenter>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <Button.Content >
+                        <Grid Margin="20,11">
+                            <Line X1="0" Y1="0" Y2="1" X2="1" Stroke="Black" StrokeThickness="1" Stretch="Fill" />
+                            <Line Y1="1" X2="1" Stroke="Black" StrokeThickness="1" Stretch="Fill" />
+                        </Grid>
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+            
             <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
 
             <Grid Grid.Row="2" DockPanel.Dock="Bottom" Background="White">
@@ -110,15 +175,15 @@
 
                     <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                     <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
-                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataValue}"/>
-                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
+                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataValueBits}"/>
+                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataSuffix, Converter={StaticResource converterBits}}"/>
                         <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
                     </WrapPanel>
 
                     <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                     <WrapPanel Grid.Column="4" VerticalAlignment="Center">
-                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataValue}"/>
-                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataSuffix, Converter={StaticResource converter}}"/>
+                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataValueBits}"/>
+                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataSuffix, Converter={StaticResource converterBits}}"/>
                         <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
                     </WrapPanel>
             </Grid>
