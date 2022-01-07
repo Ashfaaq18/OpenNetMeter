@@ -27,6 +27,7 @@ namespace WhereIsMyData.Models
         public List<string> Yaxis { get; set; }
         public ObservableCollection<int> Xaxis { get; set; }
         public DataUnits DownloadSpeed { get; set; }
+        public DataUnits UploadSpeed { get; set; }
         public NetworkSpeedGraph()
         {
             Xaxis = new ObservableCollection<int>();
@@ -70,35 +71,47 @@ namespace WhereIsMyData.Models
                 //border
                 Graph.DrawRectangle(0, 0, width, height, Colors.Black);
 
-                int[] points = new int[resolution];
-                for (int i = 0; i < points.Length; i++)
-                    points[i] = 0;
-
+                int[] points_Download = new int[resolution];
+                int[] points_Upload = new int[resolution];
+                for (int i = 0; i < resolution; i++)
+                {
+                    points_Download[i] = 0;
+                    points_Upload[i] = 0;
+                }
+                    
                 Task.Run(async () =>
                 {
                     //first init
-                    for (int i = 0; i < points.Length; i += 2)
+                    for (int i = 0; i < resolution; i += 2)
                     {
                         if (i == 0)
                         {
-                            points[i] = 0;
-                            points[i + 1] = height;
+                            points_Download[i] = 0;
+                            points_Download[i + 1] = height;
+                            points_Upload[i] = 0;
+                            points_Upload[i + 1] = height;
                             await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                             {
-                                Graph.DrawLineAa(points[i], points[i + 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
-                                Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
+                                Graph.DrawLineAa(points_Upload[i], points_Upload[i + 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
+                                Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
+                                Graph.DrawLineAa(points_Download[i], points_Download[i + 1], points_Download[i], points_Download[i + 1], Colors.LightSeaGreen, 2);
+                                Graph.FillEllipseCentered(points_Download[i], points_Download[i + 1], 2, 2, Colors.LightSeaGreen);
                             }));
                         }
                         else
                         {
-                            points[i] = (width / ((resolution / 2) - 1)) * i / 2;
-                            //points[i + 1] = new Random().Next(0, height);
-                            points[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValueBits, DownloadSpeed.dataSuffix, height);
+                            points_Download[i] = (width / ((resolution / 2) - 1)) * i / 2;
+                            points_Upload[i] = (width / ((resolution / 2) - 1)) * i / 2;
+                            //points_Download[i + 1] = new Random().Next(0, height);
+                            points_Download[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValueBits, DownloadSpeed.dataSuffix, height);
+                            points_Upload[i + 1] = ConvToGraphCoords((double)UploadSpeed.dataValueBits, UploadSpeed.dataSuffix, height);                 
                             //Debug.WriteLine(downloadSpeed.dataValue);
                             await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                             {
-                                Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
-                                Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
+                                Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
+                                Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
+                                Graph.DrawLineAa(points_Download[i - 2], points_Download[i - 1], points_Download[i], points_Download[i + 1], Colors.LightSeaGreen, 2);
+                                Graph.FillEllipseCentered(points_Download[i], points_Download[i + 1], 2, 2, Colors.LightSeaGreen);                    
                             }));                
                         }
                         await Task.Delay(1000);
@@ -144,30 +157,39 @@ namespace WhereIsMyData.Models
                         {
                             if (i <= resolution / 2 )
                             {
-                                points[i + 1] = points[i + resolution / 2 ];
-                                points[i + resolution / 2 ] = 0;
+                                points_Download[i + 1] = points_Download[i + resolution / 2 ];
+                                points_Download[i + resolution / 2 ] = 0;
+                                points_Upload[i + 1] = points_Upload[i + resolution / 2 ];
+                                points_Upload[i + resolution / 2 ] = 0;
                                 if (i == 0)
                                 {
                                     await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                                     {
-                                        Graph.DrawLineAa(points[i], points[i + 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
-                                        Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
+                                        Graph.DrawLineAa(points_Upload[i], points_Upload[i + 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
+                                        Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
+                                        Graph.DrawLineAa(points_Download[i], points_Download[i + 1], points_Download[i], points_Download[i + 1], Colors.LightSeaGreen, 2);
+                                        Graph.FillEllipseCentered(points_Download[i], points_Download[i + 1], 2, 2, Colors.LightSeaGreen);
                                     }));
                                 }
                                 else
                                     await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                                     {
-                                        Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
-                                        Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
+                                        Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
+                                        Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
+                                        Graph.DrawLineAa(points_Download[i - 2], points_Download[i - 1], points_Download[i], points_Download[i + 1], Colors.LightSeaGreen, 2);
+                                        Graph.FillEllipseCentered(points_Download[i], points_Download[i + 1], 2, 2, Colors.LightSeaGreen);
                                     }));
                             }
                             else
                             {
-                                points[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValueBits, DownloadSpeed.dataSuffix, height);
+                                points_Download[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValueBits, DownloadSpeed.dataSuffix, height);
+                                points_Upload[i + 1] = ConvToGraphCoords((double)UploadSpeed.dataValueBits, UploadSpeed.dataSuffix, height);
                                 await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                                 {
-                                    Graph.DrawLineAa(points[i - 2], points[i - 1], points[i], points[i + 1], Colors.LightSeaGreen, 2);
-                                    Graph.FillEllipseCentered(points[i], points[i + 1], 2, 2, Colors.LightSeaGreen);
+                                    Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
+                                    Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
+                                    Graph.DrawLineAa(points_Download[i - 2], points_Download[i - 1], points_Download[i], points_Download[i + 1], Colors.LightSeaGreen, 2);
+                                    Graph.FillEllipseCentered(points_Download[i], points_Download[i + 1], 2, 2, Colors.LightSeaGreen);
                                 }));
                                 await Task.Delay(1000);
                             }

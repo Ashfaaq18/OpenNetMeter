@@ -87,6 +87,14 @@
                         <RowDefinition/>
                         <RowDefinition Height="25"/>
                     </Grid.RowDefinitions>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="15,0">
+                            <Label Content="Download" FontSize="10"/>
+                            <Label Content="" Background="LightSeaGreen" Width="50" Height="5"/>
+                            <Label Content="Upload" FontSize="10"/>
+                            <Label Content="" Background="LightSalmon" Width="50" Height="5"/>
+                        </StackPanel>
+                    </Grid>
                     <Grid  Grid.Row="1" HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="30"/>

@@ -87,6 +87,7 @@ namespace WhereIsMyData.ViewModels
             UploadSpeed = netInfo.UploadSpeed;
             //update graph data points
             dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
+            dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
         }
 
         private void OpenDataUsageSum(object obj)
