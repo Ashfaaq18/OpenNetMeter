@@ -11,11 +11,48 @@ namespace WhereIsMyData.ViewModels
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
         public NetworkSpeedGraph SpeedGraph { get; set; }
-        
-        public DataUnits TotalDownloadData { get; set; }
-        public DataUnits TotalUploadData { get; set; }
-        public DataUnits CurrentSessionDownloadData { get; set; }
-        public DataUnits CurrentSessionUploadData { get; set; }
+
+        private ulong totalDownloadData;
+        public ulong TotalDownloadData
+        {
+            get { return totalDownloadData; }
+            set
+            {
+                totalDownloadData = value;
+                OnPropertyChanged("TotalDownloadData");
+            }
+        }
+        private ulong totalUploadData;
+        public ulong TotalUploadData
+        {
+            get { return totalUploadData; }
+            set
+            {
+                totalUploadData = value;
+                OnPropertyChanged("TotalUploadData");
+            }
+        }
+
+        private ulong currentSessionDownloadData;
+        public ulong CurrentSessionDownloadData
+        {
+            get { return currentSessionDownloadData; }
+            set
+            {
+                currentSessionDownloadData = value;
+                OnPropertyChanged("CurrentSessionDownloadData");
+            }
+        }
+        private ulong currentSessionUploadData;
+        public ulong CurrentSessionUploadData
+        {
+            get { return currentSessionUploadData; }
+            set
+            {
+                currentSessionUploadData = value;
+                OnPropertyChanged("CurrentSessionUploadData");
+            }
+        }
 
         private string totalUsageText;
         public string TotalUsageText
@@ -39,11 +76,10 @@ namespace WhereIsMyData.ViewModels
 
         public DataUsageSummaryVM()
         {
-            //UploadSpeed = new DataUnits();
-            TotalDownloadData = new DataUnits();
-            TotalUploadData = new DataUnits();
-            CurrentSessionDownloadData = new DataUnits();
-            CurrentSessionUploadData = new DataUnits();
+            TotalDownloadData = 0;
+            TotalUploadData = 0;
+            CurrentSessionDownloadData = 0;
+            CurrentSessionUploadData = 0;
             SpeedGraph = new NetworkSpeedGraph();
             Date = "";
             TotalUsageText = "";

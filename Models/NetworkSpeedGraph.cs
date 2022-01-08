@@ -26,8 +26,8 @@ namespace WhereIsMyData.Models
 
         public List<string> Yaxis { get; set; }
         public ObservableCollection<int> Xaxis { get; set; }
-        public DataUnits DownloadSpeed { get; set; }
-        public DataUnits UploadSpeed { get; set; }
+        public ulong DownloadSpeed { get; set; }
+        public ulong UploadSpeed { get; set; }
         public NetworkSpeedGraph()
         {
             Xaxis = new ObservableCollection<int>();
@@ -50,8 +50,7 @@ namespace WhereIsMyData.Models
                     else
                         temp *= 2;
                 }
-                (decimal, int) temp2 = DataSizeSuffix.SizeSuffix(temp);
-                Yaxis.Add(temp2.Item1.ToString() + DataSizeSuffix.SuffixBits(temp2.Item2));
+                Yaxis.Add(DataSizeSuffix.SizeSuffix(temp,1,false));
             }
 
             Yaxis.Reverse();
@@ -61,7 +60,7 @@ namespace WhereIsMyData.Models
             {
                 // Clear the WriteableBitmap with white color
                 Graph.Clear(Colors.White);
-
+                
                 for (int i = 1; i < Xaxis.Count; i++)
                     Graph.DrawLine(i * width / Xaxis.Count, 0, i * width / Xaxis.Count, height, Colors.LightGray);
 
@@ -103,9 +102,9 @@ namespace WhereIsMyData.Models
                             points_Download[i] = (width / ((resolution / 2) - 1)) * i / 2;
                             points_Upload[i] = (width / ((resolution / 2) - 1)) * i / 2;
                             //points_Download[i + 1] = new Random().Next(0, height);
-                            points_Download[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValueBits, DownloadSpeed.dataSuffix, height);
-                            points_Upload[i + 1] = ConvToGraphCoords((double)UploadSpeed.dataValueBits, UploadSpeed.dataSuffix, height);                 
-                            //Debug.WriteLine(downloadSpeed.dataValue);
+                            points_Download[i + 1] = ConvToGraphCoords(DownloadSpeed, height);
+                            points_Upload[i + 1] = ConvToGraphCoords(UploadSpeed, height);
+                            //Debug.WriteLine(DownloadSpeed + ": " + points_Download[i + 1] + "," + UploadSpeed + ": " + points_Upload[i + 1]);
                             await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                             {
                                 Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
@@ -182,8 +181,8 @@ namespace WhereIsMyData.Models
                             }
                             else
                             {
-                                points_Download[i + 1] = ConvToGraphCoords((double)DownloadSpeed.dataValueBits, DownloadSpeed.dataSuffix, height);
-                                points_Upload[i + 1] = ConvToGraphCoords((double)UploadSpeed.dataValueBits, UploadSpeed.dataSuffix, height);
+                                points_Download[i + 1] = ConvToGraphCoords(DownloadSpeed, height);
+                                points_Upload[i + 1] = ConvToGraphCoords(UploadSpeed, height);
                                 await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                                 {
                                     Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
@@ -202,27 +201,20 @@ namespace WhereIsMyData.Models
             }
         }
 
-        private int ConvToGraphCoords(double value, int suffix, int height)
+        private int ConvToGraphCoords(ulong value, int height)
         {
-            int temp = 0;
-            switch (suffix)
+            if(value > (ulong)Math.Pow(1024,2))
             {
-                case 0:
-                    temp = (int)((double)height - (value / 512.0) * 20.0);
-                    //Debug.WriteLine("value: " + value + " suffix: " + suffix + " coordinate: " + temp);
-                    return temp;
-                case 1:
-                    temp = (int)((double)height - (value / 512.0) * 20.0 - 40.0);
-                    //Debug.WriteLine("value: " + value + " suffix: " + suffix + " coordinate: " + temp);
-                    return temp;
-                case 2:
-                    temp = (int)((double)height - (value / 512.0) * 20.0 - 80.0);
-                    //Debug.WriteLine("value: " + value + " suffix: " + suffix + " coordinate: " + temp);
-                    return temp;
-                default:
-                    return 0;
+                return (int)(height * (1.0 / 3.0)) - (int)( ((decimal)value / ((decimal)Math.Pow(1024, 3) - ((decimal)Math.Pow(1024, 2))) ) * (decimal)40 );
             }
-
+            else if(value > (ulong)Math.Pow(1024,1))
+            {
+                return (int)(height * (2.0 / 3.0)) - (int)(((decimal)value / ((decimal)Math.Pow(1024, 2) - ((decimal)Math.Pow(1024, 1)))) * (decimal)40 );
+            }
+            else
+            {
+                return height - (int)((decimal)value / ((decimal)Math.Pow(1024, 1) ) * (decimal)40);
+            }
         }
         //------property changers---------------//
 

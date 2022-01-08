@@ -14,9 +14,8 @@
         Background="Transparent"
         
         Title="" Height="470" Width="670">
-    
+
     <Window.Resources>
-        <vm:UnitConverterBytes x:Key="converterBytes"/>
         <vm:UnitConverterBits x:Key="converterBits"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
@@ -53,6 +52,7 @@
             </Setter>
         </Style>
     </Window.Resources>
+    
     <Border Margin="10">
         <Border.Effect>
             <DropShadowEffect Color="Black"
@@ -175,16 +175,14 @@
 
                     <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                     <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
-                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataValueBits}"/>
-                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed.DataSuffix, Converter={StaticResource converterBits}}"/>
-                        <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}"/>
+                    <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
                     </WrapPanel>
 
                     <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                     <WrapPanel Grid.Column="4" VerticalAlignment="Center">
-                        <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataValueBits}"/>
-                        <Label FontSize="11" Margin="-5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed.DataSuffix, Converter={StaticResource converterBits}}"/>
-                        <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
+                    <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
                     </WrapPanel>
             </Grid>
 

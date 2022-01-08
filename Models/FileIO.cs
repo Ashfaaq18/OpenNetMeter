@@ -17,10 +17,10 @@ namespace WhereIsMyData.Models
                 byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
 
                 for (int i = 7 * 1; i >= 7 * 0; i--)
-                    Bytes[i] = (byte)(app.Value.DataRecv >> 8 * i);
+                    Bytes[i] = (byte)(app.Value.TotalDataRecv >> 8 * i);
 
                 for (int i = 7 * 2; i >= 7 * 1; i--)
-                    Bytes[i] = (byte)(app.Value.DataSend >> 8 * i);
+                    Bytes[i] = (byte)(app.Value.TotalDataSend >> 8 * i);
 
                 Bytes[16] = (byte)app.Value.Name.Length;
 

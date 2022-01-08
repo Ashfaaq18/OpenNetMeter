@@ -3,11 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:WhereIsMyData.Views"
+             xmlns:local="clr-namespace:WhereIsMyData.Views" 
+             xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <vm:UnitConverterBytes x:Key="converterBytes"/>
+    </UserControl.Resources>
     <Grid Background="#f1f1f1">
-        <ListView x:Name="AllAppsData" Margin="64,32,64,32" ItemsSource="{Binding MyApps}">
+        <DataGrid x:Name="AllAppsData" Margin="32,32" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyApps}" BorderThickness="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" />
+                <DataGridTextColumn Header="Current Data Received" Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" />
+                <DataGridTextColumn Header="Current Data Sent" Binding="{Binding Value.CurrentDataSend, Converter={StaticResource converterBytes}}" />
+                <DataGridTextColumn Header="Total Data Received" Binding="{Binding Value.TotalDataRecv, Converter={StaticResource converterBytes}}" />
+                <DataGridTextColumn Header="Total Data Sent" Binding="{Binding Value.TotalDataSend, Converter={StaticResource converterBytes}}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <!--<ListView x:Name="AllAppsData" Margin="64,32,64,32" ItemsSource="{Binding MyApps}">
             <ListView.ItemTemplate>
 				<DataTemplate>
 					<Grid Margin="0,2">
@@ -22,6 +35,6 @@
                     </Grid>
 				</DataTemplate>
 			</ListView.ItemTemplate>
-        </ListView>
+        </ListView>-->
     </Grid>
 </UserControl>

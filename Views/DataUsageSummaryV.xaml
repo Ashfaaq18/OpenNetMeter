@@ -29,12 +29,6 @@
                         <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
                     </Border.Effect>
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.25*"/>
-                            <ColumnDefinition Width="0.75*"/>
-                            <ColumnDefinition Width="1.25*"/>
-                            <ColumnDefinition Width="0.75*"/>
-                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.5*"/>
                             <RowDefinition />
@@ -42,10 +36,14 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 10 0" />
-                        <Label Grid.Row="1" FontSize="15" x:Name="downloadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding CurrentSessionDownloadData.DataValueBytes }"></Label>
-                        <Label Grid.Column="1" Grid.Row="1" FontSize="15" x:Name="downloadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding CurrentSessionDownloadData.DataSuffix, Converter={StaticResource converterBytes}}" ></Label>
-                        <Label Grid.Column="2" Grid.Row="1" FontSize="15" x:Name="uploadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData.DataValueBytes }"></Label>
-                        <Label Grid.Column="3" Grid.Row="1" FontSize="15" x:Name="uploadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData.DataSuffix, Converter={StaticResource converterBytes}}" ></Label>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="1" Grid.Column="0" FontSize="20" x:Name="downloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }"></Label>
+                            <Label Grid.Row="1" Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"></Label>
+                        </Grid>
                     </Grid>
 
                 </Border>
@@ -68,10 +66,8 @@
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding TotalUsageText}"  Foreground="#717171" Margin="10,0,0,0" />
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="{Binding Date}" Margin="10,0,0,0"/>
-                        <Label Grid.Column="0" Grid.Row="1" FontSize="15" x:Name="TotaldownloadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding TotalDownloadData.DataValueBytes }"></Label>
-                        <Label Grid.Column="1" Grid.Row="1" FontSize="15" x:Name="TotaldownloadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding TotalDownloadData.DataSuffix, Converter={StaticResource converterBytes}}" ></Label>
-                        <Label Grid.Column="2" Grid.Row="1" FontSize="15" x:Name="TotaluploadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding TotalUploadData.DataValueBytes }"></Label>
-                        <Label Grid.Column="3" Grid.Row="1" FontSize="15" x:Name="TotaluploadDataSuffix" HorizontalAlignment="Left" VerticalAlignment="Center" Content="{Binding TotalUploadData.DataSuffix, Converter={StaticResource converterBytes}}" ></Label>
+                        <Label Grid.Column="0" Grid.Row="1" FontSize="15" x:Name="TotaldownloadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }"></Label>
+                        <Label Grid.Column="2" Grid.Row="1" FontSize="15" x:Name="TotaluploadData" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding TotalUploadData, Converter={StaticResource converterBytes} }"></Label>
                     </Grid>
 
                 </Border>

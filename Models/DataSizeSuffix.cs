@@ -8,7 +8,7 @@ namespace WhereIsMyData.Models
 {
     public class DataSizeSuffix
     {
-        public static (decimal, int) SizeSuffix(ulong value, int decimalPlaces = 1)
+        public static string SizeSuffix(ulong value, int decimalPlaces = 1, bool Bytes = true)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag;
@@ -27,7 +27,10 @@ namespace WhereIsMyData.Models
                 adjustedSize /= 1024;
             }
 
-            return (Decimal.Round(adjustedSize, 2), mag);
+            if(Bytes)
+                return Decimal.Round(adjustedSize, 2).ToString() + SuffixBytes(mag);
+            else
+                return Decimal.Round(adjustedSize, 2).ToString() + SuffixBits(mag);
         }
 
         public static string SuffixBytes(int value)

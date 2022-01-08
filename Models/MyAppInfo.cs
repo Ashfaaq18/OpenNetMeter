@@ -13,17 +13,31 @@ namespace WhereIsMyData.Models
     {
         public string Name { get; set; }
 
-        private ulong dataRecv;
-        public ulong DataRecv
+        private ulong currentdataRecv;
+        public ulong CurrentDataRecv
         {
-            get { return dataRecv; }
-            set { dataRecv = value; OnPropertyChanged("DataRecv"); }
+            get { return currentdataRecv; }
+            set { currentdataRecv = value; OnPropertyChanged("CurrentDataRecv"); }
         }
-        private ulong dataSend;
-        public ulong DataSend
+
+        private ulong currentdataSend;
+        public ulong CurrentDataSend
         {
-            get { return dataSend; }
-            set { dataSend = value; OnPropertyChanged("DataSend"); }
+            get { return currentdataSend; }
+            set { currentdataSend = value; OnPropertyChanged("CurrentDataSend"); }
+        }
+
+        private ulong totaldataRecv;
+        public ulong TotalDataRecv
+        {
+            get { return totaldataRecv; }
+            set { totaldataRecv = value; OnPropertyChanged("TotalDataRecv"); }
+        }
+        private ulong totaldataSend;
+        public ulong TotalDataSend
+        {
+            get { return totaldataSend; }
+            set { totaldataSend = value; OnPropertyChanged("TotalDataSend"); }
         }
 
         public ImageSource Icon { get; set; }
@@ -32,8 +46,10 @@ namespace WhereIsMyData.Models
         public MyAppInfo(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon icon)
         {
             Name = nameP;
-            DataRecv = dataRecvP;
-            DataSend = dataSendP;
+            TotalDataRecv = dataRecvP;
+            TotalDataSend = dataSendP;
+            CurrentDataRecv = 0;
+            CurrentDataSend = 0;
             if(icon != null)
             {
                 ImageSource im = IconToImgSource.ToImageSource(icon);

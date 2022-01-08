@@ -33,8 +33,26 @@ namespace WhereIsMyData.ViewModels
 
             set { selectedViewModel = value; OnPropertyChanged("SelectedViewModel"); }
         }
-        public DataUnits DownloadSpeed { get; set; }
-        public DataUnits UploadSpeed { get; set; }
+        public ulong downloadSpeed;
+        public ulong DownloadSpeed
+        {
+            get { return downloadSpeed; }
+            set
+            {
+                downloadSpeed = value;
+                OnPropertyChanged("DownloadSpeed");
+            }
+        }
+        public ulong uploadSpeed;
+        public ulong UploadSpeed
+        {
+            get { return uploadSpeed; }
+            set
+            {
+                uploadSpeed = value;
+                OnPropertyChanged("UploadSpeed");
+            }
+        }
 
         private string networkStatus;
         public string NetworkStatus
@@ -55,8 +73,8 @@ namespace WhereIsMyData.ViewModels
                 Environment.Exit(0);
             }
 
-            DownloadSpeed = new DataUnits();
-            UploadSpeed = new DataUnits();
+            DownloadSpeed = 0;
+            UploadSpeed = 0;
 
             //initialize both pages
             dusvm = new DataUsageSummaryVM();

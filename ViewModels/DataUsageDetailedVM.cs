@@ -29,11 +29,13 @@ namespace WhereIsMyData.ViewModels
             }
             else
             {
-                MyApps[name].DataRecv = MyApps[name].DataRecv + (ulong)dataRecv;
-                MyApps[name].DataSend = MyApps[name].DataSend + (ulong)dataSend;
+                MyApps[name].TotalDataRecv += (ulong)dataRecv;
+                MyApps[name].TotalDataSend += (ulong)dataSend;
             }
 
-           // watch.Stop();
+            MyApps[name].CurrentDataRecv += (ulong)dataRecv;
+            MyApps[name].CurrentDataSend += (ulong)dataSend;
+            // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/
         }

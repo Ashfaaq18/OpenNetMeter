@@ -15,16 +15,6 @@ using ManagedNativeWifi;
 
 namespace WhereIsMyData.Models
 {
-    public struct NetVar
-    {
-        public NetVar(ulong current = 0, ulong total = 0)
-        {
-            CurrentBytes = current;
-            TotalBytes = total;
-        }
-        public ulong CurrentBytes { get; set; }
-        public ulong TotalBytes { get; set; }
-    }
     public class NetworkInfo : INotifyPropertyChanged
     {
         private DataUsageSummaryVM dusvm;
@@ -34,8 +24,18 @@ namespace WhereIsMyData.Models
         private IPAddressRange IP_172_16;
         private IPAddressRange IP_192_168;
 
-        public DataUnits DownloadSpeed { get; set; }
-        public DataUnits UploadSpeed { get; set; }
+        private ulong downloadSpeed;
+        public ulong DownloadSpeed
+        {
+            get { return downloadSpeed; }
+            set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
+        }
+        private ulong uploadSpeed;
+        public ulong UploadSpeed
+        {
+            get { return uploadSpeed; }
+            set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
+        }
 
         //token for write file
         private CancellationTokenSource cts_file;
@@ -53,9 +53,6 @@ namespace WhereIsMyData.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-
-        private NetVar Recv;
-        private NetVar Send;
         public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
         {
             dusvm = dusvm_ref;
@@ -65,11 +62,8 @@ namespace WhereIsMyData.Models
             IP_172_16 = new IPAddressRange(IPAddress.Parse("172.16.0.0"), IPAddress.Parse("172.31.255.255"));
             IP_192_168 = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
 
-            DownloadSpeed = new DataUnits();
-            UploadSpeed = new DataUnits();
-
-            Recv = new NetVar();
-            Send = new NetVar();
+            DownloadSpeed = 0;
+            UploadSpeed = 0;
 
             adapterName = "";
 
@@ -145,8 +139,8 @@ namespace WhereIsMyData.Models
                     cts_speed.Cancel(); //stop calculating network speed
 
                 //reset speed counters
-                DownloadSpeed.Conv_Bits(0);
-                UploadSpeed.Conv_Bits(0);
+                DownloadSpeed=0;
+                UploadSpeed=0;
             }
         }
 
@@ -172,10 +166,8 @@ namespace WhereIsMyData.Models
                     (ulong, ulong) data;
                     data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
 
-                    Recv.TotalBytes = data.Item1;
-                    dusvm.TotalDownloadData.Conv_Bytes(Recv.TotalBytes);
-                    Send.TotalBytes = data.Item2;
-                    dusvm.TotalUploadData.Conv_Bytes(Send.TotalBytes);
+                    dusvm.TotalDownloadData= data.Item1;
+                    dusvm.TotalUploadData= data.Item2;
 
                     DateTime dateTime = File.GetCreationTime(name + ".WIMD");
                     dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
@@ -233,11 +225,11 @@ namespace WhereIsMyData.Models
                     Debug.WriteLine("Operation Started : Network speed");
                     while (!token_speed.IsCancellationRequested)
                     {
-                        ulong temp1 = Recv.CurrentBytes;
-                        ulong temp2 = Send.CurrentBytes;
+                        ulong temp1 = dusvm.CurrentSessionDownloadData;
+                        ulong temp2 = dusvm.CurrentSessionUploadData;
                         await Task.Delay(1000, token_speed);
-                        DownloadSpeed.Conv_Bits(Recv.CurrentBytes - temp1);
-                        UploadSpeed.Conv_Bits(Send.CurrentBytes - temp2);
+                        DownloadSpeed= (dusvm.CurrentSessionDownloadData - temp1)*8;
+                        UploadSpeed= (dusvm.CurrentSessionUploadData - temp2)*8;
                     }
                 }
                 catch (OperationCanceledException)
@@ -306,11 +298,8 @@ namespace WhereIsMyData.Models
             if(!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)) )
             {
                 //Debug.WriteLine(src + "," + dest);
-                Recv.TotalBytes += (ulong)size;
-                dusvm.TotalDownloadData.Conv_Bytes(Recv.TotalBytes);
-
-                Recv.CurrentBytes += (ulong)size;
-                dusvm.CurrentSessionDownloadData.Conv_Bytes(Recv.CurrentBytes);
+                dusvm.TotalDownloadData += (ulong)size;
+                dusvm.CurrentSessionDownloadData += (ulong)size;
 
                 dudvm.GetAppDataInfo(name, size, 0);
             }
@@ -320,11 +309,8 @@ namespace WhereIsMyData.Models
         {
             if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)))
             {
-                Send.TotalBytes += (ulong)size;
-                dusvm.TotalUploadData.Conv_Bytes(Send.TotalBytes);
-
-                Send.CurrentBytes += (ulong)size;
-                dusvm.CurrentSessionUploadData.Conv_Bytes(Send.CurrentBytes);
+                dusvm.TotalUploadData += (ulong)size;
+                dusvm.CurrentSessionUploadData += (ulong)size;
 
                 dudvm.GetAppDataInfo(name, 0, size);
             }
