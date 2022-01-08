@@ -243,7 +243,7 @@ namespace WhereIsMyData.Models
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)
         {
-            SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
+            SendProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_UdpIpSend(UdpIpTraceData obj)
@@ -253,7 +253,7 @@ namespace WhereIsMyData.Models
 
         private void Kernel_TcpIpSendIPV6(TcpIpV6SendTraceData obj)
         {
-            SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
+            SendProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpSend(TcpIpSendTraceData obj)
@@ -269,7 +269,7 @@ namespace WhereIsMyData.Models
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
+            RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecv(TcpIpTraceData obj)
@@ -279,7 +279,7 @@ namespace WhereIsMyData.Models
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
+            RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
 
@@ -296,9 +296,31 @@ namespace WhereIsMyData.Models
             }
         }
 
+        private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
+        {
+            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest))
+            {
+                //Debug.WriteLine(src + "," + dest);
+                dusvm.TotalDownloadData += (ulong)size;
+                dusvm.CurrentSessionDownloadData += (ulong)size;
+
+                dudvm.GetAppDataInfo(name, size, 0);
+            }
+        }
+
         private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
             if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)))
+            {
+                dusvm.TotalUploadData += (ulong)size;
+                dusvm.CurrentSessionUploadData += (ulong)size;
+
+                dudvm.GetAppDataInfo(name, 0, size);
+            }
+        }
+        private void SendProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
+        {
+            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest))
             {
                 dusvm.TotalUploadData += (ulong)size;
                 dusvm.CurrentSessionUploadData += (ulong)size;
