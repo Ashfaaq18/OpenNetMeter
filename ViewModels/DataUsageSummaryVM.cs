@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using WhereIsMyData.Models;
 
@@ -73,7 +75,6 @@ namespace WhereIsMyData.ViewModels
                 date = value; OnPropertyChanged("Date");
             }
         }
-
         public DataUsageSummaryVM()
         {
             TotalDownloadData = 0;

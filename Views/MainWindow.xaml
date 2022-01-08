@@ -13,7 +13,7 @@
         UseLayoutRounding="True"
         Background="Transparent"
         
-        Title="" Height="470" Width="670">
+        Title="" Height="500" Width="670">
 
     <Window.Resources>
         <vm:UnitConverterBits x:Key="converterBits"/>
@@ -26,6 +26,12 @@
         <DataTemplate DataType="{x:Type vm:DataUsageDetailedVM}">
 
             <v:DataUsageDetailedV/>
+
+        </DataTemplate>
+        
+        <DataTemplate DataType="{x:Type vm:SettingsVM}">
+
+            <v:SettingsV/>
 
         </DataTemplate>
 
@@ -80,13 +86,18 @@
                 <TextBlock Text="WhereIsMyData" FontFamily="Segoe UI" FontWeight="Bold" 
                        FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
 
-                <UniformGrid Columns="4" Grid.Column="1">
+                <Grid  Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
                     <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TabBtnToggle}" Value="True">
+                                    <DataTrigger Binding="{Binding TabBtnToggle}" Value="0">
                                         <Setter Property="BorderBrush" Value="Black"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -97,12 +108,12 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageDetCommand}">
+                    <Button Grid.Column="1" Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageDetCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TabBtnToggle}" Value="False">
+                                    <DataTrigger Binding="{Binding TabBtnToggle}" Value="1">
                                         <Setter Property="BorderBrush" Value="Black"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -112,8 +123,24 @@
                             <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
+                    
+                    <Button Grid.Column="2" Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSetCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="BorderBrush" Value="#f1f1f1"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TabBtnToggle}" Value="2">
+                                        <Setter Property="BorderBrush" Value="Black"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
-                </UniformGrid>
+                </Grid>
             </Grid>
             
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="100">

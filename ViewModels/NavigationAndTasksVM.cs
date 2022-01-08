@@ -15,12 +15,14 @@ namespace WhereIsMyData.ViewModels
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
+        private readonly SettingsVM svm;
         private readonly NetworkInfo netInfo;
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
+        public ICommand DataUsageSetCommand { get; set; }
 
-        private bool tabBtnToggle;
-        public bool TabBtnToggle
+        private int tabBtnToggle;
+        public int TabBtnToggle
         {
             get { return tabBtnToggle; }
             set { tabBtnToggle = value; OnPropertyChanged("TabBtnToggle"); }
@@ -76,16 +78,17 @@ namespace WhereIsMyData.ViewModels
             DownloadSpeed = 0;
             UploadSpeed = 0;
 
-            //initialize both pages
+            //initialize pages
             dusvm = new DataUsageSummaryVM();
             dudvm = new DataUsageDetailedVM();
+            netInfo = new NetworkInfo(ref dusvm, ref dudvm); //not page
+            svm = new SettingsVM(ref dusvm, ref dudvm, ref netInfo);
 
             //intial startup page
             SelectedViewModel = dusvm;
-            TabBtnToggle = true;
+            TabBtnToggle = 0;
 
-            //Network event runner
-            netInfo = new NetworkInfo(ref dusvm, ref dudvm);
+            
             netInfo.PropertyChanged += NetInfo_PropertyChanged;
             netInfo.InitNetworkStatus(); // update status bar with network status
             netInfo.CaptureNetworkPackets(); //start capturing network packet sizes
@@ -94,7 +97,7 @@ namespace WhereIsMyData.ViewModels
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
-
+            DataUsageSetCommand = new BaseCommand(OpenDataUsageSit);
         }
 
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -111,13 +114,18 @@ namespace WhereIsMyData.ViewModels
         private void OpenDataUsageSum(object obj)
         {
             SelectedViewModel = dusvm;
-            TabBtnToggle = true;
+            TabBtnToggle = 0;
         }
 
         private void OpenDataUsageDet(object obj)
         {
             SelectedViewModel = dudvm;
-            TabBtnToggle = false;
+            TabBtnToggle = 1;
+        }
+        private void OpenDataUsageSit(object obj)
+        {
+            SelectedViewModel = svm;
+            TabBtnToggle = 2;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

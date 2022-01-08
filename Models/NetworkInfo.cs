@@ -100,7 +100,7 @@ namespace WhereIsMyData.Models
                 dusvm.TotalUsageText = "Total data usage of " + adapterName + " since : ";
 
                 //read saved data of adapter
-                ReadFile(adapterName);
+                ReadFile();
 
                 //init tokens
                 cts_file = new CancellationTokenSource();
@@ -114,7 +114,7 @@ namespace WhereIsMyData.Models
                         Debug.WriteLine("Operation Started : Write file");
                         while (!token_file.IsCancellationRequested)
                         {
-                            WriteFile(adapterName);
+                            WriteFile();
                             await Task.Delay(1000, token_file);
                         }
                     }
@@ -149,6 +149,32 @@ namespace WhereIsMyData.Models
             SetNetworkStatus(NetworkInterface.GetIsNetworkAvailable());
         }
 
+        public void ResetWriteFileAndSpeed()
+        {
+            if (NetworkInterface.GetIsNetworkAvailable())
+            {
+                //stop counters
+                if (cts_file != null)
+                    cts_file.Cancel(); //stop writing to file
+                if (cts_speed != null)
+                    cts_speed.Cancel(); //stop calculating network speed
+
+                //reset speed counters
+                DownloadSpeed = 0;
+                UploadSpeed = 0;
+                //recreate file
+                RecreateFile();
+                //restart write file and capturing speed
+                SetNetworkStatus(true);
+                CaptureNetworkSpeed();
+            }
+            else
+            {
+                //recreate file
+                RecreateFile();
+            }
+        }
+
         private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             SetNetworkStatus(e.IsAvailable);
@@ -156,62 +182,6 @@ namespace WhereIsMyData.Models
                 CaptureNetworkSpeed();
         }
 
-
-        private void ReadFile(string name)
-        {
-            try
-            {
-                using (FileStream stream = new FileStream(name + ".WIMD", FileMode.Open, FileAccess.Read))
-                {
-                    (ulong, ulong) data;
-                    data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
-
-                    dusvm.TotalDownloadData= data.Item1;
-                    dusvm.TotalUploadData= data.Item2;
-
-                    DateTime dateTime = File.GetCreationTime(name + ".WIMD");
-                    dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine("Error: " + e.Message);
-            }
-        }
-
-        private void WriteFile(string name)
-        {
-            try
-            {
-                using (FileStream stream = new FileStream(name + ".WIMD", FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    FileIO.WriteFile_AppInfo(dudvm.MyApps, stream);
-                }
-            }
-            catch (Exception e) { Debug.WriteLine("Error: " + e.Message); }
-        }
-
-        public void CaptureNetworkPackets()
-        {
-            Task.Run(() =>
-            {
-                using (TraceEventSession kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
-                {
-                    kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
-                    kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
-                    kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
-                    kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
-                    kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
-
-                    kernelSession.Source.Kernel.TcpIpSend += Kernel_TcpIpSend;
-                    kernelSession.Source.Kernel.TcpIpSendIPV6 += Kernel_TcpIpSendIPV6;
-                    kernelSession.Source.Kernel.UdpIpSend += Kernel_UdpIpSend;
-                    kernelSession.Source.Kernel.UdpIpSendIPV6 += Kernel_UdpIpSendIPV6;
-
-                    kernelSession.Source.Process();
-                }
-            });
-        }
 
         public void CaptureNetworkSpeed()
         {
@@ -240,6 +210,27 @@ namespace WhereIsMyData.Models
                 catch (Exception ex)
                 {
                     Debug.WriteLine("Critical error: " + ex.Message);
+                }
+            });
+        }
+        public void CaptureNetworkPackets()
+        {
+            Task.Run(() =>
+            {
+                using (TraceEventSession kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
+                {
+                    kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+                    kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
+                    kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
+                    kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
+                    kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
+
+                    kernelSession.Source.Kernel.TcpIpSend += Kernel_TcpIpSend;
+                    kernelSession.Source.Kernel.TcpIpSendIPV6 += Kernel_TcpIpSendIPV6;
+                    kernelSession.Source.Kernel.UdpIpSend += Kernel_UdpIpSend;
+                    kernelSession.Source.Kernel.UdpIpSendIPV6 += Kernel_UdpIpSendIPV6;
+
+                    kernelSession.Source.Process();
                 }
             });
         }
@@ -316,6 +307,52 @@ namespace WhereIsMyData.Models
             }
         }
 
+        //file stuff
+        public void ReadFile()
+        {
+            try
+            {
+                using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.Open, FileAccess.Read))
+                {
+                    (ulong, ulong) data;
+                    data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
+
+                    dusvm.TotalDownloadData = data.Item1;
+                    dusvm.TotalUploadData = data.Item2;
+
+                    DateTime dateTime = File.GetCreationTime(adapterName + ".WIMD");
+                    dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Cant Read: " + e.Message);
+            }
+        }
+
+        private void WriteFile()
+        {
+            try
+            {
+                using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    FileIO.WriteFile_AppInfo(dudvm.MyApps, stream);
+                }
+            }
+            catch (Exception e) { Debug.WriteLine("Cant Write: " + e.Message); }
+        }
+
+        public void RecreateFile()
+        {
+            try
+            {
+                File.Delete(adapterName + ".WIMD");
+                var file = File.Create(adapterName + ".WIMD");
+                file.Close();
+                //File.SetCreationTime(adapterName + ".WIMD", DateTime.Now);
+            }
+            catch(Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
+        }
 
         //------property changers---------------//
 
