@@ -310,23 +310,32 @@ namespace WhereIsMyData.Models
         //file stuff
         public void ReadFile()
         {
-            try
+            if(File.Exists(adapterName + ".WIMD"))
             {
-                using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.Open, FileAccess.Read))
+                try
                 {
-                    (ulong, ulong) data;
-                    data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
+                    using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.Open, FileAccess.Read))
+                    {
+                        (ulong, ulong) data;
+                        data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
 
-                    dusvm.TotalDownloadData = data.Item1;
-                    dusvm.TotalUploadData = data.Item2;
+                        dusvm.TotalDownloadData = data.Item1;
+                        dusvm.TotalUploadData = data.Item2;
 
-                    DateTime dateTime = File.GetCreationTime(adapterName + ".WIMD");
-                    dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
+                        DateTime dateTime = File.GetCreationTime(adapterName + ".WIMD");
+                        dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("Cant Read: " + e.Message);
                 }
             }
-            catch (Exception e)
+            else
             {
-                Debug.WriteLine("Cant Read: " + e.Message);
+                File.Create(adapterName + ".WIMD");
+                DateTime dateTime = File.GetCreationTime(adapterName + ".WIMD");
+                dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
             }
         }
 
@@ -334,7 +343,7 @@ namespace WhereIsMyData.Models
         {
             try
             {
-                using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.OpenOrCreate, FileAccess.Write))
+                using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.Open, FileAccess.Write))
                 {
                     FileIO.WriteFile_AppInfo(dudvm.MyApps, stream);
                 }
