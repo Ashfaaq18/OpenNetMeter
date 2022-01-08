@@ -307,14 +307,30 @@ namespace WhereIsMyData.Models
             }
         }
 
+        private string path;
+        private string filename;
+        private string pathString;
         //file stuff
         public void ReadFile()
         {
-            if(File.Exists(adapterName + ".WIMD"))
+            path = "Profiles";
+            filename = adapterName + ".WIMD";
+            pathString = System.IO.Path.Combine(path, filename);
+            try
+            {
+                // Try to create the directory.
+                DirectoryInfo di = Directory.CreateDirectory(path);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("The process failed: {0}", e.ToString());
+            }
+
+            if (File.Exists(pathString))
             {
                 try
                 {
-                    using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.Open, FileAccess.Read))
+                    using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
                     {
                         (ulong, ulong) data;
                         data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
@@ -322,7 +338,7 @@ namespace WhereIsMyData.Models
                         dusvm.TotalDownloadData = data.Item1;
                         dusvm.TotalUploadData = data.Item2;
 
-                        DateTime dateTime = File.GetCreationTime(adapterName + ".WIMD");
+                        DateTime dateTime = File.GetCreationTime(pathString);
                         dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
                     }
                 }
@@ -333,8 +349,8 @@ namespace WhereIsMyData.Models
             }
             else
             {
-                File.Create(adapterName + ".WIMD");
-                DateTime dateTime = File.GetCreationTime(adapterName + ".WIMD");
+                File.Create(pathString);
+                DateTime dateTime = File.GetCreationTime(pathString);
                 dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
             }
         }
@@ -343,7 +359,7 @@ namespace WhereIsMyData.Models
         {
             try
             {
-                using (FileStream stream = new FileStream(adapterName + ".WIMD", FileMode.Open, FileAccess.Write))
+                using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Write))
                 {
                     FileIO.WriteFile_AppInfo(dudvm.MyApps, stream);
                 }
@@ -355,8 +371,8 @@ namespace WhereIsMyData.Models
         {
             try
             {
-                File.Delete(adapterName + ".WIMD");
-                var file = File.Create(adapterName + ".WIMD");
+                File.Delete(pathString);
+                var file = File.Create(pathString);
                 file.Close();
                 //File.SetCreationTime(adapterName + ".WIMD", DateTime.Now);
             }
