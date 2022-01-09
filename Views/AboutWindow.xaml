@@ -76,9 +76,8 @@
                             <LineBreak/>
                             If you find any problems with the product or any 
                             <LineBreak/>
-                            improvements to be made, feel free create an
+                             ideas for improvements, feel free create an issue at,
                             <LineBreak/>
-                            issue at,
                             <Hyperlink NavigateUri="https://github.com/Ashfaaq18/WhereIsMyData" RequestNavigate="Hyperlink_RequestNavigate">
                                 https://github.com/Ashfaaq18/WhereIsMyData
                             </Hyperlink>

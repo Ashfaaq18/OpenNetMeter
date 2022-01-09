@@ -16,7 +16,7 @@ namespace WhereIsMyData.Views
             DataContext = new NavigationAndTasksVM();
             aboutWin = new AboutWindow();
         }
-
+        
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();
@@ -36,7 +36,7 @@ namespace WhereIsMyData.Views
 
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
-            aboutWin.Show();
+            aboutWin.Show(this);
         }
     }
 }

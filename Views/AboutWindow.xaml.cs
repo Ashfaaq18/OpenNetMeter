@@ -47,5 +47,11 @@ namespace WhereIsMyData.Views
             Process.Start(psi);
             e.Handled = true;
         }
+
+        public void Show(Window owner)
+        {
+            this.Owner = owner;
+            this.Show();
+        }
     }
 }
