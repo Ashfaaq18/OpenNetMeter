@@ -20,6 +20,7 @@ namespace WhereIsMyData.ViewModels
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
         public ICommand DataUsageSetCommand { get; set; }
+        public ICommand DataUsageAbtCommand { get; set; }
 
         private int tabBtnToggle;
         public int TabBtnToggle
@@ -98,6 +99,7 @@ namespace WhereIsMyData.ViewModels
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
             DataUsageSetCommand = new BaseCommand(OpenDataUsageSit);
+            DataUsageAbtCommand = new BaseCommand(OpenDataUsageAbt);
         }
 
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -109,6 +111,11 @@ namespace WhereIsMyData.ViewModels
             //update graph data points
             dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
             dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
+        }
+
+        private void OpenDataUsageAbt(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         private void OpenDataUsageSum(object obj)

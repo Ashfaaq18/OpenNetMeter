@@ -16,6 +16,7 @@
         Title="" Height="500" Width="670">
 
     <Window.Resources>
+
         <vm:UnitConverterBits x:Key="converterBits"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
@@ -28,35 +29,13 @@
             <v:DataUsageDetailedV/>
 
         </DataTemplate>
-        
+
         <DataTemplate DataType="{x:Type vm:SettingsVM}">
 
             <v:SettingsV/>
 
         </DataTemplate>
 
-        <Style x:Key="TransparentStyle" TargetType="{x:Type Button}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border>
-                            <Border.Style>
-                                <Style TargetType="{x:Type Border}">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="DarkGoldenrod"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <Grid Background="Transparent">
-                                <ContentPresenter></ContentPresenter>
-                            </Grid>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
     
     <Border Margin="10">
@@ -76,23 +55,25 @@
             <Grid IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Background="White">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="450"/>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="430"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="WhereIsMyData" FontFamily="Segoe UI" FontWeight="Bold" 
-                       FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
-
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Image Source="/Views/x48.png" Height="35" Width="35" Margin="10,0"/>
+                </StackPanel>
+                
                 <Grid  Grid.Column="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
+                    <Button Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" Margin="0,0,5,0" VerticalAlignment="Bottom" Command="{Binding DataUsageSumCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
@@ -108,7 +89,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="1" Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageDetCommand}">
+                    <Button Grid.Column="1" Background="#f1f1f1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageDetCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
@@ -123,28 +104,34 @@
                             <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                    
-                    <Button Grid.Column="2" Background="#f1f1f1" BorderThickness="0,0,0,5" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSetCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="BorderBrush" Value="#f1f1f1"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TabBtnToggle}" Value="2">
-                                        <Setter Property="BorderBrush" Value="Black"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
 
+                    <Button Grid.Column="2" Background="#f1f1f1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Command="{Binding DataUsageSetCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="BorderBrush" Value="#f1f1f1"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding TabBtnToggle}" Value="2">
+                                            <Setter Property="BorderBrush" Value="Black"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                    
                 </Grid>
             </Grid>
             
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="100">
-                <Button Width="50" Height="32" VerticalAlignment="Top"
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="150">
+
+                <Button BorderThickness="0" Background="White" Width="50" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Click="About_Button_Click" >
+                    <TextBlock FontFamily="Segoe UI" Text="About" VerticalAlignment="Center"/>
+                </Button>
+
+                <Button Width="50"  
                     HorizontalAlignment="Right" Click="Minimize_Button_Click" Background="White" BorderThickness="0">
                     <Button.Content >
                         <Grid Margin="18,0">
@@ -152,8 +139,7 @@
                         </Grid>
                     </Button.Content>
                 </Button>
-                <Button Width="50" Height="32" VerticalAlignment="Top"
-                    HorizontalAlignment="Right" Click="Exit_Button_Click" >
+                <Button Width="50"  HorizontalAlignment="Right" Click="Exit_Button_Click" >
                     <Button.Style>
                         <Style TargetType="{x:Type Button}">
                             <Setter Property="Template">

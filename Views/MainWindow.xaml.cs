@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using WhereIsMyData.ViewModels;
+using System.Windows.Input;
 
 namespace WhereIsMyData.Views
 {
@@ -8,13 +9,15 @@ namespace WhereIsMyData.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private AboutWindow aboutWin;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new NavigationAndTasksVM();
+            aboutWin = new AboutWindow();
         }
 
-        private void Grid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();
         }
@@ -26,7 +29,14 @@ namespace WhereIsMyData.Views
         
         private void Exit_Button_Click(object sender, RoutedEventArgs e)
         {
+            aboutWin.SetAppExit();
+            aboutWin.Close();
             Close();
+        }
+
+        private void About_Button_Click(object sender, RoutedEventArgs e)
+        {
+            aboutWin.Show();
         }
     }
 }

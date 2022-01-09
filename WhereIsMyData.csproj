@@ -4,13 +4,33 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>myicon1.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\x48.png" />
+    <None Remove="Views\x64.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ManagedNativeWifi" Version="2.1.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.74" />
     <PackageReference Include="ParallelExtensionsCore" Version="1.3.0" />
     <PackageReference Include="WriteableBitmapEx" Version="1.6.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Views\x48.png" />
+    <Resource Include="Views\x64.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\x48.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\x64.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
