@@ -10,10 +10,10 @@ namespace WhereIsMyData.ViewModels.DataUsageDetailedPagesVM
 {
     public class OnlineProfileVM
     {
-        public ObservableConcurrentDictionary<string, MyAppInfo> MyApps { get; set; }
+        public ObservableConcurrentDictionary<string, MyProcess> MyProcesses { get; set; }
         public OnlineProfileVM()
         {
-            MyApps = new ObservableConcurrentDictionary<string, MyAppInfo>();
+            MyProcesses = new ObservableConcurrentDictionary<string, MyProcess>();
         }
     }
 }

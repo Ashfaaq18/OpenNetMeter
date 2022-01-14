@@ -372,7 +372,7 @@ namespace WhereIsMyData.Models
                     using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
                     {
                         (ulong, ulong) data;
-                        data = FileIO.ReadFile_AppInfo(dudvm.OnProfVM.MyApps, stream);
+                        data = FileIO.ReadFile_MyProcess(dudvm.OnProfVM.MyProcesses, stream);
 
                         dusvm.TotalDownloadData = data.Item1;
                         dusvm.TotalUploadData = data.Item2;
@@ -400,7 +400,7 @@ namespace WhereIsMyData.Models
             {
                 using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Write))
                 {
-                    FileIO.WriteFile_AppInfo(dudvm.OnProfVM.MyApps, stream);
+                    FileIO.WriteFile_MyProcess(dudvm.OnProfVM.MyProcesses, stream);
                 }
             }
             catch (Exception e) { Debug.WriteLine("Cant Write: " + e.Message); }

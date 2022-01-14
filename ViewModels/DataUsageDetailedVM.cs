@@ -74,7 +74,7 @@ namespace WhereIsMyData.ViewModels
             //var watch = Stopwatch.StartNew();
             if (name == null || name == "")
                 name = "System";
-            if (OnProfVM.MyApps.TryAdd(name, null))
+            if (OnProfVM.MyProcesses.TryAdd(name, null))
             {
                 process = Process.GetProcessesByName(name);
                 Icon ic = null;
@@ -84,16 +84,16 @@ namespace WhereIsMyData.ViewModels
                     try { ic = Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
                     catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
                 }
-                OnProfVM.MyApps[name] = new MyAppInfo(name, (ulong)dataRecv, (ulong)dataSend, ic);
+                OnProfVM.MyProcesses[name] = new MyProcess(name, (ulong)dataRecv, (ulong)dataSend, ic);
             }
             else
             {
-                OnProfVM.MyApps[name].TotalDataRecv += (ulong)dataRecv;
-                OnProfVM.MyApps[name].TotalDataSend += (ulong)dataSend;
+                OnProfVM.MyProcesses[name].TotalDataRecv += (ulong)dataRecv;
+                OnProfVM.MyProcesses[name].TotalDataSend += (ulong)dataSend;
             }
 
-            OnProfVM.MyApps[name].CurrentDataRecv += (ulong)dataRecv;
-            OnProfVM.MyApps[name].CurrentDataSend += (ulong)dataSend;
+            OnProfVM.MyProcesses[name].CurrentDataRecv += (ulong)dataRecv;
+            OnProfVM.MyProcesses[name].CurrentDataSend += (ulong)dataSend;
             // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/
@@ -135,18 +135,18 @@ namespace WhereIsMyData.ViewModels
                 dusvm.CurrentSessionUploadData = 0;
                 dusvm.TotalDownloadData = 0;
                 dusvm.TotalUploadData = 0;
-                foreach (var row in OnProfVM.MyApps.ToList())
+                foreach (var row in OnProfVM.MyProcesses.ToList())
                 {
-                    OnProfVM.MyApps.Remove(row.Key);
+                    OnProfVM.MyProcesses.Remove(row.Key);
                 }
 
                 netInfo.ResetWriteFileAndSpeed();
             }
             else
             {
-                foreach (var row in OffProfVM.MyApps.ToList())
+                foreach (var row in OffProfVM.MyProcesses.ToList())
                 {
-                    OffProfVM.MyApps.Remove(row.Key);
+                    OffProfVM.MyProcesses.Remove(row.Key);
                 }
             }*/
             
@@ -177,17 +177,17 @@ namespace WhereIsMyData.ViewModels
             {
                 if (SelectedViewModel != OffProfVM)
                     SelectedViewModel = OffProfVM;
-                //read file into the OnProfVM.MyApps1 dictionary
+                //read file into the OnProfVM.MyProcesses1 dictionary
                 try
                 {
                     string pathString = Path.Combine("Profiles", selProf + ".WIMD");
                     using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
                     {
-                        foreach (var row in OffProfVM.MyApps.ToList())
+                        foreach (var row in OffProfVM.MyProcesses.ToList())
                         {
-                            OffProfVM.MyApps.Remove(row.Key);
+                            OffProfVM.MyProcesses.Remove(row.Key);
                         }
-                        FileIO.ReadFile_AppInfo(OffProfVM.MyApps, stream);
+                        FileIO.ReadFile_MyProcess(OffProfVM.MyProcesses, stream);
                         DateTime dateTime = File.GetCreationTime(pathString);
                         Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
                         int i = 0;

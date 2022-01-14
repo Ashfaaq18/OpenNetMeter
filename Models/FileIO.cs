@@ -30,10 +30,10 @@ namespace WhereIsMyData.Models
             return profiles;
         }
 
-        //write all details of an app to a file
-        public static void WriteFile_AppInfo(ObservableConcurrentDictionary<string, MyAppInfo> apps, FileStream stream)
+        //write all network details of a process to a file
+        public static void WriteFile_MyProcess(ObservableConcurrentDictionary<string, MyProcess> apps, FileStream stream)
         {
-            foreach(KeyValuePair<string, MyAppInfo> app in apps)
+            foreach(KeyValuePair<string, MyProcess> app in apps)
             {
                 byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
 
@@ -54,7 +54,7 @@ namespace WhereIsMyData.Models
         }
 
         //read the file data into a collection
-        public static (ulong,ulong) ReadFile_AppInfo(ObservableConcurrentDictionary<string, MyAppInfo> apps ,FileStream stream)
+        public static (ulong,ulong) ReadFile_MyProcess(ObservableConcurrentDictionary<string, MyProcess> apps ,FileStream stream)
         {
             ulong TotalBytesRecv = 0;
             ulong TotalBytesSend = 0;
@@ -97,37 +97,12 @@ namespace WhereIsMyData.Models
                     catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
                 }
 
-                apps[tempName] = new MyAppInfo(tempName, dataRecv, dataSend, ic);
+                apps[tempName] = new MyProcess(tempName, dataRecv, dataSend, ic);
                 TotalBytesRecv += dataRecv;
                 TotalBytesSend += dataSend;
             }
             return (TotalBytesRecv, TotalBytesSend);
         }
 
-        public static void ReadFile_AdapterInfo(FileStream stream, ref HashSet<string> profiles)
-        {
-            while (stream.Position < stream.Length)
-            {
-                int nameLength = stream.ReadByte();
-                string temp = "";
-                for (int i = 0; i < nameLength; i++)
-                {
-                    temp += (char)stream.ReadByte();
-                }
-                Debug.WriteLine("test : " + temp);
-                if (!profiles.Add(temp))
-                    Debug.WriteLine("profile exists");
-            }
-        }
-
-        public static void WriteFile_AdapterInfo(FileStream stream, ref HashSet<string> profiles)
-        {
-            foreach (string str in profiles)
-            {
-                stream.WriteByte((byte)str.Length);
-                for (int i = 0; i < str.Length; i++)
-                    stream.WriteByte((byte)str[i]);
-            }
-        }
     }
 }

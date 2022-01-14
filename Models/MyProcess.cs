@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace WhereIsMyData.Models
 {
-    public class MyAppInfo : INotifyPropertyChanged
+    public class MyProcess : INotifyPropertyChanged
     {
         public string Name { get; set; }
 
@@ -43,7 +43,7 @@ namespace WhereIsMyData.Models
         public ImageSource Icon { get; set; }
 
         public string Image { get; set; }
-        public MyAppInfo(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon icon)
+        public MyProcess(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon icon)
         {
             Name = nameP;
             TotalDataRecv = dataRecvP;

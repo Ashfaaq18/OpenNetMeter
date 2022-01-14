@@ -205,7 +205,7 @@ namespace WhereIsMyData.Models
         {
             if(value > (ulong)Math.Pow(1024,2))
             {
-                return (int)(height * (1.0 / 3.0)) - (int)( ((decimal)value / ((decimal)Math.Pow(1024, 3) - ((decimal)Math.Pow(1024, 2))) ) * (decimal)40 );
+                return (int)(height * (1.0 / 3.0)) - (int)(((decimal)value / ((decimal)Math.Pow(1024, 3) - ((decimal)Math.Pow(1024, 2)))) * (decimal)40);
             }
             else if(value > (ulong)Math.Pow(1024,1))
             {
