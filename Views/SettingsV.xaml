@@ -9,7 +9,6 @@
              d:DesignHeight="400" d:DesignWidth="650">
     <Grid Background="White" Margin="32">
         <StackPanel Orientation="Vertical">
-            <Button Grid.Row="1" Width="100" Height="20" Content="Reset All Data" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="32,32" Command="{Binding ResetBtn}"/>
         </StackPanel>
     </Grid>
 </UserControl>

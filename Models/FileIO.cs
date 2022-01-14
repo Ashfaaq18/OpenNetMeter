@@ -9,6 +9,27 @@ namespace WhereIsMyData.Models
 {
     public class FileIO
     {
+        //get all profiles
+        public static List<string> GetProfiles()
+        {
+            string dir = "Profiles";
+            string ext = ".WIMD";
+            List<string> profiles = new List<string>();
+            if (Directory.Exists(dir))
+            {
+                Debug.WriteLine("exists");
+                string[] fileEntries = Directory.GetFiles(dir);
+                foreach (string fileName in fileEntries)
+                {
+                    //Debug.WriteLine(fileName);
+                    profiles.Add(fileName.Substring(dir.Length + 1, fileName.Length - dir.Length - ext.Length - 1));
+                    //string temp = fileName.Substring(dir.Length + 1, fileName.Length - dir.Length - ext.Length -1);
+                   // Debug.WriteLine(temp);
+                }
+            }
+            return profiles;
+        }
+
         //write all details of an app to a file
         public static void WriteFile_AppInfo(ObservableConcurrentDictionary<string, MyAppInfo> apps, FileStream stream)
         {

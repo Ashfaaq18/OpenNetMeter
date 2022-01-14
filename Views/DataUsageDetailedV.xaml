@@ -5,37 +5,48 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WhereIsMyData.Views" 
              xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
+             xmlns:vmp="clr-namespace:WhereIsMyData.ViewModels.DataUsageDetailedPagesVM"
+             xmlns:vp="clr-namespace:WhereIsMyData.Views.DataUsageDetailedPagesV" 
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="650">
     <UserControl.Resources>
         <vm:UnitConverterBytes x:Key="converterBytes"/>
+
+        <DataTemplate DataType="{x:Type vmp:OnlineProfileVM}">
+
+            <vp:OnlinePagesV/>
+
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vmp:OfflineProfileVM}">
+
+            <vp:OfflinePagesV/>
+
+        </DataTemplate>
+        
     </UserControl.Resources>
     <Grid Background="#f1f1f1">
-        <DataGrid x:Name="AllAppsData" Margin="32" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyApps}" BorderThickness="1">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" />
-                <DataGridTextColumn Header="Current Data Received" Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" />
-                <DataGridTextColumn Header="Current Data Sent" Binding="{Binding Value.CurrentDataSend, Converter={StaticResource converterBytes}}" />
-                <DataGridTextColumn Header="Total Data Received" Binding="{Binding Value.TotalDataRecv, Converter={StaticResource converterBytes}}" />
-                <DataGridTextColumn Header="Total Data Sent" Binding="{Binding Value.TotalDataSend, Converter={StaticResource converterBytes}}" />
-            </DataGrid.Columns>
-        </DataGrid>
-        
-        <!--<ListView x:Name="AllAppsData" Margin="64,32,64,32" ItemsSource="{Binding MyApps}">
-            <ListView.ItemTemplate>
-				<DataTemplate>
-					<Grid Margin="0,2">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="40" />
-							<ColumnDefinition Width="200" />
-							<ColumnDefinition Width="200" />
-						</Grid.ColumnDefinitions>
-                        <Image Source="{Binding Value.Icon}" Width ="32" Height="32" Grid.Column="0"/>
-                        <TextBlock Text="{Binding Key}" Grid.Column="1" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Value.DataRecv}" VerticalAlignment="Center" Grid.Column="2"/>
-                    </Grid>
-				</DataTemplate>
-			</ListView.ItemTemplate>
-        </ListView>-->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="300"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Label VerticalAlignment="Center">Detailed Data Usage of </Label>
+            <StackPanel Grid.Row="0" Margin="10" Width="150">
+                <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <Label VerticalAlignment="Center">Since: </Label>
+            <Label VerticalAlignment="Center" Content="{Binding Date}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <ContentControl x:Name="Profiles_Page" Content="{Binding SelectedViewModel, Mode=OneWay}"/>
+        </Grid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0">
+            <Label>Reset this profile information: </Label>
+            <Button Command="{Binding ResetBtn}">Reset</Button> 
+        </StackPanel>
+
     </Grid>
 </UserControl>

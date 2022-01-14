@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using WhereIsMyData.Models;
@@ -20,7 +15,6 @@ namespace WhereIsMyData.ViewModels
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
         public ICommand DataUsageSetCommand { get; set; }
-        public ICommand DataUsageAbtCommand { get; set; }
 
         private int tabBtnToggle;
         public int TabBtnToggle
@@ -81,9 +75,10 @@ namespace WhereIsMyData.ViewModels
 
             //initialize pages
             dusvm = new DataUsageSummaryVM();
-            dudvm = new DataUsageDetailedVM();
+            dudvm = new DataUsageDetailedVM(ref dusvm, ref netInfo);
+            svm = new SettingsVM();
+
             netInfo = new NetworkInfo(ref dusvm, ref dudvm); //not page
-            svm = new SettingsVM(ref dusvm, ref dudvm, ref netInfo);
 
             //intial startup page
             SelectedViewModel = dusvm;
@@ -98,8 +93,7 @@ namespace WhereIsMyData.ViewModels
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
-            DataUsageSetCommand = new BaseCommand(OpenDataUsageSit);
-            DataUsageAbtCommand = new BaseCommand(OpenDataUsageAbt);
+            DataUsageSetCommand = new BaseCommand(OpenDataUsageSet);
         }
 
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -113,26 +107,30 @@ namespace WhereIsMyData.ViewModels
             dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
         }
 
-        private void OpenDataUsageAbt(object obj)
-        {
-            throw new NotImplementedException();
-        }
-
         private void OpenDataUsageSum(object obj)
         {
-            SelectedViewModel = dusvm;
-            TabBtnToggle = 0;
+            if (TabBtnToggle != 0)
+            {
+                SelectedViewModel = dusvm;
+                TabBtnToggle = 0;
+            }
         }
 
         private void OpenDataUsageDet(object obj)
         {
-            SelectedViewModel = dudvm;
-            TabBtnToggle = 1;
+            if(TabBtnToggle!=1)
+            {
+                SelectedViewModel = dudvm;
+                TabBtnToggle = 1;
+            }
         }
-        private void OpenDataUsageSit(object obj)
+        private void OpenDataUsageSet(object obj)
         {
-            SelectedViewModel = svm;
-            TabBtnToggle = 2;
+            if (TabBtnToggle != 2)
+            {
+                SelectedViewModel = svm;
+                TabBtnToggle = 2;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

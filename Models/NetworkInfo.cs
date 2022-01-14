@@ -12,6 +12,7 @@ using Microsoft.Diagnostics.Tracing.Session;
 using WhereIsMyData.ViewModels;
 using System.Threading;
 using ManagedNativeWifi;
+using System.Collections.ObjectModel;
 
 namespace WhereIsMyData.Models
 {
@@ -81,6 +82,8 @@ namespace WhereIsMyData.Models
 
         private void SetNetworkStatus(bool isOnline)
         {
+            dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //register all profiles into the combo box;
+
             if (isOnline)
             {
                 //get adapter name
@@ -102,6 +105,9 @@ namespace WhereIsMyData.Models
                 //read saved data of adapter
                 ReadFile();
 
+                dudvm.CurrentConnection = adapterName;
+                dudvm.SelectedProfile = adapterName;
+               
                 //init tokens
                 cts_file = new CancellationTokenSource();
                 token_file = cts_file.Token;
@@ -139,8 +145,17 @@ namespace WhereIsMyData.Models
                     cts_speed.Cancel(); //stop calculating network speed
 
                 //reset speed counters
-                DownloadSpeed=0;
-                UploadSpeed=0;
+                DownloadSpeed = 0;
+                UploadSpeed = 0;
+
+                dudvm.CurrentConnection = "";
+                if(dudvm.Profiles.Count > 0)
+                {
+                    if (dudvm.SelectedProfile != "")
+                        dudvm.SelectedProfile = dudvm.SelectedProfile;
+                    else
+                        dudvm.SelectedProfile = dudvm.Profiles[0];
+                }
             }
         }
 
@@ -163,7 +178,8 @@ namespace WhereIsMyData.Models
                 DownloadSpeed = 0;
                 UploadSpeed = 0;
                 //recreate file
-                RecreateFile();
+                DeleteFile();
+                CreateFile();
                 //restart write file and capturing speed
                 SetNetworkStatus(true);
                 CaptureNetworkSpeed();
@@ -171,7 +187,8 @@ namespace WhereIsMyData.Models
             else
             {
                 //recreate file
-                RecreateFile();
+                DeleteFile();
+                CreateFile();
             }
         }
 
@@ -337,7 +354,7 @@ namespace WhereIsMyData.Models
         {
             path = "Profiles";
             filename = adapterName + ".WIMD";
-            pathString = System.IO.Path.Combine(path, filename);
+            pathString = Path.Combine(path, filename);
             try
             {
                 // Try to create the directory.
@@ -355,7 +372,7 @@ namespace WhereIsMyData.Models
                     using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
                     {
                         (ulong, ulong) data;
-                        data = FileIO.ReadFile_AppInfo(dudvm.MyApps, stream);
+                        data = FileIO.ReadFile_AppInfo(dudvm.OnProfVM.MyApps, stream);
 
                         dusvm.TotalDownloadData = data.Item1;
                         dusvm.TotalUploadData = data.Item2;
@@ -383,22 +400,29 @@ namespace WhereIsMyData.Models
             {
                 using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Write))
                 {
-                    FileIO.WriteFile_AppInfo(dudvm.MyApps, stream);
+                    FileIO.WriteFile_AppInfo(dudvm.OnProfVM.MyApps, stream);
                 }
             }
             catch (Exception e) { Debug.WriteLine("Cant Write: " + e.Message); }
         }
 
-        public void RecreateFile()
+        public void CreateFile()
         {
             try
             {
-                File.Delete(pathString);
                 var file = File.Create(pathString);
                 file.Close();
                 //File.SetCreationTime(adapterName + ".WIMD", DateTime.Now);
             }
-            catch(Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
+            catch (Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
+        }
+        public void DeleteFile()
+        {
+            try
+            {
+                File.Delete(pathString);
+            }
+            catch (Exception ex) { Debug.WriteLine("Cant delete: " + ex.Message); }
         }
 
         //------property changers---------------//
