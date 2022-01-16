@@ -48,7 +48,7 @@
         <Grid Background="Transparent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="400"/>
                 <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 

@@ -75,20 +75,18 @@ namespace WhereIsMyData.ViewModels
 
             //initialize pages
             dusvm = new DataUsageSummaryVM();
-            dudvm = new DataUsageDetailedVM(ref dusvm, ref netInfo);
+            dudvm = new DataUsageDetailedVM(ref dusvm);
             svm = new SettingsVM();
 
-            netInfo = new NetworkInfo(ref dusvm, ref dudvm); //not page
+            netInfo = new NetworkInfo(ref dusvm, ref dudvm);
+            dudvm.SetNetInfo(ref netInfo);
 
             //intial startup page
             SelectedViewModel = dusvm;
             TabBtnToggle = 0;
 
-            
             netInfo.PropertyChanged += NetInfo_PropertyChanged;
-            netInfo.InitNetworkStatus(); // update status bar with network status
-            netInfo.CaptureNetworkPackets(); //start capturing network packet sizes
-            netInfo.CaptureNetworkSpeed(); //start monitoring network speed
+            netInfo.InitConnection();
 
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);

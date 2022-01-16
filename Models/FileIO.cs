@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using WhereIsMyData.ViewModels;
 
 namespace WhereIsMyData.Models
 {
@@ -31,25 +32,76 @@ namespace WhereIsMyData.Models
         }
 
         //write all network details of a process to a file
-        public static void WriteFile_MyProcess(ObservableConcurrentDictionary<string, MyProcess> apps, FileStream stream)
+        public static void WriteFile_MyProcess(ObservableConcurrentDictionary<string, MyProcess> apps, string pathString)
         {
-            foreach(KeyValuePair<string, MyProcess> app in apps)
+            try
             {
-                byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
-
-                for (int i = 7 * 1; i >= 7 * 0; i--)
-                    Bytes[i] = (byte)(app.Value.TotalDataRecv >> 8 * i);
-
-                for (int i = 7 * 2; i >= 7 * 1; i--)
-                    Bytes[i] = (byte)(app.Value.TotalDataSend >> 8 * i);
-
-                Bytes[16] = (byte)app.Value.Name.Length;
-
-                for (int i = 0; i < app.Value.Name.Length; i++)
+                using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Write))
                 {
-                    Bytes[17 + i] = (byte)app.Value.Name[i];
+                    foreach (KeyValuePair<string, MyProcess> app in apps)
+                    {
+                        byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
+
+                        for (int i = 7 * 1; i >= 7 * 0; i--)
+                            Bytes[i] = (byte)(app.Value.TotalDataRecv >> 8 * i);
+
+                        for (int i = 7 * 2; i >= 7 * 1; i--)
+                            Bytes[i] = (byte)(app.Value.TotalDataSend >> 8 * i);
+
+                        Bytes[16] = (byte)app.Value.Name.Length;
+
+                        for (int i = 0; i < app.Value.Name.Length; i++)
+                        {
+                            Bytes[17 + i] = (byte)app.Value.Name[i];
+                        }
+                        stream.Write(Bytes, 0, Bytes.Length);
+                    }
                 }
-                stream.Write(Bytes, 0, Bytes.Length);
+            }
+            catch (Exception e) { Debug.WriteLine("Cant Write: " + e.Message); }
+        }
+
+        public static void ReadFile(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref, string adapterName, bool IsOnlineProfile)
+        {
+            string path = "Profiles";
+            string filename = adapterName + ".WIMD";
+            string pathString = Path.Combine(path, filename);
+            try
+            {
+                // Try to create the directory.
+                DirectoryInfo di = Directory.CreateDirectory(path);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("The process failed: {0}", e.ToString());
+            }
+
+            if (File.Exists(pathString))
+            {
+                try
+                {
+                    using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
+                    {
+                        (ulong, ulong) data;
+                        data = FileIO.ReadFile_MyProcess(dudvm_ref.OnProfVM.MyProcesses, stream);
+
+                        dusvm_ref.TotalDownloadData = data.Item1;
+                        dusvm_ref.TotalUploadData = data.Item2;
+
+                        DateTime dateTime = File.GetCreationTime(pathString);
+                        dusvm_ref.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("Cant Read: " + e.Message);
+                }
+            }
+            else
+            {
+                File.Create(pathString);
+                DateTime dateTime = File.GetCreationTime(pathString);
+                dusvm_ref.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
             }
         }
 
@@ -82,7 +134,7 @@ namespace WhereIsMyData.Models
 
                 int temp = stream.ReadByte();
                 byte[] Bytes1 = new byte[temp];
-                string tempName = "";// = BitConverter.ToString(Bytes1);
+                string tempName = "";
                 for (int i = 0; i < temp; i++) // loop to get the name of the app
                 {
                     Bytes1[i] = (byte)stream.ReadByte();
@@ -102,6 +154,25 @@ namespace WhereIsMyData.Models
                 TotalBytesSend += dataSend;
             }
             return (TotalBytesRecv, TotalBytesSend);
+        }
+
+        public static void CreateFile(string pathString)
+        {
+            try
+            {
+                var file = File.Create(pathString);
+                file.Close();
+                //File.SetCreationTime(adapterName + ".WIMD", DateTime.Now);
+            }
+            catch (Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
+        }
+        public static void DeleteFile(string pathString)
+        {
+            try
+            {
+                File.Delete(pathString);
+            }
+            catch (Exception ex) { Debug.WriteLine("Cant delete: " + ex.Message); }
         }
 
     }

@@ -13,6 +13,9 @@ using WhereIsMyData.ViewModels;
 using System.Threading;
 using ManagedNativeWifi;
 using System.Collections.ObjectModel;
+using System.Text;
+using System.Net.Sockets;
+using System.Collections.Generic;
 
 namespace WhereIsMyData.Models
 {
@@ -21,9 +24,7 @@ namespace WhereIsMyData.Models
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
 
-        private IPAddressRange IP_10_;
-        private IPAddressRange IP_172_16;
-        private IPAddressRange IP_192_168;
+        private string localIP;
 
         private ulong downloadSpeed;
         public ulong DownloadSpeed
@@ -47,6 +48,7 @@ namespace WhereIsMyData.Models
         private CancellationToken token_speed;
 
         private string adapterName;
+        private static HashSet<string> interfaces;
 
         private string isNetworkOnline;
         public string IsNetworkOnline
@@ -59,17 +61,90 @@ namespace WhereIsMyData.Models
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
 
-            IP_10_ = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.255.255.255"));
-            IP_172_16 = new IPAddressRange(IPAddress.Parse("172.16.0.0"), IPAddress.Parse("172.31.255.255"));
-            IP_192_168 = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
-
             DownloadSpeed = 0;
             UploadSpeed = 0;
-
+            
             adapterName = "";
+            interfaces = new HashSet<string>();
 
-            NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+            CaptureNetworkPackets();
+        }
 
+        private string GetLocalIP()
+        {
+            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+            {
+                socket.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                return endPoint.Address.ToString();
+            }
+        }
+
+        public void InitConnection()
+        {
+            IsNetworkOnline = "Disconnected";
+            dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles());
+            if (dudvm.Profiles.Count > 0)
+                dudvm.SelectedProfile = dudvm.Profiles[0];
+            NetworkChange_NetworkAddressChanged(null, null);
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            string tempIP;
+            NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (NetworkInterface n in adapters)
+            {
+                if (n.NetworkInterfaceType != NetworkInterfaceType.Loopback && n.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                {
+                    if (n.OperationalStatus == OperationalStatus.Up) //if there is a connection
+                    {
+                        interfaces.Add(n.Name);
+
+                        tempIP = GetLocalIP(); //get assigned ip
+
+                        IPInterfaceProperties adapterProperties = n.GetIPProperties();
+                        if (adapterProperties.GatewayAddresses.FirstOrDefault() != null)
+                        {
+                            foreach (UnicastIPAddressInformation ip in adapterProperties.UnicastAddresses)
+                            {
+                                if (ip.Address.ToString() == tempIP)
+                                {
+                                    if(localIP == tempIP) //this is to prevent this event from firing multiple times during 1 connection change
+                                        break;
+                                    else
+                                        localIP = tempIP;
+
+                                    if (IsNetworkOnline != "Disconnected") //if there was already a connection available
+                                    {
+                                        SetNetworkStatus(false);
+                                    }
+
+                                    adapterName = n.Name;
+                                    SetNetworkStatus(true);
+                                    CaptureNetworkSpeed();
+                                    Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                    else //if adapter is not up
+                    {
+                        if (interfaces.Remove(n.Name))
+                        {
+                            if (interfaces.Count == 0)
+                            {
+                                localIP = "";
+                                Debug.WriteLine("No connection");
+                                SetNetworkStatus(false);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static bool IsAdminMode()
@@ -82,58 +157,19 @@ namespace WhereIsMyData.Models
 
         private void SetNetworkStatus(bool isOnline)
         {
-            dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //register all profiles into the combo box;
-
             if (isOnline)
             {
-                //get adapter name
-                NetworkInterface[] networks = NetworkInterface.GetAllNetworkInterfaces();
-                NetworkInterface activeAdapter = networks.First(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback
-                    && x.NetworkInterfaceType != NetworkInterfaceType.Tunnel
-                    && x.OperationalStatus == OperationalStatus.Up
-                    && x.Name.StartsWith("vEthernet") == false);
-
-                // -- future -- add option to filter when 2 connections are available
-                if (activeAdapter.Name == "Wi-Fi" && NativeWifi.EnumerateConnectedNetworkSsids().Select(x => x.ToString()).Count() == 1)
-                    adapterName = activeAdapter.Name + "__" + NativeWifi.EnumerateConnectedNetworkSsids().Select(x => x.ToString()).First();
-                else
-                    adapterName = activeAdapter.Name;
-
                 IsNetworkOnline = "Connected : " + adapterName;
                 dusvm.TotalUsageText = "Total data usage of " + adapterName + " since : ";
-
                 //read saved data of adapter
-                ReadFile();
+                FileIO.ReadFile(ref dusvm, ref dudvm, adapterName, false);
+
+                dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //this statement should always be below FileIO.ReadFile, this registers the available saved profiles
 
                 dudvm.CurrentConnection = adapterName;
                 dudvm.SelectedProfile = adapterName;
-               
-                //init tokens
-                cts_file = new CancellationTokenSource();
-                token_file = cts_file.Token;
 
-                //start writing to file every second
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        Debug.WriteLine("Operation Started : Write file");
-                        while (!token_file.IsCancellationRequested)
-                        {
-                            WriteFile();
-                            await Task.Delay(1000, token_file);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Debug.WriteLine("Operation Cancelled : Write file");
-                        cts_file.Dispose(); 
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine("Critical error: " + ex.Message);
-                    }
-                });
+                WriteToFile();
             }
             else //if network is disconnected
             {
@@ -148,25 +184,17 @@ namespace WhereIsMyData.Models
                 DownloadSpeed = 0;
                 UploadSpeed = 0;
 
-                dudvm.CurrentConnection = "";
-                if(dudvm.Profiles.Count > 0)
-                {
-                    if (dudvm.SelectedProfile != "")
-                        dudvm.SelectedProfile = dudvm.SelectedProfile;
-                    else
-                        dudvm.SelectedProfile = dudvm.Profiles[0];
-                }
-            }
-        }
+                dusvm.CurrentSessionDownloadData = 0;
+                dusvm.CurrentSessionUploadData = 0;
 
-        public void InitNetworkStatus()
-        {
-            SetNetworkStatus(NetworkInterface.GetIsNetworkAvailable());
+                dudvm.CurrentConnection = "";
+                dudvm.SelectedProfile = adapterName;
+            }
         }
 
         public void ResetWriteFileAndSpeed()
         {
-            if (NetworkInterface.GetIsNetworkAvailable())
+            if (IsNetworkOnline != "Disconnected")
             {
                 //stop counters
                 if (cts_file != null)
@@ -178,8 +206,9 @@ namespace WhereIsMyData.Models
                 DownloadSpeed = 0;
                 UploadSpeed = 0;
                 //recreate file
-                DeleteFile();
-                CreateFile();
+                FileIO.DeleteFile(Path.Combine("Profiles", adapterName + ".WIMD"));
+                FileIO.CreateFile(Path.Combine("Profiles", adapterName + ".WIMD"));
+
                 //restart write file and capturing speed
                 SetNetworkStatus(true);
                 CaptureNetworkSpeed();
@@ -187,19 +216,39 @@ namespace WhereIsMyData.Models
             else
             {
                 //recreate file
-                DeleteFile();
-                CreateFile();
+                FileIO.DeleteFile(Path.Combine("Profiles", adapterName + ".WIMD"));
+                FileIO.CreateFile(Path.Combine("Profiles", adapterName + ".WIMD"));
             }
         }
-
-        private void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        public void WriteToFile()
         {
-            SetNetworkStatus(e.IsAvailable);
-            if(e.IsAvailable)
-                CaptureNetworkSpeed();
+            //init tokens
+            cts_file = new CancellationTokenSource();
+            token_file = cts_file.Token;
+
+            //start writing to file every second
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Debug.WriteLine("Operation Started : Write file");
+                    while (!token_file.IsCancellationRequested)
+                    {
+                        FileIO.WriteFile_MyProcess(dudvm.OnProfVM.MyProcesses, Path.Combine("Profiles", adapterName + ".WIMD"));
+                        await Task.Delay(1000, token_file);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.WriteLine("Operation Cancelled : Write file");
+                    cts_file.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Critical error: " + ex.Message);
+                }
+            });
         }
-
-
         public void CaptureNetworkSpeed()
         {
             cts_speed = new CancellationTokenSource();
@@ -252,11 +301,6 @@ namespace WhereIsMyData.Models
             });
         }
 
-        private bool IsPrivateIP(IPAddress ip)
-        {
-            return IP_10_.IsInRange(ip) || IP_172_16.IsInRange(ip) || IP_192_168.IsInRange(ip);
-        }
-
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)
         {
@@ -281,21 +325,25 @@ namespace WhereIsMyData.Models
         //download events    
         private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
+            //Debug.WriteLine("receive udpv4: " + obj.saddr + " , " + obj.daddr);
             RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
+            //Debug.WriteLine("receive udpv6: " + obj.saddr + " , " + obj.daddr);
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
+            //Debug.WriteLine("receive tcpv4: " + obj.saddr + " , " + obj.daddr);
             RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
+            //Debug.WriteLine("receive tcpv6: " + obj.saddr + " , " + obj.daddr);
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
@@ -303,9 +351,8 @@ namespace WhereIsMyData.Models
         //calculate the Bytes sent and recieved
         private void RecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            if(!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)) )
+            if(!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
             {
-                //Debug.WriteLine(src + "," + dest);
                 dusvm.TotalDownloadData += (ulong)size;
                 dusvm.CurrentSessionDownloadData += (ulong)size;
 
@@ -315,9 +362,8 @@ namespace WhereIsMyData.Models
 
         private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest))
+            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
             {
-                //Debug.WriteLine(src + "," + dest);
                 dusvm.TotalDownloadData += (ulong)size;
                 dusvm.CurrentSessionDownloadData += (ulong)size;
 
@@ -327,7 +373,7 @@ namespace WhereIsMyData.Models
 
         private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && !(IsPrivateIP(src) && IsPrivateIP(dest)))
+            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
             {
                 dusvm.TotalUploadData += (ulong)size;
                 dusvm.CurrentSessionUploadData += (ulong)size;
@@ -337,92 +383,13 @@ namespace WhereIsMyData.Models
         }
         private void SendProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest))
+            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
             {
                 dusvm.TotalUploadData += (ulong)size;
                 dusvm.CurrentSessionUploadData += (ulong)size;
 
                 dudvm.GetAppDataInfo(name, 0, size);
             }
-        }
-
-        private string path;
-        private string filename;
-        private string pathString;
-        //file stuff
-        public void ReadFile()
-        {
-            path = "Profiles";
-            filename = adapterName + ".WIMD";
-            pathString = Path.Combine(path, filename);
-            try
-            {
-                // Try to create the directory.
-                DirectoryInfo di = Directory.CreateDirectory(path);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine("The process failed: {0}", e.ToString());
-            }
-
-            if (File.Exists(pathString))
-            {
-                try
-                {
-                    using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
-                    {
-                        (ulong, ulong) data;
-                        data = FileIO.ReadFile_MyProcess(dudvm.OnProfVM.MyProcesses, stream);
-
-                        dusvm.TotalDownloadData = data.Item1;
-                        dusvm.TotalUploadData = data.Item2;
-
-                        DateTime dateTime = File.GetCreationTime(pathString);
-                        dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Cant Read: " + e.Message);
-                }
-            }
-            else
-            {
-                File.Create(pathString);
-                DateTime dateTime = File.GetCreationTime(pathString);
-                dusvm.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
-            }
-        }
-
-        private void WriteFile()
-        {
-            try
-            {
-                using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Write))
-                {
-                    FileIO.WriteFile_MyProcess(dudvm.OnProfVM.MyProcesses, stream);
-                }
-            }
-            catch (Exception e) { Debug.WriteLine("Cant Write: " + e.Message); }
-        }
-
-        public void CreateFile()
-        {
-            try
-            {
-                var file = File.Create(pathString);
-                file.Close();
-                //File.SetCreationTime(adapterName + ".WIMD", DateTime.Now);
-            }
-            catch (Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
-        }
-        public void DeleteFile()
-        {
-            try
-            {
-                File.Delete(pathString);
-            }
-            catch (Exception ex) { Debug.WriteLine("Cant delete: " + ex.Message); }
         }
 
         //------property changers---------------//

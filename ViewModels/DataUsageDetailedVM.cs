@@ -105,11 +105,10 @@ namespace WhereIsMyData.ViewModels
 
         private DataUsageSummaryVM dusvm;
         private NetworkInfo netInfo;
-        public DataUsageDetailedVM(ref DataUsageSummaryVM dusvm_ref, ref NetworkInfo netInfo_ref)
+        public DataUsageDetailedVM(ref DataUsageSummaryVM dusvm_ref)
         {
             //set references
             dusvm = dusvm_ref;
-            netInfo = netInfo_ref;
 
             //initialize vars
             SelectedProfile = "";
@@ -127,9 +126,13 @@ namespace WhereIsMyData.ViewModels
             ResetBtn = new BaseCommand(ResetTotalData);
         }
 
+        public void SetNetInfo(ref NetworkInfo netInfo_ref)
+        {
+            netInfo = netInfo_ref;
+        }
         private void ResetTotalData(object obj)
         {
-            /*if(SelectedProfile == CurrentConnection)
+            if(SelectedProfile == CurrentConnection)
             {
                 dusvm.CurrentSessionDownloadData = 0;
                 dusvm.CurrentSessionUploadData = 0;
@@ -148,7 +151,15 @@ namespace WhereIsMyData.ViewModels
                 {
                     OffProfVM.MyProcesses.Remove(row.Key);
                 }
-            }*/
+                Debug.WriteLine("Deleted file: " + SelectedProfile);
+                FileIO.DeleteFile(Path.Combine("Profiles", SelectedProfile + ".WIMD")); //delete file
+                Profiles.Remove(SelectedProfile); //remove profile from combo box
+            }
+
+            if (Profiles.Count > 0)
+                SelectedProfile = Profiles[0];
+            else
+                SelectedProfile = null;
             
         }
 
@@ -173,14 +184,13 @@ namespace WhereIsMyData.ViewModels
 
         private void SetVM(string selProf)
         {
+            string pathString = Path.Combine("Profiles", selProf + ".WIMD");
             if (selProf != CurrentConnection)
             {
-                if (SelectedViewModel != OffProfVM)
-                    SelectedViewModel = OffProfVM;
+                SelectedViewModel = OffProfVM;
                 //read file into the OnProfVM.MyProcesses1 dictionary
                 try
                 {
-                    string pathString = Path.Combine("Profiles", selProf + ".WIMD");
                     using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
                     {
                         foreach (var row in OffProfVM.MyProcesses.ToList())
@@ -190,7 +200,6 @@ namespace WhereIsMyData.ViewModels
                         FileIO.ReadFile_MyProcess(OffProfVM.MyProcesses, stream);
                         DateTime dateTime = File.GetCreationTime(pathString);
                         Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
-                        int i = 0;
                     }
                 }
                 catch (Exception e1)
@@ -201,13 +210,9 @@ namespace WhereIsMyData.ViewModels
             }
             else
             {
-                if (SelectedViewModel != OnProfVM)
-                {
-                    SelectedViewModel = OnProfVM;
-                    string pathString = Path.Combine("Profiles", selProf + ".WIMD");
-                    DateTime dateTime = File.GetCreationTime(pathString);
-                    Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
-                }
+                SelectedViewModel = OnProfVM;
+                DateTime dateTime = File.GetCreationTime(pathString);
+                Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
             }
         }
 
