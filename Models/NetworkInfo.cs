@@ -160,7 +160,6 @@ namespace WhereIsMyData.Models
             if (isOnline)
             {
                 IsNetworkOnline = "Connected : " + adapterName;
-                dusvm.TotalUsageText = "Total data usage of " + adapterName + " since : ";
                 //read saved data of adapter
                 FileIO.ReadFile(ref dusvm, ref dudvm, adapterName, false);
 
@@ -325,25 +324,21 @@ namespace WhereIsMyData.Models
         //download events    
         private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
-            //Debug.WriteLine("receive udpv4: " + obj.saddr + " , " + obj.daddr);
             RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_UdpIpRecvIPV6(UpdIpV6TraceData obj)
         {
-            //Debug.WriteLine("receive udpv6: " + obj.saddr + " , " + obj.daddr);
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecv(TcpIpTraceData obj)
         {
-            //Debug.WriteLine("receive tcpv4: " + obj.saddr + " , " + obj.daddr);
             RecvProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
         private void Kernel_TcpIpRecvIPV6(TcpIpV6TraceData obj)
         {
-            //Debug.WriteLine("receive tcpv6: " + obj.saddr + " , " + obj.daddr);
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 

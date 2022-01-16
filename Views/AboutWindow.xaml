@@ -68,7 +68,7 @@
                 <Grid Margin="15" Background="White">
                     <StackPanel>
                         <TextBlock>
-                            Version: 0.0.1
+                            Version: 0.1.0
                             <LineBreak/>
                             <LineBreak/>
                             This product is created and maintained by Ashfaaq Riphque.

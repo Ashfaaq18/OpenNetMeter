@@ -89,7 +89,7 @@ namespace WhereIsMyData.Models
                         dusvm_ref.TotalUploadData = data.Item2;
 
                         DateTime dateTime = File.GetCreationTime(pathString);
-                        dusvm_ref.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
+                        dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
                     }
                 }
                 catch (Exception e)
@@ -101,7 +101,7 @@ namespace WhereIsMyData.Models
             {
                 File.Create(pathString);
                 DateTime dateTime = File.GetCreationTime(pathString);
-                dusvm_ref.Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
+                dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
             }
         }
 

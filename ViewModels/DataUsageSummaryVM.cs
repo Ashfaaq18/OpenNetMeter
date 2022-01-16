@@ -66,15 +66,7 @@ namespace WhereIsMyData.ViewModels
                 OnPropertyChanged("TotalUsageText"); 
             }
         }
-        private string date;
-        public string Date
-        {
-            get { return date; }
-            set
-            {
-                date = value; OnPropertyChanged("Date");
-            }
-        }
+
         public DataUsageSummaryVM()
         {
             TotalDownloadData = 0;
@@ -82,8 +74,7 @@ namespace WhereIsMyData.ViewModels
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
             SpeedGraph = new NetworkSpeedGraph();
-            Date = "";
-            TotalUsageText = "";
+            TotalUsageText = "Total data Usage of the past 0 days";
         }
 
         //------property changers---------------//

@@ -100,8 +100,9 @@
                             <RowDefinition Height="0.5*"/>
                             <RowDefinition Height="0.25*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{Binding TotalUsageText}"  Foreground="#717171" Margin="10,0,0,0" />
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="{Binding Date}" Margin="10,0,0,0"/>
+
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding TotalUsageText}"  Foreground="#717171" Margin="10,0" />
+
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -153,13 +154,14 @@
                         </ItemsControl>
                         <Image Grid.Column="1" Width="540" Height="120" Source="{Binding SpeedGraph.Graph}"></Image>
                     </Grid>
-                    <ItemsControl Grid.Row="2" ItemsSource="{Binding SpeedGraph.Xaxis}" FontSize="10">
+                    <ItemsControl Grid.Row="2" ItemsSource="{Binding SpeedGraph.Xaxis}" FontSize="10" Margin="40,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Margin="5,0,0,0" Width="540" Height="25" Rows="1"/>
+                                <UniformGrid Width="540" Height="25" Rows="1"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
+                    <Label Content="Seconds" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="10" Margin="0,-5,0,0"/>
                 </Grid>
             </Border>
         </Grid>
