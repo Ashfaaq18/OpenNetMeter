@@ -37,7 +37,7 @@ This program provides the following features,
 
 <img src="https://user-images.githubusercontent.com/27722888/149656312-7803b97a-884f-4e1e-bd9c-b75cbfab38db.png" width="500" height="300"/>
 
-3. Set the task Name and description as required and make sure to tick the checkbox and set it to windows 10
+3. Set the task Name and description as required. Tick the Highest privilege checkbox, Tick Run only when user is logged on, and set it to windows 10.
 
 <img src="https://user-images.githubusercontent.com/27722888/149656420-3f3e0808-b813-446f-9b04-ef353b0635d3.png" width="500" height="300"/>
 
@@ -49,4 +49,4 @@ This program provides the following features,
 
 <img src="https://user-images.githubusercontent.com/27722888/149656782-1de149b1-d8dc-42b9-b765-bba07186032b.png" width="300" height="300"/>
 
-6. Click Ok to finalize the setup. Restart your system and check if its working.
+6. Click Ok to finalize the setup. Restart your system and check if its working. When your PC starts up, the program might take a few minutes to appear.
