@@ -3,14 +3,10 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>myicon1.ico</ApplicationIcon>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Views\x48.png" />
-    <None Remove="Views\x64.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ManagedNativeWifi" Version="2.1.0" />
@@ -20,15 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Views\x48.png" />
-    <Resource Include="Views\x64.png" />
+    <Resource Include="Resources\x48.png" />
+    <Resource Include="Resources\x64.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\x48.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\x64.png">
+    <None Update="Resources\myicon1.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

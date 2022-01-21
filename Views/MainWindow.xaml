@@ -63,7 +63,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <Image Source="/Views/x48.png" Height="35" Width="35" Margin="10,0"/>
+                    <Image Source="/Resources/x48.png" Height="35" Width="35" Margin="10,0"/>
                 </StackPanel>
                 
                 <Grid  Grid.Column="1">

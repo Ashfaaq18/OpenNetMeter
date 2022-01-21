@@ -59,7 +59,7 @@
                     </Button.Content>
                 </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" >
-                    <Image Source="/Views/x64.png" Height="64" Width="64" Margin="10,0"/>
+                    <Image Source="/Resources/x64.png" Height="64" Width="64" Margin="10,0"/>
                     <TextBlock Text="WhereIsMyData" FontFamily="Segoe UI" FontWeight="Bold" 
                     FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
                 </StackPanel>
