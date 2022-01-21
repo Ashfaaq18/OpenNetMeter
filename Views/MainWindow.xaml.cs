@@ -29,8 +29,7 @@ namespace WhereIsMyData.Views
         
         private void Exit_Button_Click(object sender, RoutedEventArgs e)
         {
-            aboutWin.SetAppExit();
-            aboutWin.Close();
+            aboutWin.CloseWin();
             Close();
         }
 

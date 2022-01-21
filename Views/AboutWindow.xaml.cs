@@ -11,34 +11,22 @@ namespace WhereIsMyData.Views
     /// </summary>
     public partial class AboutWindow : Window
     {
-        private bool IsMainAppExit;
         public AboutWindow()
         {
             InitializeComponent();
-            IsMainAppExit = false;
         }
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();
         }
 
-        public void SetAppExit()
-        {
-            IsMainAppExit = true;
-        }
-        private void Exit_Button_Click(object sender, RoutedEventArgs e)
+        public void CloseWin()
         {
             Close();
         }
-        protected override void OnClosing(CancelEventArgs e)
+        private void Exit_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (IsMainAppExit)
-                e.Cancel = false;
-            else
-            {
-                e.Cancel = true;
-                Hide();
-            } 
+            Hide();
         }
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
