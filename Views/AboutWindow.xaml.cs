@@ -51,6 +51,7 @@ namespace WhereIsMyData.Views
         public void Show(Window owner)
         {
             this.Owner = owner;
+            //always centre the about window to the parent window
             this.Left = owner.Left + owner.Width / 2 - this.Width/2;
             this.Top = owner.Top + owner.Height / 2 - this.Height/2;
             this.Show();
