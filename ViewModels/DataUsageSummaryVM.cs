@@ -12,6 +12,7 @@ namespace WhereIsMyData.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
+        private TrayPopupVM tpvm;
         public NetworkSpeedGraph SpeedGraph { get; set; }
 
         private ulong totalDownloadData;
@@ -42,6 +43,7 @@ namespace WhereIsMyData.ViewModels
             set
             {
                 currentSessionDownloadData = value;
+                tpvm.CurrentSessionDownloadData = value;
                 OnPropertyChanged("CurrentSessionDownloadData");
             }
         }
@@ -52,6 +54,7 @@ namespace WhereIsMyData.ViewModels
             set
             {
                 currentSessionUploadData = value;
+                tpvm.CurrentSessionUploadData = value;
                 OnPropertyChanged("CurrentSessionUploadData");
             }
         }
@@ -67,8 +70,9 @@ namespace WhereIsMyData.ViewModels
             }
         }
 
-        public DataUsageSummaryVM()
+        public DataUsageSummaryVM(ref TrayPopupVM tpvm_ref)
         {
+            tpvm = tpvm_ref;
             TotalDownloadData = 0;
             TotalUploadData = 0;
             CurrentSessionDownloadData = 0;

@@ -10,6 +10,7 @@ namespace WhereIsMyData.ViewModels
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
+        private readonly TrayPopupVM tpvm;
         private readonly SettingsVM svm;
         private readonly NetworkInfo netInfo;
         public ICommand DataUsageSumCommand { get; set; }
@@ -62,7 +63,7 @@ namespace WhereIsMyData.ViewModels
             }
         }
 
-        public NavigationAndTasksVM() //runs once during app init
+        public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext) //runs once during app init
         {
             if (!NetworkInfo.IsAdminMode())
             {
@@ -74,7 +75,8 @@ namespace WhereIsMyData.ViewModels
             UploadSpeed = 0;
 
             //initialize pages
-            dusvm = new DataUsageSummaryVM();
+            tpvm = tpVM_DataContext;
+            dusvm = new DataUsageSummaryVM(ref tpvm);
             dudvm = new DataUsageDetailedVM(ref dusvm);
             svm = new SettingsVM();
 
@@ -100,6 +102,9 @@ namespace WhereIsMyData.ViewModels
             //update status bar speeds
             DownloadSpeed = netInfo.DownloadSpeed;
             UploadSpeed = netInfo.UploadSpeed;
+            //show speed in tray popup
+            tpvm.DownloadSpeed = netInfo.DownloadSpeed;
+            tpvm.UploadSpeed = netInfo.UploadSpeed;
             //update graph data points
             dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
             dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
