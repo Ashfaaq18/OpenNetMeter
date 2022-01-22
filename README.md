@@ -28,6 +28,10 @@ This program provides the following features,
 ### Detailed tab
 ![3](https://user-images.githubusercontent.com/27722888/149655347-da59c1f1-7eb9-4629-8315-e0969fd20340.png)
 
+### System tray
+
+![TrayPopup_GIF1](https://user-images.githubusercontent.com/27722888/150639166-e65e4a04-56f9-4468-8918-dda03ac8b0a0.gif)
+
 <div id="startup"></div>
 
 ## Add as startup
