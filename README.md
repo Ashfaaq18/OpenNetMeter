@@ -11,6 +11,7 @@ This program provides the following features,
 - current connection's session data usage 
 - total data usage since the detection of a new connection.
 - table of all the individual processes which consumed this data.
+- A system tray icon to show the current session data usage and network speeds.
 
 ## Installation
 
