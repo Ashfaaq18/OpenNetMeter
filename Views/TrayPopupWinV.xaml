@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WhereIsMyData.Views"
+        xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
         mc:Ignorable="d"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
@@ -27,6 +27,10 @@
             </Style.Triggers>
         </Style>
     </Window.Style>
+    <Window.Resources>
+        <vm:UnitConverterBytes x:Key="converterBytes"/>
+        <vm:UnitConverterBits x:Key="converterBits"/>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -34,9 +38,22 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0">Dwn</Label>
-        <Label Grid.Row="1">Up</Label>
-        <Label Grid.Row="2">Dwn Speed</Label>
-        <Label Grid.Row="3">Up Speed</Label>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Label>D-Volume :</Label>
+            <Label Margin="-5,0,0,0" Content="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Label>U-Volume :</Label>
+            <Label Margin="-5,0,0,0" Content="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Label>D-Speed :</Label>
+            <Label Margin="-5,0,0,0" Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Orientation="Horizontal">
+            <Label>U-Speed :</Label>
+            <Label Margin="-5,0,0,0" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
+        </StackPanel>
+
     </Grid>
 </Window>

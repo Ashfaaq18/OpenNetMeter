@@ -33,7 +33,7 @@ namespace WhereIsMyData.ViewModels
         }
         private string SuffixBits(int value)
         {
-            return value == 4 ? "Tb" : value == 3 ? "Gb" : value == 2 ? "Mb" : value == 1 ? "Kb" : value == 0 ? "b" : "Error";
+            return value == 4 ? "Tbps" : value == 3 ? "Gbps" : value == 2 ? "Mbps" : value == 1 ? "Kbps" : value == 0 ? "bps" : "Error";
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {

@@ -189,14 +189,12 @@
                     <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                     <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
                     <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}"/>
-                    <TextBlock Text="ps" Margin="-5,0,0,0" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                    </WrapPanel>
+                </WrapPanel>
 
                     <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                     <WrapPanel Grid.Column="4" VerticalAlignment="Center">
                     <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
-                    <TextBlock Margin="-5,0,0,0" Text="ps" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                    </WrapPanel>
+                </WrapPanel>
             </Grid>
 
         </Grid>

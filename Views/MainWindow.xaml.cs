@@ -24,11 +24,12 @@ namespace WhereIsMyData.Views
         {
             InitializeComponent();
 
-            DataContext = new NavigationAndTasksVM();
+            trayWin = new TrayPopupWinV();
+            DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
             aboutWin = new AboutWindow();
 
             //initialize system tray
-            trayWin = new TrayPopupWinV();
+            
             trayWin.Visibility = Visibility.Hidden;
             ni = new Forms.NotifyIcon();
             cm = new Forms.ContextMenuStrip();
