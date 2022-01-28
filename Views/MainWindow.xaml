@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:v="clr-namespace:WhereIsMyData.Views" 
         xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
+        xmlns:res="clr-namespace:WhereIsMyData.Properties"
         mc:Ignorable="d"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -16,7 +17,7 @@
         Title="" Height="500" Width="670">
 
     <Window.Resources>
-
+        <vm:BitmapToImageConverter x:Key="BitmapToImage"/>
         <vm:UnitConverterBits x:Key="converterBits"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
@@ -63,7 +64,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <Image Source="/Resources/x48.png" Height="35" Width="35" Margin="10,0"/>
+                    <Image Source="{Binding Source={x:Static res:Resources.x48}, Converter={StaticResource BitmapToImage}}" Height="35" Width="35" Margin="10,0"/>
                 </StackPanel>
                 
                 <Grid  Grid.Column="1">

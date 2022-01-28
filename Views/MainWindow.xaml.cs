@@ -29,13 +29,13 @@ namespace WhereIsMyData.Views
             aboutWin = new AboutWindow();
 
             //initialize system tray
-            
+            trayWin.Topmost = true;
             trayWin.Visibility = Visibility.Hidden;
             ni = new Forms.NotifyIcon();
             cm = new Forms.ContextMenuStrip();
             balloonShow = false;
             forceHideTrayWin = true;
-            ni.Icon = new System.Drawing.Icon("Resources/myicon1.ico");
+            ni.Icon = Properties.Resources.AppIcon;
             ni.Visible = true;
             ni.DoubleClick += Ni_DoubleClick;
             ni.MouseMove += Ni_MouseMove;
