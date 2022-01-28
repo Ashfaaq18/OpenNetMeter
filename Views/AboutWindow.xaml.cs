@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
@@ -13,6 +13,7 @@ namespace WhereIsMyData.Views
     {
         public AboutWindow()
         {
+            this.Resources.Add("AppVersion", "Version: " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
             InitializeComponent();
         }
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)

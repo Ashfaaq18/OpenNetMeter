@@ -72,9 +72,8 @@
             <Grid Grid.Row="1"  Background="WhiteSmoke">
                 <Grid Margin="15" Background="White">
                     <StackPanel>
+                        <TextBlock Text="{StaticResource AppVersion}"/>
                         <TextBlock>
-                            Version: 0.2.0
-                            <LineBreak/>
                             <LineBreak/>
                             This product is created and maintained by Ashfaaq Riphque.
                             <LineBreak/>
@@ -87,11 +86,8 @@
                                 https://github.com/Ashfaaq18/WhereIsMyData
                             </Hyperlink>
                         </TextBlock>
-
                     </StackPanel>
-
                 </Grid>
-                
             </Grid>
         </Grid>
     </Border>
