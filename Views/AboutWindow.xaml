@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
+        xmlns:res="clr-namespace:WhereIsMyData.Properties"
         xmlns:local="clr-namespace:WhereIsMyData.Views"
         mc:Ignorable="d"
         WindowStyle="None"
@@ -11,6 +13,9 @@
         UseLayoutRounding="True"
         Background="Transparent"
         Title="About WhereIsMyData" Height="260" Width="380">
+    <Window.Resources>
+        <vm:BitmapToImageConverter x:Key="BitmapToImage"/>
+    </Window.Resources>
     <Border Margin="10">
         <Border.Effect>
             <DropShadowEffect Color="Black"
@@ -59,7 +64,7 @@
                     </Button.Content>
                 </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" >
-                    <Image Source="/Resources/x64.png" Height="64" Width="64" Margin="10,0"/>
+                    <Image Source="{Binding Source={x:Static res:Resources.x64}, Converter={StaticResource BitmapToImage}}" Height="64" Width="64" Margin="10,0"/>
                     <TextBlock Text="WhereIsMyData" FontFamily="Segoe UI" FontWeight="Bold" 
                     FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
                 </StackPanel>
