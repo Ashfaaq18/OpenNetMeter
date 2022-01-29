@@ -24,14 +24,17 @@ This program provides the following features,
 
 ### Summary tab
 
-![2](https://user-images.githubusercontent.com/27722888/149655800-9f7b1b1f-ea90-4696-b927-072a8d54f671.png)
+![Summary - Copy](https://user-images.githubusercontent.com/27722888/151661081-e8bb7411-eba3-4078-9ac2-47075f45b880.png)
 
 ### Detailed tab
-![3](https://user-images.githubusercontent.com/27722888/149655347-da59c1f1-7eb9-4629-8315-e0969fd20340.png)
+
+![Detailed - Copy](https://user-images.githubusercontent.com/27722888/151661086-44ead811-858e-4db6-af9d-dd1ad1dd5d4b.png)
+
 
 ### System tray
 
-![TrayPopup_GIF1](https://user-images.githubusercontent.com/27722888/150639166-e65e4a04-56f9-4468-8918-dda03ac8b0a0.gif)
+![TrayPopup_GIF1](https://user-images.githubusercontent.com/27722888/151661088-71349a72-f687-48be-ad33-805f7bf6771d.gif)
+
 
 <div id="startup"></div>
 
