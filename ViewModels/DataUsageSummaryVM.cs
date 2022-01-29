@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using WhereIsMyData.Models;
+using OpenNetMeter.Models;
 
-namespace WhereIsMyData.ViewModels
+namespace OpenNetMeter.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {

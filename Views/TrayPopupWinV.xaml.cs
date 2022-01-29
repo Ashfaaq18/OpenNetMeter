@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using WhereIsMyData.ViewModels;
+using OpenNetMeter.ViewModels;
 
-namespace WhereIsMyData.Views
+namespace OpenNetMeter.Views
 {
     /// <summary>
     /// Interaction logic for trayPopupWinV.xaml

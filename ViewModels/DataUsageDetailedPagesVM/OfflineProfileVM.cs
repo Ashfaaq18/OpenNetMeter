@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WhereIsMyData.Models;
+using OpenNetMeter.Models;
 
-namespace WhereIsMyData.ViewModels.DataUsageDetailedPagesVM
+namespace OpenNetMeter.ViewModels.DataUsageDetailedPagesVM
 {
     public class OfflineProfileVM
     {

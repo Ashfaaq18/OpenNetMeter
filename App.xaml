@@ -1,7 +1,7 @@
-﻿<Application x:Class="WhereIsMyData.App"
+﻿<Application x:Class="OpenNetMeter.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:WhereIsMyData"
+             xmlns:local="clr-namespace:OpenNetMeter"
              StartupUri="/Views/MainWindow.xaml">
     <Application.Resources>
          

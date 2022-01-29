@@ -1,12 +1,12 @@
 ﻿using System.Windows;
-using WhereIsMyData.ViewModels;
+using OpenNetMeter.ViewModels;
 using System.Windows.Input;
 using Forms = System.Windows.Forms;
 using System;
 using System.Timers;
 using System.Threading.Tasks;
 
-namespace WhereIsMyData.Views
+namespace OpenNetMeter.Views
 {
     /// <summary>
     /// Interaction logic for HomeUI.xaml

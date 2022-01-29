@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
-namespace WhereIsMyData.Views
+namespace OpenNetMeter.Views
 {
     /// <summary>
     /// Interaction logic for AboutWindow.xaml

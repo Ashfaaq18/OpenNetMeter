@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace WhereIsMyData.ViewModels
+namespace OpenNetMeter.ViewModels
 {
     public class UnitConverterBytes : IValueConverter
     {

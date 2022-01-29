@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace WhereIsMyData.Views
+namespace OpenNetMeter.Views
 {
     /// <summary>
     /// Interaction logic for DataUsageDetailed.xaml

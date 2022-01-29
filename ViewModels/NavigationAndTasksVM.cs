@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using WhereIsMyData.Models;
+using OpenNetMeter.Models;
 
-namespace WhereIsMyData.ViewModels
+namespace OpenNetMeter.ViewModels
 {
     class NavigationAndTasksVM : INotifyPropertyChanged
     {

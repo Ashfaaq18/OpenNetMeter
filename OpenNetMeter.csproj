@@ -5,8 +5,9 @@
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>AppIcon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
     <Version>0.2.1</Version>
+    <AssemblyName>OpenNetMeter</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

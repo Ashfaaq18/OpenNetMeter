@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using WhereIsMyData.Models;
+using OpenNetMeter.Models;
 
-namespace WhereIsMyData.ViewModels
+namespace OpenNetMeter.ViewModels
 {
     public class SettingsVM
     {

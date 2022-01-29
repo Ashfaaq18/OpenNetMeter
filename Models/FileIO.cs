@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using WhereIsMyData.ViewModels;
+using OpenNetMeter.ViewModels;
 
-namespace WhereIsMyData.Models
+namespace OpenNetMeter.Models
 {
     public class FileIO
     {

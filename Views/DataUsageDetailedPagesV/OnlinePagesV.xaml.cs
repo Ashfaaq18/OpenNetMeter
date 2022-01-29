@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace WhereIsMyData.Views.DataUsageDetailedPagesV
+namespace OpenNetMeter.Views.DataUsageDetailedPagesV
 {
     /// <summary>
     /// Interaction logic for OnlinePagesV.xaml

@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace WhereIsMyData.Views
+namespace OpenNetMeter.Views
 {
     /// <summary>
     /// Interaction logic for SettingsV.xaml

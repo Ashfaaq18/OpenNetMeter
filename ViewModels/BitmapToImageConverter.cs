@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
-namespace WhereIsMyData.ViewModels
+namespace OpenNetMeter.ViewModels
 {
     class BitmapToImageConverter : IValueConverter
     {

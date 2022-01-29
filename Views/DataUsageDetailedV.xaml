@@ -1,12 +1,12 @@
-﻿<UserControl x:Class="WhereIsMyData.Views.DataUsageDetailedV"
+﻿<UserControl x:Class="OpenNetMeter.Views.DataUsageDetailedV"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:WhereIsMyData.Views" 
-             xmlns:vm="clr-namespace:WhereIsMyData.ViewModels"
-             xmlns:vmp="clr-namespace:WhereIsMyData.ViewModels.DataUsageDetailedPagesVM"
-             xmlns:vp="clr-namespace:WhereIsMyData.Views.DataUsageDetailedPagesV" 
+             xmlns:local="clr-namespace:OpenNetMeter.Views" 
+             xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+             xmlns:vmp="clr-namespace:OpenNetMeter.ViewModels.DataUsageDetailedPagesVM"
+             xmlns:vp="clr-namespace:OpenNetMeter.Views.DataUsageDetailedPagesV" 
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="650">
     <UserControl.Resources>

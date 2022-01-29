@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
-using WhereIsMyData.ViewModels;
+using OpenNetMeter.ViewModels;
 using System.Threading;
 using ManagedNativeWifi;
 using System.Collections.ObjectModel;
@@ -17,7 +17,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Collections.Generic;
 
-namespace WhereIsMyData.Models
+namespace OpenNetMeter.Models
 {
     public class NetworkInfo : INotifyPropertyChanged
     {

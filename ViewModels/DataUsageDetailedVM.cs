@@ -10,10 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Windows.Data;
 using System.Windows.Input;
-using WhereIsMyData.Models;
-using WhereIsMyData.ViewModels.DataUsageDetailedPagesVM;
+using OpenNetMeter.Models;
+using OpenNetMeter.ViewModels.DataUsageDetailedPagesVM;
 
-namespace WhereIsMyData.ViewModels
+namespace OpenNetMeter.ViewModels
 {
     public class DataUsageDetailedVM : INotifyPropertyChanged
     {

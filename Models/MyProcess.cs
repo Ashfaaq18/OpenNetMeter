@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-namespace WhereIsMyData.Models
+namespace OpenNetMeter.Models
 {
     public class MyProcess : INotifyPropertyChanged
     {
