@@ -4,11 +4,26 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:OpenNetMeter.Views"
+             xmlns:properties="clr-namespace:OpenNetMeter.Properties"
              mc:Ignorable="d" 
              Background="#f1f1f1"
              d:DesignHeight="400" d:DesignWidth="650">
+    <UserControl.Resources>
+        <properties:Settings x:Key="Settings"/>
+    </UserControl.Resources>
     <Grid Background="White" Margin="32">
-        <StackPanel Orientation="Vertical">
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="40"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="40"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <CheckBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetStartWithWin}" IsEnabled="{Binding UnlockOptionStartWin}"></CheckBox>
+        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">Start program on windows startup</TextBlock>
     </Grid>
 </UserControl>
