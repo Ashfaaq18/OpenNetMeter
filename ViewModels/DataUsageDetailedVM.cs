@@ -152,7 +152,7 @@ namespace OpenNetMeter.ViewModels
                     OffProfVM.MyProcesses.Remove(row.Key);
                 }
                 Debug.WriteLine("Deleted file: " + SelectedProfile);
-                FileIO.DeleteFile(Path.Combine("Profiles", SelectedProfile + ".onm")); //delete file
+                FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
                 Profiles.Remove(SelectedProfile); //remove profile from combo box
             }
 
@@ -184,21 +184,23 @@ namespace OpenNetMeter.ViewModels
 
         private void SetVM(string selProf)
         {
-            string pathString = Path.Combine("Profiles", selProf + ".onm");
+            string filename = selProf + ".onm";
+            string completePath = Path.Combine(FileIO.FolderPath(), filename);
+            Debug.WriteLine("test: " + FileIO.FolderPath() + "," + selProf);
             if (selProf != CurrentConnection)
             {
                 SelectedViewModel = OffProfVM;
                 //read file into the OnProfVM.MyProcesses1 dictionary
                 try
                 {
-                    using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
+                    using (FileStream stream = new FileStream(completePath, FileMode.Open, FileAccess.Read))
                     {
                         foreach (var row in OffProfVM.MyProcesses.ToList())
                         {
                             OffProfVM.MyProcesses.Remove(row.Key);
                         }
                         FileIO.ReadFile_MyProcess(OffProfVM.MyProcesses, stream);
-                        DateTime dateTime = File.GetCreationTime(pathString);
+                        DateTime dateTime = File.GetCreationTime(completePath);
                         Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
                     }
                 }
@@ -211,7 +213,7 @@ namespace OpenNetMeter.ViewModels
             else
             {
                 SelectedViewModel = OnProfVM;
-                DateTime dateTime = File.GetCreationTime(pathString);
+                DateTime dateTime = File.GetCreationTime(completePath);
                 Date = dateTime.ToShortDateString() + " , " + dateTime.ToShortTimeString();
             }
         }

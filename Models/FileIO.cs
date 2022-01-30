@@ -10,22 +10,24 @@ namespace OpenNetMeter.Models
 {
     public class FileIO
     {
+        public static string FolderPath()
+        {
+            string dir = "OpenNetMeter";
+            string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            return Path.Combine(systemPath, dir);
+        }
         //get all profiles
         public static List<string> GetProfiles()
         {
-            string dir = "Profiles";
             string ext = ".onm";
             List<string> profiles = new List<string>();
-            if (Directory.Exists(dir))
+            if (Directory.Exists(FolderPath()))
             {
                 Debug.WriteLine("exists");
-                string[] fileEntries = Directory.GetFiles(dir);
+                string[] fileEntries = Directory.GetFiles(FolderPath());
                 foreach (string fileName in fileEntries)
                 {
-                    //Debug.WriteLine(fileName);
-                    profiles.Add(fileName.Substring(dir.Length + 1, fileName.Length - dir.Length - ext.Length - 1));
-                    //string temp = fileName.Substring(dir.Length + 1, fileName.Length - dir.Length - ext.Length -1);
-                   // Debug.WriteLine(temp);
+                    profiles.Add(fileName.Substring(FolderPath().Length + 1, fileName.Length - FolderPath().Length - ext.Length - 1));
                 }
             }
             return profiles;
@@ -63,24 +65,24 @@ namespace OpenNetMeter.Models
 
         public static void ReadFile(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref, string adapterName, bool IsOnlineProfile)
         {
-            string path = "Profiles";
             string filename = adapterName + ".onm";
-            string pathString = Path.Combine(path, filename);
+            string completePath = Path.Combine(FolderPath(), filename);
+            
             try
             {
                 // Try to create the directory.
-                DirectoryInfo di = Directory.CreateDirectory(path);
+                DirectoryInfo di = Directory.CreateDirectory(FolderPath());
             }
             catch (Exception e)
             {
                 Debug.WriteLine("The process failed: {0}", e.ToString());
             }
 
-            if (File.Exists(pathString))
+            if (File.Exists(completePath))
             {
                 try
                 {
-                    using (FileStream stream = new FileStream(pathString, FileMode.Open, FileAccess.Read))
+                    using (FileStream stream = new FileStream(completePath, FileMode.Open, FileAccess.Read))
                     {
                         (ulong, ulong) data;
                         data = FileIO.ReadFile_MyProcess(dudvm_ref.OnProfVM.MyProcesses, stream);
@@ -88,7 +90,7 @@ namespace OpenNetMeter.Models
                         dusvm_ref.TotalDownloadData = data.Item1;
                         dusvm_ref.TotalUploadData = data.Item2;
 
-                        DateTime dateTime = File.GetCreationTime(pathString);
+                        DateTime dateTime = File.GetCreationTime(completePath);
                         dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
                     }
                 }
@@ -99,8 +101,8 @@ namespace OpenNetMeter.Models
             }
             else
             {
-                File.Create(pathString);
-                DateTime dateTime = File.GetCreationTime(pathString);
+                File.Create(completePath);
+                DateTime dateTime = File.GetCreationTime(completePath);
                 dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
             }
         }
@@ -162,7 +164,6 @@ namespace OpenNetMeter.Models
             {
                 var file = File.Create(pathString);
                 file.Close();
-                //File.SetCreationTime(adapterName + ".onm", DateTime.Now);
             }
             catch (Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
         }
