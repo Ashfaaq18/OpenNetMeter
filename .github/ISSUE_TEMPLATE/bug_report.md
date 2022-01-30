@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **App and Windows Version (please complete the following information):**
  - Windows Specs: [Select Start > Settings > System > About. Open About settings.]
- - WhereIsMyData Version: 
+ - OpenNetMeter Version: 
 
 **Additional context**
 Add any other context about the problem here.
