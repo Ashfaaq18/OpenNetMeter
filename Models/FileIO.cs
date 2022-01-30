@@ -14,7 +14,7 @@ namespace OpenNetMeter.Models
         public static List<string> GetProfiles()
         {
             string dir = "Profiles";
-            string ext = ".WIMD";
+            string ext = ".onm";
             List<string> profiles = new List<string>();
             if (Directory.Exists(dir))
             {
@@ -64,7 +64,7 @@ namespace OpenNetMeter.Models
         public static void ReadFile(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref, string adapterName, bool IsOnlineProfile)
         {
             string path = "Profiles";
-            string filename = adapterName + ".WIMD";
+            string filename = adapterName + ".onm";
             string pathString = Path.Combine(path, filename);
             try
             {
@@ -162,7 +162,7 @@ namespace OpenNetMeter.Models
             {
                 var file = File.Create(pathString);
                 file.Close();
-                //File.SetCreationTime(adapterName + ".WIMD", DateTime.Now);
+                //File.SetCreationTime(adapterName + ".onm", DateTime.Now);
             }
             catch (Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
         }

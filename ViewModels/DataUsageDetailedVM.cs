@@ -152,7 +152,7 @@ namespace OpenNetMeter.ViewModels
                     OffProfVM.MyProcesses.Remove(row.Key);
                 }
                 Debug.WriteLine("Deleted file: " + SelectedProfile);
-                FileIO.DeleteFile(Path.Combine("Profiles", SelectedProfile + ".WIMD")); //delete file
+                FileIO.DeleteFile(Path.Combine("Profiles", SelectedProfile + ".onm")); //delete file
                 Profiles.Remove(SelectedProfile); //remove profile from combo box
             }
 
@@ -184,7 +184,7 @@ namespace OpenNetMeter.ViewModels
 
         private void SetVM(string selProf)
         {
-            string pathString = Path.Combine("Profiles", selProf + ".WIMD");
+            string pathString = Path.Combine("Profiles", selProf + ".onm");
             if (selProf != CurrentConnection)
             {
                 SelectedViewModel = OffProfVM;

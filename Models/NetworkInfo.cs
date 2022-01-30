@@ -205,8 +205,8 @@ namespace OpenNetMeter.Models
                 DownloadSpeed = 0;
                 UploadSpeed = 0;
                 //recreate file
-                FileIO.DeleteFile(Path.Combine("Profiles", adapterName + ".WIMD"));
-                FileIO.CreateFile(Path.Combine("Profiles", adapterName + ".WIMD"));
+                FileIO.DeleteFile(Path.Combine("Profiles", adapterName + ".onm"));
+                FileIO.CreateFile(Path.Combine("Profiles", adapterName + ".onm"));
 
                 //restart write file and capturing speed
                 SetNetworkStatus(true);
@@ -215,8 +215,8 @@ namespace OpenNetMeter.Models
             else
             {
                 //recreate file
-                FileIO.DeleteFile(Path.Combine("Profiles", adapterName + ".WIMD"));
-                FileIO.CreateFile(Path.Combine("Profiles", adapterName + ".WIMD"));
+                FileIO.DeleteFile(Path.Combine("Profiles", adapterName + ".onm"));
+                FileIO.CreateFile(Path.Combine("Profiles", adapterName + ".onm"));
             }
         }
         public void WriteToFile()
@@ -233,7 +233,7 @@ namespace OpenNetMeter.Models
                     Debug.WriteLine("Operation Started : Write file");
                     while (!token_file.IsCancellationRequested)
                     {
-                        FileIO.WriteFile_MyProcess(dudvm.OnProfVM.MyProcesses, Path.Combine("Profiles", adapterName + ".WIMD"));
+                        FileIO.WriteFile_MyProcess(dudvm.OnProfVM.MyProcesses, Path.Combine("Profiles", adapterName + ".onm"));
                         await Task.Delay(1000, token_file);
                     }
                 }
