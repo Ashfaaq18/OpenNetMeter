@@ -5,14 +5,37 @@ using Forms = System.Windows.Forms;
 using System;
 using System.Timers;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace OpenNetMeter.Views
 {
     /// <summary>
-    /// Interaction logic for HomeUI.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private bool isSingleInstance = false;
+        private Mutex mutex;
+        public bool IsSingleInstance()
+        {
+            bool createdNew;
+            mutex = new Mutex(true, "{6C4919CA-062E-47E3-85CC-2393D00CBA4A}", out createdNew);
+
+            if (!createdNew)
+            {
+                //exit app
+                Application.Current.Shutdown();
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         private AboutWindow aboutWin;
         private TrayPopupWinV trayWin;
         private Forms.NotifyIcon ni;
@@ -22,28 +45,33 @@ namespace OpenNetMeter.Views
         private System.Drawing.Point p;
         public MainWindow()
         {
-            InitializeComponent();
+            isSingleInstance = IsSingleInstance();
 
-            trayWin = new TrayPopupWinV();
-            DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
-            aboutWin = new AboutWindow();
+            if (isSingleInstance)
+            {
+                InitializeComponent();
 
-            //initialize system tray
-            trayWin.Topmost = true;
-            trayWin.Visibility = Visibility.Hidden;
-            ni = new Forms.NotifyIcon();
-            cm = new Forms.ContextMenuStrip();
-            balloonShow = false;
-            forceHideTrayWin = true;
-            ni.Icon = Properties.Resources.AppIcon;
-            ni.Visible = true;
-            ni.DoubleClick += Ni_DoubleClick;
-            ni.MouseMove += Ni_MouseMove;
-            cm.Items.Add("Open", null, Cm_Open_Click);
-            cm.Items.Add("Exit", null, Cm_Exit_Click);
-            ni.ContextMenuStrip = cm;
+                trayWin = new TrayPopupWinV();
+                DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                aboutWin = new AboutWindow();
 
-            Task.Run(CheckMousePos);
+                //initialize system tray
+                trayWin.Topmost = true;
+                trayWin.Visibility = Visibility.Hidden;
+                ni = new Forms.NotifyIcon();
+                cm = new Forms.ContextMenuStrip();
+                balloonShow = false;
+                forceHideTrayWin = true;
+                ni.Icon = Properties.Resources.AppIcon;
+                ni.Visible = true;
+                ni.DoubleClick += Ni_DoubleClick;
+                ni.MouseMove += Ni_MouseMove;
+                cm.Items.Add("Open", null, Cm_Open_Click);
+                cm.Items.Add("Exit", null, Cm_Exit_Click);
+                ni.ContextMenuStrip = cm;
+
+                Task.Run(CheckMousePos);
+            }
         }
 
         private async void CheckMousePos()
@@ -94,6 +122,8 @@ namespace OpenNetMeter.Views
             ni.Dispose();
             trayWin.Close();
             aboutWin.Close();
+            if (isSingleInstance)
+                mutex.Close();
             this.Close();
         }
 
