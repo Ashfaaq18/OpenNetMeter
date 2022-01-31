@@ -166,9 +166,8 @@ namespace OpenNetMeter.Models
                 dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //this statement should always be below FileIO.ReadFile, this registers the available saved profiles
 
                 dudvm.CurrentConnection = adapterName;
-                
                 dudvm.SelectedProfile = adapterName;
-                Debug.WriteLine("test1:" + dudvm.SelectedProfile);
+
                 WriteToFile();
             }
             else //if network is disconnected
@@ -188,7 +187,6 @@ namespace OpenNetMeter.Models
                 dusvm.CurrentSessionUploadData = 0;
 
                 dudvm.CurrentConnection = "";
-                dudvm.SelectedProfile = adapterName;
             }
         }
 

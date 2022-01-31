@@ -56,7 +56,19 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public ObservableCollection<string> Profiles { get; set; }
+        private ObservableCollection<string> profiles;
+        public ObservableCollection<string> Profiles
+        {
+            get{ return profiles; }
+            set
+            {
+                if(profiles != value)
+                {
+                    profiles = value;
+                    OnPropertyChanged("Profiles");
+                } 
+            }
+        }
 
         private string selectedProfile;
         public string SelectedProfile
@@ -186,7 +198,6 @@ namespace OpenNetMeter.ViewModels
         {
             string filename = selProf + ".onm";
             string completePath = Path.Combine(FileIO.FolderPath(), filename);
-            Debug.WriteLine("test: " + FileIO.FolderPath() + "," + selProf);
             if (selProf != CurrentConnection)
             {
                 SelectedViewModel = OffProfVM;

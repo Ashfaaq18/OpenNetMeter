@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using OpenNetMeter.ViewModels;
 
 namespace OpenNetMeter.Models
@@ -23,7 +24,6 @@ namespace OpenNetMeter.Models
             List<string> profiles = new List<string>();
             if (Directory.Exists(FolderPath()))
             {
-                Debug.WriteLine("exists");
                 string[] fileEntries = Directory.GetFiles(FolderPath());
                 foreach (string fileName in fileEntries)
                 {
@@ -101,6 +101,10 @@ namespace OpenNetMeter.Models
             }
             else
             {
+                foreach (var row in dudvm_ref.OnProfVM.MyProcesses.ToList())
+                {
+                    dudvm_ref.OnProfVM.MyProcesses.Remove(row.Key);
+                }
                 File.Create(completePath);
                 DateTime dateTime = File.GetCreationTime(completePath);
                 dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
