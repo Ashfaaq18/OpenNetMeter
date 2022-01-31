@@ -65,11 +65,6 @@ namespace OpenNetMeter.ViewModels
 
         public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext) //runs once during app init
         {
-            if (!NetworkInfo.IsAdminMode())
-            {
-                MessageBox.Show("Please run me as an Administrator");
-                Environment.Exit(0);
-            }
 
             DownloadSpeed = 0;
             UploadSpeed = 0;

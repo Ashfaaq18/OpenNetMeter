@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Microsoft.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing.Session;
 
 namespace OpenNetMeter.Views
 {
@@ -16,8 +18,6 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        private bool isSingleInstance = false;
         private Mutex mutex;
         public bool IsSingleInstance()
         {
@@ -27,12 +27,21 @@ namespace OpenNetMeter.Views
             if (!createdNew)
             {
                 //exit app
+                MessageBox.Show("An instance is already running,\nCheck if it's minimized to the system tray", "OpenNetMeter", MessageBoxButton.OK);
+                
                 Application.Current.Shutdown();
                 return false;
             }
             else
             {
-                return true;
+                if(TraceEventSession.IsElevated() != true)
+                {
+                    MessageBox.Show("Please run me as an Administrator", "OpenNetMeter", MessageBoxButton.OK);
+                    Application.Current.Shutdown();
+                    return false;
+                }
+                else
+                    return true;
             }
         }
 
@@ -45,9 +54,7 @@ namespace OpenNetMeter.Views
         private System.Drawing.Point p;
         public MainWindow()
         {
-            isSingleInstance = IsSingleInstance();
-
-            if (isSingleInstance)
+            if (IsSingleInstance())
             {
                 InitializeComponent();
 
@@ -113,6 +120,7 @@ namespace OpenNetMeter.Views
         private void Cm_Open_Click(object sender, EventArgs e)
         {
             this.Show();
+            this.Activate();
         }
 
         private void Cm_Exit_Click(object sender, EventArgs e)
@@ -122,14 +130,14 @@ namespace OpenNetMeter.Views
             ni.Dispose();
             trayWin.Close();
             aboutWin.Close();
-            if (isSingleInstance)
-                mutex.Close();
+            mutex.Close();
             this.Close();
         }
 
         private void Ni_DoubleClick(object sender, EventArgs e)
         {
             this.Show();
+            this.Activate();
         }
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
