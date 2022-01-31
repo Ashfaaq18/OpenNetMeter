@@ -177,8 +177,14 @@ namespace OpenNetMeter.Models
 
                 dusvm.CurrentSessionDownloadData = 0;
                 dusvm.CurrentSessionUploadData = 0;
-
+                dusvm.TotalDownloadData = 0;
+                dusvm.TotalUploadData = 0;
                 dudvm.CurrentConnection = "";
+
+                foreach (var row in dudvm.OnProfVM.MyProcesses.ToList())
+                {
+                    dudvm.OnProfVM.MyProcesses.Remove(row.Key);
+                }
             }
         }
 

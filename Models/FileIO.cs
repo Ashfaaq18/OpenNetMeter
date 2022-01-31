@@ -101,10 +101,6 @@ namespace OpenNetMeter.Models
             }
             else
             {
-                foreach (var row in dudvm_ref.OnProfVM.MyProcesses.ToList())
-                {
-                    dudvm_ref.OnProfVM.MyProcesses.Remove(row.Key);
-                }
                 File.Create(completePath);
                 DateTime dateTime = File.GetCreationTime(completePath);
                 dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
