@@ -147,14 +147,6 @@ namespace OpenNetMeter.Models
             }
         }
 
-        public static bool IsAdminMode()
-        {
-            if (TraceEventSession.IsElevated() != true)
-                return false;
-            else
-                return true;
-        }
-
         private void SetNetworkStatus(bool isOnline)
         {
             if (isOnline)

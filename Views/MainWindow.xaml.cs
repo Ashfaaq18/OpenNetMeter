@@ -5,14 +5,46 @@ using Forms = System.Windows.Forms;
 using System;
 using System.Timers;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using Microsoft.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing.Session;
 
 namespace OpenNetMeter.Views
 {
     /// <summary>
-    /// Interaction logic for HomeUI.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Mutex mutex;
+        public bool IsSingleInstance()
+        {
+            bool createdNew;
+            mutex = new Mutex(true, "{6C4919CA-062E-47E3-85CC-2393D00CBA4A}", out createdNew);
+
+            if (!createdNew)
+            {
+                //exit app
+                MessageBox.Show("An instance is already running,\nCheck if it's minimized to the system tray", "OpenNetMeter", MessageBoxButton.OK);
+                
+                Application.Current.Shutdown();
+                return false;
+            }
+            else
+            {
+                if(TraceEventSession.IsElevated() != true)
+                {
+                    MessageBox.Show("Please run me as an Administrator", "OpenNetMeter", MessageBoxButton.OK);
+                    Application.Current.Shutdown();
+                    return false;
+                }
+                else
+                    return true;
+            }
+        }
+
         private AboutWindow aboutWin;
         private TrayPopupWinV trayWin;
         private Forms.NotifyIcon ni;
@@ -22,28 +54,31 @@ namespace OpenNetMeter.Views
         private System.Drawing.Point p;
         public MainWindow()
         {
-            InitializeComponent();
+            if (IsSingleInstance())
+            {
+                InitializeComponent();
 
-            trayWin = new TrayPopupWinV();
-            DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
-            aboutWin = new AboutWindow();
+                trayWin = new TrayPopupWinV();
+                DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                aboutWin = new AboutWindow();
 
-            //initialize system tray
-            trayWin.Topmost = true;
-            trayWin.Visibility = Visibility.Hidden;
-            ni = new Forms.NotifyIcon();
-            cm = new Forms.ContextMenuStrip();
-            balloonShow = false;
-            forceHideTrayWin = true;
-            ni.Icon = Properties.Resources.AppIcon;
-            ni.Visible = true;
-            ni.DoubleClick += Ni_DoubleClick;
-            ni.MouseMove += Ni_MouseMove;
-            cm.Items.Add("Open", null, Cm_Open_Click);
-            cm.Items.Add("Exit", null, Cm_Exit_Click);
-            ni.ContextMenuStrip = cm;
+                //initialize system tray
+                trayWin.Topmost = true;
+                trayWin.Visibility = Visibility.Hidden;
+                ni = new Forms.NotifyIcon();
+                cm = new Forms.ContextMenuStrip();
+                balloonShow = false;
+                forceHideTrayWin = true;
+                ni.Icon = Properties.Resources.AppIcon;
+                ni.Visible = true;
+                ni.DoubleClick += Ni_DoubleClick;
+                ni.MouseMove += Ni_MouseMove;
+                cm.Items.Add("Open", null, Cm_Open_Click);
+                cm.Items.Add("Exit", null, Cm_Exit_Click);
+                ni.ContextMenuStrip = cm;
 
-            Task.Run(CheckMousePos);
+                Task.Run(CheckMousePos);
+            }
         }
 
         private async void CheckMousePos()
@@ -85,6 +120,7 @@ namespace OpenNetMeter.Views
         private void Cm_Open_Click(object sender, EventArgs e)
         {
             this.Show();
+            this.Activate();
         }
 
         private void Cm_Exit_Click(object sender, EventArgs e)
@@ -94,12 +130,14 @@ namespace OpenNetMeter.Views
             ni.Dispose();
             trayWin.Close();
             aboutWin.Close();
+            mutex.Close();
             this.Close();
         }
 
         private void Ni_DoubleClick(object sender, EventArgs e)
         {
             this.Show();
+            this.Activate();
         }
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
