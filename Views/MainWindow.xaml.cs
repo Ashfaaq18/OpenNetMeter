@@ -3,13 +3,12 @@ using OpenNetMeter.ViewModels;
 using System.Windows.Input;
 using Forms = System.Windows.Forms;
 using System;
-using System.Timers;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Session;
+using System.Drawing;
+using System.Security;
+using System.Runtime.InteropServices;
 
 namespace OpenNetMeter.Views
 {
@@ -107,9 +106,34 @@ namespace OpenNetMeter.Views
                 p = Forms.Cursor.Position;
                 if (trayWin.Visibility == Visibility.Hidden)
                 {
+                    //Shell Tray rectangle
+                    IntPtr hWnd = FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
+                    Rectangle shellTrayArea = GetWindowRectangle(hWnd);
+
+                    //screen rectangle
+                    Forms.Screen scrn = Forms.Screen.FromPoint(p);
+                    Rectangle workArea = scrn.Bounds;
+
+                    if(shellTrayArea.X == 0 && shellTrayArea.Y == 0) //taskbar pos top or left
+                    {
+                        if(workArea.Width == shellTrayArea.Width) //top
+                        {
+                            trayWin.Left = p.X - trayWin.Width;
+                            trayWin.Top = p.Y;
+                        }
+                        else //left
+                        {
+                            trayWin.Left = p.X;
+                            trayWin.Top = p.Y - trayWin.Height;
+                        }
+                    }
+                    else //taskbar pos right or bottom
+                    {
+                        trayWin.Left = p.X - trayWin.Width;
+                        trayWin.Top = p.Y - trayWin.Height;
+                    }
+
                     trayWin.Topmost = true;
-                    trayWin.Left = p.X - trayWin.Width;
-                    trayWin.Top = p.Y - trayWin.Height;
                     trayWin.Visibility = Visibility.Visible;
                 }
             }
@@ -165,6 +189,42 @@ namespace OpenNetMeter.Views
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
             aboutWin.Show(this);
+        }
+
+        //---------------get taskbar info---------------------//
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+
+            public Rectangle ToRectangle() => Rectangle.FromLTRB(Left, Top, Right, Bottom);
+        }
+
+        [SuppressUnmanagedCodeSecurity, SecurityCritical]
+        internal static class SafeNativeMethods
+        {
+            [DllImport("User32.dll", SetLastError = true)]
+            internal static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+
+            [DllImport("User32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            internal static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+        }
+
+        //Helper methods
+        [SecuritySafeCritical]
+        public static IntPtr FindWindowByClassName(IntPtr hwndParent, string className)
+        {
+            return SafeNativeMethods.FindWindowEx(hwndParent, IntPtr.Zero, className, null);
+        }
+
+        [SecuritySafeCritical]
+        public static Rectangle GetWindowRectangle(IntPtr windowHandle)
+        {
+            RECT rect;
+            SafeNativeMethods.GetWindowRect(windowHandle, out rect);
+            return rect.ToRectangle();
         }
     }
 }
