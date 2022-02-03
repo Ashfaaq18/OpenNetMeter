@@ -117,11 +117,13 @@ namespace OpenNetMeter.Models
                                         localIP = tempIP;
 
                                     if (IsNetworkOnline != "Disconnected") //if there was already a connection available
-                                    {
                                         SetNetworkStatus(false); //reset the connection
-                                    }
 
                                     adapterName = n.Name;
+
+                                    if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                                        adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids().FirstOrDefault().ToString() + ")";
+
                                     SetNetworkStatus(true);
                                     CaptureNetworkSpeed();
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
