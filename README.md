@@ -24,6 +24,10 @@ This program provides the following features,
 
 1. First make sure the startup checkbox is unticked in the settings page (this is to remove the program from the startup records).
 2. Simply delete the folder.
+
+## Limitations
+
+The program currently does not support tunnel adapters, will try adding it in the future.
     
 ## Usage/Examples
 
