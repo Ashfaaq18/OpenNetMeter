@@ -4,6 +4,7 @@ namespace OpenNetMeter.Models
 {
     public class DataSizeSuffix
     {
+        //Bytes = false will give the suffix in bits. Size passed to this should aready be multiplied by 8 for bits
         public static string SizeSuffix(ulong value, int decimalPlaces = 1, bool Bytes = true)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.

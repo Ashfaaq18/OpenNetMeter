@@ -177,24 +177,26 @@
             <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
 
             <Grid Grid.Row="2" DockPanel.Dock="Bottom" Background="White">
-                    <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="320"/>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="75"/>
-                    </Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="75"/>
+                </Grid.ColumnDefinitions>
 
-                    <Label Grid.Column="0" Content="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"></Label>
+                <Label Grid.Column="0" Content="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0"></Label>
 
-                    <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                    <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
-                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}"/>
+                <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
+                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}"/>
+                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Content="ps"/>
                 </WrapPanel>
 
-                    <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                    <WrapPanel Grid.Column="4" VerticalAlignment="Center">
-                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
+                <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                <WrapPanel Grid.Column="4" VerticalAlignment="Center">
+                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
+                    <Label FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Content="ps"/>
                 </WrapPanel>
             </Grid>
 
