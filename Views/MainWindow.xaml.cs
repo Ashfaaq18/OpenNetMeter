@@ -202,8 +202,7 @@ namespace OpenNetMeter.Views
             public Rectangle ToRectangle() => Rectangle.FromLTRB(Left, Top, Right, Bottom);
         }
 
-        [SuppressUnmanagedCodeSecurity, SecurityCritical]
-        internal static class SafeNativeMethods
+        internal static class NativeMethods
         {
             [DllImport("User32.dll", SetLastError = true)]
             internal static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
@@ -211,19 +210,15 @@ namespace OpenNetMeter.Views
             [DllImport("User32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             internal static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
         }
-
-        //Helper methods
-        [SecuritySafeCritical]
         public static IntPtr FindWindowByClassName(IntPtr hwndParent, string className)
         {
-            return SafeNativeMethods.FindWindowEx(hwndParent, IntPtr.Zero, className, null);
+            return NativeMethods.FindWindowEx(hwndParent, IntPtr.Zero, className, null);
         }
 
-        [SecuritySafeCritical]
         public static Rectangle GetWindowRectangle(IntPtr windowHandle)
         {
             RECT rect;
-            SafeNativeMethods.GetWindowRect(windowHandle, out rect);
+            NativeMethods.GetWindowRect(windowHandle, out rect);
             return rect.ToRectangle();
         }
     }
