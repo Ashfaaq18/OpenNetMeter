@@ -13,7 +13,6 @@ using OpenNetMeter.ViewModels;
 using System.Threading;
 using ManagedNativeWifi;
 using System.Collections.ObjectModel;
-using System.Text;
 using System.Net.Sockets;
 using System.Collections.Generic;
 

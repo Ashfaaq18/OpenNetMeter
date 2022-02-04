@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Diagnostics.Tracing.Session;
 using System.Drawing;
-using System.Security;
 using System.Runtime.InteropServices;
 
 namespace OpenNetMeter.Views
