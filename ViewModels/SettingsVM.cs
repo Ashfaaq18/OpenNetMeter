@@ -49,13 +49,52 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private bool setDeskBand;
+        public bool SetDeskBand
+        {
+            get { return setDeskBand; }
+
+            set
+            {
+                if (setDeskBand != value)
+                {
+                    setDeskBand = value;
+                    OnPropertyChanged("SetDeskBand");
+
+                    //set the app settings
+                    Properties.Settings.Default.DeskBandSetting = value;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+        private bool unlockDeskBand;
+        public bool UnlockDeskBand
+        {
+            get { return unlockDeskBand; }
+
+            set
+            {
+                if (unlockDeskBand != value)
+                {
+                    unlockDeskBand = value;
+                    OnPropertyChanged("UnlockDeskBand");
+                }
+            }
+        }   
 
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             UnlockOptionStartWin = true;
+            UnlockDeskBand = false;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
+            SetDeskBand = Properties.Settings.Default.DeskBandSetting;
+            if(SetDeskBand)
+            {
+                //register
+            }
         }
 
         private readonly string taskName;

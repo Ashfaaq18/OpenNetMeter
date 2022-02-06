@@ -34,5 +34,17 @@ namespace OpenNetMeter.Properties {
                 this["StartWithWin"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DeskBandSetting {
+            get {
+                return ((bool)(this["DeskBandSetting"]));
+            }
+            set {
+                this["DeskBandSetting"] = value;
+            }
+        }
     }
 }
