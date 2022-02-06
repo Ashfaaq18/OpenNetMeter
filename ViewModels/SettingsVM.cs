@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Microsoft.Win32.TaskScheduler;
+using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class SettingsVM : INotifyPropertyChanged
+    public class SettingsVM : INotifyPropertyChanged, IDisposable
     {
         private bool setStartWithWin;
         public bool SetStartWithWin
@@ -81,8 +82,9 @@ namespace OpenNetMeter.ViewModels
                     OnPropertyChanged("UnlockDeskBand");
                 }
             }
-        }   
+        }
 
+        private Registrar reg;
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
@@ -91,6 +93,7 @@ namespace OpenNetMeter.ViewModels
             UnlockDeskBand = false;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
+            reg = new Registrar("ONM_DeskBand.dll");
             if(SetDeskBand)
             {
                 //register
@@ -186,6 +189,14 @@ namespace OpenNetMeter.ViewModels
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
+        }
+
+        public void Dispose()
+        {
+            if(reg != null)
+            {
+                reg.FreeLib();
             }
         }
     }

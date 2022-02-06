@@ -45,6 +45,7 @@ namespace OpenNetMeter.Views
 
         private AboutWindow aboutWin;
         private TrayPopupWinV trayWin;
+        private NavigationAndTasksVM navWin;
         private Forms.NotifyIcon ni;
         private Forms.ContextMenuStrip cm;
         private bool balloonShow;
@@ -57,7 +58,8 @@ namespace OpenNetMeter.Views
                 InitializeComponent();
 
                 trayWin = new TrayPopupWinV();
-                DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                DataContext = navWin;
                 aboutWin = new AboutWindow();
 
                 //initialize system tray
@@ -154,6 +156,7 @@ namespace OpenNetMeter.Views
             trayWin.Close();
             aboutWin.Close();
             mutex.Close();
+            navWin.Dispose();
             this.Close();
         }
 
