@@ -94,10 +94,15 @@ namespace OpenNetMeter.ViewModels
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
             reg = new Registrar("ONM_DeskBand.dll");
-            if(SetDeskBand)
+            if (reg != null)
+            {
+                reg.RegisterComDLL();
+                reg.Test();
+            }
+            /*if(SetDeskBand)
             {
                 //register
-            }
+            }*/
         }
 
         private readonly string taskName;
@@ -196,6 +201,7 @@ namespace OpenNetMeter.ViewModels
         {
             if(reg != null)
             {
+                reg.UnRegisterComDLL();
                 reg.FreeLib();
             }
         }

@@ -123,7 +123,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;ONMDESKBAND_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -157,13 +157,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="C:\Users\ASHFAAQ\Downloads\DeskBands\ClassFactory.cpp" />
-    <ClCompile Include="C:\Users\ASHFAAQ\Downloads\DeskBands\DeskBand.cpp" />
-    <ClCompile Include="C:\Users\ASHFAAQ\Downloads\DeskBands\DllMain.cpp" />
+    <ClCompile Include="ClassFactory.cpp" />
+    <ClCompile Include="DeskBand.cpp" />
+    <ClCompile Include="DllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\ASHFAAQ\Downloads\DeskBands\ClassFactory.h" />
-    <ClInclude Include="C:\Users\ASHFAAQ\Downloads\DeskBands\DeskBand.h" />
+    <ClInclude Include="ClassFactory.h" />
+    <ClInclude Include="DeskBand.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ONM_DeskBand.def" />

@@ -15,27 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="C:\Users\ASHFAAQ\Downloads\DeskBands\DeskBand.cpp">
+    <ClCompile Include="ClassFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\ASHFAAQ\Downloads\DeskBands\ClassFactory.cpp">
+    <ClCompile Include="DeskBand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\ASHFAAQ\Downloads\DeskBands\DllMain.cpp">
+    <ClCompile Include="DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\ASHFAAQ\Downloads\DeskBands\DeskBand.h">
+    <ClInclude Include="ClassFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\ASHFAAQ\Downloads\DeskBands\ClassFactory.h">
+    <ClInclude Include="DeskBand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ONM_DeskBand.def">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -37,6 +37,20 @@ namespace OpenNetMeter.Models
             CallPointerMethod("DllUnregisterServer");
         }
 
+        internal delegate void PointerToMethodInvokerVoid();
+        public void Test()
+        {
+            IntPtr dllEntryPoint = GetProcAddress(hLib, "Test");
+            if (IntPtr.Zero == dllEntryPoint)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            PointerToMethodInvokerVoid drs =
+                   (PointerToMethodInvokerVoid)Marshal.GetDelegateForFunctionPointer(dllEntryPoint,
+                               typeof(PointerToMethodInvokerVoid));
+            drs();
+        }
+
         private void CallPointerMethod(string methodName)
         {
             IntPtr dllEntryPoint = GetProcAddress(hLib, methodName);
