@@ -30,7 +30,12 @@ namespace OpenNetMeter.ViewModels
                     //register to task scheduler
                     SetAppAsTask(value);
                     UnlockOptionStartWin = true;
-                    
+
+                    if (reg != null)
+                    {
+                        //reg.RegisterComDLL();
+                        reg.Test();
+                    }
                 }
             }
         }

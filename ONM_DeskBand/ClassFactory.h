@@ -1,7 +1,6 @@
 #pragma once
-
+#include "Deskband.h"
 #include <unknwn.h> // for IClassFactory
-#include <windows.h>
 
 class CClassFactory : public IClassFactory
 {

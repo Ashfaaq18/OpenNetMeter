@@ -1,5 +1,4 @@
 #include "ClassFactory.h"
-#include "Deskband.h"
 
 extern long g_cDllRef;
 
@@ -53,6 +52,7 @@ STDMETHODIMP_(ULONG) CClassFactory::Release()
 //
 // IClassFactory
 //
+
 STDMETHODIMP CClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppv)
 {
     HRESULT hr = CLASS_E_NOAGGREGATION;
@@ -61,7 +61,7 @@ STDMETHODIMP CClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, voi
     {
         hr = E_OUTOFMEMORY;
 
-        CDeskBand *pDeskBand = new CDeskBand();
+        CDeskBand* pDeskBand = new CDeskBand();
         if (pDeskBand)
         {
             hr = pDeskBand->QueryInterface(riid, ppv);

@@ -1,5 +1,3 @@
-#include <windows.h>
-#include <uxtheme.h>
 #include "DeskBand.h"
 
 #define RECTWIDTH(x)   ((x).right - (x).left)
@@ -9,7 +7,7 @@ extern long         g_cDllRef;
 extern HINSTANCE    g_hInst;
 
 extern CLSID CLSID_DeskBandSample;
-
+extern int i = 16;
 static const WCHAR g_szDeskBandSampleClass[] = L"DeskBandSampleClass";
 WCHAR text[12];
 HWND hwnd_ref;
@@ -22,6 +20,7 @@ CDeskBand::CDeskBand() :
     {
         text[i] = 'a';
     }
+    i = 19;
 }
 
 CDeskBand::~CDeskBand()
@@ -114,6 +113,7 @@ STDMETHODIMP CDeskBand::ContextSensitiveHelp(BOOL)
 //
 STDMETHODIMP CDeskBand::ShowDW(BOOL fShow)
 {
+    i = 20;
     if (m_hwnd)
     {
         ShowWindow(m_hwnd, fShow ? SW_SHOW : SW_HIDE);
@@ -381,7 +381,7 @@ void CDeskBand::OnFocus(const BOOL fFocus)
     }
 }
 
-void Test()
+/*void Test()
 {
     for (int i = 0; i < TEXTSIZE; i++)
     {
@@ -389,7 +389,30 @@ void Test()
     }
     InvalidateRect(hwnd_ref, NULL, FALSE);
     UpdateWindow(hwnd_ref);
+}*/
+
+
+
+int TestV1()
+{
+    for (int i = 0; i < TEXTSIZE; i++)
+    {
+        text[i] = 'b';
+    }
+    InvalidateRect(hwnd_ref, NULL, FALSE);
+    UpdateWindow(hwnd_ref);
+    return i;
 }
+
+/*void CDeskBand::Test()
+{
+    for (int i = 0; i < TEXTSIZE; i++)
+    {
+        text[i] = 'b';
+    }
+    InvalidateRect(m_hwnd, NULL, FALSE);
+    UpdateWindow(m_hwnd);
+}*/
 
 void CDeskBand::OnPaint(const HDC hdcIn)
 {
@@ -435,6 +458,7 @@ void CDeskBand::OnPaint(const HDC hdcIn)
                 EndBufferedPaint(hBufferedPaint, TRUE);
 
                 CloseThemeData(hTheme);
+                i = 17;
             }
         }
         else
@@ -460,7 +484,7 @@ LRESULT CALLBACK CDeskBand::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     LRESULT lResult = 0;
 
     CDeskBand *pDeskBand = reinterpret_cast<CDeskBand *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-
+    i = 18;
     switch (uMsg)
     {
     case WM_CREATE:
@@ -500,5 +524,4 @@ LRESULT CALLBACK CDeskBand::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
     return lResult;
 }
-
 

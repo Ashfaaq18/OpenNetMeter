@@ -35,7 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ONM_DeskBand.def">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
 </Project>

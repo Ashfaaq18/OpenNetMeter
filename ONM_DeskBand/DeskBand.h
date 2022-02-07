@@ -1,9 +1,10 @@
 #pragma once
 
 #include <windows.h>
+#include <uxtheme.h>
 #include <shlobj.h> // for IDeskband2, IObjectWithSite, IPesistStream, and IInputObject
 
-extern "C" __declspec(dllexport) void Test();
+extern "C" __declspec(dllexport) int TestV1();
 
 class CDeskBand : public IDeskBand2,
                   public IPersistStream,
@@ -50,6 +51,8 @@ public:
     STDMETHODIMP UIActivateIO(BOOL fActivate, MSG *);
     STDMETHODIMP HasFocusIO();
     STDMETHODIMP TranslateAcceleratorIO(MSG *);
+
+    void Test();
 
     CDeskBand();
 
