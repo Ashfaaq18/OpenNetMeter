@@ -156,7 +156,6 @@ namespace OpenNetMeter.Views
             trayWin.Close();
             aboutWin.Close();
             mutex.Close();
-            navWin.Dispose();
             this.Close();
         }
 

@@ -5,7 +5,7 @@ using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    class NavigationAndTasksVM : INotifyPropertyChanged, IDisposable
+    class NavigationAndTasksVM : INotifyPropertyChanged
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
@@ -138,11 +138,6 @@ namespace OpenNetMeter.ViewModels
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
-        }
-
-        public void Dispose()
-        {
-            svm.Dispose();
         }
     }
 }

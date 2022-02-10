@@ -1,26 +1,39 @@
 #include "DeskBand.h"
 
+#pragma data_seg("SHARED")
+double down = 0;
+int downSuffix = 0;
+double up = 0;
+int upSuffix = 0;
+#pragma data_seg()
+
+extern "C" __declspec(dllexport)
+
+void SetDataVars(double d, int dS, double u, int uS)
+{
+    down = d;
+    downSuffix = dS;
+    up = u;
+    upSuffix = uS;
+}
+
+#pragma comment(linker, "/section:SHARED,RWS")  
+
 #define RECTWIDTH(x)   ((x).right - (x).left)
 #define RECTHEIGHT(x)  ((x).bottom - (x).top)
 #define TEXTSIZE        12
+#define IDT_TIMER1      1001
+
 extern long         g_cDllRef;
 extern HINSTANCE    g_hInst;
 
 extern CLSID CLSID_DeskBandSample;
-extern int i = 16;
 static const WCHAR g_szDeskBandSampleClass[] = L"DeskBandSampleClass";
-WCHAR text[12];
-HWND hwnd_ref;
 
 CDeskBand::CDeskBand() :
     m_cRef(1), m_pSite(NULL), m_pInputObjectSite(NULL), m_fHasFocus(FALSE), m_fIsDirty(FALSE), m_dwBandID(0), m_hwnd(NULL), m_hwndParent(NULL)
 {
     InterlockedIncrement(&g_cDllRef);
-    for (int i = 0; i < TEXTSIZE; i++)
-    {
-        text[i] = 'a';
-    }
-    i = 19;
 }
 
 CDeskBand::~CDeskBand()
@@ -113,7 +126,6 @@ STDMETHODIMP CDeskBand::ContextSensitiveHelp(BOOL)
 //
 STDMETHODIMP CDeskBand::ShowDW(BOOL fShow)
 {
-    i = 20;
     if (m_hwnd)
     {
         ShowWindow(m_hwnd, fShow ? SW_SHOW : SW_HIDE);
@@ -301,7 +313,7 @@ STDMETHODIMP CDeskBand::SetSite(IUnknown *pUnkSite)
 
                 RegisterClassW(&wc);
 
-                hwnd_ref = CreateWindowExW(0,
+                CreateWindowExW(0,
                                 g_szDeskBandSampleClass,
                                 NULL,
                                 WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
@@ -381,45 +393,11 @@ void CDeskBand::OnFocus(const BOOL fFocus)
     }
 }
 
-/*void Test()
-{
-    for (int i = 0; i < TEXTSIZE; i++)
-    {
-        text[i] = 'b';
-    }
-    InvalidateRect(hwnd_ref, NULL, FALSE);
-    UpdateWindow(hwnd_ref);
-}*/
-
-
-
-int TestV1()
-{
-    for (int i = 0; i < TEXTSIZE; i++)
-    {
-        text[i] = 'b';
-    }
-    InvalidateRect(hwnd_ref, NULL, FALSE);
-    UpdateWindow(hwnd_ref);
-    return i;
-}
-
-/*void CDeskBand::Test()
-{
-    for (int i = 0; i < TEXTSIZE; i++)
-    {
-        text[i] = 'b';
-    }
-    InvalidateRect(m_hwnd, NULL, FALSE);
-    UpdateWindow(m_hwnd);
-}*/
-
 void CDeskBand::OnPaint(const HDC hdcIn)
 {
     HDC hdc = hdcIn;
     PAINTSTRUCT ps;
     static WCHAR szContent[] = L"D-speed: 140Kbps U-speed: 30Kbps";
-    static WCHAR szContentGlass[] = L"D-speed: 140Kbps U-speed: 30Kbps";
 
     if (!hdc)
     {
@@ -435,41 +413,67 @@ void CDeskBand::OnPaint(const HDC hdcIn)
 
         if (m_fCompositionEnabled)
         {
-            HTHEME hTheme = OpenThemeData(NULL, L"BUTTON");
+            HTHEME hTheme = OpenThemeData(NULL, L"TextStyle");
             if (hTheme)
             {
-                HDC hdcPaint = NULL;
-                HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, NULL, &hdcPaint);
+                HDC hMemDC = ::CreateCompatibleDC(hdc);
+                HBITMAP hMemBitMap = ::CreateCompatibleBitmap(hdc, RECTWIDTH(rc), RECTHEIGHT(rc));
+                HBITMAP hOldMemBitMap = static_cast<HBITMAP>(::SelectObject(hMemDC, hMemBitMap));
 
-                DrawThemeParentBackground(m_hwnd, hdcPaint, &rc);
+                // before other operations, draw the background
+                //::DrawThemeParentBackground(m_hWnd, hMemDC, &rc);
 
-                GetTextExtentPoint32(hdc, szContentGlass, ARRAYSIZE(szContentGlass), &size);
-                RECT rcText;
-                rcText.left   = 0;
-                rcText.top    = 0;
-                rcText.right  = 150;
-                rcText.bottom = 30;
+                // set font
+                HFONT hFont = ::CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                    CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"@system");
+                HFONT hOldFont = static_cast<HFONT>(::SelectObject(hMemDC, hFont));
 
-                DTTOPTS dttOpts = {sizeof(dttOpts)};
-                dttOpts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
-                dttOpts.crText = RGB(255, 255, 255);
-                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, text, TEXTSIZE, 0, &rcText, &dttOpts);
+                // calculate the size of the string, 'cx' represents width while 'cy' is height 
+                SIZE sRecv = { 0 };
+                SIZE sSend = { 0 };
+                ::GetTextExtentPoint32W(hMemDC, strRecv.c_str(), static_cast<int>(strRecv.length()), &sRecv);
+                ::GetTextExtentPoint32W(hMemDC, strSend.c_str(), static_cast<int>(strSend.length()), &sSend);
 
-                EndBufferedPaint(hBufferedPaint, TRUE);
+                // prepare rects of recv & send text
+                RECT rcRecv = { 0 };
+                RECT rcSend = { 0 };
+                rcRecv.left = (RECTWIDTH(rc) - sRecv.cx) / 2;
+                rcRecv.right = rcRecv.left + sRecv.cx;
+                rcRecv.top = RECTHEIGHT(rc) / 2 + (RECTHEIGHT(rc) / 2 - sRecv.cy) / 2;
+                rcRecv.bottom = rcRecv.top + sRecv.cy;
 
-                CloseThemeData(hTheme);
-                i = 17;
+                rcSend.left = (RECTWIDTH(rc) - sSend.cx) / 2;
+                rcSend.right = rcSend.left + sSend.cx;
+                rcSend.bottom = RECTHEIGHT(rc) / 2 - (RECTHEIGHT(rc) / 2 - sSend.cy) / 2;
+                rcSend.top = rcSend.bottom - sSend.cy;
+
+                DTTOPTS dttOpts = { sizeof(dttOpts) };
+                dttOpts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
+                dttOpts.crText = RGB(250, 250, 250);
+                dttOpts.iGlowSize = 8;
+                ::DrawThemeTextEx(hTheme, hMemDC, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOpts);
+                ::DrawThemeTextEx(hTheme, hMemDC, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOpts);
+
+                //::BitBlt(hdc, ps.rcPaint.left, ps.rcPaint.top, RECTWIDTH(ps.rcPaint), RECTHEIGHT(ps.rcPaint), hMemDC, 0, 0, SRCCOPY);
+                ::BitBlt(hdc, 0, 0, RECTWIDTH(rc), RECTHEIGHT(rc), hMemDC, 0, 0, SRCCOPY);
+
+                //::SelectObject(hMemDC, hOldFont);
+                ::SelectObject(hMemDC, hOldMemBitMap);
+                ::DeleteObject(hMemBitMap);
+                ::DeleteDC(hMemDC);
+
+                ::CloseThemeData(hTheme);
             }
         }
         else
         {
             SetBkColor(hdc, RGB(255, 255, 0));
-            GetTextExtentPointW(hdc, szContent, ARRAYSIZE(szContent), &size);
+            GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &size);
             TextOutW(hdc,
                      (RECTWIDTH(rc) - size.cx) / 2,
                      (RECTHEIGHT(rc) - size.cy) / 2,
-                     szContent,
-                     ARRAYSIZE(szContent));
+                        strRecv.c_str(),
+                        static_cast<int>(strRecv.length()));
         }
     }
 
@@ -484,13 +488,16 @@ LRESULT CALLBACK CDeskBand::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     LRESULT lResult = 0;
 
     CDeskBand *pDeskBand = reinterpret_cast<CDeskBand *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-    i = 18;
     switch (uMsg)
     {
     case WM_CREATE:
         pDeskBand = reinterpret_cast<CDeskBand *>(reinterpret_cast<CREATESTRUCT *>(lParam)->lpCreateParams);
         pDeskBand->m_hwnd = hwnd;
         SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pDeskBand));
+        SetTimer(pDeskBand->m_hwnd,             // handle to main window 
+            IDT_TIMER1,            // timer identifier 
+            1000,                 // 1-second interval 
+            (TIMERPROC)NULL);     // no timer callback 
         break;
 
     case WM_SETFOCUS:
@@ -525,3 +532,32 @@ LRESULT CALLBACK CDeskBand::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     return lResult;
 }
 
+std::wstring Suffix(int suffix)
+{
+    if (suffix == 0)
+        return L"bps";
+    else if (suffix == 1)
+        return L"Kbps";
+    else
+        return L"Mbps";
+}
+
+void CDeskBand::OnTimer()
+{
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << down;
+    std::string s = stream.str();
+
+    strRecv.assign(CA2W(s.c_str()));
+    strRecv.append(Suffix(downSuffix));
+    stream.str("");
+
+    stream << std::fixed << std::setprecision(2) << up;
+    s = stream.str();
+
+    strSend.assign(CA2W(s.c_str()));
+    strSend.append(Suffix(upSuffix));
+
+    InvalidateRect(m_hwnd, NULL, FALSE);
+    UpdateWindow(m_hwnd);
+}

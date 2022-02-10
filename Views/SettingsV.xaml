@@ -27,6 +27,10 @@
         <CheckBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetStartWithWin}" IsEnabled="{Binding UnlockOptionStartWin}"></CheckBox>
         <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">Start program on windows startup</TextBlock>
         <CheckBox Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDeskBand}" IsEnabled="{Binding UnlockDeskBand}"></CheckBox>
-        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">Test DeskBand</TextBlock>
+        <WrapPanel Grid.Row="2" Grid.Column="1">
+            <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center">Test DeskBand</TextBlock>
+            <TextBlock  Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Foreground="Gray">(not supported in windows 11)</TextBlock>
+        </WrapPanel>
+        
     </Grid>
 </UserControl>

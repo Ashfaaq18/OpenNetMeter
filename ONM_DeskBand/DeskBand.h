@@ -3,8 +3,13 @@
 #include <windows.h>
 #include <uxtheme.h>
 #include <shlobj.h> // for IDeskband2, IObjectWithSite, IPesistStream, and IInputObject
+#include <string>
+#include <iomanip>
+#include <sstream>
+#include <AtlBase.h>
+#include <atlconv.h>
 
-extern "C" __declspec(dllexport) int TestV1();
+extern "C" __declspec(dllexport) void SetDataVars(double d, int dS, double u, int uS);
 
 class CDeskBand : public IDeskBand2,
                   public IPersistStream,
@@ -52,8 +57,6 @@ public:
     STDMETHODIMP HasFocusIO();
     STDMETHODIMP TranslateAcceleratorIO(MSG *);
 
-    void Test();
-
     CDeskBand();
 
 protected:
@@ -62,6 +65,7 @@ protected:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnFocus(const BOOL fFocus);
     void OnPaint(const HDC hdcIn);
+    void OnTimer();
 
 private:
     LONG                m_cRef;                 // ref count of deskband
@@ -73,5 +77,7 @@ private:
     DWORD               m_dwBandID;             // ID of deskband
     HWND                m_hwnd;                 // main window of deskband
     HWND                m_hwndParent;           // parent window of deskband
+    std::wstring        strRecv;
+    std::wstring        strSend;
 };
 

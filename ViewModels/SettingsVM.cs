@@ -3,12 +3,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.Win32.TaskScheduler;
 using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class SettingsVM : INotifyPropertyChanged, IDisposable
+    public class SettingsVM : INotifyPropertyChanged
     {
         private bool setStartWithWin;
         public bool SetStartWithWin
@@ -30,12 +31,6 @@ namespace OpenNetMeter.ViewModels
                     //register to task scheduler
                     SetAppAsTask(value);
                     UnlockOptionStartWin = true;
-
-                    if (reg != null)
-                    {
-                        //reg.RegisterComDLL();
-                        reg.Test();
-                    }
                 }
             }
         }
@@ -89,7 +84,6 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private Registrar reg;
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
@@ -98,18 +92,23 @@ namespace OpenNetMeter.ViewModels
             UnlockDeskBand = false;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
-            reg = new Registrar("ONM_DeskBand.dll");
-            if (reg != null)
-            {
-                reg.RegisterComDLL();
-                reg.Test();
-            }
-            /*if(SetDeskBand)
-            {
-                //register
-            }*/
+
         }
 
+        // ---------- DeskBand Stuff ---------------------//
+
+        [DllImport("DeskBandDLL.dll", EntryPoint = "DllRegisterServer")]
+        static extern IntPtr DllRegisterServer();
+
+        [DllImport("DeskBandDLL.dll", EntryPoint = "DllUnregisterServer")]
+        static extern IntPtr DllUnregisterServer();
+
+        [DllImport("DeskBandDLL.dll", EntryPoint = "SetDataVars")]
+        internal static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
+
+
+
+        // --------- Task Scheduler stuff ------------------//
         private readonly string taskName;
         private readonly string taskFolder;
         private void SetAppAsTask(bool set)
@@ -199,15 +198,6 @@ namespace OpenNetMeter.ViewModels
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
-            }
-        }
-
-        public void Dispose()
-        {
-            if(reg != null)
-            {
-                reg.UnRegisterComDLL();
-                reg.FreeLib();
             }
         }
     }
