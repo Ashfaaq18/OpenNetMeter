@@ -1,20 +1,20 @@
 #include "DeskBand.h"
 
 #pragma data_seg("SHARED")
-double down = 0;
-int downSuffix = 0;
-double up = 0;
-int upSuffix = 0;
+double down1 = 0;
+int downSuffix1 = 0;
+double up1= 0;
+int upSuffix1 = 0;
 #pragma data_seg()
 
 extern "C" __declspec(dllexport)
 
 void SetDataVars(double d, int dS, double u, int uS)
 {
-    down = d;
-    downSuffix = dS;
-    up = u;
-    upSuffix = uS;
+    down1 = d;
+    downSuffix1 = dS;
+    up1 = u;
+    upSuffix1 = uS;
 }
 
 #pragma comment(linker, "/section:SHARED,RWS")  
@@ -27,13 +27,15 @@ void SetDataVars(double d, int dS, double u, int uS)
 extern long         g_cDllRef;
 extern HINSTANCE    g_hInst;
 
-extern CLSID CLSID_DeskBandSample;
-static const WCHAR g_szDeskBandSampleClass[] = L"DeskBandSampleClass";
+extern CLSID CLSID_DeskBand;
+static const WCHAR g_szDeskBandClass[] = L"ONM_DeskBand_Class";
 
 CDeskBand::CDeskBand() :
     m_cRef(1), m_pSite(NULL), m_pInputObjectSite(NULL), m_fHasFocus(FALSE), m_fIsDirty(FALSE), m_dwBandID(0), m_hwnd(NULL), m_hwndParent(NULL)
 {
     InterlockedIncrement(&g_cDllRef);
+    strRecv = L"0bps";
+    strSend = L"0bps";
 }
 
 CDeskBand::~CDeskBand()
@@ -239,7 +241,7 @@ STDMETHODIMP CDeskBand::GetCompositionState(BOOL *pfCompositionEnabled)
 //
 STDMETHODIMP CDeskBand::GetClassID(CLSID *pclsid)
 {
-    *pclsid = CLSID_DeskBandSample;
+    *pclsid = CLSID_DeskBand;
     return S_OK;
 }
 
@@ -308,13 +310,13 @@ STDMETHODIMP CDeskBand::SetSite(IUnknown *pUnkSite)
                 wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
                 wc.hInstance     = g_hInst;
                 wc.lpfnWndProc   = WndProc;
-                wc.lpszClassName = g_szDeskBandSampleClass;
+                wc.lpszClassName = g_szDeskBandClass;
                 wc.hbrBackground = CreateSolidBrush(RGB(255, 255, 0));
 
                 RegisterClassW(&wc);
 
                 CreateWindowExW(0,
-                                g_szDeskBandSampleClass,
+                                g_szDeskBandClass,
                                 NULL,
                                 WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                                 0,
@@ -490,38 +492,50 @@ LRESULT CALLBACK CDeskBand::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     CDeskBand *pDeskBand = reinterpret_cast<CDeskBand *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
     switch (uMsg)
     {
-    case WM_CREATE:
-        pDeskBand = reinterpret_cast<CDeskBand *>(reinterpret_cast<CREATESTRUCT *>(lParam)->lpCreateParams);
-        pDeskBand->m_hwnd = hwnd;
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pDeskBand));
-        SetTimer(pDeskBand->m_hwnd,             // handle to main window 
-            IDT_TIMER1,            // timer identifier 
-            1000,                 // 1-second interval 
-            (TIMERPROC)NULL);     // no timer callback 
-        break;
+        case WM_CREATE:
+            pDeskBand = reinterpret_cast<CDeskBand *>(reinterpret_cast<CREATESTRUCT *>(lParam)->lpCreateParams);
+            pDeskBand->m_hwnd = hwnd;
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pDeskBand));
+            SetTimer(pDeskBand->m_hwnd,             // handle to main window 
+                IDT_TIMER1,            // timer identifier 
+                1000,                 // 1-second interval 
+                (TIMERPROC)NULL);     // no timer callback 
+            break;
 
-    case WM_SETFOCUS:
-        pDeskBand->OnFocus(TRUE);
-        break;
+        case WM_SETFOCUS:
+            pDeskBand->OnFocus(TRUE);
+            break;
 
-    case WM_KILLFOCUS:
-        pDeskBand->OnFocus(FALSE);
-        break;
+        case WM_KILLFOCUS:
+            pDeskBand->OnFocus(FALSE);
+            break;
 
-    case WM_PAINT:
-        pDeskBand->OnPaint(NULL);
-        break;
+        case WM_PAINT:
+            pDeskBand->OnPaint(NULL);
+            break;
 
-    case WM_PRINTCLIENT:
-        pDeskBand->OnPaint(reinterpret_cast<HDC>(wParam));
-        break;
+        case WM_PRINTCLIENT:
+            pDeskBand->OnPaint(reinterpret_cast<HDC>(wParam));
+            break;
+    
+        case WM_TIMER:
+            switch (wParam)
+            {
+                case IDT_TIMER1:
+                    pDeskBand->OnTimer();
+            }
+            break;
 
-    case WM_ERASEBKGND:
-        if (pDeskBand->m_fCompositionEnabled)
-        {
-            lResult = 1;
-        }
-        break;
+        case WM_ERASEBKGND:
+            if (pDeskBand->m_fCompositionEnabled)
+            {
+                lResult = 1;
+            }
+            break;
+
+        case WM_DESTROY:
+            KillTimer(pDeskBand->m_hwnd, IDT_TIMER1);
+            break;
     }
 
     if (uMsg != WM_ERASEBKGND)
@@ -534,29 +548,24 @@ LRESULT CALLBACK CDeskBand::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 std::wstring Suffix(int suffix)
 {
-    if (suffix == 0)
-        return L"bps";
-    else if (suffix == 1)
-        return L"Kbps";
-    else
-        return L"Mbps";
+    return suffix == 4 ? L"Tbps" : suffix == 3 ? L"Gbps" : suffix == 2 ? L"Mbps" : suffix == 1 ? L"Kbps" : suffix == 0 ? L"bps" : L"Error";
 }
 
 void CDeskBand::OnTimer()
 {
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << down;
+    stream << std::fixed << std::setprecision(2) << down1;
     std::string s = stream.str();
 
     strRecv.assign(CA2W(s.c_str()));
-    strRecv.append(Suffix(downSuffix));
+    strRecv.append(Suffix(downSuffix1));
     stream.str("");
 
-    stream << std::fixed << std::setprecision(2) << up;
+    stream << std::fixed << std::setprecision(2) << up1;
     s = stream.str();
 
     strSend.assign(CA2W(s.c_str()));
-    strSend.append(Suffix(upSuffix));
+    strSend.append(Suffix(upSuffix1));
 
     InvalidateRect(m_hwnd, NULL, FALSE);
     UpdateWindow(m_hwnd);

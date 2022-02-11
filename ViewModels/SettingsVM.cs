@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.TaskScheduler;
-using OpenNetMeter.Models;
+using System.Threading.Tasks;
+using TaskScheduler = Microsoft.Win32.TaskScheduler;
+
 
 namespace OpenNetMeter.ViewModels
 {
@@ -34,7 +35,7 @@ namespace OpenNetMeter.ViewModels
                 }
             }
         }
-        
+
         private bool unlockOptionStartWin;
         public bool UnlockOptionStartWin
         {
@@ -65,6 +66,12 @@ namespace OpenNetMeter.ViewModels
                     //set the app settings
                     Properties.Settings.Default.DeskBandSetting = value;
                     Properties.Settings.Default.Save();
+
+                    if (value)
+                        DllRegisterServer();
+                    else
+                        DllUnregisterServer();
+
                 }
             }
         }
@@ -84,29 +91,31 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        public ulong DownloadSpeed { get; set; }
+        public ulong UploadSpeed { get; set; }
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             UnlockOptionStartWin = true;
-            UnlockDeskBand = false;
+            UnlockDeskBand = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
 
+            DownloadSpeed = 0;
+            UploadSpeed = 0;
         }
 
         // ---------- DeskBand Stuff ---------------------//
 
-        [DllImport("DeskBandDLL.dll", EntryPoint = "DllRegisterServer")]
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "DllRegisterServer")]
         static extern IntPtr DllRegisterServer();
 
-        [DllImport("DeskBandDLL.dll", EntryPoint = "DllUnregisterServer")]
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "DllUnregisterServer")]
         static extern IntPtr DllUnregisterServer();
 
-        [DllImport("DeskBandDLL.dll", EntryPoint = "SetDataVars")]
-        internal static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
-
-
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "SetDataVars")]
+        public static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
 
         // --------- Task Scheduler stuff ------------------//
         private readonly string taskName;
@@ -115,7 +124,7 @@ namespace OpenNetMeter.ViewModels
         {
             try
             {
-                TaskFolder sub = TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"];
+                TaskScheduler.TaskFolder sub = TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"];
                 if (!set)
                 {
                     for(int i = 0; i < sub.Tasks.Count; i++)
@@ -123,7 +132,7 @@ namespace OpenNetMeter.ViewModels
                         sub.DeleteTask(sub.Tasks[i].Name);
                     }
 
-                    TaskService.Instance.RootFolder.DeleteFolder(taskFolder);
+                    TaskScheduler.TaskService.Instance.RootFolder.DeleteFolder(taskFolder);
                 }
                 return;
             }
@@ -137,7 +146,7 @@ namespace OpenNetMeter.ViewModels
                 {
                     try
                     {
-                        TaskService.Instance.RootFolder.CreateFolder(taskFolder);
+                        TaskScheduler.TaskService.Instance.RootFolder.CreateFolder(taskFolder);
                         CreateTask();
                     }
                     catch (Exception ex1)
@@ -153,22 +162,22 @@ namespace OpenNetMeter.ViewModels
             try
             {
                 //create task
-                TaskDefinition td = TaskService.Instance.NewTask();
+                TaskScheduler.TaskDefinition td = TaskScheduler.TaskService.Instance.NewTask();
                 td.RegistrationInfo.Description = "Run OpenNetMeter on system log on";
                 // Set to run at the highest privilege
-                td.Principal.RunLevel = TaskRunLevel.Highest;
+                td.Principal.RunLevel = TaskScheduler.TaskRunLevel.Highest;
                 // Task only runs when user is logged on
-                td.Principal.LogonType = TaskLogonType.InteractiveToken;
+                td.Principal.LogonType = TaskScheduler.TaskLogonType.InteractiveToken;
 
                 // These settings will ensure it runs even if on battery power
                 td.Settings.DisallowStartIfOnBatteries = false;
                 td.Settings.StopIfGoingOnBatteries = false;
 
                 //set compatibility to windows 10
-                td.Settings.Compatibility = TaskCompatibility.V2_3;
+                td.Settings.Compatibility = TaskScheduler.TaskCompatibility.V2_3;
 
                 //set to launch when user logs on
-                LogonTrigger logonTrigger = new LogonTrigger
+                TaskScheduler.LogonTrigger logonTrigger = new TaskScheduler.LogonTrigger
                 {
                     Enabled = true,
                     UserId = null
@@ -176,12 +185,12 @@ namespace OpenNetMeter.ViewModels
                 td.Triggers.Add(logonTrigger);
 
                 //set action to run application
-                ExecAction action = new ExecAction();
+                TaskScheduler.ExecAction action = new TaskScheduler.ExecAction();
                 action.Path = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
                 td.Actions.Add(action);
 
                 // Register the task in the sub folder
-                TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"].RegisterTaskDefinition(taskName, td);
+                TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"].RegisterTaskDefinition(taskName, td);
             }
             catch(Exception ex)
             {

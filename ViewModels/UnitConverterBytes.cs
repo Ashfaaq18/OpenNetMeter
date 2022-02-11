@@ -9,7 +9,7 @@ namespace OpenNetMeter.ViewModels
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return DataSizeSuffix.SizeSuffix((ulong)value, 1, true);
+            return DataSizeSuffix.SizeSuffixInStr((ulong)value, 1, true);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

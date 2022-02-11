@@ -14,8 +14,8 @@
     <Grid Background="White" Margin="32">
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -28,7 +28,7 @@
         <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">Start program on windows startup</TextBlock>
         <CheckBox Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDeskBand}" IsEnabled="{Binding UnlockDeskBand}"></CheckBox>
         <WrapPanel Grid.Row="2" Grid.Column="1">
-            <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center">Test DeskBand</TextBlock>
+            <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center">Show network speed on the Taskbar</TextBlock>
             <TextBlock  Margin="5,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Foreground="Gray">(not supported in windows 11)</TextBlock>
         </WrapPanel>
         

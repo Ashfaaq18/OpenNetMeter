@@ -4,8 +4,8 @@
 #include <shlobj.h> // for ICatRegister
 #include "ClassFactory.h" // for the class factory
 
-// {46B3D3EF-071A-4b7e-8AA2-E560810DAB35}
-CLSID CLSID_DeskBandSample = {0x46b3d3ef, 0x71a, 0x4b7e, {0x8a, 0xa2, 0xe5, 0x60, 0x81, 0xd, 0xab, 0x35}};
+// {A0528F0B-D9F5-47C6-B29F-244D19C66655}
+CLSID CLSID_DeskBand = { 0xa0528f0b, 0xd9f5, 0x47c6, { 0xb2, 0x9f, 0x24, 0x4d, 0x19, 0xc6, 0x66, 0x55 } };
 
 HINSTANCE   g_hInst     = NULL;
 long        g_cDllRef   = 0;
@@ -24,7 +24,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 {
     HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
 
-    if (IsEqualCLSID(CLSID_DeskBandSample, rclsid))
+    if (IsEqualCLSID(CLSID_DeskBand, rclsid))
     {
         hr = E_OUTOFMEMORY;
 
@@ -47,7 +47,7 @@ STDAPI DllCanUnloadNow()
 HRESULT RegisterServer()
 {
     WCHAR szCLSID[MAX_PATH];
-    StringFromGUID2(CLSID_DeskBandSample, szCLSID, ARRAYSIZE(szCLSID));
+    StringFromGUID2(CLSID_DeskBand, szCLSID, ARRAYSIZE(szCLSID));
 
     WCHAR szSubkey[MAX_PATH];
     HKEY hKey;
@@ -66,7 +66,7 @@ HRESULT RegisterServer()
                                              &hKey,
                                              NULL))
         {
-            WCHAR const szName[] = L"DeskBand Sample";
+            WCHAR const szName[] = L"OpenNetMeter Speed";
             if (ERROR_SUCCESS == RegSetValueExW(hKey,
                                                 NULL,
                                                 0,
@@ -118,7 +118,7 @@ HRESULT RegisterComCat()
     if (SUCCEEDED(hr))
     {
         CATID catid = CATID_DeskBand;
-        hr = pcr->RegisterClassImplCategories(CLSID_DeskBandSample, 1, &catid);
+        hr = pcr->RegisterClassImplCategories(CLSID_DeskBand, 1, &catid);
         pcr->Release();
     }
     return hr;
@@ -140,7 +140,7 @@ STDAPI DllRegisterServer()
 STDAPI DllUnregisterServer()
 {
     WCHAR szCLSID[MAX_PATH];
-    StringFromGUID2(CLSID_DeskBandSample, szCLSID, ARRAYSIZE(szCLSID));
+    StringFromGUID2(CLSID_DeskBand, szCLSID, ARRAYSIZE(szCLSID));
 
     WCHAR szSubkey[MAX_PATH];
     HRESULT hr = StringCchPrintfW(szSubkey, ARRAYSIZE(szSubkey), L"CLSID\\%s", szCLSID);
