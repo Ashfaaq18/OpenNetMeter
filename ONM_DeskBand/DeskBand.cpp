@@ -1,20 +1,20 @@
 #include "DeskBand.h"
 
 #pragma data_seg("SHARED")
-double down1 = 0;
-int downSuffix1 = 0;
-double up1= 0;
-int upSuffix1 = 0;
+double down = 0;
+int downSuffix = 0;
+double up= 0;
+int upSuffix = 0;
 #pragma data_seg()
 
 extern "C" __declspec(dllexport)
 
 void SetDataVars(double d, int dS, double u, int uS)
 {
-    down1 = d;
-    downSuffix1 = dS;
-    up1 = u;
-    upSuffix1 = uS;
+    down = d;
+    downSuffix = dS;
+    up = u;
+    upSuffix = uS;
 }
 
 #pragma comment(linker, "/section:SHARED,RWS")  
@@ -34,8 +34,8 @@ CDeskBand::CDeskBand() :
     m_cRef(1), m_pSite(NULL), m_pInputObjectSite(NULL), m_fHasFocus(FALSE), m_fIsDirty(FALSE), m_dwBandID(0), m_hwnd(NULL), m_hwndParent(NULL)
 {
     InterlockedIncrement(&g_cDllRef);
-    strRecv = L"0bps";
-    strSend = L"0bps";
+    strRecv = L"D: 0.00bps";
+    strSend = L"U: 0.00bps";
 }
 
 CDeskBand::~CDeskBand()
@@ -166,8 +166,13 @@ STDMETHODIMP CDeskBand::GetBandInfo(DWORD dwBandID, DWORD, DESKBANDINFO *pdbi)
 
         if (pdbi->dwMask & DBIM_MINSIZE)
         {
-            pdbi->ptMinSize.x = 200;
-            pdbi->ptMinSize.y = 30;
+            HDC hDC = GetDC(NULL);
+            RECT r = { 0, 0, 0, 0 };
+            std::wstring str = L"X: 0000.00xxxx";
+            DrawText(hDC, str.c_str(), static_cast<int>(str.length()), &r, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+
+            pdbi->ptMinSize.x = abs(r.right - r.left);
+            pdbi->ptMinSize.y = abs(r.bottom - r.top) * 2 + 4;
         }
 
         if (pdbi->dwMask & DBIM_MAXSIZE)
@@ -182,8 +187,8 @@ STDMETHODIMP CDeskBand::GetBandInfo(DWORD dwBandID, DWORD, DESKBANDINFO *pdbi)
 
         if (pdbi->dwMask & DBIM_ACTUAL)
         {
-            pdbi->ptActual.x = 0;
-            pdbi->ptActual.y = 0;
+            pdbi->ptActual.x = -1;
+            pdbi->ptActual.y = -1;
         }
 
         if (pdbi->dwMask & DBIM_TITLE)
@@ -439,15 +444,15 @@ void CDeskBand::OnPaint(const HDC hdcIn)
                 // prepare rects of recv & send text
                 RECT rcRecv = { 0 };
                 RECT rcSend = { 0 };
-                rcRecv.left = (RECTWIDTH(rc) - sRecv.cx) / 2;
-                rcRecv.right = rcRecv.left + sRecv.cx;
-                rcRecv.top = RECTHEIGHT(rc) / 2 + (RECTHEIGHT(rc) / 2 - sRecv.cy) / 2;
-                rcRecv.bottom = rcRecv.top + sRecv.cy;
-
                 rcSend.left = (RECTWIDTH(rc) - sSend.cx) / 2;
                 rcSend.right = rcSend.left + sSend.cx;
-                rcSend.bottom = RECTHEIGHT(rc) / 2 - (RECTHEIGHT(rc) / 2 - sSend.cy) / 2;
-                rcSend.top = rcSend.bottom - sSend.cy;
+                rcSend.top = RECTHEIGHT(rc) / 2 + (RECTHEIGHT(rc) / 2 - sSend.cy) / 2;
+                rcSend.bottom = rcSend.top + sSend.cy;
+
+                rcRecv.left = (RECTWIDTH(rc) - sRecv.cx) / 2;
+                rcRecv.right = rcRecv.left + sRecv.cx;
+                rcRecv.bottom = RECTHEIGHT(rc) / 2 - (RECTHEIGHT(rc) / 2 - sRecv.cy) / 2;
+                rcRecv.top = rcRecv.bottom - sRecv.cy;
 
                 DTTOPTS dttOpts = { sizeof(dttOpts) };
                 dttOpts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
@@ -456,10 +461,8 @@ void CDeskBand::OnPaint(const HDC hdcIn)
                 ::DrawThemeTextEx(hTheme, hMemDC, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOpts);
                 ::DrawThemeTextEx(hTheme, hMemDC, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOpts);
 
-                //::BitBlt(hdc, ps.rcPaint.left, ps.rcPaint.top, RECTWIDTH(ps.rcPaint), RECTHEIGHT(ps.rcPaint), hMemDC, 0, 0, SRCCOPY);
                 ::BitBlt(hdc, 0, 0, RECTWIDTH(rc), RECTHEIGHT(rc), hMemDC, 0, 0, SRCCOPY);
 
-                //::SelectObject(hMemDC, hOldFont);
                 ::SelectObject(hMemDC, hOldMemBitMap);
                 ::DeleteObject(hMemBitMap);
                 ::DeleteDC(hMemDC);
@@ -554,18 +557,20 @@ std::wstring Suffix(int suffix)
 void CDeskBand::OnTimer()
 {
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << down1;
+    stream << std::fixed << std::setprecision(2) << down;
     std::string s = stream.str();
 
-    strRecv.assign(CA2W(s.c_str()));
-    strRecv.append(Suffix(downSuffix1));
+    strRecv.assign(L"D: ");
+    strRecv.append(CA2W(s.c_str()));
+    strRecv.append(Suffix(downSuffix));
     stream.str("");
 
-    stream << std::fixed << std::setprecision(2) << up1;
+    stream << std::fixed << std::setprecision(2) << up;
     s = stream.str();
 
-    strSend.assign(CA2W(s.c_str()));
-    strSend.append(Suffix(upSuffix1));
+    strSend.assign(L"U: ");
+    strSend.append(CA2W(s.c_str()));
+    strSend.append(Suffix(upSuffix));
 
     InvalidateRect(m_hwnd, NULL, FALSE);
     UpdateWindow(m_hwnd);

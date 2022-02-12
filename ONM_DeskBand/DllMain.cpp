@@ -111,6 +111,35 @@ HRESULT RegisterServer()
     return hr;
 }
 
+extern "C" __declspec(dllexport) HRESULT ShowDeskband()
+{
+    CComPtr<ITrayDeskBand> spTrayDeskBand;
+    HRESULT hr = spTrayDeskBand.CoCreateInstance(CLSID_TrayDeskBand);
+
+    if (SUCCEEDED(hr))   // Vista and higher
+    {
+        hr = spTrayDeskBand->DeskBandRegistrationChanged();
+    }
+
+    return SUCCEEDED(hr);
+}
+
+extern "C" __declspec(dllexport) HRESULT HideDeskband()
+{
+    CComPtr<ITrayDeskBand> spTrayDeskBand;
+    HRESULT hr = spTrayDeskBand.CoCreateInstance(CLSID_TrayDeskBand);
+
+    if (SUCCEEDED(hr))   // Vista and higher
+    {
+        hr = spTrayDeskBand->IsDeskBandShown(CLSID_DeskBand);
+
+        if (hr == S_OK)
+            hr = spTrayDeskBand->HideDeskBand(CLSID_DeskBand);
+    }
+
+    return SUCCEEDED(hr);
+}
+
 HRESULT RegisterComCat()
 {
     ICatRegister *pcr;

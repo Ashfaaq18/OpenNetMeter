@@ -1,16 +1,19 @@
-﻿using System;
+﻿using OpenNetMeter.Models;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 
 namespace OpenNetMeter.ViewModels
 {
-    public class SettingsVM : INotifyPropertyChanged
+    public class SettingsVM : INotifyPropertyChanged, IDisposable
     {
         private bool setStartWithWin;
         public bool SetStartWithWin
@@ -68,9 +71,15 @@ namespace OpenNetMeter.ViewModels
                     Properties.Settings.Default.Save();
 
                     if (value)
+                    {
                         DllRegisterServer();
+                        ShowDeskband();
+                    }
                     else
+                    {
+                        HideDeskband();
                         DllUnregisterServer();
+                    }
 
                 }
             }
@@ -113,6 +122,12 @@ namespace OpenNetMeter.ViewModels
 
         [DllImport("ONM_DeskBand.dll", EntryPoint = "DllUnregisterServer")]
         static extern IntPtr DllUnregisterServer();
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "ShowDeskband")]
+        static extern bool ShowDeskband();
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "HideDeskband")]
+        static extern bool HideDeskband();
 
         [DllImport("ONM_DeskBand.dll", EntryPoint = "SetDataVars")]
         public static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
@@ -198,6 +213,15 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        public void Dispose()
+        {
+            if(SetDeskBand)
+            {
+                HideDeskband();
+                DllUnregisterServer();
+            }    
+        }
+
         //------property changers---------------//
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -208,6 +232,6 @@ namespace OpenNetMeter.ViewModels
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
-        }
+        }   
     }
 }
