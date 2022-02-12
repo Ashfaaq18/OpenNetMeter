@@ -13,7 +13,7 @@
         <vm:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
         <properties:Settings x:Key="Settings"/>
     </UserControl.Resources>
-    <Grid Background="White" Margin="32">
+    <Grid Background="White" Margin="16">
         <Grid.RowDefinitions>
 
             <RowDefinition Height="30"/>
@@ -38,9 +38,11 @@
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="5">
             <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center">Show network speed on the Taskbar</TextBlock>
             <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Foreground="Gray">(not supported in windows 11)</TextBlock>
-            <StackPanel Orientation="Horizontal" Margin="5,5,0,0">
-                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" FontSize="11" Margin="5,0">Black Font</RadioButton>
-                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" FontSize="11" Margin="5,0">White Font</RadioButton>
+            <StackPanel Orientation="Horizontal"  Margin="0,5" >
+                <Label FontSize="11" Padding="0">Font color: </Label>
+                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" FontSize="11" Margin="5,0" Padding="0">Black</RadioButton>
+                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" FontSize="11" Margin="5,0" Padding="0">White</RadioButton>
+                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=3}" FontSize="11" Margin="5,0" Padding="0">App</RadioButton>
             </StackPanel>
         </StackPanel>
         

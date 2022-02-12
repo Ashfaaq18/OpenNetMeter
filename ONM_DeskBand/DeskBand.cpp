@@ -450,16 +450,29 @@ void CDeskBand::OnPaint(const HDC hdcIn)
                 rcRecv.bottom = RECTHEIGHT(rc) / 2 - (RECTHEIGHT(rc) / 2 - sRecv.cy) / 2;
                 rcRecv.top = rcRecv.bottom - sRecv.cy;
 
-                DTTOPTS dttOpts = { sizeof(dttOpts) };
-                dttOpts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
-                if(color == 1)
-                    dttOpts.crText = RGB(1,1,1);
-                else
-                    dttOpts.crText = RGB(250, 250, 250);
-                dttOpts.iGlowSize = 10;
+                DTTOPTS dttOptsRecv = { sizeof(dttOptsRecv) };
+                dttOptsRecv.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
+                dttOptsRecv.iGlowSize = 10;
 
-                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOpts);
-                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOpts);
+                DTTOPTS dttOptsSend = dttOptsRecv;
+                if (color == 1)
+                {
+                    dttOptsRecv.crText = RGB(1, 1, 1);
+                    dttOptsSend.crText = RGB(1, 1, 1);
+                }
+                else if (color == 2)
+                {
+                    dttOptsRecv.crText = RGB(250, 250, 250);
+                    dttOptsSend.crText = RGB(250, 250, 250);
+                }
+                else
+                {
+                    dttOptsRecv.crText = RGB(28, 200, 190);
+                    dttOptsSend.crText = RGB(255, 160, 122);
+                }
+
+                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOptsRecv);
+                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOptsSend);
 
                 EndBufferedPaint(hBufferedPaint, TRUE);
 
@@ -468,14 +481,12 @@ void CDeskBand::OnPaint(const HDC hdcIn)
         }
         else
         {
-            SIZE size;
+            SIZE sRecv, sSend;
             SetBkColor(hdc, RGB(255, 255, 0));
-            GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &size);
-            TextOutW(hdc,
-                     (RECTWIDTH(rc) - size.cx) / 2,
-                     (RECTHEIGHT(rc) - size.cy) / 2,
-                        strRecv.c_str(),
-                        static_cast<int>(strRecv.length()));
+            GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &sRecv);
+            GetTextExtentPointW(hdc, strSend.c_str(), static_cast<int>(strRecv.length()), &sSend);
+            TextOutW(hdc, (RECTWIDTH(rc) - sRecv.cx) / 2, (RECTHEIGHT(rc) - sRecv.cy) / 2, strRecv.c_str(), static_cast<int>(strRecv.length()));
+            TextOutW(hdc, (RECTWIDTH(rc) - sSend.cx) / 2, ((RECTHEIGHT(rc) - sRecv.cy) / 2 ) + ((RECTHEIGHT(rc) - sSend.cy) / 2 ), strSend.c_str(), static_cast<int>(strSend.length()));
         }
     }
 
