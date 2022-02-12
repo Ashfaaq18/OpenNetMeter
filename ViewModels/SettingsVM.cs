@@ -54,6 +54,43 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        //1 == black, 2 == white
+        private int fontColorDeskBand;
+        public int FontColorDeskBand
+        {
+            get { return fontColorDeskBand; }
+
+            set
+            {
+                if (fontColorDeskBand != value)
+                {
+                    fontColorDeskBand = value;
+                    OnPropertyChanged("FontColorDeskBand");
+
+                    //set the app settings
+                    Properties.Settings.Default.FontColor = value;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+        private bool unlockFontColorDeskBand;
+        public bool UnlockFontColorDeskBand
+        {
+            get { return unlockFontColorDeskBand; }
+
+            set
+            {
+                if (unlockFontColorDeskBand != value)
+                {
+                    unlockFontColorDeskBand = value;
+                    OnPropertyChanged("UnlockFontColorDeskBand");
+                }
+            }
+        }
+
+
+
         private bool setDeskBand;
         public bool SetDeskBand
         {
@@ -72,30 +109,18 @@ namespace OpenNetMeter.ViewModels
 
                     if (value)
                     {
+                        UnlockFontColorDeskBand = false;
                         DllRegisterServer();
                         ShowDeskband();
+                        SetFontColor(FontColorDeskBand);
                     }
                     else
                     {
                         HideDeskband();
                         DllUnregisterServer();
+                        UnlockFontColorDeskBand = true;
                     }
 
-                }
-            }
-        }
-
-        private bool unlockDeskBand;
-        public bool UnlockDeskBand
-        {
-            get { return unlockDeskBand; }
-
-            set
-            {
-                if (unlockDeskBand != value)
-                {
-                    unlockDeskBand = value;
-                    OnPropertyChanged("UnlockDeskBand");
                 }
             }
         }
@@ -106,14 +131,21 @@ namespace OpenNetMeter.ViewModels
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            
             UnlockOptionStartWin = true;
-            UnlockDeskBand = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
+            FontColorDeskBand = Properties.Settings.Default.FontColor;
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
-
+            if (SetDeskBand)
+                UnlockFontColorDeskBand = false;
+            else
+                UnlockFontColorDeskBand = true;
+            
             DownloadSpeed = 0;
             UploadSpeed = 0;
         }
+
+
 
         // ---------- DeskBand Stuff ---------------------//
 
@@ -131,6 +163,9 @@ namespace OpenNetMeter.ViewModels
 
         [DllImport("ONM_DeskBand.dll", EntryPoint = "SetDataVars")]
         public static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "SetFontColor")]
+        public static extern void SetFontColor(Int32 color);
 
         // --------- Task Scheduler stuff ------------------//
         private readonly string taskName;

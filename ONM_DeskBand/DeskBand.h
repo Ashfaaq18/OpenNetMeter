@@ -10,6 +10,7 @@
 #include <atlconv.h>
 
 extern "C" __declspec(dllexport) void SetDataVars(double d, int dS, double u, int uS);
+extern "C" __declspec(dllexport) void SetFontColor(int c);
 
 class CDeskBand : public IDeskBand2,
                   public IPersistStream,

@@ -46,5 +46,17 @@ namespace OpenNetMeter.Properties {
                 this["DeskBandSetting"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int FontColor {
+            get {
+                return ((int)(this["FontColor"]));
+            }
+            set {
+                this["FontColor"] = value;
+            }
+        }
     }
 }

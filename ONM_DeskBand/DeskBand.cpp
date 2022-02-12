@@ -5,9 +5,9 @@ double down = 0;
 int downSuffix = 0;
 double up= 0;
 int upSuffix = 0;
+int color = 2; //1 = black, 2 = white (font color)
 #pragma data_seg()
 
-extern "C" __declspec(dllexport)
 
 void SetDataVars(double d, int dS, double u, int uS)
 {
@@ -15,6 +15,11 @@ void SetDataVars(double d, int dS, double u, int uS)
     downSuffix = dS;
     up = u;
     upSuffix = uS;
+}
+
+void SetFontColor(int c)
+{
+    color = c;
 }
 
 #pragma comment(linker, "/section:SHARED,RWS")  
@@ -172,7 +177,7 @@ STDMETHODIMP CDeskBand::GetBandInfo(DWORD dwBandID, DWORD, DESKBANDINFO *pdbi)
             DrawText(hDC, str.c_str(), static_cast<int>(str.length()), &r, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
 
             pdbi->ptMinSize.x = abs(r.right - r.left);
-            pdbi->ptMinSize.y = abs(r.bottom - r.top) * 2 + 4;
+            pdbi->ptMinSize.y = abs(r.bottom - r.top) * 2;
         }
 
         if (pdbi->dwMask & DBIM_MAXSIZE)
@@ -415,33 +420,24 @@ void CDeskBand::OnPaint(const HDC hdcIn)
     {
         RECT rc;
         GetClientRect(m_hwnd, &rc);
-
-        SIZE size;
-
         if (m_fCompositionEnabled)
         {
-            HTHEME hTheme = OpenThemeData(NULL, L"TextStyle");
+            HTHEME hTheme = OpenThemeData(NULL, L"TEXTSTYLE");
             if (hTheme)
             {
-                HDC hMemDC = ::CreateCompatibleDC(hdc);
-                HBITMAP hMemBitMap = ::CreateCompatibleBitmap(hdc, RECTWIDTH(rc), RECTHEIGHT(rc));
-                HBITMAP hOldMemBitMap = static_cast<HBITMAP>(::SelectObject(hMemDC, hMemBitMap));
+                HDC hdcPaint = NULL;
+                HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, NULL, &hdcPaint);
 
-                // before other operations, draw the background
-                //::DrawThemeParentBackground(m_hWnd, hMemDC, &rc);
-
-                // set font
                 HFONT hFont = ::CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
                     CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"@system");
-                HFONT hOldFont = static_cast<HFONT>(::SelectObject(hMemDC, hFont));
+                HFONT hOldFont = static_cast<HFONT>(::SelectObject(hdcPaint, hFont));
+                GetTextColor(hdc);
+                DrawThemeParentBackground(m_hwnd, hdcPaint, &rc);
 
-                // calculate the size of the string, 'cx' represents width while 'cy' is height 
-                SIZE sRecv = { 0 };
-                SIZE sSend = { 0 };
-                ::GetTextExtentPoint32W(hMemDC, strRecv.c_str(), static_cast<int>(strRecv.length()), &sRecv);
-                ::GetTextExtentPoint32W(hMemDC, strSend.c_str(), static_cast<int>(strSend.length()), &sSend);
+                SIZE sRecv,sSend;
+                GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &sRecv);
+                GetTextExtentPointW(hdc, strSend.c_str(), static_cast<int>(strSend.length()), &sSend);
 
-                // prepare rects of recv & send text
                 RECT rcRecv = { 0 };
                 RECT rcSend = { 0 };
                 rcSend.left = (RECTWIDTH(rc) - sSend.cx) / 2;
@@ -456,22 +452,23 @@ void CDeskBand::OnPaint(const HDC hdcIn)
 
                 DTTOPTS dttOpts = { sizeof(dttOpts) };
                 dttOpts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
-                dttOpts.crText = RGB(250, 250, 250);
-                dttOpts.iGlowSize = 8;
-                ::DrawThemeTextEx(hTheme, hMemDC, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOpts);
-                ::DrawThemeTextEx(hTheme, hMemDC, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOpts);
+                if(color == 1)
+                    dttOpts.crText = RGB(1,1,1);
+                else
+                    dttOpts.crText = RGB(250, 250, 250);
+                dttOpts.iGlowSize = 10;
 
-                ::BitBlt(hdc, 0, 0, RECTWIDTH(rc), RECTHEIGHT(rc), hMemDC, 0, 0, SRCCOPY);
+                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOpts);
+                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOpts);
 
-                ::SelectObject(hMemDC, hOldMemBitMap);
-                ::DeleteObject(hMemBitMap);
-                ::DeleteDC(hMemDC);
+                EndBufferedPaint(hBufferedPaint, TRUE);
 
-                ::CloseThemeData(hTheme);
+                CloseThemeData(hTheme);
             }
         }
         else
         {
+            SIZE size;
             SetBkColor(hdc, RGB(255, 255, 0));
             GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &size);
             TextOutW(hdc,
