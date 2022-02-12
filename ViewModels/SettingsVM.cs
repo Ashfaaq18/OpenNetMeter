@@ -1,13 +1,19 @@
-﻿using System;
+﻿using OpenNetMeter.Models;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
-using Microsoft.Win32.TaskScheduler;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using TaskScheduler = Microsoft.Win32.TaskScheduler;
+
 
 namespace OpenNetMeter.ViewModels
 {
-    public class SettingsVM : INotifyPropertyChanged
+    public class SettingsVM : INotifyPropertyChanged, IDisposable
     {
         private bool setStartWithWin;
         public bool SetStartWithWin
@@ -29,11 +35,10 @@ namespace OpenNetMeter.ViewModels
                     //register to task scheduler
                     SetAppAsTask(value);
                     UnlockOptionStartWin = true;
-                    
                 }
             }
         }
-        
+
         private bool unlockOptionStartWin;
         public bool UnlockOptionStartWin
         {
@@ -49,22 +54,127 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        //1 == black, 2 == white
+        private int fontColorDeskBand;
+        public int FontColorDeskBand
+        {
+            get { return fontColorDeskBand; }
 
+            set
+            {
+                if (fontColorDeskBand != value)
+                {
+                    fontColorDeskBand = value;
+                    OnPropertyChanged("FontColorDeskBand");
+
+                    //set the app settings
+                    Properties.Settings.Default.FontColor = value;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+        private bool unlockFontColorDeskBand;
+        public bool UnlockFontColorDeskBand
+        {
+            get { return unlockFontColorDeskBand; }
+
+            set
+            {
+                if (unlockFontColorDeskBand != value)
+                {
+                    unlockFontColorDeskBand = value;
+                    OnPropertyChanged("UnlockFontColorDeskBand");
+                }
+            }
+        }
+
+
+
+        private bool setDeskBand;
+        public bool SetDeskBand
+        {
+            get { return setDeskBand; }
+
+            set
+            {
+                if (setDeskBand != value)
+                {
+                    setDeskBand = value;
+                    OnPropertyChanged("SetDeskBand");
+
+                    //set the app settings
+                    Properties.Settings.Default.DeskBandSetting = value;
+                    Properties.Settings.Default.Save();
+
+                    if (value)
+                    {
+                        UnlockFontColorDeskBand = false;
+                        DllRegisterServer();
+                        ShowDeskband();
+                        SetFontColor(FontColorDeskBand);
+                    }
+                    else
+                    {
+                        HideDeskband();
+                        DllUnregisterServer();
+                        UnlockFontColorDeskBand = true;
+                    }
+
+                }
+            }
+        }
+
+        public ulong DownloadSpeed { get; set; }
+        public ulong UploadSpeed { get; set; }
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            
             UnlockOptionStartWin = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
+            FontColorDeskBand = Properties.Settings.Default.FontColor;
+            SetDeskBand = Properties.Settings.Default.DeskBandSetting;
+            if (SetDeskBand)
+                UnlockFontColorDeskBand = false;
+            else
+                UnlockFontColorDeskBand = true;
+            
+            DownloadSpeed = 0;
+            UploadSpeed = 0;
         }
 
+
+
+        // ---------- DeskBand Stuff ---------------------//
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "DllRegisterServer")]
+        static extern IntPtr DllRegisterServer();
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "DllUnregisterServer")]
+        static extern IntPtr DllUnregisterServer();
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "ShowDeskband")]
+        static extern bool ShowDeskband();
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "HideDeskband")]
+        static extern bool HideDeskband();
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "SetDataVars")]
+        public static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
+
+        [DllImport("ONM_DeskBand.dll", EntryPoint = "SetFontColor")]
+        public static extern void SetFontColor(Int32 color);
+
+        // --------- Task Scheduler stuff ------------------//
         private readonly string taskName;
         private readonly string taskFolder;
         private void SetAppAsTask(bool set)
         {
             try
             {
-                TaskFolder sub = TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"];
+                TaskScheduler.TaskFolder sub = TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"];
                 if (!set)
                 {
                     for(int i = 0; i < sub.Tasks.Count; i++)
@@ -72,7 +182,7 @@ namespace OpenNetMeter.ViewModels
                         sub.DeleteTask(sub.Tasks[i].Name);
                     }
 
-                    TaskService.Instance.RootFolder.DeleteFolder(taskFolder);
+                    TaskScheduler.TaskService.Instance.RootFolder.DeleteFolder(taskFolder);
                 }
                 return;
             }
@@ -86,7 +196,7 @@ namespace OpenNetMeter.ViewModels
                 {
                     try
                     {
-                        TaskService.Instance.RootFolder.CreateFolder(taskFolder);
+                        TaskScheduler.TaskService.Instance.RootFolder.CreateFolder(taskFolder);
                         CreateTask();
                     }
                     catch (Exception ex1)
@@ -102,22 +212,22 @@ namespace OpenNetMeter.ViewModels
             try
             {
                 //create task
-                TaskDefinition td = TaskService.Instance.NewTask();
+                TaskScheduler.TaskDefinition td = TaskScheduler.TaskService.Instance.NewTask();
                 td.RegistrationInfo.Description = "Run OpenNetMeter on system log on";
                 // Set to run at the highest privilege
-                td.Principal.RunLevel = TaskRunLevel.Highest;
+                td.Principal.RunLevel = TaskScheduler.TaskRunLevel.Highest;
                 // Task only runs when user is logged on
-                td.Principal.LogonType = TaskLogonType.InteractiveToken;
+                td.Principal.LogonType = TaskScheduler.TaskLogonType.InteractiveToken;
 
                 // These settings will ensure it runs even if on battery power
                 td.Settings.DisallowStartIfOnBatteries = false;
                 td.Settings.StopIfGoingOnBatteries = false;
 
                 //set compatibility to windows 10
-                td.Settings.Compatibility = TaskCompatibility.V2_3;
+                td.Settings.Compatibility = TaskScheduler.TaskCompatibility.V2_3;
 
                 //set to launch when user logs on
-                LogonTrigger logonTrigger = new LogonTrigger
+                TaskScheduler.LogonTrigger logonTrigger = new TaskScheduler.LogonTrigger
                 {
                     Enabled = true,
                     UserId = null
@@ -125,17 +235,26 @@ namespace OpenNetMeter.ViewModels
                 td.Triggers.Add(logonTrigger);
 
                 //set action to run application
-                ExecAction action = new ExecAction();
+                TaskScheduler.ExecAction action = new TaskScheduler.ExecAction();
                 action.Path = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
                 td.Actions.Add(action);
 
                 // Register the task in the sub folder
-                TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"].RegisterTaskDefinition(taskName, td);
+                TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"].RegisterTaskDefinition(taskName, td);
             }
             catch(Exception ex)
             {
                 Debug.WriteLine("Error: " + ex.Message);
             }
+        }
+
+        public void Dispose()
+        {
+            if(SetDeskBand)
+            {
+                HideDeskband();
+                DllUnregisterServer();
+            }    
         }
 
         //------property changers---------------//
@@ -148,6 +267,6 @@ namespace OpenNetMeter.ViewModels
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
-        }
+        }   
     }
 }

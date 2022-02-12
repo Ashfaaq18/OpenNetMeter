@@ -1,21 +1,23 @@
-﻿using OpenNetMeter.Models;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class UnitConverterBytes : IValueConverter
+    public class RadioBoolToIntConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return DataSizeSuffix.SizeSuffixInStr((ulong)value, 1, true);
+            int integer = (int)value;
+            if (integer == int.Parse(parameter.ToString()))
+                return true;
+            else
+                return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return parameter;
         }
     }
-     
 }

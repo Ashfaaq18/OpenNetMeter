@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.Diagnostics.Tracing.Session;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using OpenNetMeter.Models;
 
 namespace OpenNetMeter.Views
 {
@@ -45,6 +46,7 @@ namespace OpenNetMeter.Views
 
         private AboutWindow aboutWin;
         private TrayPopupWinV trayWin;
+        private NavigationAndTasksVM navWin;
         private Forms.NotifyIcon ni;
         private Forms.ContextMenuStrip cm;
         private bool balloonShow;
@@ -57,7 +59,8 @@ namespace OpenNetMeter.Views
                 InitializeComponent();
 
                 trayWin = new TrayPopupWinV();
-                DataContext = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                DataContext = navWin;
                 aboutWin = new AboutWindow();
 
                 //initialize system tray
@@ -106,8 +109,8 @@ namespace OpenNetMeter.Views
                 if (trayWin.Visibility == Visibility.Hidden)
                 {
                     //Shell Tray rectangle
-                    IntPtr hWnd = FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-                    Rectangle shellTrayArea = GetWindowRectangle(hWnd);
+                    IntPtr hWnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
+                    Rectangle shellTrayArea = NativeMethods.GetWindowRectangle(hWnd);
 
                     //screen rectangle
                     Forms.Screen scrn = Forms.Screen.FromPoint(p);
@@ -153,6 +156,7 @@ namespace OpenNetMeter.Views
             ni.Dispose();
             trayWin.Close();
             aboutWin.Close();
+            navWin.Dispose();
             mutex.Close();
             this.Close();
         }
@@ -188,37 +192,6 @@ namespace OpenNetMeter.Views
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
             aboutWin.Show(this);
-        }
-
-        //---------------get taskbar info---------------------//
-        public struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-
-            public Rectangle ToRectangle() => Rectangle.FromLTRB(Left, Top, Right, Bottom);
-        }
-
-        internal static class NativeMethods
-        {
-            [DllImport("User32.dll", SetLastError = true)]
-            internal static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
-
-            [DllImport("User32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            internal static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
-        }
-        public static IntPtr FindWindowByClassName(IntPtr hwndParent, string className)
-        {
-            return NativeMethods.FindWindowEx(hwndParent, IntPtr.Zero, className, null);
-        }
-
-        public static Rectangle GetWindowRectangle(IntPtr windowHandle)
-        {
-            RECT rect;
-            NativeMethods.GetWindowRect(windowHandle, out rect);
-            return rect.ToRectangle();
         }
     }
 }

@@ -47,7 +47,7 @@ namespace OpenNetMeter.Models
                     else
                         temp *= 2;
                 }
-                Yaxis.Add(DataSizeSuffix.SizeSuffix(temp,1,false));
+                Yaxis.Add(DataSizeSuffix.SizeSuffixInStr(temp,1,false));
             }
 
             Yaxis.Reverse();

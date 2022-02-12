@@ -1,10 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    class NavigationAndTasksVM : INotifyPropertyChanged
+    class NavigationAndTasksVM : INotifyPropertyChanged, IDisposable
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
@@ -98,6 +99,10 @@ namespace OpenNetMeter.ViewModels
             //show speed in tray popup
             tpvm.DownloadSpeed = netInfo.DownloadSpeed;
             tpvm.UploadSpeed = netInfo.UploadSpeed;
+            //update speed in taskbar
+            (double,int) down = DataSizeSuffix.SizeSuffixInInt(netInfo.DownloadSpeed);
+            (double,int) up = DataSizeSuffix.SizeSuffixInInt(netInfo.UploadSpeed);
+            SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
             //update graph data points
             dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
             dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
@@ -128,6 +133,10 @@ namespace OpenNetMeter.ViewModels
                 TabBtnToggle = 2;
             }
         }
+        public void Dispose()
+        {
+            svm.Dispose();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -138,5 +147,6 @@ namespace OpenNetMeter.ViewModels
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
         }
+
     }
 }
