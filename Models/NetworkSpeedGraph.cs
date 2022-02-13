@@ -86,7 +86,7 @@ namespace OpenNetMeter.Models
                             points_Download[i + 1] = height;
                             points_Upload[i] = 0;
                             points_Upload[i + 1] = height;
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                             {
                                 Graph.DrawLineAa(points_Upload[i], points_Upload[i + 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
                                 Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
@@ -102,7 +102,7 @@ namespace OpenNetMeter.Models
                             points_Download[i + 1] = ConvToGraphCoords(DownloadSpeed, height);
                             points_Upload[i + 1] = ConvToGraphCoords(UploadSpeed, height);
                             //Debug.WriteLine(DownloadSpeed + ": " + points_Download[i + 1] + "," + UploadSpeed + ": " + points_Upload[i + 1]);
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                             {
                                 Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
                                 Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
@@ -122,31 +122,31 @@ namespace OpenNetMeter.Models
                             if (j == 0)
                             {
                                 if (i < Xaxis.Count / 2)
-                                    await Application.Current.Dispatcher.BeginInvoke((Action)(() => Xaxis[i] += 30));
+                                    await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Xaxis[i] += 30));
                                 else
-                                    await Application.Current.Dispatcher.BeginInvoke((Action)(() => Xaxis[i] -= 30));
+                                    await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Xaxis[i] -= 30));
                             }
                             else
                             {
                                 if (i < Xaxis.Count / 2)
-                                    await Application.Current.Dispatcher.BeginInvoke((Action)(() => Xaxis[i] -= 30));
+                                    await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Xaxis[i] -= 30));
                                 else
-                                    await Application.Current.Dispatcher.BeginInvoke((Action)(() => Xaxis[i] += 30));
+                                    await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Xaxis[i] += 30));
                             }
                         }
 
 
                         //clear old graph
-                        await Application.Current.Dispatcher.BeginInvoke((Action)(() => Graph.Clear(Colors.White)));
+                        await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Graph.Clear(Colors.White)));
 
                         //redraw borders
                         for (int i = 1; i < Xaxis.Count; i++)
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() => Graph.DrawLine(i * width / Xaxis.Count, 0, i * width / Xaxis.Count, height, Colors.LightGray)));
+                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Graph.DrawLine(i * width / Xaxis.Count, 0, i * width / Xaxis.Count, height, Colors.LightGray)));
 
                         for (int i = 1; i < Yaxis.Count; i++)
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() => Graph.DrawLine(0, i * height / Yaxis.Count, width, i * height / Yaxis.Count, Colors.LightGray)));
+                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Graph.DrawLine(0, i * height / Yaxis.Count, width, i * height / Yaxis.Count, Colors.LightGray)));
 
-                        await Application.Current.Dispatcher.BeginInvoke((Action)(() => Graph.DrawRectangle(0, 0, width, height, Colors.Black)));
+                        await Application.Current.Dispatcher?.BeginInvoke((Action)(() => Graph.DrawRectangle(0, 0, width, height, Colors.Black)));
 
                         //shift graph halfway back and start plotting new to show continuation
                         for (int i = 0; i < resolution; i += 2)
@@ -159,7 +159,7 @@ namespace OpenNetMeter.Models
                                 points_Upload[i + resolution / 2 ] = 0;
                                 if (i == 0)
                                 {
-                                    await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                                    await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                                     {
                                         Graph.DrawLineAa(points_Upload[i], points_Upload[i + 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
                                         Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
@@ -168,7 +168,7 @@ namespace OpenNetMeter.Models
                                     }));
                                 }
                                 else
-                                    await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                                    await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                                     {
                                         Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
                                         Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);
@@ -180,7 +180,7 @@ namespace OpenNetMeter.Models
                             {
                                 points_Download[i + 1] = ConvToGraphCoords(DownloadSpeed, height);
                                 points_Upload[i + 1] = ConvToGraphCoords(UploadSpeed, height);
-                                await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                                await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                                 {
                                     Graph.DrawLineAa(points_Upload[i - 2], points_Upload[i - 1], points_Upload[i], points_Upload[i + 1], Colors.LightSalmon, 2);
                                     Graph.FillEllipseCentered(points_Upload[i], points_Upload[i + 1], 2, 2, Colors.LightSalmon);

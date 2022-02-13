@@ -90,7 +90,7 @@ namespace OpenNetMeter.Views
                 {
                     if (trayWin != null && trayWin.Visibility == Visibility.Visible)
                     {
-                        await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                        await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                       {
 
                           trayWin.Visibility = Visibility.Hidden;
