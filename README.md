@@ -12,22 +12,21 @@ This program provides the following features,
 - total data usage since the detection of a new connection.
 - table of all the individual processes which consumed this data.
 - A system tray icon to show the current session data usage and network speeds.
+- A toolbar in the Taskbar to show the network speed (only available for windows 10). 
 
 ## Installation
 
-1. Download and Install [.NET Desktop Runtime 5](https://dotnet.microsoft.com/en-us/download/dotnet/5.0)
-2. Download the latest release from this repository and simply extract it.
-3. Run in Admin mode (this is necessary).
-4. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
+1. Download and Install [.NET Desktop Runtime 5](https://dotnet.microsoft.com/en-us/download/dotnet/5.0) x64 bit version
+2. Download and Install [Visual C++ redist](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) x64 bit version (need this since v0.5.0)
+3. Download the latest release from this repository and simply extract it.
+4. Run in Admin mode (this is necessary).
+5. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
 
 ## Uninstallation
 
-1. First make sure the startup checkbox is unticked in the settings page (this is to remove the program from the startup records).
-2. Simply delete the folder.
-
-## Limitations
-
-The program currently does not support tunnel adapters, will try adding it in the future.
+1. Untick the "Start program on windows startup" from the settings page (this is to remove the program from the startup records).
+2. Untick the "Show Network speed from task bar" from the settings page  (this is to remove the dll from the registry).
+3. Simply delete the folder.
     
 ## Usage/Examples
 
@@ -43,4 +42,9 @@ The program currently does not support tunnel adapters, will try adding it in th
 ### System tray
 
 ![TrayPopup_GIF1](https://user-images.githubusercontent.com/27722888/151661088-71349a72-f687-48be-ad33-805f7bf6771d.gif)
+
+### TaskBar Speed
+
+![DeskBand_GIF1](https://user-images.githubusercontent.com/27722888/153745070-669027d8-56eb-4982-b009-1be23e5b5d51.gif)
+
 
