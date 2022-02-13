@@ -409,7 +409,6 @@ void CDeskBand::OnPaint(const HDC hdcIn)
 {
     HDC hdc = hdcIn;
     PAINTSTRUCT ps;
-    static WCHAR szContent[] = L"D-speed: 140Kbps U-speed: 30Kbps";
 
     if (!hdc)
     {

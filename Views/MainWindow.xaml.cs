@@ -177,7 +177,7 @@ namespace OpenNetMeter.Views
             WindowState = WindowState.Minimized;
         }
         
-        private void Exit_Button_Click(object sender, RoutedEventArgs e)
+        public void Exit_Button_Click(object sender, RoutedEventArgs e)
         {
             if (!balloonShow)
             {
