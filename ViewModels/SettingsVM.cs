@@ -1,13 +1,9 @@
-﻿using OpenNetMeter.Models;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 

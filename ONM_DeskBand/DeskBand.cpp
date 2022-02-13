@@ -5,7 +5,7 @@ double down = 0;
 int downSuffix = 0;
 double up= 0;
 int upSuffix = 0;
-int color = 2; //1 = black, 2 = white (font color)
+int color = 2; //1 = black, 2 = white, 3 = custom (font color)
 #pragma data_seg()
 
 

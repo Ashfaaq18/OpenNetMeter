@@ -38,21 +38,23 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Label>D-Volume :</Label>
-            <Label Margin="-5,0,0,0" Content="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+            <Label Padding="0" >D-Volume : </Label>
+            <Label Padding="5,0,0,0"  Content="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"/>
         </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Label>U-Volume :</Label>
-            <Label Margin="-5,0,0,0" Content="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+            <Label Padding="0">U-Volume : </Label>
+            <Label Padding="5,0,0,0"  Content="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center"/>
         </StackPanel>
-        <StackPanel Grid.Row="2" Orientation="Horizontal">
-            <Label>D-Speed :</Label>
-            <Label Margin="-5,0,0,0" Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+            <Label Padding="0">D-Speed : </Label>
+            <Label Padding="5,0,0,0"  Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
+            <Label Padding="0">ps</Label>
         </StackPanel>
-        <StackPanel Grid.Row="3" Orientation="Horizontal">
-            <Label>U-Speed :</Label>
-            <Label Margin="-5,0,0,0" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+            <Label Padding="0" >U-Speed : </Label>
+            <Label Padding="5,0,0,0" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
+            <Label Padding="0" VerticalAlignment="Center">ps</Label>
         </StackPanel>
 
     </Grid>
