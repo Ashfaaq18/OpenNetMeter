@@ -95,7 +95,7 @@ namespace OpenNetMeter.Models
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface n in adapters)
             {
-                if (n.NetworkInterfaceType != NetworkInterfaceType.Loopback && n.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                if (n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 {
                     if (n.OperationalStatus == OperationalStatus.Up) //if there is a connection
                     {
