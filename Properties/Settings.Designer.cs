@@ -58,5 +58,17 @@ namespace OpenNetMeter.Properties {
                 this["FontColor"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool MinimizeOnStart {
+            get {
+                return ((bool)(this["MinimizeOnStart"]));
+            }
+            set {
+                this["MinimizeOnStart"] = value;
+            }
+        }
     }
 }

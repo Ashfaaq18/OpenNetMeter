@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenNetMeter.Views;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,5 +14,20 @@ namespace OpenNetMeter
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+
+            bool startMinimized = false;
+            for (int i = 0; i != e.Args.Length; ++i)
+            {
+                if (e.Args[i] == "/StartMinimized")
+                     startMinimized = true;
+            }
+            MainWindow window = new MainWindow();
+            if (startMinimized)
+                window.Exit_Button_Click(null, null);
+            else
+                window.Show();
+        }
     }
 }

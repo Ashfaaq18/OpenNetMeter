@@ -35,6 +35,11 @@ namespace OpenNetMeter.ViewModels
                     //register to task scheduler
                     SetAppAsTask(value);
                     UnlockOptionStartWin = true;
+
+                    if (value)
+                        UnlockMinimizeOnStart = false;
+                    else
+                        UnlockMinimizeOnStart = true;
                 }
             }
         }
@@ -125,27 +130,62 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private bool minimizeOnStart;
+        public bool MinimizeOnStart 
+        {
+            get { return minimizeOnStart; }
+            set
+            {
+                if (minimizeOnStart != value)
+                {
+                    minimizeOnStart = value;
+                    Properties.Settings.Default.MinimizeOnStart = value;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+        private bool unlockMinimizeOnStart;
+        public bool UnlockMinimizeOnStart 
+        {
+            get { return unlockMinimizeOnStart; }
+
+            set
+            {
+                if (unlockMinimizeOnStart != value)
+                {
+                    unlockMinimizeOnStart = value;
+                    OnPropertyChanged("UnlockMinimizeOnStart");
+                }
+            }
+        }
+
         public ulong DownloadSpeed { get; set; }
         public ulong UploadSpeed { get; set; }
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-            
-            UnlockOptionStartWin = true;
-            SetStartWithWin = Properties.Settings.Default.StartWithWin;
+                       
             FontColorDeskBand = Properties.Settings.Default.FontColor;
+
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
             if (SetDeskBand)
                 UnlockFontColorDeskBand = false;
             else
                 UnlockFontColorDeskBand = true;
+
+            UnlockOptionStartWin = true;
+            SetStartWithWin = Properties.Settings.Default.StartWithWin;
+            MinimizeOnStart = Properties.Settings.Default.MinimizeOnStart;
+            if (SetStartWithWin)
+                UnlockMinimizeOnStart = false;
+            else
+                UnlockMinimizeOnStart = true;
             
             DownloadSpeed = 0;
             UploadSpeed = 0;
         }
-
-
 
         // ---------- DeskBand Stuff ---------------------//
 
@@ -237,6 +277,8 @@ namespace OpenNetMeter.ViewModels
                 //set action to run application
                 TaskScheduler.ExecAction action = new TaskScheduler.ExecAction();
                 action.Path = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
+                if(MinimizeOnStart)
+                    action.Arguments = "/StartMinimized";
                 td.Actions.Add(action);
 
                 // Register the task in the sub folder
