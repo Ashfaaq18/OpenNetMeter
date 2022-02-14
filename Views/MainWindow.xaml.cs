@@ -5,9 +5,7 @@ using Forms = System.Windows.Forms;
 using System;
 using System.Threading.Tasks;
 using System.Threading;
-using Microsoft.Diagnostics.Tracing.Session;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using OpenNetMeter.Models;
 
 namespace OpenNetMeter.Views
@@ -32,16 +30,7 @@ namespace OpenNetMeter.Views
                 return false;
             }
             else
-            {
-                if(TraceEventSession.IsElevated() != true)
-                {
-                    MessageBox.Show("Please run me as an Administrator", "OpenNetMeter", MessageBoxButton.OK);
-                    Application.Current.Shutdown();
-                    return false;
-                }
-                else
-                    return true;
-            }
+                return true;
         }
 
         private AboutWindow aboutWin;

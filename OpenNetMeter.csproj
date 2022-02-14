@@ -8,6 +8,7 @@
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
     <Version>0.5.0</Version>
     <AssemblyName>OpenNetMeter</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
