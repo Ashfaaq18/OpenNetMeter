@@ -12,7 +12,7 @@ This program provides the following features,
 - total data usage since the detection of a new connection.
 - table of all the individual processes which consumed this data.
 - A system tray icon to show the current session data usage and network speeds.
-- A toolbar in the Taskbar to show the network speed (only available for windows 10). 
+- A toolbar in the Taskbar to show the network speed (may not work in windows 11). 
 
 ## Installation
 
@@ -47,4 +47,9 @@ This program provides the following features,
 
 ![DeskBand_GIF1](https://user-images.githubusercontent.com/27722888/153745070-669027d8-56eb-4982-b009-1be23e5b5d51.gif)
 
+#### to enable this:
 
+Tick the "Show Network speed from task bar" from the settings page, </br>
+Right click the system taskbar, Click "Toolbars" and select "OpenNetMeter Speed"
+
+<img src="https://user-images.githubusercontent.com/27722888/153760855-54475896-5c97-4a00-8b16-7f6b2b9e6a76.png" alt="drawing" width="500" height="500"/>
