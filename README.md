@@ -12,15 +12,14 @@ This program provides the following features,
 - total data usage since the detection of a new connection.
 - table of all the individual processes which consumed this data.
 - A system tray icon to show the current session data usage and network speeds.
-- A toolbar in the Taskbar to show the network speed (may not work in windows 11). 
+- A toolbar in the Taskbar to show the network speed. 
 
 ## Installation
 
 1. Download and Install [.NET Desktop Runtime 5](https://dotnet.microsoft.com/en-us/download/dotnet/5.0) x64 bit version
-2. Download and Install [Visual C++ redist](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) x64 bit version (need this since v0.5.0)
-3. Download the latest release from this repository and simply extract it.
-4. Run in Admin mode (this is necessary).
-5. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
+2. Download the latest release from this repository and simply extract it.
+3. Run in Admin mode (this is necessary).
+4. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
 
 ## Uninstallation
 
