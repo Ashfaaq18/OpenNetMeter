@@ -104,8 +104,8 @@ namespace OpenNetMeter.ViewModels
             (double,int) up = DataSizeSuffix.SizeSuffixInInt(netInfo.UploadSpeed);
             SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
             //update graph data points
-            dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
-            dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
+            //dusvm.SpeedGraph.DownloadSpeed = DownloadSpeed;
+            //dusvm.SpeedGraph.UploadSpeed = UploadSpeed;
         }
 
         private void OpenDataUsageSum(object obj)

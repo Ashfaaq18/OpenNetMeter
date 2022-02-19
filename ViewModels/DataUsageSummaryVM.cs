@@ -70,7 +70,7 @@ namespace OpenNetMeter.ViewModels
             TotalUploadData = 0;
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
-            SpeedGraph = new NetworkSpeedGraph();
+            //SpeedGraph = new NetworkSpeedGraph();
             TotalUsageText = "Total data usage of the past 0 days";
         }
 
