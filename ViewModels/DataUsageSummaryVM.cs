@@ -5,7 +5,7 @@ namespace OpenNetMeter.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private TrayPopupVM tpvm;
+        public TrayPopupVM tpvm;
         public NetworkSpeedGraph SpeedGraph { get; set; }
 
         private ulong totalDownloadData;
