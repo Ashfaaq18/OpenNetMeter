@@ -140,45 +140,27 @@
                             <Label Content="" Background="LightSalmon" Width="50" Height="4"/>
                         </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="1" >
+                    <Grid Grid.Row="1" x:Name="GraphGrid">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="5"/>
                             <ColumnDefinition />
                             <ColumnDefinition Width="15"/>
                         </Grid.ColumnDefinitions>
-                        <Grid Grid.Column="1">
+                        <Grid Grid.Column="0">
                             <Canvas x:Name="Graph" SizeChanged="Graph_SizeChanged">
-                                
-                                <TextBlock x:Name="LineX1Label" FontSize="11">1Gb</TextBlock>
-                                <Line x:Name="LineX1" X1="0" Y1="0" X2="0" Y2="0" Stroke="Black" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineX2Label" FontSize="11">512Mb</TextBlock>
-                                <Line x:Name="LineX2" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineX3Label" FontSize="11">1Mbp</TextBlock>
-                                <Line x:Name="LineX3" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineX4Label" FontSize="11">512Kb</TextBlock>
-                                <Line x:Name="LineX4" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineX5Label" FontSize="11">1Kb</TextBlock>
-                                <Line x:Name="LineX5" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineX6Label" FontSize="11">512b</TextBlock>
-                                <Line x:Name="LineX6" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <Line x:Name="LineX7" X1="0" Y1="0" X2="0" Y2="0" Stroke="Black" StrokeThickness="1"/>
-
-                                <TextBlock x:Name="LineY1Label" FontSize="11">0</TextBlock>
-                                <Line x:Name="LineY1" X1="0" Y1="0" X2="0" Y2="0" Stroke="Black" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineY2Label" FontSize="11">10</TextBlock>
-                                <Line x:Name="LineY2" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineY3Label" FontSize="11">20</TextBlock>
-                                <Line x:Name="LineY3" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineY4Label" FontSize="11">30</TextBlock>
-                                <Line x:Name="LineY4" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineY5Label" FontSize="11">40</TextBlock>
-                                <Line x:Name="LineY5" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineY6Label" FontSize="11">50</TextBlock>
-                                <Line x:Name="LineY6" X1="0" Y1="0" X2="0" Y2="0" Stroke="LightGray" StrokeThickness="1"/>
-                                <TextBlock x:Name="LineY7Label" FontSize="11">Seconds</TextBlock>
-                                <Line x:Name="LineY7" X1="0" Y1="0" X2="0" Y2="0" Stroke="Black" StrokeThickness="1"/>
-
-                                <Polyline x:Name="DownloadPolyPath" Stroke="LightSeaGreen" StrokeLineJoin="Round" StrokeThickness="2"></Polyline>
+                                <!--<ItemsControl ItemsSource="{Binding Lines}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"
+                                            Stroke="DarkGray" StrokeThickness="3"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>-->
                             </Canvas>
                         </Grid>
                         
