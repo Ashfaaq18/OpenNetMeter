@@ -107,8 +107,10 @@ namespace OpenNetMeter.ViewModels
         public double Xstart { get; set; }
         public bool pauseDraw { get; set; }
 
-        public ObservableCollection<MyLine> Lines { get; private set; }
-        public List<MyLine> Points { get; private set; }
+        public ObservableCollection<MyLine> DownloadLines { get; private set; }
+        public ObservableCollection<MyLine> UploadLines { get; private set; }
+        public List<MyLine> DownloadPoints { get; private set; }
+        public List<MyLine> UploadPoints { get; private set; }
 
         public DataUsageSummaryVM(ref TrayPopupVM tpvm_ref)
         {
@@ -117,14 +119,17 @@ namespace OpenNetMeter.ViewModels
             TotalUploadData = 0;
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
-            //SpeedGraph = new NetworkSpeedGraph();
             TotalUsageText = "Total data usage of the past 0 days";
-            Points = new List<MyLine>();
-            Lines = new ObservableCollection<MyLine>();
+            DownloadPoints = new List<MyLine>();
+            UploadPoints = new List<MyLine>();
+            DownloadLines = new ObservableCollection<MyLine>();
+            UploadLines = new ObservableCollection<MyLine>();
             for (int i = 0; i<60; i++)
             {
-                Lines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
-                Points.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                DownloadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                UploadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                DownloadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                UploadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
             }
 
             DrawPoints();
@@ -133,60 +138,73 @@ namespace OpenNetMeter.ViewModels
         private int drawPointCount = 0;
         public void DrawPoints()
         {
-           //cts = new CancellationTokenSource();
-           // ct = cts.Token;
             Task.Run(async () =>
             {
                 try
                 {
-                    //Debug.WriteLine("Operation Started : draw");
-                    //while (!ct.IsCancellationRequested)
                     while (true)
                     {
                         if (drawPointCount >= 60)
                         {
                             drawPointCount = 0;
-                            for (int i = 0; i < Points.Count; i++)
+                            for (int i = 0; i < DownloadPoints.Count; i++)
                             {
-                                Points[i].From = new Point(0, 0);
-                                Points[i].To = new Point(0, 0);
+                                DownloadPoints[i].From = new Point(0, 0);
+                                DownloadPoints[i].To = new Point(0, 0);
+                            }
+                            for (int i = 0; i < UploadPoints.Count; i++)
+                            {
+                                UploadPoints[i].From = new Point(0, 0);
+                                UploadPoints[i].To = new Point(0, 0);
                             }
 
                             if (!pauseDraw)
                             {
                                 await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                                 {
-                                    for (int i = 0; i < Lines.Count; i++)
+                                    for (int i = 0; i < DownloadLines.Count; i++)
                                     {
-                                        Lines[i].From = new Point(0, 0);
-                                        Lines[i].To = new Point(0, 0);
+                                        DownloadLines[i].From = new Point(0, 0);
+                                        DownloadLines[i].To = new Point(0, 0);
                                     }
-                                    //this.DownloadPolyPathBind = tempPC;
-                                    //DownloadPolyPath.Points.Clear();
+                                    for (int i = 0; i < UploadLines.Count; i++)
+                                    {
+                                        UploadLines[i].From = new Point(0, 0);
+                                        UploadLines[i].To = new Point(0, 0);
+                                    }
                                 }));
                             }
                         }
                         if(drawPointCount == 0)
                         {
-                            Points[drawPointCount].From = new Point(drawPointCount, 0);
-                            Points[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                            DownloadPoints[drawPointCount].From = new Point(drawPointCount, 0);
+                            DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                        
+                            UploadPoints[drawPointCount].From = new Point(drawPointCount, 0);
+                            UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
                         }
                         else
                         {
-                            Points[drawPointCount].From = new Point(drawPointCount, Points[drawPointCount-1].To.Y);
-                            Points[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                            DownloadPoints[drawPointCount].From = new Point(drawPointCount, DownloadPoints[drawPointCount-1].To.Y);
+                            DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+
+                            UploadPoints[drawPointCount].From = new Point(drawPointCount, UploadPoints[drawPointCount-1].To.Y);
+                            UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
                         }
                         
                         if (!pauseDraw)
                         {
                             await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                             {
-                                Lines[drawPointCount].From = new Point(Xstart + Points[drawPointCount].From.X * (GraphWidth / 60.0), ConvToGraphCoords(Points[drawPointCount].From.Y, GraphHeight));
-                                Lines[drawPointCount].To = new Point(Xstart + Points[drawPointCount].To.X * (GraphWidth / 60.0), ConvToGraphCoords(Points[drawPointCount].To.Y, GraphHeight));
+                                DownloadLines[drawPointCount].From = new Point(Xstart + DownloadPoints[drawPointCount].From.X * (GraphWidth / 60.0), ConvToGraphCoords(DownloadPoints[drawPointCount].From.Y, GraphHeight));
+                                DownloadLines[drawPointCount].To = new Point(Xstart + DownloadPoints[drawPointCount].To.X * (GraphWidth / 60.0), ConvToGraphCoords(DownloadPoints[drawPointCount].To.Y, GraphHeight));
+                                
+                                UploadLines[drawPointCount].From = new Point(Xstart + UploadPoints[drawPointCount].From.X * (GraphWidth / 60.0), ConvToGraphCoords(UploadPoints[drawPointCount].From.Y, GraphHeight));
+                                UploadLines[drawPointCount].To = new Point(Xstart + UploadPoints[drawPointCount].To.X * (GraphWidth / 60.0), ConvToGraphCoords(UploadPoints[drawPointCount].To.Y, GraphHeight));
+                            
                             }));
                         }
                         drawPointCount++;
-                        //await Task.Delay(1000, ct);
                         await Task.Delay(1000);
                     }
                 }

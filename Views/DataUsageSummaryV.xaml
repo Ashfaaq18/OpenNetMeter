@@ -146,22 +146,37 @@
                             <ColumnDefinition Width="15"/>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0">
-                            <Canvas x:Name="Graph" SizeChanged="Graph_SizeChanged">
-                                <ItemsControl ItemsSource="{Binding Lines}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <Canvas/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                            <Canvas x:Name="Graph" SizeChanged="Graph_SizeChanged"/>
+                            
+                            <ItemsControl ItemsSource="{Binding UploadLines}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Line x:Name="UploadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
                                             X2="{Binding To.X}" Y2="{Binding To.Y}"
-                                            Stroke="LightSeaGreen" StrokeThickness="2"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Canvas>
+                                            Stroke="LightSalmon" StrokeThickness="3" StrokeLineJoin="Round" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            
+                            <ItemsControl ItemsSource="{Binding DownloadLines}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"
+                                            Stroke="LightSeaGreen" StrokeThickness="3" StrokeLineJoin="Round" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             
                         </Grid>
                         

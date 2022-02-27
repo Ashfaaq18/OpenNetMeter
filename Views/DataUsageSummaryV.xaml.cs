@@ -121,18 +121,23 @@ namespace OpenNetMeter.Views
                 resizeTimer.Start();
 
                 //Stop drawing graph
-                //dusvm.StopDraw();
                 dusvm.pauseDraw = true;
 
                 double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
                 double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
                 dusvm.GraphWidth = GraphWidth;
                 dusvm.GraphHeight = GraphHeight;
-                for (int i = 0; i < dusvm.Lines.Count; i++) //scale the chart
+
+                for (int i = 0; i < dusvm.DownloadLines.Count; i++) //scale the download line
                 {
-                    dusvm.Lines[i].From = new Point(dusvm.Xstart + dusvm.Points[i].From.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.Points[i].From.Y, GraphHeight));
-                    dusvm.Lines[i].To = new Point(dusvm.Xstart + dusvm.Points[i].To.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.Points[i].To.Y, GraphHeight));
-                    //Debug.WriteLine("1: " + dusvm.Points[i].From.Y + " 2: " + dusvm.Points[i].From.Y * heightRatio);
+                    dusvm.DownloadLines[i].From = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].From.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].From.Y, GraphHeight));
+                    dusvm.DownloadLines[i].To = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].To.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].To.Y, GraphHeight));
+                
+                }
+                for (int i = 0; i < dusvm.UploadLines.Count; i++) //scale the upload line
+                {
+                    dusvm.UploadLines[i].From = new Point(dusvm.Xstart + dusvm.UploadPoints[i].From.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].From.Y, GraphHeight));
+                    dusvm.UploadLines[i].To = new Point(dusvm.Xstart + dusvm.UploadPoints[i].To.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].To.Y, GraphHeight));
                 }
 
                 for (int i = 0; i < GridXCount-2; i++)
