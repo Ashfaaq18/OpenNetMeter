@@ -130,14 +130,14 @@ namespace OpenNetMeter.Views
 
                 for (int i = 0; i < dusvm.DownloadLines.Count; i++) //scale the download line
                 {
-                    dusvm.DownloadLines[i].From = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].From.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].From.Y, GraphHeight));
-                    dusvm.DownloadLines[i].To = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].To.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].To.Y, GraphHeight));
+                    dusvm.DownloadLines[i].From = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].From.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].From.Y, GraphHeight));
+                    dusvm.DownloadLines[i].To = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].To.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].To.Y, GraphHeight));
                 
                 }
                 for (int i = 0; i < dusvm.UploadLines.Count; i++) //scale the upload line
                 {
-                    dusvm.UploadLines[i].From = new Point(dusvm.Xstart + dusvm.UploadPoints[i].From.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].From.Y, GraphHeight));
-                    dusvm.UploadLines[i].To = new Point(dusvm.Xstart + dusvm.UploadPoints[i].To.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].To.Y, GraphHeight));
+                    dusvm.UploadLines[i].From = new Point(dusvm.Xstart + dusvm.UploadPoints[i].From.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].From.Y, GraphHeight));
+                    dusvm.UploadLines[i].To = new Point(dusvm.Xstart + dusvm.UploadPoints[i].To.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].To.Y, GraphHeight));
                 }
 
                 for (int i = 0; i < GridXCount-2; i++)
