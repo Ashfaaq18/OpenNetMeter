@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
-using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -98,29 +97,19 @@ namespace OpenNetMeter.ViewModels
             get { return totalUsageText; }
             set
             {
-                totalUsageText = value; 
-                OnPropertyChanged("TotalUsageText"); 
+                totalUsageText = value;
+                OnPropertyChanged("TotalUsageText");
             }
         }
 
-        public double StartGraphWidth { get; set; }
-        public double StartGraphHeight{ get; set; }
         public double GraphWidth { get; set; }
         public double GraphHeight { get; set; }
-
-        private double xstart;
-        public double Xstart
-        {
-            get { return xstart; }
-            set
-            {
-                xstart = value;
-                OnPropertyChanged("Xstart");
-            }
-        }
+        public double Xstart { get; set; }
+        public bool pauseDraw { get; set; }
 
         public ObservableCollection<MyLine> Lines { get; private set; }
         public List<MyLine> Points { get; private set; }
+
         public DataUsageSummaryVM(ref TrayPopupVM tpvm_ref)
         {
             tpvm = tpvm_ref;
@@ -130,54 +119,75 @@ namespace OpenNetMeter.ViewModels
             CurrentSessionUploadData = 0;
             //SpeedGraph = new NetworkSpeedGraph();
             TotalUsageText = "Total data usage of the past 0 days";
-            Lines = new ObservableCollection<MyLine>();
             Points = new List<MyLine>();
-            for(int i = 0; i<60; i++)
+            Lines = new ObservableCollection<MyLine>();
+            for (int i = 0; i<60; i++)
             {
                 Lines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
                 Points.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
             }
-            //DrawPoints();
 
+            DrawPoints();
         }
-        private void DrawPoints()
+
+        private int drawPointCount = 0;
+        public void DrawPoints()
         {
+           //cts = new CancellationTokenSource();
+           // ct = cts.Token;
             Task.Run(async () =>
             {
                 try
                 {
-                    Debug.WriteLine("Operation Started : draw");
-                    int i = 0;
+                    //Debug.WriteLine("Operation Started : draw");
+                    //while (!ct.IsCancellationRequested)
                     while (true)
                     {
-                        await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
+                        if (drawPointCount >= 60)
                         {
-                            Points[i].From = new Point( (GraphWidth / 60.0) * i , 50);
-                            Points[i].To = new Point( (GraphWidth / 60.0) * (i+1), 50);
-                            Lines[i].From = new Point( Xstart + Points[i].From.X * (GraphWidth / StartGraphWidth), Points[i].From.Y * (GraphHeight / StartGraphHeight) );
-                            Lines[i].To = new Point( Xstart + Points[i].To.X * (GraphWidth / StartGraphWidth), Points[i].To.Y * (GraphHeight / StartGraphHeight));
-                            //DownloadPolyPath.Points.Add(new Point((LineX2Label.ActualWidth + 5.0) + Graph.ActualWidth / 60 * i, Graph.ActualHeight / 2));
-                            //this.DownloadPolyPathBind = tempPC;
-                        }));
-                        //await Task.Delay(1000);
-                        i++;
-                        if (i >= 60)
+                            drawPointCount = 0;
+                            for (int i = 0; i < Points.Count; i++)
+                            {
+                                Points[i].From = new Point(0, 0);
+                                Points[i].To = new Point(0, 0);
+                            }
+
+                            if (!pauseDraw)
+                            {
+                                await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
+                                {
+                                    for (int i = 0; i < Lines.Count; i++)
+                                    {
+                                        Lines[i].From = new Point(0, 0);
+                                        Lines[i].To = new Point(0, 0);
+                                    }
+                                    //this.DownloadPolyPathBind = tempPC;
+                                    //DownloadPolyPath.Points.Clear();
+                                }));
+                            }
+                        }
+                        if(drawPointCount == 0)
                         {
-                            i = 0;
+                            Points[drawPointCount].From = new Point(drawPointCount, 0);
+                            Points[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                        }
+                        else
+                        {
+                            Points[drawPointCount].From = new Point(drawPointCount, Points[drawPointCount-1].To.Y);
+                            Points[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                        }
+                        
+                        if (!pauseDraw)
+                        {
                             await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
                             {
-                                for (int i = 0; i < 60; i++)
-                                {
-                                    Points[i].From = new Point(0, 0);
-                                    Points[i].To = new Point(0, 0);
-                                    Lines[i].From = new Point(0, 0);
-                                    Lines[i].To = new Point(0, 0);
-                                }
-                                //this.DownloadPolyPathBind = tempPC;
-                                //DownloadPolyPath.Points.Clear();
+                                Lines[drawPointCount].From = new Point(Xstart + Points[drawPointCount].From.X * (GraphWidth / 60.0), ConvToGraphCoords(Points[drawPointCount].From.Y, GraphHeight));
+                                Lines[drawPointCount].To = new Point(Xstart + Points[drawPointCount].To.X * (GraphWidth / 60.0), ConvToGraphCoords(Points[drawPointCount].To.Y, GraphHeight));
                             }));
                         }
-                        await Task.Delay(2000);
+                        drawPointCount++;
+                        //await Task.Delay(1000, ct);
+                        await Task.Delay(1000);
                     }
                 }
                 catch (Exception ex)
@@ -187,19 +197,20 @@ namespace OpenNetMeter.ViewModels
             });
         }
 
-        private double ConvToGraphCoords(ulong value, double height)
+
+        public double ConvToGraphCoords(double value, double height)
         {
-            if ((double)value > Math.Pow(1024, 2))
+            if (value > Math.Pow(1024, 2))
             {
-                return (height) * ((1.0 / 3.0) - ((double)value) / (1024.0 * 1024.0 * 1024.0 * 3.0));
+                return (height) * ((1.0 / 3.0) - (value) / (1024.0 * 1024.0 * 1024.0 * 3.0));
             }
-            else if ((double)value > Math.Pow(1024, 1))
+            else if (value > Math.Pow(1024, 1))
             {
-                return (height) * ((2.0 / 3.0) - ((double)value) / (1024.0 * 1024.0 * 3.0));
+                return (height) * ((2.0 / 3.0) - (value) / (1024.0 * 1024.0 * 3.0));
             }
             else
             {
-                return (height) * ((3.0 / 3.0) - ((double)value) / (1024.0 * 3.0));
+                return (height) * ((3.0 / 3.0) - (value) / (1024.0 * 3.0));
             }
         }
 

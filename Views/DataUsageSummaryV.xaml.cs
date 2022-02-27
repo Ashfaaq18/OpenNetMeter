@@ -18,9 +18,12 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class DataUsageSummaryV : UserControl
     {
+        private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private bool isLoaded = false;
         private DataUsageSummaryVM dusvm;
 
+        private double StartGraphWidth;
+        private double StartGraphHeight;
         private List<TextBlock> Xlabels;
         private List<TextBlock> Ylabels;
         private List<Line> GridXLines;
@@ -44,9 +47,14 @@ namespace OpenNetMeter.Views
                 ulong temp = 512;
                 maxYtextSize = ShapeMeasure(new TextBlock { Text = "0512Mb", FontSize = 11, Padding = new Thickness(0) });
                 maxYtextSize.Width += 4.0;
+                dusvm.Xstart = maxYtextSize.Width;
                 //maxYtextSize.Height += 4.0;
                 double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
                 double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
+                StartGraphWidth = Graph.ActualWidth;
+                StartGraphHeight = Graph.ActualHeight;
+                dusvm.GraphWidth = GraphWidth;
+                dusvm.GraphHeight = GraphHeight;
                 for (int i = 0; i < GridXCount - 2; i++)
                 {
                     if (i != 0)
@@ -81,7 +89,17 @@ namespace OpenNetMeter.Views
                 GridBorder = new Rectangle { Width = GraphWidth, Height = GraphHeight, Stroke = Brushes.Black, StrokeThickness = 1 };
                 Canvas.SetLeft(GridBorder, maxYtextSize.Width);
                 Graph.Children.Add(GridBorder);
+
+                resizeTimer.Tick += resizeTimer_Tick;
             };
+        }
+
+        private void resizeTimer_Tick(object sender, EventArgs e)
+        {
+            resizeTimer.IsEnabled = false;
+
+            //Do end of resize processing
+            dusvm.pauseDraw = false;
         }
 
         public Size ShapeMeasure(TextBlock tb)
@@ -98,10 +116,25 @@ namespace OpenNetMeter.Views
         {
             if(isLoaded)
             {
-                double widthRatio = e.NewSize.Width / e.PreviousSize.Width;
-                double heightRatio = e.NewSize.Height / e.PreviousSize.Height;
+                resizeTimer.IsEnabled = true;
+                resizeTimer.Stop();
+                resizeTimer.Start();
+
+                //Stop drawing graph
+                //dusvm.StopDraw();
+                dusvm.pauseDraw = true;
+
                 double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
                 double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
+                dusvm.GraphWidth = GraphWidth;
+                dusvm.GraphHeight = GraphHeight;
+                for (int i = 0; i < dusvm.Lines.Count; i++) //scale the chart
+                {
+                    dusvm.Lines[i].From = new Point(dusvm.Xstart + dusvm.Points[i].From.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.Points[i].From.Y, GraphHeight));
+                    dusvm.Lines[i].To = new Point(dusvm.Xstart + dusvm.Points[i].To.X * (GraphWidth / 60.0), dusvm.ConvToGraphCoords((ulong)dusvm.Points[i].To.Y, GraphHeight));
+                    //Debug.WriteLine("1: " + dusvm.Points[i].From.Y + " 2: " + dusvm.Points[i].From.Y * heightRatio);
+                }
+
                 for (int i = 0; i < GridXCount-2; i++)
                 {
                     Canvas.SetTop(Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - i - 2)) - maxYtextSize.Height / 2.0);
@@ -128,73 +161,7 @@ namespace OpenNetMeter.Views
                 GridBorder.Width = GraphWidth;
                 GridBorder.Height = GraphHeight;
             }
-            
-            /*
-            //set size change ratio
-            if (isLoaded)
-            {
-                dusvm.GraphWidth = LineY7.X1 - LineY1.X1;
-                dusvm.GraphHeight = LineX7.Y1 - LineX1.Y1;
-                //Debug.WriteLine("Width: " + dusvm.GraphWidthRatio + " Height: " + dusvm.GraphHeightRatio);
-
-                for (int i = 0; i < dusvm.Lines.Count; i++)
-                {
-                    dusvm.Lines[i].From = new Point(dusvm.Xstart + dusvm.Points[i].From.X * (dusvm.GraphWidth / dusvm.StartGraphWidth), dusvm.Points[i].From.Y * (dusvm.GraphHeight / dusvm.StartGraphHeight));
-                    dusvm.Lines[i].To = new Point(dusvm.Xstart + dusvm.Points[i].To.X * (dusvm.GraphWidth / dusvm.StartGraphWidth), dusvm.Points[i].To.Y * (dusvm.GraphHeight / dusvm.StartGraphHeight));
-                }
-            }*/
         }
-        /*
-        private void DrawPoints()
-        {
-
-            cts = new CancellationTokenSource();
-            ct = cts.Token;
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    Debug.WriteLine("Operation Started : draw");
-                    int i = 0;
-                    while (!ct.IsCancellationRequested)
-                    {
-                        await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
-                        {
-                            //double temp = ConvToGraphCoords(dusvm.tpvm.DownloadSpeed, Graph.ActualHeight - (Graph.ActualHeight / 7.0) / 2.0)   ;
-                            //Debug.WriteLine( "Graphcoords: " + temp + " speed: " + dusvm.tpvm.DownloadSpeed + " height: " + Graph.ActualHeight + " resolution: " + (Graph.ActualHeight / 7.0));
-                            //DownloadPolyPath.Points.Add(new Point( (LineX2Label.ActualWidth + 5.0) + (((Graph.ActualWidth - LineX2Label.ActualWidth + 5.0) / 6.0) / 10.0)*i, ConvToGraphCoords(dusvm.tpvm.DownloadSpeed, (Graph.ActualHeight / 7.0) * 6.0) + (Graph.ActualHeight / 7.0) / 2.0));
-                            DownloadPolyPath.Points.Add(new Point((LineX2Label.ActualWidth + 5.0) + Graph.ActualWidth / 60 * i, Graph.ActualHeight/2));
-                        }));
-                        //await Task.Delay(1000);
-                        i++;
-                        if (i >= 60)
-                        {
-                            i = 0;
-                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
-                            {
-                                DownloadPolyPath.Points.Clear();
-                            }));
-                        }
-                        await Task.Delay(1000, ct);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    Debug.WriteLine("Operation Cancelled : draw");
-                    if (cts != null)
-                    {
-                        cts.Dispose();
-                        cts = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Critical error: " + ex.Message);
-                }
-            });
-        }
-        */
        
     }
 }

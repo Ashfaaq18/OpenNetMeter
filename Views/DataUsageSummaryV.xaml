@@ -147,7 +147,7 @@
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0">
                             <Canvas x:Name="Graph" SizeChanged="Graph_SizeChanged">
-                                <!--<ItemsControl ItemsSource="{Binding Lines}">
+                                <ItemsControl ItemsSource="{Binding Lines}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <Canvas/>
@@ -157,11 +157,12 @@
                                         <DataTemplate>
                                             <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
                                             X2="{Binding To.X}" Y2="{Binding To.Y}"
-                                            Stroke="DarkGray" StrokeThickness="3"/>
+                                            Stroke="LightSeaGreen" StrokeThickness="2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
-                                </ItemsControl>-->
+                                </ItemsControl>
                             </Canvas>
+                            
                         </Grid>
                         
                     </Grid>
