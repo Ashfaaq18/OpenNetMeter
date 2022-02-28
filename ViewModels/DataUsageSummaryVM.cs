@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -107,6 +108,7 @@ namespace OpenNetMeter.ViewModels
         public double Xstart { get; set; }
         public bool pauseDraw { get; set; }
 
+        public ObservableCollection<TextBlock> Xlabels { get; private set; }
         public ObservableCollection<MyLine> DownloadLines { get; private set; }
         public ObservableCollection<MyLine> UploadLines { get; private set; }
         public List<MyLine> DownloadPoints { get; private set; }
@@ -125,6 +127,7 @@ namespace OpenNetMeter.ViewModels
             UploadPoints = new List<MyLine>();
             DownloadLines = new ObservableCollection<MyLine>();
             UploadLines = new ObservableCollection<MyLine>();
+            Xlabels = new ObservableCollection<TextBlock>();
             XaxisRange = 60;
             for (int i = 0; i< XaxisRange; i++)
             {
@@ -132,7 +135,20 @@ namespace OpenNetMeter.ViewModels
                 UploadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
                 DownloadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
                 UploadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                if(i%10 == 0)
+                {
+                    Xlabels.Add(
+                        new TextBlock
+                        {
+                            Text = (i).ToString(),
+                        });
+                }    
             }
+            Xlabels.Add(
+                new TextBlock
+                {
+                    Text = "seconds",
+                });
 
             DrawPoints();
         }
@@ -148,6 +164,17 @@ namespace OpenNetMeter.ViewModels
                     {
                         if (drawPointCount >= XaxisRange)
                         {
+                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
+                            {
+                                //shift xaxis label
+                                for (int i = 0; i<Xlabels.Count/2; i++)
+                                {
+                                    string temp = Xlabels[i].Text;
+                                    Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
+                                    Xlabels[i + Xlabels.Count / 2].Text = temp;
+                                }
+                            }));
+
                             drawPointCount = XaxisRange/2;
                             for (int i = 0; i < DownloadPoints.Count; i++)
                             {
