@@ -45,7 +45,7 @@
                                 StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
         </Grid>
     </UserControl.Resources>
-    
+
     <Grid>
         <Grid Background="#f1f1f1">
             <Grid.RowDefinitions>
@@ -128,40 +128,72 @@
                 </Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="25"/>
-                        <RowDefinition/>
-                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition />
+                        <RowDefinition Height="15"/>
                     </Grid.RowDefinitions>
                     <Grid>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="15,0">
-                            <Label Content="Download" FontSize="10"/>
-                            <Label Content="" Background="LightSeaGreen" Width="50" Height="5"/>
-                            <Label Content="Upload" FontSize="10"/>
-                            <Label Content="" Background="LightSalmon" Width="50" Height="5"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15,0">
+                            <Label Content="Download" FontSize="11" VerticalAlignment="Center" Padding="5,0"/>
+                            <Label Content="" Background="LightSeaGreen" Width="50" Height="4"/>
+                            <Label Content="Upload" FontSize="11"  VerticalAlignment="Center" Padding="5,0"/>
+                            <Label Content="" Background="LightSalmon" Width="50" Height="4"/>
                         </StackPanel>
                     </Grid>
-                    <Grid  Grid.Row="1" HorizontalAlignment="Center">
+                    <Grid Grid.Row="1" x:Name="GraphGrid">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30"/>
-                            <ColumnDefinition Width="550"/>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="15"/>
                         </Grid.ColumnDefinitions>
-                        <ItemsControl Margin="0,-8,0,8" Grid.Column="0" Height="120" ItemsSource="{Binding SpeedGraph.Yaxis}" FontSize="10">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Grid.Column="0" ItemHeight="20" Orientation="Vertical" FlowDirection="RightToLeft" VerticalAlignment="Stretch" Height="120" Width="30"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                        <Image Grid.Column="1" Width="540" Height="120" Source="{Binding SpeedGraph.Graph}"></Image>
+                        <Grid Grid.Column="0">
+                            <Canvas x:Name="Graph" SizeChanged="Graph_SizeChanged"/>
+                            
+                            <ItemsControl ItemsSource="{Binding UploadLines}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Line x:Name="UploadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"
+                                            Stroke="LightSalmon" StrokeThickness="3" StrokeLineJoin="Round" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            
+                            <ItemsControl ItemsSource="{Binding DownloadLines}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"
+                                            Stroke="LightSeaGreen" StrokeThickness="3" StrokeLineJoin="Round" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding Xlabels}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontSize="11" Padding="0" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            
+                        </Grid>
+                        
                     </Grid>
-                    <ItemsControl Grid.Row="2" ItemsSource="{Binding SpeedGraph.Xaxis}" FontSize="10" Margin="40,0">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Width="540" Height="25" Rows="1"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                    <Label Content="Seconds" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="10" Margin="0,-5,0,0"/>
                 </Grid>
             </Border>
         </Grid>

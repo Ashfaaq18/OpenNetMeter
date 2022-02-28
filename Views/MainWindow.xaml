@@ -8,13 +8,13 @@
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
         xmlns:res="clr-namespace:OpenNetMeter.Properties"
         mc:Ignorable="d"
-        ResizeMode="NoResize"
+        ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         AllowsTransparency="True"
         UseLayoutRounding="True"
         Background="Transparent"
         
-        Title="" Height="500" Width="670">
+        Title="" MinHeight="500" Height="500" MinWidth="670" Width="670">
 
     <Window.Resources>
         <vm:BitmapToImageConverter x:Key="BitmapToImage"/>
@@ -49,7 +49,7 @@
         <Grid Background="Transparent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
-                <RowDefinition Height="400"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
