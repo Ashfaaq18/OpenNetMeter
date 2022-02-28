@@ -141,6 +141,8 @@ namespace OpenNetMeter.ViewModels
                         new TextBlock
                         {
                             Text = (i).ToString(),
+                            FontSize = 11,
+                            Padding = new Thickness(0)
                         });
                 }    
             }
@@ -148,6 +150,8 @@ namespace OpenNetMeter.ViewModels
                 new TextBlock
                 {
                     Text = "seconds",
+                    FontSize = 11,
+                    Padding = new Thickness(0)
                 });
 
             DrawPoints();
