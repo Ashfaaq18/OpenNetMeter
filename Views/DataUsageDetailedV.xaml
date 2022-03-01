@@ -28,7 +28,7 @@
     <Grid Background="#f1f1f1">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
-            <RowDefinition />
+            <RowDefinition Height="325"/>
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -40,10 +40,10 @@
             <Label VerticalAlignment="Center" Content="{Binding Date}"/>
         </StackPanel>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Height="325">
             <ContentControl x:Name="Profiles_Page" Content="{Binding SelectedViewModel, Mode=OneWay}"/>
         </Grid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15,0">
+        <StackPanel Height="25" Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15,0">
             <Label>Reset this profile : </Label>
             <Button Height="20" Width="50" Command="{Binding ResetBtn}">Reset</Button> 
         </StackPanel>

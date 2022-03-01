@@ -49,27 +49,17 @@
     <Grid>
         <Grid Background="#f1f1f1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="16"/>
-                <RowDefinition Height="160"/>
-                <RowDefinition Height="16"/>
                 <RowDefinition/>
-                <RowDefinition Height="16"/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="24"/>
-                <ColumnDefinition/>
-                <ColumnDefinition  Width="24"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
+            <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="290"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="290"/>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <Border Background="White" CornerRadius="10">
+                <Border Margin="25 25 12.5 25" Background="White" CornerRadius="10">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
                     </Border.Effect>
@@ -100,7 +90,7 @@
 
                 </Border>
 
-                <Border Grid.Column="2" Background="White" CornerRadius="10">
+                <Border Grid.Column="2" Margin="12.5 25 25 25" Background="White" CornerRadius="10">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
                     </Border.Effect>
@@ -132,7 +122,7 @@
                 </Border>
 
             </Grid>
-            <Border Grid.Row="3"  Grid.Column="1" Background="White" CornerRadius="10">
+            <Border Grid.Row="1" Margin="25 0 25 15" Background="White" CornerRadius="10">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
                 </Border.Effect>
