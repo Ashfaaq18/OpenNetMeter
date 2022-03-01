@@ -8,9 +8,11 @@
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
         xmlns:res="clr-namespace:OpenNetMeter.Properties"
         mc:Ignorable="d"
-        ResizeMode="CanResize"
+        ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         UseLayoutRounding="True"
+        BorderBrush="Black"
+        BorderThickness="1"
         MinHeight="500" Height="500" MinWidth="670" Width="670">
     
     <WindowChrome.WindowChrome>

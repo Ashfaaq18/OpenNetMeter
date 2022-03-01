@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
              mc:Ignorable="d" 
-             UseLayoutRounding="True" 
+             UseLayoutRounding="True"
              d:DesignHeight="400" d:DesignWidth="650">
     <!-- UseLayoutRounding="True" <fixes blurry text/> -->
     <UserControl.Resources>
