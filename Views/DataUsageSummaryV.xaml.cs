@@ -19,7 +19,6 @@ namespace OpenNetMeter.Views
     public partial class DataUsageSummaryV : UserControl
     {
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
-        private bool isLoaded = false;
         private DataUsageSummaryVM dusvm;
 
         private List<TextBlock> Xlabels;
@@ -36,7 +35,6 @@ namespace OpenNetMeter.Views
             Loaded += delegate
             {
                 dusvm = (DataUsageSummaryVM)this.DataContext;
-                isLoaded = true;
 
                 Ylabels = new List<TextBlock>();
                 Xlabels = new List<TextBlock>();
@@ -116,6 +114,7 @@ namespace OpenNetMeter.Views
                 Graph.Children.Add(GridBorder);
 
                 resizeTimer.Tick += resizeTimer_Tick;
+                Graph_SizeChanged(null,null);
             };
         }
 
@@ -139,7 +138,7 @@ namespace OpenNetMeter.Views
         //scale the graph coordinates
         private void Graph_SizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
         {
-            if(isLoaded)
+            if(dusvm != null)
             {
                 resizeTimer.IsEnabled = true;
                 resizeTimer.Stop();
