@@ -168,7 +168,7 @@ namespace OpenNetMeter.ViewModels
                     {
                         if (drawPointCount >= XaxisRange)
                         {
-                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
+                            await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                             {
                                 //shift xaxis label
                                 for (int i = 0; i<Xlabels.Count/2; i++)
@@ -213,7 +213,7 @@ namespace OpenNetMeter.ViewModels
                             if (!pauseDraw)
                             { 
                                 //reset the chart
-                                await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
+                                await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                                 {
                                     for (int i = 0; i < DownloadLines.Count; i++)
                                     {
@@ -248,7 +248,7 @@ namespace OpenNetMeter.ViewModels
                         
                         if (!pauseDraw)
                         {
-                            await Application.Current.Dispatcher?.BeginInvoke((Action)(() =>
+                            await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                             {
                                 DownloadLines[drawPointCount].From = new Point(Xstart + DownloadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(DownloadPoints[drawPointCount].From.Y, GraphHeight));
                                 DownloadLines[drawPointCount].To = new Point(Xstart + DownloadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(DownloadPoints[drawPointCount].To.Y, GraphHeight));
