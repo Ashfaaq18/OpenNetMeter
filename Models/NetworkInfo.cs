@@ -47,7 +47,6 @@ namespace OpenNetMeter.Models
         private CancellationToken token_speed;
 
         private string adapterName;
-        private static HashSet<string> interfaces;
 
         private string isNetworkOnline;
         public string IsNetworkOnline
@@ -64,7 +63,6 @@ namespace OpenNetMeter.Models
             UploadSpeed = 0;
             
             adapterName = "";
-            interfaces = new HashSet<string>();
 
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
             CaptureNetworkPackets();
@@ -74,9 +72,18 @@ namespace OpenNetMeter.Models
         {
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                return endPoint.Address.ToString();
+                try
+                {
+                    socket.Connect("8.8.8.8", 65530);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                    return endPoint.Address.ToString();
+                }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+
+                return "NoIP";
             }
         }
 
@@ -89,6 +96,7 @@ namespace OpenNetMeter.Models
             NetworkChange_NetworkAddressChanged(null, null);
         }
 
+        
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
             string tempIP;
@@ -99,8 +107,6 @@ namespace OpenNetMeter.Models
                 {
                     if (n.OperationalStatus == OperationalStatus.Up) //if there is a connection
                     {
-                        interfaces.Add(n.Name);
-
                         tempIP = GetLocalIP(); //get assigned ip
 
                         IPInterfaceProperties adapterProperties = n.GetIPProperties();
@@ -132,19 +138,14 @@ namespace OpenNetMeter.Models
                         }
 
                     }
-                    else //if adapter is not up
-                    {
-                        if (interfaces.Remove(n.Name))
-                        {
-                            if (interfaces.Count == 0)
-                            {
-                                localIP = "";
-                                Debug.WriteLine("No connection");
-                                SetNetworkStatus(false);
-                            }
-                        }
-                    }
                 }
+            }
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                localIP = "";
+                Debug.WriteLine("No connection");
+                SetNetworkStatus(false);
             }
         }
 
@@ -241,6 +242,7 @@ namespace OpenNetMeter.Models
                 {
                     Debug.WriteLine("Operation Cancelled : Write file");
                     cts_file.Dispose();
+                    cts_file = null;
                 }
                 catch (Exception ex)
                 {
@@ -271,6 +273,7 @@ namespace OpenNetMeter.Models
                 {
                     Debug.WriteLine("Operation Cancelled : Network speed");
                     cts_speed.Dispose();
+                    cts_speed = null;
                 }
                 catch (Exception ex)
                 {
