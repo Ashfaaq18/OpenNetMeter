@@ -421,16 +421,24 @@ void CDeskBand::OnPaint(const HDC hdcIn)
         GetClientRect(m_hwnd, &rc);
         if (m_fCompositionEnabled)
         {
-            HTHEME hTheme = OpenThemeData(NULL, L"TEXTSTYLE");
+            HTHEME hTheme = OpenThemeData(NULL, VSCLASS_REBAR);
+            HFONT hFont = NULL;
             if (hTheme)
             {
                 HDC hdcPaint = NULL;
                 HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, NULL, &hdcPaint);
-
-                HFONT hFont = ::CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
-                    CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"@system");
+                LOGFONT lf = { 0 };
+                const HRESULT hr = ::GetThemeFont(hTheme, NULL, RP_BAND, 0, TMT_FONT, &lf);
+                if (SUCCEEDED(hr))
+                {
+                    hFont = ::CreateFontIndirect(&lf);
+                }
+                else
+                {
+                    hFont = ::CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"@system");
+                }
                 HFONT hOldFont = static_cast<HFONT>(::SelectObject(hdcPaint, hFont));
-                GetTextColor(hdc);
                 DrawThemeParentBackground(m_hwnd, hdcPaint, &rc);
 
                 SIZE sRecv,sSend;
@@ -441,13 +449,13 @@ void CDeskBand::OnPaint(const HDC hdcIn)
                 RECT rcSend = { 0 };
                 rcSend.left = (RECTWIDTH(rc) - sSend.cx) / 2;
                 rcSend.right = rcSend.left + sSend.cx;
-                rcSend.top = RECTHEIGHT(rc) / 2 + (RECTHEIGHT(rc) / 2 - sSend.cy) / 2;
-                rcSend.bottom = rcSend.top + sSend.cy;
+                rcSend.top = RECTHEIGHT(rc) / 2 + 1;
+                rcSend.bottom = RECTHEIGHT(rc) + 1;
 
                 rcRecv.left = (RECTWIDTH(rc) - sRecv.cx) / 2;
                 rcRecv.right = rcRecv.left + sRecv.cx;
-                rcRecv.bottom = RECTHEIGHT(rc) / 2 - (RECTHEIGHT(rc) / 2 - sRecv.cy) / 2;
-                rcRecv.top = rcRecv.bottom - sRecv.cy;
+                rcRecv.bottom = RECTHEIGHT(rc) / 2 - 1;
+                rcRecv.top = RECTHEIGHT(rc) / 2 - sRecv.cy -1;
 
                 DTTOPTS dttOptsRecv = { sizeof(dttOptsRecv) };
                 dttOptsRecv.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;

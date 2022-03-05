@@ -8,6 +8,8 @@
 #include <sstream>
 #include <AtlBase.h>
 #include <atlconv.h>
+#include <vsstyle.h>
+#include <vssym32.h>
 
 extern "C" __declspec(dllexport) void SetDataVars(double d, int dS, double u, int uS);
 extern "C" __declspec(dllexport) void SetFontColor(int c);
