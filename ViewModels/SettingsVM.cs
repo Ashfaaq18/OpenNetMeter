@@ -156,21 +156,42 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        //0 == internal, 1 == external, 2 == both
+        private int networkTrafficType;
+        public int NetworkTrafficType
+        {
+            get { return networkTrafficType; }
+
+            set
+            {
+                if (networkTrafficType != value)
+                {
+                    networkTrafficType = value;
+                    OnPropertyChanged("NetworkTrafficType");
+
+                    //set the app settings
+                    Properties.Settings.Default.NetworkType = value;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
         public ulong DownloadSpeed { get; set; }
         public ulong UploadSpeed { get; set; }
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-                       
-            FontColorDeskBand = Properties.Settings.Default.FontColor;
 
+            //deskband setting
+            FontColorDeskBand = Properties.Settings.Default.FontColor;
             SetDeskBand = Properties.Settings.Default.DeskBandSetting;
             if (SetDeskBand)
                 UnlockFontColorDeskBand = false;
             else
                 UnlockFontColorDeskBand = true;
 
+            //start with windows setting
             UnlockOptionStartWin = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             MinimizeOnStart = Properties.Settings.Default.MinimizeOnStart;
@@ -178,7 +199,10 @@ namespace OpenNetMeter.ViewModels
                 UnlockMinimizeOnStart = false;
             else
                 UnlockMinimizeOnStart = true;
-            
+
+            //network traffic setting
+            NetworkTrafficType = Properties.Settings.Default.NetworkType;
+
             DownloadSpeed = 0;
             UploadSpeed = 0;
         }
@@ -292,7 +316,7 @@ namespace OpenNetMeter.ViewModels
             {
                 HideDeskband();
                 DllUnregisterServer();
-            }    
+            }
         }
 
         //------property changers---------------//

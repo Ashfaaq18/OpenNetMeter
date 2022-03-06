@@ -22,8 +22,10 @@ namespace OpenNetMeter.Models
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
+        private SettingsVM svm;
 
-        private string localIP;
+        private byte[] localIP;
+        private byte[] localIPMask;
 
         private ulong downloadSpeed;
         public ulong DownloadSpeed
@@ -54,10 +56,11 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
+        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref, ref SettingsVM svm_ref)
         {
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
+            svm = svm_ref;
 
             DownloadSpeed = 0;
             UploadSpeed = 0;
@@ -68,7 +71,7 @@ namespace OpenNetMeter.Models
             CaptureNetworkPackets();
         }
 
-        private string GetLocalIP()
+        private byte[] GetLocalIP()
         {
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
@@ -76,15 +79,39 @@ namespace OpenNetMeter.Models
                 {
                     socket.Connect("8.8.8.8", 65530);
                     IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                    return endPoint.Address.ToString();
+                    return endPoint.Address.GetAddressBytes();
                 }
                 catch(Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
 
-                return "NoIP";
+                return new byte[] { 0, 0, 0, 0 };
             }
+        }
+
+        private bool IsLocalTraffic(ReadOnlySpan<byte> src, ReadOnlySpan<byte> srcMask, ReadOnlySpan<byte> dest)
+        {
+            if(src.Length == srcMask.Length  && srcMask.Length == dest.Length)
+            {
+                int tempCount = 0;
+                for (int i = 0; i < src.Length; i++)
+                {
+                    //Debug.WriteLine("IPS: " + (src[i] & srcMask[i]) + "," + (dest[i] & srcMask[i]));
+                    if ((src[i] & srcMask[i]) == (dest[i] & srcMask[i]))
+                        tempCount++;
+                    else
+                        return false;
+                }
+                if (tempCount == src.Length)
+                    return true;
+            }
+            return false;
+        }
+
+        private bool ByteArrayCompare(ReadOnlySpan<byte> a1, ReadOnlySpan<byte> a2)
+        {
+            return a1.SequenceEqual(a2);
         }
 
         public void InitConnection()
@@ -99,7 +126,7 @@ namespace OpenNetMeter.Models
         
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
-            string tempIP;
+            byte[] tempIP;
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface n in adapters)
             {
@@ -114,12 +141,18 @@ namespace OpenNetMeter.Models
                         {
                             foreach (UnicastIPAddressInformation ip in adapterProperties.UnicastAddresses)
                             {
-                                if (ip.Address.ToString() == tempIP)
+                                if (ByteArrayCompare(ip.Address.GetAddressBytes(), tempIP))
                                 {
-                                    if(localIP == tempIP) //this is to prevent this event from firing multiple times during 1 connection change
+                                    if (localIP == tempIP) //this is to prevent this event from firing multiple times during 1 connection change
                                         break;
                                     else
+                                    {
                                         localIP = tempIP;
+                                        localIPMask = ip.IPv4Mask.GetAddressBytes();
+                                        //var temp = ip.Address.GetAddressBytes();
+                                        //var temp1 = ip.IPv4Mask.GetAddressBytes();
+                                        Debug.WriteLine("temp: " + (localIP[0] & localIPMask[0]) + "," + (localIP[1] & localIPMask[1]) + ","+ (localIP[2] & localIPMask[2]) + ","+ (localIP[3] & localIPMask[3]) + ",");
+                                    }
 
                                     if (IsNetworkOnline != "Disconnected") //if there was already a connection available
                                         SetNetworkStatus(false); //reset the connection
@@ -143,7 +176,7 @@ namespace OpenNetMeter.Models
 
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                localIP = "";
+                localIP = new byte[]{0,0,0,0};
                 Debug.WriteLine("No connection");
                 SetNetworkStatus(false);
             }
@@ -345,48 +378,67 @@ namespace OpenNetMeter.Models
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
-
         //calculate the Bytes sent and recieved
         private void RecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            if(!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
+            if(ByteArrayCompare(src.GetAddressBytes() , localIP) ^ ByteArrayCompare(dest.GetAddressBytes() , localIP))
             {
-                dusvm.TotalDownloadData += (ulong)size;
-                dusvm.CurrentSessionDownloadData += (ulong)size;
+                if( svm.NetworkTrafficType == 2? true: //both
+                    svm.NetworkTrafficType == 1? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()): //external
+                    svm.NetworkTrafficType == 0?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()):false) //local
+                {
+                    dusvm.TotalDownloadData += (ulong)size;
+                    dusvm.CurrentSessionDownloadData += (ulong)size;
 
-                dudvm.GetAppDataInfo(name, size, 0);
+                    dudvm.GetAppDataInfo(name, size, 0);
+                }
             }
         }
 
         private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
+            if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
-                dusvm.TotalDownloadData += (ulong)size;
-                dusvm.CurrentSessionDownloadData += (ulong)size;
+                if (svm.NetworkTrafficType == 2 ? true : //both
+                    svm.NetworkTrafficType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
+                    svm.NetworkTrafficType == 0 ? IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                {
+                    dusvm.TotalDownloadData += (ulong)size;
+                    dusvm.CurrentSessionDownloadData += (ulong)size;
 
-                dudvm.GetAppDataInfo(name, size, 0);
+                    dudvm.GetAppDataInfo(name, size, 0);
+                }
             }
         }
 
         private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
+            if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
-                dusvm.TotalUploadData += (ulong)size;
-                dusvm.CurrentSessionUploadData += (ulong)size;
+                if (svm.NetworkTrafficType == 2 ? true : //both
+                    svm.NetworkTrafficType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
+                    svm.NetworkTrafficType == 0 ? IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                {
+                    dusvm.TotalUploadData += (ulong)size;
+                    dusvm.CurrentSessionUploadData += (ulong)size;
 
-                dudvm.GetAppDataInfo(name, 0, size);
+                    dudvm.GetAppDataInfo(name, 0, size);
+                }
             }
         }
         private void SendProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (!IPAddress.IsLoopback(src) && !IPAddress.IsLoopback(dest) && ((src.ToString() == localIP) ^ (dest.ToString() == localIP)))
+            if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
-                dusvm.TotalUploadData += (ulong)size;
-                dusvm.CurrentSessionUploadData += (ulong)size;
+                if (svm.NetworkTrafficType == 2 ? true : //both
+                    svm.NetworkTrafficType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
+                    svm.NetworkTrafficType == 0 ? IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                {
+                    dusvm.TotalUploadData += (ulong)size;
+                    dusvm.CurrentSessionUploadData += (ulong)size;
 
-                dudvm.GetAppDataInfo(name, 0, size);
+                    dudvm.GetAppDataInfo(name, 0, size);
+                }
             }
         }
 
