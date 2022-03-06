@@ -74,7 +74,7 @@ namespace OpenNetMeter.ViewModels
             dudvm = new DataUsageDetailedVM(ref dusvm);
             svm = new SettingsVM();
 
-            netInfo = new NetworkInfo(ref dusvm, ref dudvm);
+            netInfo = new NetworkInfo(ref dusvm, ref dudvm, ref svm);
             dudvm.SetNetInfo(ref netInfo);
 
             //intial startup page
