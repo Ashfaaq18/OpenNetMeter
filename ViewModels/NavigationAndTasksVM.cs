@@ -100,9 +100,12 @@ namespace OpenNetMeter.ViewModels
             tpvm.DownloadSpeed = netInfo.DownloadSpeed;
             tpvm.UploadSpeed = netInfo.UploadSpeed;
             //update speed in taskbar
-            (double,int) down = DataSizeSuffix.SizeSuffixInInt(netInfo.DownloadSpeed);
-            (double,int) up = DataSizeSuffix.SizeSuffixInInt(netInfo.UploadSpeed);
-            SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
+            if(Properties.Settings.Default.DeskBandSetting)
+            {
+                (double, int) down = DataSizeSuffix.SizeSuffixInInt(netInfo.DownloadSpeed);
+                (double, int) up = DataSizeSuffix.SizeSuffixInInt(netInfo.UploadSpeed);
+                SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
+            }
         }
 
         private void OpenDataUsageSum(object obj)
