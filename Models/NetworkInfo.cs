@@ -22,7 +22,6 @@ namespace OpenNetMeter.Models
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
-        private SettingsVM svm;
 
         private byte[] localIP;
         private byte[] localIPMask;
@@ -56,11 +55,10 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref, ref SettingsVM svm_ref)
+        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
         {
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
-            svm = svm_ref;
 
             DownloadSpeed = 0;
             UploadSpeed = 0;
@@ -149,9 +147,7 @@ namespace OpenNetMeter.Models
                                     {
                                         localIP = tempIP;
                                         localIPMask = ip.IPv4Mask.GetAddressBytes();
-                                        //var temp = ip.Address.GetAddressBytes();
-                                        //var temp1 = ip.IPv4Mask.GetAddressBytes();
-                                        Debug.WriteLine("temp: " + (localIP[0] & localIPMask[0]) + "," + (localIP[1] & localIPMask[1]) + ","+ (localIP[2] & localIPMask[2]) + ","+ (localIP[3] & localIPMask[3]) + ",");
+                                        //Debug.WriteLine("temp: " + (localIP[0] & localIPMask[0]) + "," + (localIP[1] & localIPMask[1]) + ","+ (localIP[2] & localIPMask[2]) + ","+ (localIP[3] & localIPMask[3]) + ",");
                                     }
 
                                     if (IsNetworkOnline != "Disconnected") //if there was already a connection available
@@ -383,9 +379,9 @@ namespace OpenNetMeter.Models
         {
             if(ByteArrayCompare(src.GetAddressBytes() , localIP) ^ ByteArrayCompare(dest.GetAddressBytes() , localIP))
             {
-                if( svm.NetworkTrafficType == 2? true: //both
-                    svm.NetworkTrafficType == 1? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()): //external
-                    svm.NetworkTrafficType == 0?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()):false) //local
+                if (Properties.Settings.Default.NetworkType == 2? true: //both
+                    Properties.Settings.Default.NetworkType == 1? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()): //external
+                    Properties.Settings.Default.NetworkType == 0?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()):false) //local
                 {
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
@@ -399,9 +395,9 @@ namespace OpenNetMeter.Models
         {
             if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
-                if (svm.NetworkTrafficType == 2 ? true : //both
-                    svm.NetworkTrafficType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
-                    svm.NetworkTrafficType == 0 ? IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
+                    Properties.Settings.Default.NetworkType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
+                    Properties.Settings.Default.NetworkType == 0 ?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
                 {
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
@@ -415,9 +411,9 @@ namespace OpenNetMeter.Models
         {
             if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
-                if (svm.NetworkTrafficType == 2 ? true : //both
-                    svm.NetworkTrafficType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
-                    svm.NetworkTrafficType == 0 ? IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
+                    Properties.Settings.Default.NetworkType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
+                    Properties.Settings.Default.NetworkType == 0 ?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
                 {
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
@@ -430,9 +426,9 @@ namespace OpenNetMeter.Models
         {
             if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
-                if (svm.NetworkTrafficType == 2 ? true : //both
-                    svm.NetworkTrafficType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
-                    svm.NetworkTrafficType == 0 ? IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
+                    Properties.Settings.Default.NetworkType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
+                    Properties.Settings.Default.NetworkType == 0 ?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
                 {
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
