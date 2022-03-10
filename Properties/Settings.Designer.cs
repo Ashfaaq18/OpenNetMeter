@@ -82,5 +82,41 @@ namespace OpenNetMeter.Properties {
                 this["NetworkType"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point WinPos {
+            get {
+                return ((global::System.Drawing.Point)(this["WinPos"]));
+            }
+            set {
+                this["WinPos"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Size WinSize {
+            get {
+                return ((global::System.Drawing.Size)(this["WinSize"]));
+            }
+            set {
+                this["WinSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LaunchFirstTime {
+            get {
+                return ((bool)(this["LaunchFirstTime"]));
+            }
+            set {
+                this["LaunchFirstTime"] = value;
+            }
+        }
     }
 }
