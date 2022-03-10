@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Drawing;
 using OpenNetMeter.Models;
+using System.Windows.Threading;
 
 namespace OpenNetMeter.Views
 {
@@ -36,6 +37,9 @@ namespace OpenNetMeter.Views
         private AboutWindow aboutWin;
         private TrayPopupWinV trayWin;
         private NavigationAndTasksVM navWin;
+        private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
+        private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
+
         private Forms.NotifyIcon ni;
         private Forms.ContextMenuStrip cm;
         private bool balloonShow;
@@ -51,6 +55,25 @@ namespace OpenNetMeter.Views
                 navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
                 DataContext = navWin;
                 aboutWin = new AboutWindow();
+
+                //initialize window position and size
+                if(Properties.Settings.Default.LaunchFirstTime)
+                {
+                    Properties.Settings.Default.WinSize = new System.Drawing.Size((int)this.MinWidth, (int)this.MinHeight);
+                    this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                    Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+                    Properties.Settings.Default.LaunchFirstTime = false;
+                    Properties.Settings.Default.Save();
+                }
+
+                this.Left = Properties.Settings.Default.WinPos.X;
+                this.Top = Properties.Settings.Default.WinPos.Y;
+
+                this.Width = Properties.Settings.Default.WinSize.Width;
+                this.Height = Properties.Settings.Default.WinSize.Height;
+
+                resizeTimer.Tick += ResizeTimer_Tick;
+                relocationTimer.Tick += RelocationTimer_Tick;
 
                 //initialize system tray
                 trayWin.Topmost = true;
@@ -181,6 +204,39 @@ namespace OpenNetMeter.Views
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
             aboutWin.Show(this);
+        }
+
+        //save window size and position at the end of the respective events
+        private void ResizeTimer_Tick(object sender, EventArgs e)
+        {
+            resizeTimer.IsEnabled = false;
+
+            //Do end of resize processing
+            Properties.Settings.Default.WinSize =  new System.Drawing.Size((int)this.Width, (int)this.Height);
+            Properties.Settings.Default.Save();
+        }
+
+        private void MyWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            resizeTimer.IsEnabled = true;
+            resizeTimer.Stop();
+            resizeTimer.Start();
+        }
+        
+        private void RelocationTimer_Tick(object sender, EventArgs e)
+        {
+            relocationTimer.IsEnabled = false;
+
+            //Do end of relocation processing
+            Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+            Properties.Settings.Default.Save();
+        }
+
+        private void MyWindow_LocationChanged(object sender, EventArgs e)
+        {
+            relocationTimer.IsEnabled = true;
+            relocationTimer.Stop();
+            relocationTimer.Start();
         }
     }
 }

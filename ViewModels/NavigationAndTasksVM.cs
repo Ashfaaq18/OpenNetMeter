@@ -68,7 +68,7 @@ namespace OpenNetMeter.ViewModels
             DownloadSpeed = 0;
             UploadSpeed = 0;
 
-            //initialize pages
+            //initialize pages, dusvm == 0, dudvm === 1, svm == 2
             tpvm = tpVM_DataContext;
             dusvm = new DataUsageSummaryVM(ref tpvm);
             dudvm = new DataUsageDetailedVM(ref dusvm);
@@ -78,8 +78,24 @@ namespace OpenNetMeter.ViewModels
             dudvm.SetNetInfo(ref netInfo);
 
             //intial startup page
-            SelectedViewModel = dusvm;
-            TabBtnToggle = 0;
+
+            TabBtnToggle = Properties.Settings.Default.LaunchPage;
+            switch (TabBtnToggle)
+            {
+                case 0:
+                    SelectedViewModel = dusvm;
+                    break;
+                case 1:
+                    SelectedViewModel = dudvm;
+                    break;
+                case 2:
+                    SelectedViewModel = svm;
+                    break;
+                default:
+                    SelectedViewModel = dusvm;
+                    TabBtnToggle = 0;
+                    break;
+            }
 
             netInfo.PropertyChanged += NetInfo_PropertyChanged;
             netInfo.InitConnection();
@@ -88,6 +104,7 @@ namespace OpenNetMeter.ViewModels
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
             DataUsageSetCommand = new BaseCommand(OpenDataUsageSet);
+
         }
 
         private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -114,6 +131,8 @@ namespace OpenNetMeter.ViewModels
             {
                 SelectedViewModel = dusvm;
                 TabBtnToggle = 0;
+                Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -123,6 +142,8 @@ namespace OpenNetMeter.ViewModels
             {
                 SelectedViewModel = dudvm;
                 TabBtnToggle = 1;
+                Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                Properties.Settings.Default.Save();
             }
         }
         private void OpenDataUsageSet(object obj)
@@ -131,6 +152,8 @@ namespace OpenNetMeter.ViewModels
             {
                 SelectedViewModel = svm;
                 TabBtnToggle = 2;
+                Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                Properties.Settings.Default.Save();
             }
         }
         public void Dispose()
