@@ -118,5 +118,17 @@ namespace OpenNetMeter.Properties {
                 this["LaunchFirstTime"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int LaunchPage {
+            get {
+                return ((int)(this["LaunchPage"]));
+            }
+            set {
+                this["LaunchPage"] = value;
+            }
+        }
     }
 }
