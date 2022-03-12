@@ -8,6 +8,7 @@ using System.Threading;
 using System.Drawing;
 using OpenNetMeter.Models;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace OpenNetMeter.Views
 {
@@ -45,6 +46,9 @@ namespace OpenNetMeter.Views
         private bool balloonShow;
         private bool forceHideTrayWin;
         private System.Drawing.Point p;
+        private CancellationTokenSource cts;
+        private CancellationToken token;
+
         public MainWindow()
         {
             if (IsSingleInstance())
@@ -57,23 +61,7 @@ namespace OpenNetMeter.Views
                 aboutWin = new AboutWindow();
 
                 //initialize window position and size
-                if(Properties.Settings.Default.LaunchFirstTime)
-                {
-                    Properties.Settings.Default.WinSize = new System.Drawing.Size((int)this.MinWidth, (int)this.MinHeight);
-                    this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
-                    Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
-                    Properties.Settings.Default.LaunchFirstTime = false;
-                    Properties.Settings.Default.Save();
-                }
-
-                this.Left = Properties.Settings.Default.WinPos.X;
-                this.Top = Properties.Settings.Default.WinPos.Y;
-
-                this.Width = Properties.Settings.Default.WinSize.Width;
-                this.Height = Properties.Settings.Default.WinSize.Height;
-
-                resizeTimer.Tick += ResizeTimer_Tick;
-                relocationTimer.Tick += RelocationTimer_Tick;
+                MainWinPosAndSizeInit();
 
                 //initialize system tray
                 trayWin.Topmost = true;
@@ -90,27 +78,91 @@ namespace OpenNetMeter.Views
                 cm.Items.Add("Exit", null, Cm_Exit_Click);
                 ni.ContextMenuStrip = cm;
 
-                Task.Run(CheckMousePos);
+                CheckMousePos();
             }
         }
 
-        private async void CheckMousePos()
+        private void MainWinPosAndSizeInit()
         {
-            while(trayWin != null)
+            if (Properties.Settings.Default.LaunchFirstTime)
             {
-                if (Forms.Cursor.Position != p)
-                {
-                    if (trayWin != null && trayWin.Visibility == Visibility.Visible)
-                    {
-                        await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
-                      {
+                Properties.Settings.Default.WinSize = new System.Drawing.Size((int)this.MinWidth, (int)this.MinHeight);
+                this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+                Properties.Settings.Default.LaunchFirstTime = false;
+                Properties.Settings.Default.Save();
+            }
 
-                          trayWin.Visibility = Visibility.Hidden;
-                      }));
+            this.Left = Properties.Settings.Default.WinPos.X;
+            this.Top = Properties.Settings.Default.WinPos.Y;
+
+            this.Width = Properties.Settings.Default.WinSize.Width;
+            this.Height = Properties.Settings.Default.WinSize.Height;
+
+            //check if window is out of bounds. This is for, when the user last opened the app in the 2nd monitor and then reopens it with a 1 monitor setup.
+            bool isInScreen = false;
+            for (int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length; i++)
+            {
+                //extra margin to repoisition the app when its outside the screen and only its borders are intersecting the edge.
+                int margin = 32;
+                Rectangle rectA = System.Windows.Forms.Screen.AllScreens[i].WorkingArea;
+                if (rectA.Left < (this.Left + this.Width - margin) && (rectA.Left + rectA.Width) > this.Left + margin &&
+                    rectA.Top < (this.Top + this.Height - margin) && (rectA.Top + rectA.Height) > this.Top + margin)
+                {
+                    isInScreen = true;
+                }
+            }
+
+            //if main window is out of bounds, center it
+            if (!isInScreen)
+            {
+                this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+                Properties.Settings.Default.Save();
+            }
+
+            resizeTimer.Tick += ResizeTimer_Tick;
+            relocationTimer.Tick += RelocationTimer_Tick;
+        }
+        private void CheckMousePos()
+        {
+            //init tokens
+            cts = new CancellationTokenSource();
+            token = cts.Token;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Debug.WriteLine("Operation Started : check mouse pos");
+                    while (!token.IsCancellationRequested)
+                    {
+                        //check mouse pos and hide the visible tray win
+                        if (Forms.Cursor.Position != p)
+                        {
+                            if (trayWin.Visibility == Visibility.Visible)
+                            {
+                                await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
+                                {
+                                    trayWin.Visibility = Visibility.Hidden;
+                                }));
+                            }
+                        }
+
+                        await Task.Delay(500, token);
                     }
                 }
-                await Task.Delay(500);
-            }
+                catch (OperationCanceledException)
+                {
+                    Debug.WriteLine("Operation Cancelled : check mouse pos");
+                    cts.Dispose();
+                    cts = null;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Critical error: " + ex.Message);
+                }
+            });
         }
 
         private void Ni_MouseMove(object sender, Forms.MouseEventArgs e)
@@ -163,6 +215,10 @@ namespace OpenNetMeter.Views
 
         private void Cm_Exit_Click(object sender, EventArgs e)
         {
+            //stop MainWindowTasks
+            if (cts != null)
+                cts.Cancel();
+
             cm.Dispose();
             ni.MouseMove -= Ni_MouseMove;
             ni.Dispose();
