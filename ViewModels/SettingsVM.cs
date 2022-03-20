@@ -90,8 +90,6 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-
-
         private bool setDeskBand;
         public bool SetDeskBand
         {
@@ -122,6 +120,25 @@ namespace OpenNetMeter.ViewModels
                         UnlockFontColorDeskBand = true;
                     }
 
+                }
+            }
+        }
+
+        private bool setDarkMode;
+        public bool SetDarkMode
+        {
+            get { return setDarkMode; }
+
+            set
+            {
+                if (setDarkMode != value)
+                {
+                    setDarkMode = value;
+                    OnPropertyChanged("SetDarkMode");
+
+                    //set the app settings
+                    Properties.Settings.Default.DarkMode = value;
+                    Properties.Settings.Default.Save();
                 }
             }
         }
@@ -176,8 +193,6 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public ulong DownloadSpeed { get; set; }
-        public ulong UploadSpeed { get; set; }
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
@@ -203,8 +218,8 @@ namespace OpenNetMeter.ViewModels
             //network traffic setting
             NetworkTrafficType = Properties.Settings.Default.NetworkType;
 
-            DownloadSpeed = 0;
-            UploadSpeed = 0;
+            //DarkMode setting
+            SetDarkMode = Properties.Settings.Default.DarkMode;
         }
 
         // ---------- DeskBand Stuff ---------------------//

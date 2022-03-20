@@ -25,7 +25,7 @@
         </DataTemplate>
         
     </UserControl.Resources>
-    <Grid Background="#f1f1f1">
+    <Grid Style="{StaticResource PageBackgroundStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition />

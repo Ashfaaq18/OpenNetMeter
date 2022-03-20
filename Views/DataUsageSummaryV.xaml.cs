@@ -21,8 +21,6 @@ namespace OpenNetMeter.Views
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DataUsageSummaryVM dusvm;
 
-        private List<TextBlock> Xlabels;
-        private List<TextBlock> Ylabels;
         private List<Line> GridXLines;
         private List<Line> GridYLines;
         private Rectangle GridBorder;
@@ -36,49 +34,27 @@ namespace OpenNetMeter.Views
             {
                 dusvm = (DataUsageSummaryVM)this.DataContext;
 
-                Ylabels = new List<TextBlock>();
-                Xlabels = new List<TextBlock>();
                 GridXLines = new List<Line>();
                 GridYLines = new List<Line>();
-                ulong temp = 512;
                 maxYtextSize = ShapeMeasure(new TextBlock { Text = "0512Mb", FontSize = 11, Padding = new Thickness(0) });
-                maxYtextSize.Width += 4.0;
+                maxYtextSize.Width += 2.0;
                 dusvm.Xstart = maxYtextSize.Width;
-                double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
-                double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
+                double GraphHeight = GetGraphSize().Height;
+                double GraphWidth = GetGraphSize().Width;
                 dusvm.GraphWidth = GraphWidth;
                 dusvm.GraphHeight = GraphHeight;
                 for (int i = 0; i < GridXCount - 2; i++)
                 {
-                    if (i != 0)
-                    {
-                        if (i % 2 == 0)
-                            temp *= 512;
-                        else
-                            temp *= 2;
-                    }
-                    Ylabels.Add(new TextBlock
-                    {
-                        Text = DataSizeSuffix.SizeSuffixInStr(temp, 1, false),
-                        FontSize = 11,
-                        Padding = new Thickness(0, 0, 4, 0)
-                    });
-                    Size textSize = ShapeMeasure(Ylabels[i]);
-                    Canvas.SetLeft(Ylabels[i], maxYtextSize.Width - textSize.Width);
-                    Canvas.SetTop(Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - i - 2)) - textSize.Height / 2.0);
-
                     GridXLines.Add(new Line
                     {
                         X1 = maxYtextSize.Width,
                         Y1 = (GraphHeight / (GridXCount - 1)) * (i + 1),
-                        X2 = Graph.ActualWidth,
+                        X2 = GraphGrid.ActualWidth,
                         Y2 = (GraphHeight / (GridXCount - 1)) * (i + 1),
                         Stroke = Brushes.LightGray,
                         StrokeThickness = 1
                     });
-
-                    Graph.Children.Add(Ylabels[i]);
-                    Graph.Children.Add(GridXLines[i]);
+                    GraphGrid.Children.Add(GridXLines[i]);
                 }
 
                 for (int i = 0; i < GridYCount; i++)
@@ -105,18 +81,20 @@ namespace OpenNetMeter.Views
                             Stroke = Brushes.LightGray,
                             StrokeThickness = 1
                         });
-                        Graph.Children.Add(GridYLines[i-1]);
+                        GraphGrid.Children.Add(GridYLines[i-1]);
                     }
                 }
 
                 GridBorder = new Rectangle { Width = GraphWidth, Height = GraphHeight, Stroke = Brushes.Black, StrokeThickness = 1 };
                 Canvas.SetLeft(GridBorder, maxYtextSize.Width);
-                Graph.Children.Add(GridBorder);
+                Canvas.SetTop(GridBorder, 0);
+                GraphGrid.Children.Add(GridBorder);
 
                 resizeTimer.Tick += resizeTimer_Tick;
                 Graph_SizeChanged(null,null);
             };
         }
+
 
         private void resizeTimer_Tick(object sender, EventArgs e)
         {
@@ -124,6 +102,12 @@ namespace OpenNetMeter.Views
 
             //Do end of resize processing
             dusvm.pauseDraw = false;
+        }
+
+
+        private Size GetGraphSize()
+        {
+            return new Size(GraphGrid.ActualWidth - 16 - maxYtextSize.Width, GraphGrid.ActualHeight - maxYtextSize.Height);
         }
 
         public Size ShapeMeasure(TextBlock tb)
@@ -147,8 +131,8 @@ namespace OpenNetMeter.Views
                 //Stop drawing graph
                 dusvm.pauseDraw = true;
 
-                double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
-                double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
+                double GraphHeight = GetGraphSize().Height;
+                double GraphWidth = GetGraphSize().Width;
                 dusvm.GraphWidth = GraphWidth;
                 dusvm.GraphHeight = GraphHeight;
 
@@ -164,15 +148,20 @@ namespace OpenNetMeter.Views
                     dusvm.UploadLines[i].To = new Point(dusvm.Xstart + dusvm.UploadPoints[i].To.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].To.Y, GraphHeight));
                 }
 
-                for (int i = 0; i < GridXCount-2; i++)
+                for (int i = 0; i < GridXCount; i++)
                 {
-                    Canvas.SetTop(Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - i - 2)) - maxYtextSize.Height / 2.0);
+                    Canvas.SetTop(dusvm.Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - 1 - i)) - maxYtextSize.Height / 2.0);
+                    Size textSize = ShapeMeasure(dusvm.Ylabels[i]);
+                    Canvas.SetLeft(dusvm.Ylabels[i], Canvas.GetLeft(GridBorder) - textSize.Width - 4.0);
 
-                    GridXLines[i].X1 = maxYtextSize.Width;
-                    GridXLines[i].Y1 = (GraphHeight / (GridXCount - 1)) * (i + 1);
+                    if(i > 0 && i < GridXCount-1)
+                    {
+                        GridXLines[i-1].X1 = maxYtextSize.Width;
+                        GridXLines[i-1].Y1 = (GraphHeight / (GridXCount - 1)) * i;
 
-                    GridXLines[i].X2 = Graph.ActualWidth;
-                    GridXLines[i].Y2 = (GraphHeight / (GridXCount - 1)) * (i + 1);
+                        GridXLines[i-1].X2 = GraphWidth + maxYtextSize.Width;
+                        GridXLines[i-1].Y2 = (GraphHeight / (GridXCount - 1)) * i;
+                    }
                 }
 
                 for (int i = 0; i < GridYCount; i++)

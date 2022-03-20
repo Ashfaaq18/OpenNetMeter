@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:OpenNetMeter"
              Startup="Application_Startup">
     <Application.Resources>
-         
+        <ResourceDictionary Source="Views\ResourceDictionaries\DarkModeRD.xaml"/>
     </Application.Resources>
 </Application>

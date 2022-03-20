@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenNetMeter.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -109,11 +110,14 @@ namespace OpenNetMeter.ViewModels
         public bool pauseDraw { get; set; }
 
         public ObservableCollection<TextBlock> Xlabels { get; private set; }
+        public ObservableCollection<TextBlock> Ylabels { get; private set; }
         public ObservableCollection<MyLine> DownloadLines { get; private set; }
         public ObservableCollection<MyLine> UploadLines { get; private set; }
         public List<MyLine> DownloadPoints { get; private set; }
         public List<MyLine> UploadPoints { get; private set; }
 
+        const int GridXCount = 7;
+        const int GridYCount = 7;
         public int XaxisRange { get; set; }
         public DataUsageSummaryVM(ref TrayPopupVM tpvm_ref)
         {
@@ -128,31 +132,68 @@ namespace OpenNetMeter.ViewModels
             DownloadLines = new ObservableCollection<MyLine>();
             UploadLines = new ObservableCollection<MyLine>();
             Xlabels = new ObservableCollection<TextBlock>();
+            Ylabels = new ObservableCollection<TextBlock>();
             XaxisRange = 60;
             for (int i = 0; i< XaxisRange; i++)
             {
                 DownloadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
                 UploadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
                 DownloadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
-                UploadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
-                if(i%10 == 0)
+                UploadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) }); 
+            }
+
+            //Xlabels
+            for (int i = 0; i < GridYCount; i++)
+            {
+                if (i < GridYCount - 1)
                 {
                     Xlabels.Add(
-                        new TextBlock
-                        {
-                            Text = (i).ToString(),
-                            FontSize = 11,
-                            Padding = new Thickness(0)
-                        });
-                }    
-            }
-            Xlabels.Add(
-                new TextBlock
+                    new TextBlock
+                    {
+                        Text = (i*10).ToString(),
+                        FontSize = 11,
+                        Padding = new Thickness(0)
+                    });
+                }
+                else
                 {
-                    Text = "seconds",
-                    FontSize = 11,
-                    Padding = new Thickness(0)
-                });
+                    Xlabels.Add(
+                    new TextBlock
+                    {
+                        Text = "seconds",
+                        FontSize = 11,
+                        Padding = new Thickness(0)
+                    });
+                }
+            }
+            //Ylabels
+            ulong temp = 1;
+            for (int i = 0; i < GridXCount; i++)
+            {
+                if (i == 0 || i == GridXCount-1)
+                {
+                    Ylabels.Add(new TextBlock
+                    {
+                        Text = "",
+                        FontSize = 11,
+                        Padding = new Thickness(0, 0, 0, 0)
+                    });
+                }
+                else
+                {
+                    if (i % 2 == 0)
+                        temp *= 2;
+                    else
+                        temp *= 512;
+
+                    Ylabels.Add(new TextBlock
+                    {
+                        Text = DataSizeSuffix.SizeSuffixInStr(temp, 1, false),
+                        FontSize = 11,
+                        Padding = new Thickness(0, 0, 0, 0)
+                    });
+                }  
+            }
 
             DrawPoints();
         }
