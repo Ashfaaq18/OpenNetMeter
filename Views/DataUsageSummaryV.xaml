@@ -141,9 +141,52 @@
                             <Label Content="" Background="LightSalmon" Width="50" Height="4"/>
                         </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="1" >
-                        <Canvas x:Name="GraphGrid" SizeChanged="Graph_SizeChanged"/>
-                        <ItemsControl ItemsSource="{Binding UploadLines}">
+
+                    <Grid Grid.Row="1" x:Name="GraphGrid" SizeChanged="Graph_SizeChanged">
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.XLines}" >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="GridXlines" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphXYLines}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.YLines}" >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="GridYlines" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphXYLines}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.Borders}" >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="GridBorder" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphBorder}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <ItemsControl ItemsSource="{Binding MyGraph.UploadLines}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -158,7 +201,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding DownloadLines}">
+                        <ItemsControl ItemsSource="{Binding MyGraph.DownloadLines}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -173,7 +216,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding Xlabels}" Style="{StaticResource GridLabels}">
+                        <ItemsControl ItemsSource="{Binding MyGraph.Xlabels}" Style="{StaticResource GraphLabels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -181,14 +224,14 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding Ylabels}" Style="{StaticResource GridLabels}">
+                        <ItemsControl ItemsSource="{Binding MyGraph.Ylabels}" Style="{StaticResource GraphLabels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
-
+                        
                     </Grid>
                 </Grid>
             </Border>

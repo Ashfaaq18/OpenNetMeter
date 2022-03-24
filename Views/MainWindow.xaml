@@ -12,13 +12,12 @@
         WindowStyle="None"
         UseLayoutRounding="True"
         BorderBrush="Black"
-        BorderThickness="1"
         MinHeight="500" Height="500" MinWidth="670" Width="670"
         SizeChanged="MyWindow_SizeChanged"
         Window.LocationChanged ="MyWindow_LocationChanged">
     
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" GlassFrameThickness="0" />
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" GlassFrameThickness="0" CornerRadius="0"/>
     </WindowChrome.WindowChrome>
     
     <Window.Resources>

@@ -2,15 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
-    <Style TargetType="ItemsControl" x:Key="GridLabels">
-        <Setter Property="TextBlock.Foreground" Value="Black"></Setter>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="TextBlock.Foreground" Value="White"></Setter>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
     <Style TargetType="Line" x:Key="LineColor">
         <Setter Property="Stroke" Value="Black"></Setter>
         <Style.Triggers>
@@ -277,7 +268,34 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
+    <Style TargetType="ItemsControl" x:Key="GraphLabels">
+        <Setter Property="TextBlock.Foreground" Value="Black"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="TextBlock.Foreground" Value="White"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Line" x:Key="GraphXYLines">
+        <Setter Property="Stroke" Value="LightGray"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Stroke" Value="DarkGray"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Line" x:Key="GraphBorder">
+        <Setter Property="Stroke" Value="Black"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Stroke" Value="LightGray"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- -->
     
 </ResourceDictionary>

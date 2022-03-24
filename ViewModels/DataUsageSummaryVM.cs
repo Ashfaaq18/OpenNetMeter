@@ -8,13 +8,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace OpenNetMeter.ViewModels
 {
+
     public class MyLine : INotifyPropertyChanged
     {
         private Point from;
-        public Point From 
+        public Point From
         {
             get { return from; }
             set
@@ -24,9 +28,9 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private Point to; 
-        public Point To 
-        { 
+        private Point to;
+        public Point To
+        {
             get { return to; }
             set
             {
@@ -44,6 +48,34 @@ namespace OpenNetMeter.ViewModels
             }
         }
     }
+    public class Graph
+    {
+        public List<TextBlock> Xlabels { get; private set; }
+        public List<TextBlock> Ylabels { get; private set; }
+        public List<MyLine> XLines { get; set; }
+        public List<MyLine> YLines { get; set; }
+        public List<MyLine> Borders { get; set; }
+        public ObservableCollection<MyLine> DownloadLines { get; private set; }
+        public ObservableCollection<MyLine> UploadLines { get; private set; }
+        public List<MyLine> DownloadPoints { get; private set; }
+        public List<MyLine> UploadPoints { get; private set; }
+
+        public double X = 50;
+        public double Y = 50;
+        public Graph()
+        {
+            DownloadPoints = new List<MyLine>();
+            UploadPoints = new List<MyLine>();
+            DownloadLines = new ObservableCollection<MyLine>();
+            UploadLines = new ObservableCollection<MyLine>();
+            Xlabels = new List<TextBlock>();
+            Ylabels = new List<TextBlock>();
+            XLines = new List<MyLine>();
+            YLines = new List<MyLine>();
+            Borders = new List<MyLine>();
+        }
+    }
+
 
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
@@ -108,17 +140,13 @@ namespace OpenNetMeter.ViewModels
         public double GraphHeight { get; set; }
         public double Xstart { get; set; }
         public bool pauseDraw { get; set; }
+        
+        public Graph MyGraph { get; set; }
 
-        public ObservableCollection<TextBlock> Xlabels { get; private set; }
-        public ObservableCollection<TextBlock> Ylabels { get; private set; }
-        public ObservableCollection<MyLine> DownloadLines { get; private set; }
-        public ObservableCollection<MyLine> UploadLines { get; private set; }
-        public List<MyLine> DownloadPoints { get; private set; }
-        public List<MyLine> UploadPoints { get; private set; }
-
+        private Size maxYtextSize;
         const int GridXCount = 7;
         const int GridYCount = 7;
-        public int XaxisRange { get; set; }
+        public int XaxisResolution { get; set; }
         public DataUsageSummaryVM(ref TrayPopupVM tpvm_ref)
         {
             tpvm = tpvm_ref;
@@ -127,19 +155,20 @@ namespace OpenNetMeter.ViewModels
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
             TotalUsageText = "Total data usage of the past 0 days";
-            DownloadPoints = new List<MyLine>();
-            UploadPoints = new List<MyLine>();
-            DownloadLines = new ObservableCollection<MyLine>();
-            UploadLines = new ObservableCollection<MyLine>();
-            Xlabels = new ObservableCollection<TextBlock>();
-            Ylabels = new ObservableCollection<TextBlock>();
-            XaxisRange = 60;
-            for (int i = 0; i< XaxisRange; i++)
+
+            MyGraph = new Graph();
+
+            XaxisResolution = ( GridYCount - 1 ) * 10;
+            maxYtextSize = ShapeMeasure(new TextBlock { Text = "0512Mb", FontSize = 11, Padding = new Thickness(0) });
+            maxYtextSize.Width += 2.0;
+            Xstart = maxYtextSize.Width;
+
+            for (int i = 0; i< XaxisResolution; i++)
             {
-                DownloadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
-                UploadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
-                DownloadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
-                UploadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) }); 
+                MyGraph.DownloadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                MyGraph.UploadLines.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                MyGraph.DownloadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) });
+                MyGraph.UploadPoints.Add(new MyLine { From = new Point(0, 0), To = new Point(0, 0) }); 
             }
 
             //Xlabels
@@ -147,7 +176,7 @@ namespace OpenNetMeter.ViewModels
             {
                 if (i < GridYCount - 1)
                 {
-                    Xlabels.Add(
+                    MyGraph.Xlabels.Add(
                     new TextBlock
                     {
                         Text = (i*10).ToString(),
@@ -157,7 +186,7 @@ namespace OpenNetMeter.ViewModels
                 }
                 else
                 {
-                    Xlabels.Add(
+                    MyGraph.Xlabels.Add(
                     new TextBlock
                     {
                         Text = "seconds",
@@ -165,14 +194,20 @@ namespace OpenNetMeter.ViewModels
                         Padding = new Thickness(0)
                     });
                 }
+
+                if (i > 0 && i < GridYCount - 1)
+                {
+                    MyGraph.YLines.Add(new MyLine());
+                }
             }
             //Ylabels
             ulong temp = 1;
             for (int i = 0; i < GridXCount; i++)
             {
+
                 if (i == 0 || i == GridXCount-1)
                 {
-                    Ylabels.Add(new TextBlock
+                    MyGraph.Ylabels.Add(new TextBlock
                     {
                         Text = "",
                         FontSize = 11,
@@ -186,18 +221,34 @@ namespace OpenNetMeter.ViewModels
                     else
                         temp *= 512;
 
-                    Ylabels.Add(new TextBlock
+                    MyGraph.Ylabels.Add(new TextBlock
                     {
                         Text = DataSizeSuffix.SizeSuffixInStr(temp, 1, false),
                         FontSize = 11,
                         Padding = new Thickness(0, 0, 0, 0)
                     });
+
+                    MyGraph.XLines.Add(new MyLine());
                 }  
+            }
+
+            for(int i = 0; i<4; i++)
+            {
+                MyGraph.Borders.Add(new MyLine());
             }
 
             DrawPoints();
         }
-        
+        public Size ShapeMeasure(TextBlock tb)
+        {
+            // Measured Size is bounded to be less than maxSize
+            Size maxSize = new Size(
+                 double.PositiveInfinity,
+                 double.PositiveInfinity);
+            tb.Measure(maxSize);
+            return tb.DesiredSize;
+        }
+
         private int drawPointCount = 0;
         public void DrawPoints()
         {
@@ -207,46 +258,46 @@ namespace OpenNetMeter.ViewModels
                 {
                     while (true)
                     {
-                        if (drawPointCount >= XaxisRange)
+                        if (drawPointCount >= XaxisResolution)
                         {
                             await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                             {
                                 //shift xaxis label
-                                for (int i = 0; i<Xlabels.Count/2; i++)
+                                for (int i = 0; i< MyGraph.Xlabels.Count/2; i++)
                                 {
-                                    string temp = Xlabels[i].Text;
-                                    Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
-                                    Xlabels[i + Xlabels.Count / 2].Text = temp;
+                                    string temp = MyGraph.Xlabels[i].Text;
+                                    MyGraph.Xlabels[i].Text = MyGraph.Xlabels[i + MyGraph.Xlabels.Count / 2].Text;
+                                    MyGraph.Xlabels[i + MyGraph.Xlabels.Count / 2].Text = temp;
                                 }
                             }));
 
-                            drawPointCount = XaxisRange/2;
-                            for (int i = 0; i < DownloadPoints.Count; i++)
+                            drawPointCount = XaxisResolution/2;
+                            for (int i = 0; i < MyGraph.DownloadPoints.Count; i++)
                             {
-                                if(i < XaxisRange/2)
+                                if(i < XaxisResolution/2)
                                 {
-                                    DownloadPoints[i].From = new Point(DownloadPoints[XaxisRange / 2 + i].From.X - XaxisRange / 2, DownloadPoints[XaxisRange / 2 + i].From.Y);
-                                    DownloadPoints[i].To = new Point(DownloadPoints[XaxisRange / 2 + i].To.X - XaxisRange / 2, DownloadPoints[XaxisRange / 2 + i].To.Y);
+                                    MyGraph.DownloadPoints[i].From = new Point(MyGraph.DownloadPoints[XaxisResolution / 2 + i].From.X - XaxisResolution / 2, MyGraph.DownloadPoints[XaxisResolution / 2 + i].From.Y);
+                                    MyGraph.DownloadPoints[i].To = new Point(MyGraph.DownloadPoints[XaxisResolution / 2 + i].To.X - XaxisResolution / 2, MyGraph.DownloadPoints[XaxisResolution / 2 + i].To.Y);
                                 }
                                 else
                                 {
-                                    DownloadPoints[i].From = new Point(0, 0);
-                                    DownloadPoints[i].To = new Point(0, 0);
+                                    MyGraph.DownloadPoints[i].From = new Point(0, 0);
+                                    MyGraph.DownloadPoints[i].To = new Point(0, 0);
                                 }
                                 
                             }
 
-                            for (int i = 0; i < UploadPoints.Count; i++)
+                            for (int i = 0; i < MyGraph.UploadPoints.Count; i++)
                             {
-                                if(i < XaxisRange/2)
+                                if(i < XaxisResolution/2)
                                 {
-                                    UploadPoints[i].From = new Point(UploadPoints[XaxisRange / 2 + i].From.X - XaxisRange / 2, UploadPoints[XaxisRange / 2 + i].From.Y);
-                                    UploadPoints[i].To = new Point(UploadPoints[XaxisRange / 2 + i].To.X - XaxisRange / 2, UploadPoints[XaxisRange / 2 + i].To.Y);
+                                    MyGraph.UploadPoints[i].From = new Point(MyGraph.UploadPoints[XaxisResolution / 2 + i].From.X - XaxisResolution / 2, MyGraph.UploadPoints[XaxisResolution / 2 + i].From.Y);
+                                    MyGraph.UploadPoints[i].To = new Point(MyGraph.UploadPoints[XaxisResolution / 2 + i].To.X - XaxisResolution / 2, MyGraph.UploadPoints[XaxisResolution / 2 + i].To.Y);
                                 }
                                 else
                                 {
-                                    UploadPoints[i].From = new Point(0, 0);
-                                    UploadPoints[i].To = new Point(0, 0);
+                                    MyGraph.UploadPoints[i].From = new Point(0, 0);
+                                    MyGraph.UploadPoints[i].To = new Point(0, 0);
                                 }
                                 
                             }
@@ -256,15 +307,15 @@ namespace OpenNetMeter.ViewModels
                                 //reset the chart
                                 await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                                 {
-                                    for (int i = 0; i < DownloadLines.Count; i++)
+                                    for (int i = 0; i < MyGraph.DownloadLines.Count; i++)
                                     {
-                                        DownloadLines[i].From = new Point(Xstart + DownloadPoints[i].From.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(DownloadPoints[i].From.Y, GraphHeight));
-                                        DownloadLines[i].To = new Point(Xstart + DownloadPoints[i].To.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(DownloadPoints[i].To.Y, GraphHeight));
+                                        MyGraph.DownloadLines[i].From = new Point(Xstart + MyGraph.DownloadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.DownloadPoints[i].From.Y, GraphHeight));
+                                        MyGraph.DownloadLines[i].To = new Point(Xstart + MyGraph.DownloadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.DownloadPoints[i].To.Y, GraphHeight));
                                     }
-                                    for (int i = 0; i < UploadLines.Count; i++)
+                                    for (int i = 0; i < MyGraph.UploadLines.Count; i++)
                                     {
-                                        UploadLines[i].From = new Point(Xstart + UploadPoints[i].From.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(UploadPoints[i].From.Y, GraphHeight));
-                                        UploadLines[i].To = new Point(Xstart + UploadPoints[i].To.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(UploadPoints[i].To.Y, GraphHeight));
+                                        MyGraph.UploadLines[i].From = new Point(Xstart + MyGraph.UploadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.UploadPoints[i].From.Y, GraphHeight));
+                                        MyGraph.UploadLines[i].To = new Point(Xstart + MyGraph.UploadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.UploadPoints[i].To.Y, GraphHeight));
                                     }
                                 }));
                             }
@@ -272,30 +323,30 @@ namespace OpenNetMeter.ViewModels
 
                         if(drawPointCount == 0)
                         {
-                            DownloadPoints[drawPointCount].From = new Point(drawPointCount, 0);
-                            DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
-                        
-                            UploadPoints[drawPointCount].From = new Point(drawPointCount, 0);
-                            UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
+                            MyGraph.DownloadPoints[drawPointCount].From = new Point(drawPointCount, 0);
+                            MyGraph.DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+
+                            MyGraph.UploadPoints[drawPointCount].From = new Point(drawPointCount, 0);
+                            MyGraph.UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
                         }
                         else
                         {
-                            DownloadPoints[drawPointCount].From = new Point(drawPointCount, DownloadPoints[drawPointCount-1].To.Y);
-                            DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                            MyGraph.DownloadPoints[drawPointCount].From = new Point(drawPointCount, MyGraph.DownloadPoints[drawPointCount-1].To.Y);
+                            MyGraph.DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
 
-                            UploadPoints[drawPointCount].From = new Point(drawPointCount, UploadPoints[drawPointCount-1].To.Y);
-                            UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
+                            MyGraph.UploadPoints[drawPointCount].From = new Point(drawPointCount, MyGraph.UploadPoints[drawPointCount-1].To.Y);
+                            MyGraph.UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
                         }
                         
                         if (!pauseDraw)
                         {
                             await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                             {
-                                DownloadLines[drawPointCount].From = new Point(Xstart + DownloadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(DownloadPoints[drawPointCount].From.Y, GraphHeight));
-                                DownloadLines[drawPointCount].To = new Point(Xstart + DownloadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(DownloadPoints[drawPointCount].To.Y, GraphHeight));
-                                
-                                UploadLines[drawPointCount].From = new Point(Xstart + UploadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(UploadPoints[drawPointCount].From.Y, GraphHeight));
-                                UploadLines[drawPointCount].To = new Point(Xstart + UploadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisRange), ConvToGraphCoords(UploadPoints[drawPointCount].To.Y, GraphHeight));
+                                MyGraph.DownloadLines[drawPointCount].From = new Point(Xstart + MyGraph.DownloadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.DownloadPoints[drawPointCount].From.Y, GraphHeight));
+                                MyGraph.DownloadLines[drawPointCount].To = new Point(Xstart + MyGraph.DownloadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.DownloadPoints[drawPointCount].To.Y, GraphHeight));
+
+                                MyGraph.UploadLines[drawPointCount].From = new Point(Xstart + MyGraph.UploadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.UploadPoints[drawPointCount].From.Y, GraphHeight));
+                                MyGraph.UploadLines[drawPointCount].To = new Point(Xstart + MyGraph.UploadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(MyGraph.UploadPoints[drawPointCount].To.Y, GraphHeight));
                             
                             }));
                         }
