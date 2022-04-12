@@ -10,40 +10,6 @@
     <!-- UseLayoutRounding="True" <fixes blurry text/> -->
     <UserControl.Resources>
         <vm:UnitConverterBytes x:Key="converterBytes"/>
-        <Grid x:Key="Download_Icon"  x:Shared="False">
-            <Line
-                                X1="0" Y1="0"
-                                X2="0" Y2="20"
-                                Stroke="LightSeaGreen"
-                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="20"
-                                X2="6" Y2="10"
-                                Stroke="LightSeaGreen"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="20"
-                                X2="-6" Y2="10"
-                                Stroke="LightSeaGreen"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-        </Grid>
-        <Grid x:Key="Upload_Icon"  x:Shared="False">
-            <Line
-                                X1="0" Y1="0"
-                                X2="0" Y2="20"
-                                Stroke="LightSalmon"
-                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="-8"
-                                X2="6" Y2="5"
-                                Stroke="LightSalmon"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="-8"
-                                X2="-6" Y2="5"
-                                Stroke="LightSalmon"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-        </Grid>
     </UserControl.Resources>
 
     <Grid>

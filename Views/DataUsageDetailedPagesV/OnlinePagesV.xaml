@@ -11,7 +11,7 @@
         <vm:UnitConverterBytes x:Key="converterBytes"/>
     </UserControl.Resources>
     <Grid>
-        <DataGrid Grid.Row="1" x:Name="AllAppsData" Margin="16,0,16,16" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1">
+        <DataGrid Grid.Row="1" x:Name="AllAppsData" Margin="16,0,16,16" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" />
                 <DataGridTextColumn Header="Current Data Received" Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" />

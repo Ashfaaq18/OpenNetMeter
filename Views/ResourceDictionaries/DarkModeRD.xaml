@@ -296,6 +296,82 @@
         </Style.Triggers>
     </Style>
 
-    <!-- -->
+    <Grid x:Key="Download_Icon"  x:Shared="False">
+        <Line
+                                X1="0" Y1="0"
+                                X2="0" Y2="20"
+                                Stroke="LightSeaGreen"
+                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="20"
+                                X2="6" Y2="10"
+                                Stroke="LightSeaGreen"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="20"
+                                X2="-6" Y2="10"
+                                Stroke="LightSeaGreen"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+    </Grid>
+    <Grid x:Key="Upload_Icon"  x:Shared="False">
+        <Line
+                                X1="0" Y1="0"
+                                X2="0" Y2="20"
+                                Stroke="LightSalmon"
+                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="-8"
+                                X2="6" Y2="5"
+                                Stroke="LightSalmon"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="-8"
+                                X2="-6" Y2="5"
+                                Stroke="LightSalmon"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+    </Grid>
+
+    <!-- Detailed view page -->
+
+    <Style TargetType="{x:Type DataGrid}" x:Key="DGHeaderStyle">
+        <Setter Property="ColumnHeaderStyle" Value="{DynamicResource DGCHeaderStyle}"/>
+        <Setter Property="RowStyle" Value="{DynamicResource DGRowStyle}"/>
+        <Setter Property="RowHeaderWidth" Value="0"/>
+    </Style>
+    <Style x:Key="DGCHeaderStyle" TargetType="DataGridColumnHeader">
+
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="3,2,2,2"/>
+        <Setter Property="Background" Value="#c0e3da" />
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#333333" />
+                <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+        </Style.Triggers>
+        
+    </Style>
+    <Style x:Key="DGRowStyle" TargetType="DataGridRow">
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="Background" Value="WhiteSmoke"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="BorderThickness" Value="0.1"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#333333" />
+                <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
     
+
+
 </ResourceDictionary>
