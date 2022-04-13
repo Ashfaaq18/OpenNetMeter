@@ -13,7 +13,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <Grid Style="{StaticResource PageBackgroundStyle}">
+        <Grid Style="{StaticResource BackgroundColor2}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="160"/>
@@ -43,7 +43,7 @@
                             <RowDefinition Height="0.5*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 10 0" />
+                        <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Margin="10 0 10 0"  Style="{StaticResource FontColor2}"/>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -51,12 +51,12 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Download_Icon" />
-                                <TextBlock  FontSize="20" x:Name="downloadData" Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor}"/>
+                                <TextBlock  FontSize="20" x:Name="downloadData" Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Upload_Icon" />
-                                <TextBlock  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor}"/>
+                                <TextBlock  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -71,7 +71,7 @@
                             <RowDefinition Height="0.25*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding TotalUsageText}"  Foreground="#717171" Margin="10,0" />
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding TotalUsageText}" Margin="10,0" Style="{StaticResource FontColor2}"/>
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -80,12 +80,12 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Download_Icon" />
-                                <TextBlock Grid.Column="0" FontSize="20" x:Name="TotaldownloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor}"/>
+                                <TextBlock Grid.Column="0" FontSize="20" x:Name="TotaldownloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Upload_Icon" />
-                                <TextBlock Grid.Column="1" FontSize="20" x:Name="TotaluploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor}"/>
+                                <TextBlock Grid.Column="1" FontSize="20" x:Name="TotaluploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -101,9 +101,9 @@
                     </Grid.RowDefinitions>
                     <Grid>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15,0">
-                            <TextBlock Text="Download" FontSize="11" VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor}"/>
+                            <TextBlock Text="Download" FontSize="11" VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor1}"/>
                             <Label Content="" Background="LightSeaGreen" Width="50" Height="4"/>
-                            <TextBlock Text="Upload" FontSize="11"  VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor}"/>
+                            <TextBlock Text="Upload" FontSize="11"  VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor1}"/>
                             <Label Content="" Background="LightSalmon" Width="50" Height="4"/>
                         </StackPanel>
                     </Grid>

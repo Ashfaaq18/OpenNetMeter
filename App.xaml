@@ -6,4 +6,5 @@
     <Application.Resources>
         <ResourceDictionary Source="Views\ResourceDictionaries\DarkModeRD.xaml"/>
     </Application.Resources>
+
 </Application>

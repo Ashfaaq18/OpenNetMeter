@@ -25,27 +25,34 @@
         </DataTemplate>
         
     </UserControl.Resources>
-    <Grid Style="{StaticResource PageBackgroundStyle}">
+    <Grid Style="{StaticResource BackgroundColor2}">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition />
-            <RowDefinition Height="25"/>
+            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <Label VerticalAlignment="Center">Detailed Data Usage of </Label>
+            <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Detailed Data Usage of </Label>
             <StackPanel Grid.Row="0" Margin="10" Width="150">
-                <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComboBoxFlatStyle}" />
             </StackPanel>
-            <Label VerticalAlignment="Center">Since: </Label>
-            <Label VerticalAlignment="Center" Content="{Binding Date}"/>
+            <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Since: </Label>
+            <Label VerticalAlignment="Center" Content="{Binding Date}" Style="{StaticResource FontColor1}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
-            <ContentControl x:Name="Profiles_Page" Content="{Binding SelectedViewModel, Mode=OneWay}"/>
+            <ContentControl x:Name="Profiles_Page" Margin="8,0,8,0" Content="{Binding SelectedViewModel, Mode=OneWay}"/>
         </Grid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15,0">
-            <Label>Reset this profile : </Label>
-            <Button Height="20" Width="50" Command="{Binding ResetBtn}">Reset</Button> 
+        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0">
+            <Label Style="{StaticResource FontColor1}">Reset this profile : </Label>
+            <Button Height="24" Width="64" Command="{Binding ResetBtn}" Style="{StaticResource ButtonColor}">
+                <TextBlock FontFamily="Segoe UI" Text="Reset" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                <Button.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="7"/>
+                    </Style>
+                </Button.Resources>
+            </Button> 
         </StackPanel>
 
     </Grid>

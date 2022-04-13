@@ -50,7 +50,7 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
-        <Grid IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource MainWindowBackgroundStyle}">
+        <Grid IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource BackgroundColor1}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="430"/>
@@ -72,19 +72,19 @@
                 </Grid.ColumnDefinitions>
                 <Button Height="35" BorderThickness="0,0,0,5" Margin="0,0,5,0" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSummaryTab}" Command="{Binding DataUsageSumCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe UI" Text="Summary" VerticalAlignment="Center" Style="{StaticResource FontColor}"/>
+                        <TextBlock FontFamily="Segoe UI" Text="Summary" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                     </StackPanel>
                 </Button>
 
                 <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowDetailedTab}" Command="{Binding DataUsageDetCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center" Style="{StaticResource FontColor}"/>
+                        <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                     </StackPanel>
                 </Button>
 
                 <Button Grid.Column="2" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding DataUsageSetCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center" Style="{StaticResource FontColor}"/>
+                        <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                     </StackPanel>
                 </Button>
 
@@ -95,7 +95,7 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="150">
 
             <Button BorderThickness="0" Width="50" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Click="About_Button_Click" Style="{StaticResource ButtonColor}">
-                <TextBlock FontFamily="Segoe UI" Text="About" VerticalAlignment="Center" Style="{StaticResource FontColor}"/>
+                <TextBlock FontFamily="Segoe UI" Text="About" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
             </Button>
 
             <Button Width="50"  
@@ -142,7 +142,7 @@
 
         <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
 
-        <Grid Grid.Row="2" DockPanel.Dock="Bottom"  Style="{StaticResource MainWindowBackgroundStyle}">
+        <Grid Grid.Row="2" DockPanel.Dock="Bottom"  Style="{StaticResource BackgroundColor1}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="104"/>
@@ -151,18 +151,18 @@
                 <ColumnDefinition Width="84"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Style="{StaticResource FontColor}"></TextBlock>
+            <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Style="{StaticResource FontColor1}"></TextBlock>
 
-            <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor}" />
+            <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}" />
             <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor}"/>
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor}"/>
+                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
+                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
             </WrapPanel>
 
-            <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor}"/>
+            <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}"/>
             <WrapPanel Grid.Column="4" VerticalAlignment="Center">
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor}"/>
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor}"/>
+                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
+                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
             </WrapPanel>
         </Grid>
 

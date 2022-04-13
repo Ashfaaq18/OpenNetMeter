@@ -9,6 +9,7 @@ using System.Drawing;
 using OpenNetMeter.Models;
 using System.Windows.Threading;
 using System.Diagnostics;
+using System.Windows.Controls;
 
 namespace OpenNetMeter.Views
 {
@@ -74,11 +75,25 @@ namespace OpenNetMeter.Views
                 ni.Visible = true;
                 ni.DoubleClick += Ni_DoubleClick;
                 ni.MouseMove += Ni_MouseMove;
+                ni.MouseClick += Ni_MouseClick;
                 cm.Items.Add("Open", null, Cm_Open_Click);
                 cm.Items.Add("Exit", null, Cm_Exit_Click);
                 ni.ContextMenuStrip = cm;
-
                 CheckMousePos();
+            }
+        }
+
+        private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case Forms.MouseButtons.Right:
+                    if (Properties.Settings.Default.DarkMode)
+                        ni.ContextMenuStrip.ForeColor = Color.White;
+                    else
+                        ni.ContextMenuStrip.ForeColor = Color.Black;
+                    ni.ContextMenuStrip.Renderer = new CustomSystemTray();
+                    break;
             }
         }
 
