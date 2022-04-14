@@ -7,60 +7,71 @@
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
              xmlns:properties="clr-namespace:OpenNetMeter.Properties"
              mc:Ignorable="d" 
-             Background="#f1f1f1"
              d:DesignHeight="400" d:DesignWidth="650">
     <UserControl.Resources>
         <vm:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
         <properties:Settings x:Key="Settings"/>
     </UserControl.Resources>
-    <Grid Background="White" Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="40"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="40"/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        
-        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="2" Margin="2">
-        </Border>
-        <CheckBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetStartWithWin}" IsEnabled="{Binding UnlockOptionStartWin}"></CheckBox>
-        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="5">
-            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center">Start program on windows startup</TextBlock>
-            <CheckBox Margin="0,5" FontSize="11" IsChecked="{Binding MinimizeOnStart}" IsEnabled="{Binding UnlockMinimizeOnStart}">minimize to system tray on start</CheckBox>
-        </StackPanel>
-        
-        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="2" Margin="2">
-        </Border>
-        <CheckBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDeskBand}"></CheckBox>
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="5">
-            <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center">Show network speed on the Taskbar</TextBlock>
-            <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Foreground="Gray">(not supported in windows 11)</TextBlock>
-            <StackPanel Orientation="Horizontal"  Margin="0,5" >
-                <Label FontSize="11" Padding="0">Font color: </Label>
-                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" FontSize="11" Margin="5,0" Padding="0">Black</RadioButton>
-                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" FontSize="11" Margin="5,0" Padding="0">White</RadioButton>
-                <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=3}" FontSize="11" Margin="5,0" Padding="0">App</RadioButton>
-            </StackPanel>
-        </StackPanel>
+    <Grid Style="{StaticResource BackgroundColor2}">
+        <Border Margin="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="2" Margin="2">
+                <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <CheckBox Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetStartWithWin}" IsEnabled="{Binding UnlockOptionStartWin}"></CheckBox>
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="5">
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Start program on windows startup</TextBlock>
+                    <CheckBox Margin="0,5" FontSize="11" IsChecked="{Binding MinimizeOnStart}" IsEnabled="{Binding UnlockMinimizeOnStart}"  Style="{StaticResource FontColor1}">minimize to system tray on start</CheckBox>
+                </StackPanel>
+
+                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <CheckBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDeskBand}"></CheckBox>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="5">
+                    <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Show network speed on the Taskbar</TextBlock>
+                    <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Style="{StaticResource FontColor2}">(not supported in windows 11)</TextBlock>
+                    <StackPanel Orientation="Horizontal"  Margin="0,5" >
+                        <TextBlock FontSize="11" Padding="0" Style="{StaticResource FontColor1}">Font color:</TextBlock>
+                        <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Black</RadioButton>
+                        <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">White</RadioButton>
+                        <RadioButton IsEnabled="{Binding UnlockFontColorDeskBand}" IsChecked="{Binding Path=FontColorDeskBand, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=3}" FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">App</RadioButton>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" Margin="5">
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Monitor these networks</TextBlock>
+                    <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Style="{StaticResource FontColor2}">(set to external for internet only)</TextBlock>
+                    <StackPanel Orientation="Horizontal"  Margin="0,5" >
+                        <TextBlock FontSize="11" Padding="0" Style="{StaticResource FontColor1}">Network:</TextBlock>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Internal</RadioButton>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">External</RadioButton>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Both</RadioButton>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <CheckBox x:Name="DarkMode"  Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDarkMode}"></CheckBox>
+                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Dark mode</TextBlock>
+                </StackPanel>
+            </Grid>
         </Border>
-        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" Margin="5">
-            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center">Monitor these networks</TextBlock>
-            <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="10" Foreground="Gray">(set to external for internet only)</TextBlock>
-            <StackPanel Orientation="Horizontal"  Margin="0,5" >
-                <Label FontSize="11" Padding="0">Network:</Label>
-                <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" FontSize="11" Margin="5,0" Padding="0">Internal</RadioButton>
-                <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" FontSize="11" Margin="5,0" Padding="0">External</RadioButton>
-                <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" FontSize="11" Margin="5,0" Padding="0">Both</RadioButton>
-            </StackPanel>
-        </StackPanel>
-        
     </Grid>
+    
 </UserControl>

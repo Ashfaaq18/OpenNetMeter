@@ -21,11 +21,7 @@ namespace OpenNetMeter.Views
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DataUsageSummaryVM dusvm;
 
-        private List<TextBlock> Xlabels;
-        private List<TextBlock> Ylabels;
-        private List<Line> GridXLines;
-        private List<Line> GridYLines;
-        private Rectangle GridBorder;
+        //private Rectangle GridBorder;
         private Size maxYtextSize;
         const int GridXCount = 7;
         const int GridYCount = 7;
@@ -36,87 +32,24 @@ namespace OpenNetMeter.Views
             {
                 dusvm = (DataUsageSummaryVM)this.DataContext;
 
-                Ylabels = new List<TextBlock>();
-                Xlabels = new List<TextBlock>();
-                GridXLines = new List<Line>();
-                GridYLines = new List<Line>();
-                ulong temp = 512;
                 maxYtextSize = ShapeMeasure(new TextBlock { Text = "0512Mb", FontSize = 11, Padding = new Thickness(0) });
-                maxYtextSize.Width += 4.0;
+                maxYtextSize.Width += 2.0;
                 dusvm.Xstart = maxYtextSize.Width;
-                double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
-                double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
+                double GraphHeight = GetGraphSize().Height;
+                double GraphWidth = GetGraphSize().Width;
                 dusvm.GraphWidth = GraphWidth;
                 dusvm.GraphHeight = GraphHeight;
-                for (int i = 0; i < GridXCount - 2; i++)
-                {
-                    if (i != 0)
-                    {
-                        if (i % 2 == 0)
-                            temp *= 512;
-                        else
-                            temp *= 2;
-                    }
-                    Ylabels.Add(new TextBlock
-                    {
-                        Text = DataSizeSuffix.SizeSuffixInStr(temp, 1, false),
-                        FontSize = 11,
-                        Padding = new Thickness(0, 0, 4, 0)
-                    });
-                    Size textSize = ShapeMeasure(Ylabels[i]);
-                    Canvas.SetLeft(Ylabels[i], maxYtextSize.Width - textSize.Width);
-                    Canvas.SetTop(Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - i - 2)) - textSize.Height / 2.0);
 
-                    GridXLines.Add(new Line
-                    {
-                        X1 = maxYtextSize.Width,
-                        Y1 = (GraphHeight / (GridXCount - 1)) * (i + 1),
-                        X2 = Graph.ActualWidth,
-                        Y2 = (GraphHeight / (GridXCount - 1)) * (i + 1),
-                        Stroke = Brushes.LightGray,
-                        StrokeThickness = 1
-                    });
-
-                    Graph.Children.Add(Ylabels[i]);
-                    Graph.Children.Add(GridXLines[i]);
-                }
-
-                for (int i = 0; i < GridYCount; i++)
-                {
-                    if (i < GridYCount - 1)
-                    {
-                        Canvas.SetTop(dusvm.Xlabels[i], GraphHeight);
-                        Canvas.SetLeft(dusvm.Xlabels[i], (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width - ShapeMeasure(dusvm.Xlabels[i]).Width / 2.0);
-                    }
-                    else
-                    {
-                        Canvas.SetTop(dusvm.Xlabels[i], GraphHeight);
-                        Canvas.SetLeft(dusvm.Xlabels[i], GraphWidth + maxYtextSize.Width / 4);
-                    }
-
-                    if( i > 0 && i < GridYCount-1)
-                    {
-                        GridYLines.Add(new Line
-                        {
-                            X1 = (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width,
-                            Y1 = 0,
-                            X2 = (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width,
-                            Y2 = GraphHeight,
-                            Stroke = Brushes.LightGray,
-                            StrokeThickness = 1
-                        });
-                        Graph.Children.Add(GridYLines[i-1]);
-                    }
-                }
-
-                GridBorder = new Rectangle { Width = GraphWidth, Height = GraphHeight, Stroke = Brushes.Black, StrokeThickness = 1 };
-                Canvas.SetLeft(GridBorder, maxYtextSize.Width);
-                Graph.Children.Add(GridBorder);
+                //GridBorder = new Rectangle { Width = GraphWidth, Height = GraphHeight, Stroke = Brushes.Black, StrokeThickness = 1 };
+                //Canvas.SetLeft(GridBorder, maxYtextSize.Width);
+               // Canvas.SetTop(GridBorder, 0);
+                //CanvasForBorder.Children.Add(GridBorder);
 
                 resizeTimer.Tick += resizeTimer_Tick;
                 Graph_SizeChanged(null,null);
             };
         }
+
 
         private void resizeTimer_Tick(object sender, EventArgs e)
         {
@@ -124,6 +57,12 @@ namespace OpenNetMeter.Views
 
             //Do end of resize processing
             dusvm.pauseDraw = false;
+        }
+
+
+        private Size GetGraphSize()
+        {
+            return new Size(GraphGrid.ActualWidth - 16 - maxYtextSize.Width, GraphGrid.ActualHeight - maxYtextSize.Height);
         }
 
         public Size ShapeMeasure(TextBlock tb)
@@ -135,71 +74,88 @@ namespace OpenNetMeter.Views
             tb.Measure(maxSize);
             return tb.DesiredSize;
         }
-        //scale the graph coordinates
+
+        //scale the MyGraph coordinates
         private void Graph_SizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
         {
-            if(dusvm != null)
+            if (dusvm != null)
             {
                 resizeTimer.IsEnabled = true;
                 resizeTimer.Stop();
                 resizeTimer.Start();
 
-                //Stop drawing graph
+                //Stop drawing MyGraph
                 dusvm.pauseDraw = true;
 
-                double GraphHeight = Graph.ActualHeight - maxYtextSize.Height;
-                double GraphWidth = Graph.ActualWidth - maxYtextSize.Width;
+                double GraphHeight = GetGraphSize().Height;
+                double GraphWidth = GetGraphSize().Width;
                 dusvm.GraphWidth = GraphWidth;
                 dusvm.GraphHeight = GraphHeight;
 
-                for (int i = 0; i < dusvm.DownloadLines.Count; i++) //scale the download line
+                for (int i = 0; i < dusvm.MyGraph.DownloadLines.Count; i++) //scale the download line
                 {
-                    dusvm.DownloadLines[i].From = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].From.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].From.Y, GraphHeight));
-                    dusvm.DownloadLines[i].To = new Point(dusvm.Xstart + dusvm.DownloadPoints[i].To.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.DownloadPoints[i].To.Y, GraphHeight));
-                
+                    dusvm.MyGraph.DownloadLines[i].From = new Point(dusvm.Xstart + dusvm.MyGraph.DownloadPoints[i].From.X * (GraphWidth / dusvm.XaxisResolution), dusvm.ConvToGraphCoords((ulong)dusvm.MyGraph.DownloadPoints[i].From.Y, GraphHeight));
+                    dusvm.MyGraph.DownloadLines[i].To = new Point(dusvm.Xstart + dusvm.MyGraph.DownloadPoints[i].To.X * (GraphWidth / dusvm.XaxisResolution), dusvm.ConvToGraphCoords((ulong)dusvm.MyGraph.DownloadPoints[i].To.Y, GraphHeight));
+
                 }
-                for (int i = 0; i < dusvm.UploadLines.Count; i++) //scale the upload line
+                for (int i = 0; i < dusvm.MyGraph.UploadLines.Count; i++) //scale the upload line
                 {
-                    dusvm.UploadLines[i].From = new Point(dusvm.Xstart + dusvm.UploadPoints[i].From.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].From.Y, GraphHeight));
-                    dusvm.UploadLines[i].To = new Point(dusvm.Xstart + dusvm.UploadPoints[i].To.X * (GraphWidth / dusvm.XaxisRange), dusvm.ConvToGraphCoords((ulong)dusvm.UploadPoints[i].To.Y, GraphHeight));
-                }
-
-                for (int i = 0; i < GridXCount-2; i++)
-                {
-                    Canvas.SetTop(Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - i - 2)) - maxYtextSize.Height / 2.0);
-
-                    GridXLines[i].X1 = maxYtextSize.Width;
-                    GridXLines[i].Y1 = (GraphHeight / (GridXCount - 1)) * (i + 1);
-
-                    GridXLines[i].X2 = Graph.ActualWidth;
-                    GridXLines[i].Y2 = (GraphHeight / (GridXCount - 1)) * (i + 1);
+                    dusvm.MyGraph.UploadLines[i].From = new Point(dusvm.Xstart + dusvm.MyGraph.UploadPoints[i].From.X * (GraphWidth / dusvm.XaxisResolution), dusvm.ConvToGraphCoords((ulong)dusvm.MyGraph.UploadPoints[i].From.Y, GraphHeight));
+                    dusvm.MyGraph.UploadLines[i].To = new Point(dusvm.Xstart + dusvm.MyGraph.UploadPoints[i].To.X * (GraphWidth / dusvm.XaxisResolution), dusvm.ConvToGraphCoords((ulong)dusvm.MyGraph.UploadPoints[i].To.Y, GraphHeight));
                 }
 
+
+                //scale the X lines
+                for (int i = 0; i < GridXCount; i++)
+                {
+                    Canvas.SetTop(dusvm.MyGraph.Ylabels[i], ((GraphHeight / (GridXCount - 1)) * (GridXCount - 1 - i)) - maxYtextSize.Height / 2.0);
+                    Size textSize = ShapeMeasure(dusvm.MyGraph.Ylabels[i]);
+                    Canvas.SetLeft(dusvm.MyGraph.Ylabels[i], maxYtextSize.Width - textSize.Width - 4.0);
+
+                    if (i > 0 && i < GridXCount - 1)
+                    {
+                        dusvm.MyGraph.XLines[i - 1].From = new Point(maxYtextSize.Width, (GraphHeight / (GridXCount - 1)) * i);
+                        dusvm.MyGraph.XLines[i - 1].To = new Point(GraphWidth + maxYtextSize.Width, (GraphHeight / (GridXCount - 1)) * i);
+                    }
+                }
+
+                //scale the Y lines
                 for (int i = 0; i < GridYCount; i++)
                 {
                     if (i < GridYCount - 1)
                     {
-                        Canvas.SetTop(dusvm.Xlabels[i], GraphHeight);
-                        Canvas.SetLeft(dusvm.Xlabels[i], (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width - dusvm.Xlabels[i].ActualWidth / 2.0);
+                        Canvas.SetTop(dusvm.MyGraph.Xlabels[i], GraphHeight);
+                        Canvas.SetLeft(dusvm.MyGraph.Xlabels[i], (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width - dusvm.MyGraph.Xlabels[i].ActualWidth / 2.0);
                     }
                     else
                     {
-                        Canvas.SetTop(dusvm.Xlabels[i], GraphHeight);
-                        Canvas.SetLeft(dusvm.Xlabels[i], GraphWidth + maxYtextSize.Width / 4);
+                        Canvas.SetTop(dusvm.MyGraph.Xlabels[i], GraphHeight);
+                        Canvas.SetLeft(dusvm.MyGraph.Xlabels[i], GraphWidth + maxYtextSize.Width / 4);
                     }
-                    
+
                     if (i > 0 && i < GridYCount - 1)
                     {
-                        GridYLines[i-1].X1 = (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width;
-                        GridYLines[i-1].Y1 = 0;
-
-                        GridYLines[i-1].X2 = (GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width;
-                        GridYLines[i-1].Y2 = GraphHeight;
+                        dusvm.MyGraph.YLines[i - 1].From = new Point((GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width, 0);
+                        dusvm.MyGraph.YLines[i - 1].To = new Point((GraphWidth / (GridYCount - 1)) * i + maxYtextSize.Width, GraphHeight);
                     }
                 }
 
-                GridBorder.Width = GraphWidth;
-                GridBorder.Height = GraphHeight;
+                //scale the border
+
+                //Y lines
+                dusvm.MyGraph.Borders[0].From = new Point(maxYtextSize.Width, 0);
+                dusvm.MyGraph.Borders[0].To = new Point(maxYtextSize.Width, GraphHeight);
+
+                dusvm.MyGraph.Borders[1].From = new Point((GraphWidth / (GridYCount - 1)) * (GridYCount - 1) + maxYtextSize.Width, 0);
+                dusvm.MyGraph.Borders[1].To = new Point((GraphWidth / (GridYCount - 1)) * (GridYCount - 1) + maxYtextSize.Width, GraphHeight);
+
+                //X lines
+                dusvm.MyGraph.Borders[2].From = new Point(maxYtextSize.Width, 0);
+                dusvm.MyGraph.Borders[2].To = new Point(GraphWidth + maxYtextSize.Width, 0);
+
+                dusvm.MyGraph.Borders[3].From = new Point(maxYtextSize.Width, GraphHeight);
+                dusvm.MyGraph.Borders[3].To = new Point(GraphWidth + maxYtextSize.Width, GraphHeight);
+
             }
         }
        

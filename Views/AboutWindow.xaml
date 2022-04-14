@@ -30,7 +30,7 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Background="White">
+            <Grid Grid.Row="0" IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource BackgroundColor1}">
                 <Button Width="50" Height="32" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Exit_Button_Click" >
                     <Button.Style>
                         <Style TargetType="{x:Type Button}">
@@ -58,22 +58,23 @@
                     </Button.Style>
                     <Button.Content >
                         <Grid Margin="20,11">
-                            <Line X1="0" Y1="0" Y2="1" X2="1" Stroke="Black" StrokeThickness="1" Stretch="Fill" />
-                            <Line Y1="1" X2="1" Stroke="Black" StrokeThickness="1" Stretch="Fill" />
+                            <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                            <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
                         </Grid>
                     </Button.Content>
                 </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" >
                     <Image Source="{Binding Source={x:Static res:Resources.x64}, Converter={StaticResource BitmapToImage}}" Height="64" Width="64" Margin="10,0"/>
                     <TextBlock Text="OpenNetMeter" FontFamily="Segoe UI" FontWeight="Bold" 
-                    FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#4F5050"/>
+                    FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource FontColor3}"/>
                 </StackPanel>
             </Grid>
-            <Grid Grid.Row="1"  Background="WhiteSmoke">
-                <Grid Margin="15" Background="White">
-                    <StackPanel>
-                        <TextBlock Text="{StaticResource AppVersion}"/>
-                        <TextBlock>
+            <Grid Grid.Row="1" Style="{StaticResource BackgroundColor2}">
+
+                <Border Margin="8" Style="{StaticResource BorderStyle1}">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="{StaticResource AppVersion}" Style="{StaticResource FontColor1}"/>
+                        <TextBlock  Style="{StaticResource FontColor1}">
                             <LineBreak/>
                             This product is created and maintained by Ashfaaq Riphque.
                             <LineBreak/>
@@ -82,12 +83,13 @@
                             <LineBreak/>
                              ideas for improvements, feel free create an issue at,
                             <LineBreak/>
-                            <Hyperlink NavigateUri="https://github.com/Ashfaaq18/OpenNetMeter" RequestNavigate="Hyperlink_RequestNavigate">
+                            <Hyperlink NavigateUri="https://github.com/Ashfaaq18/OpenNetMeter" RequestNavigate="Hyperlink_RequestNavigate" Style="{StaticResource FontColor4}">
                                 https://github.com/Ashfaaq18/OpenNetMeter
                             </Hyperlink>
                         </TextBlock>
                     </StackPanel>
-                </Grid>
+                </Border>
+                
             </Grid>
         </Grid>
     </Border>

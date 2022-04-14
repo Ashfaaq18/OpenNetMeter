@@ -31,7 +31,7 @@
         <vm:UnitConverterBytes x:Key="converterBytes"/>
         <vm:UnitConverterBits x:Key="converterBits"/>
     </Window.Resources>
-    <Grid>
+    <Grid Style="{StaticResource BackgroundColor2}">
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
@@ -39,23 +39,22 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <Label Padding="0" >D-Volume : </Label>
-            <Label Padding="5,0,0,0"  Content="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"/>
+            <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-Volume : </TextBlock>
+            <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <Label Padding="0">U-Volume : </Label>
-            <Label Padding="5,0,0,0"  Content="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center"/>
+            <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-Volume : </TextBlock>
+            <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
         </StackPanel>
         <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <Label Padding="0">D-Speed : </Label>
-            <Label Padding="5,0,0,0"  Content="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
-            <Label Padding="0">ps</Label>
+            <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-Speed : </TextBlock>
+            <TextBlock Padding="5,0,0,0"  Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+            <TextBlock Padding="0" Style="{StaticResource FontColor1}">ps</TextBlock>
         </StackPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <Label Padding="0" >U-Speed : </Label>
-            <Label Padding="5,0,0,0" Content="{Binding UploadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
-            <Label Padding="0" VerticalAlignment="Center">ps</Label>
+            <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-Speed :</TextBlock>
+            <TextBlock Padding="5,0,0,0" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
+            <TextBlock Padding="0" VerticalAlignment="Center" Style="{StaticResource FontColor1}">ps</TextBlock>
         </StackPanel>
-
     </Grid>
 </Window>

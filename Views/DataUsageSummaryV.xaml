@@ -10,44 +10,10 @@
     <!-- UseLayoutRounding="True" <fixes blurry text/> -->
     <UserControl.Resources>
         <vm:UnitConverterBytes x:Key="converterBytes"/>
-        <Grid x:Key="Download_Icon"  x:Shared="False">
-            <Line
-                                X1="0" Y1="0"
-                                X2="0" Y2="20"
-                                Stroke="LightSeaGreen"
-                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="20"
-                                X2="6" Y2="10"
-                                Stroke="LightSeaGreen"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="20"
-                                X2="-6" Y2="10"
-                                Stroke="LightSeaGreen"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-        </Grid>
-        <Grid x:Key="Upload_Icon"  x:Shared="False">
-            <Line
-                                X1="0" Y1="0"
-                                X2="0" Y2="20"
-                                Stroke="LightSalmon"
-                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="-8"
-                                X2="6" Y2="5"
-                                Stroke="LightSalmon"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-            <Line
-                                X1="0" Y1="-8"
-                                X2="-6" Y2="5"
-                                Stroke="LightSalmon"
-                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
-        </Grid>
     </UserControl.Resources>
 
     <Grid>
-        <Grid Background="#f1f1f1">
+        <Grid Style="{StaticResource BackgroundColor2}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="160"/>
@@ -69,10 +35,7 @@
                     <ColumnDefinition Width="290"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Background="White" CornerRadius="10">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
-                    </Border.Effect>
+                <Border Style="{StaticResource BorderStyle1}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.5*"/>
@@ -80,7 +43,7 @@
                             <RowDefinition Height="0.5*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Foreground="#717171" Margin="10 0 10 0" />
+                        <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Margin="10 0 10 0"  Style="{StaticResource FontColor2}"/>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -88,22 +51,19 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Download_Icon" />
-                                <Label  FontSize="20" x:Name="downloadData" Content="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }"></Label>
+                                <TextBlock  FontSize="20" x:Name="downloadData" Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Upload_Icon" />
-                                <Label  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"></Label>
+                                <TextBlock  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
 
                 </Border>
 
-                <Border Grid.Column="2" Background="White" CornerRadius="10">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
-                    </Border.Effect>
+                <Border Grid.Column="2" Style="{StaticResource BorderStyle1}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.25*"/>
@@ -111,7 +71,7 @@
                             <RowDefinition Height="0.25*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding TotalUsageText}"  Foreground="#717171" Margin="10,0" />
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding TotalUsageText}" Margin="10,0" Style="{StaticResource FontColor2}"/>
 
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -120,22 +80,19 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Download_Icon" />
-                                <Label Grid.Column="0" FontSize="20" x:Name="TotaldownloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }"></Label>
+                                <TextBlock Grid.Column="0" FontSize="20" x:Name="TotaldownloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <StaticResource ResourceKey="Upload_Icon" />
-                                <Label Grid.Column="1" FontSize="20" x:Name="TotaluploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding TotalUploadData, Converter={StaticResource converterBytes} }"></Label>
+                                <TextBlock Grid.Column="1" FontSize="20" x:Name="TotaluploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
                 </Border>
 
             </Grid>
-            <Border Grid.Row="3"  Grid.Column="1" Background="White" CornerRadius="10">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
-                </Border.Effect>
+            <Border Grid.Row="3"  Grid.Column="1" Style="{StaticResource BorderStyle1}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="20"/>
@@ -144,59 +101,102 @@
                     </Grid.RowDefinitions>
                     <Grid>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15,0">
-                            <Label Content="Download" FontSize="11" VerticalAlignment="Center" Padding="5,0"/>
+                            <TextBlock Text="Download" FontSize="11" VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor1}"/>
                             <Label Content="" Background="LightSeaGreen" Width="50" Height="4"/>
-                            <Label Content="Upload" FontSize="11"  VerticalAlignment="Center" Padding="5,0"/>
+                            <TextBlock Text="Upload" FontSize="11"  VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor1}"/>
                             <Label Content="" Background="LightSalmon" Width="50" Height="4"/>
                         </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="1" x:Name="GraphGrid">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="15"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid Grid.Column="0">
-                            <Canvas x:Name="Graph" SizeChanged="Graph_SizeChanged"/>
-                            
-                            <ItemsControl ItemsSource="{Binding UploadLines}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Line x:Name="UploadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+
+                    <Grid Grid.Row="1" x:Name="GraphGrid" SizeChanged="Graph_SizeChanged">
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.XLines}" >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="GridXlines" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphXYLines}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.YLines}" >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="GridYlines" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphXYLines}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.Borders}" >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="GridBorder" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphBorder}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <ItemsControl ItemsSource="{Binding MyGraph.UploadLines}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="UploadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
                                             X2="{Binding To.X}" Y2="{Binding To.Y}"
                                             Stroke="LightSalmon" StrokeThickness="3" StrokeLineJoin="Round" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            
-                            <ItemsControl ItemsSource="{Binding DownloadLines}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.DownloadLines}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
                                             X2="{Binding To.X}" Y2="{Binding To.Y}"
                                             Stroke="LightSeaGreen" StrokeThickness="3" StrokeLineJoin="Round" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                            <ItemsControl ItemsSource="{Binding Xlabels}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
-                            
-                        </Grid>
+                        <ItemsControl ItemsSource="{Binding MyGraph.Xlabels}" Style="{StaticResource GraphLabels}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding MyGraph.Ylabels}" Style="{StaticResource GraphLabels}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
                         
                     </Grid>
                 </Grid>
