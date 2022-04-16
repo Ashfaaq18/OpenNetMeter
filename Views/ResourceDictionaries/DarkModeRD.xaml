@@ -51,7 +51,7 @@
         <Setter Property="Background" Value="White"></Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#0d0d0d"></Setter>
+                <Setter Property="Background" Value="#101010"></Setter>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -93,7 +93,7 @@
                     <Condition Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="DarkSalmon"/>
+                <Setter Property="Background" Value="#c97c5d"/>
             </MultiDataTrigger>
         </Style.Triggers>
     </Style>
@@ -151,7 +151,7 @@
                     <Condition Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="DarkSalmon"/>
+                <Setter Property="Background" Value="#c97c5d"/>
                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
             </MultiDataTrigger>
 
@@ -210,7 +210,7 @@
                     <Condition Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="DarkSalmon"/>
+                <Setter Property="Background" Value="#c97c5d"/>
                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
             </MultiDataTrigger>
 
@@ -269,7 +269,7 @@
                     <Condition Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="DarkSalmon"/>
+                <Setter Property="Background" Value="#c97c5d"/>
                 <Setter Property="BorderBrush" Value="#f1f1f1"/>
             </MultiDataTrigger>
             
