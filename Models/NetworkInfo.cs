@@ -23,6 +23,7 @@ namespace OpenNetMeter.Models
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
 
+        private byte[] defaultIP; 
         private byte[] localIP;
         private byte[] localIPMask;
 
@@ -57,6 +58,8 @@ namespace OpenNetMeter.Models
         }
         public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
         {
+            defaultIP = new byte[] { 0, 0, 0, 0 };
+
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
 
@@ -124,7 +127,7 @@ namespace OpenNetMeter.Models
         
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
-            byte[] tempIP;
+            byte[] tempIP = defaultIP;
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface n in adapters)
             {
@@ -165,12 +168,13 @@ namespace OpenNetMeter.Models
                                 }
                             }
                         }
-
                     }
                 }
             }
 
-            if (!NetworkInterface.GetIsNetworkAvailable())
+            //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
+            //adapterProperties.GatewayAddresses.FirstOrDefault() in the above foreach loop
+            if (!NetworkInterface.GetIsNetworkAvailable() || ByteArrayCompare(tempIP, defaultIP))
             {
                 localIP = new byte[]{0,0,0,0};
                 Debug.WriteLine("No connection");
