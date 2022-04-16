@@ -178,11 +178,12 @@ namespace OpenNetMeter.Models
             {
                 localIP = new byte[]{0,0,0,0};
                 Debug.WriteLine("No connection");
-                SetNetworkStatus(false);
+                if (IsNetworkOnline != "Disconnected")
+                    SetNetworkStatus(false);
             }
         }
 
-        private void SetNetworkStatus(bool isOnline)
+        public void SetNetworkStatus(bool isOnline)
         {
             if (isOnline)
             {
@@ -223,37 +224,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        public void ResetWriteFileAndSpeed()
-        {
-            string completePath = Path.Combine(FileIO.FolderPath(), adapterName + ".onm");
-
-            if (IsNetworkOnline != "Disconnected")
-            {
-                //stop counters
-                if (cts_file != null)
-                    cts_file.Cancel(); //stop writing to file
-                if (cts_speed != null)
-                    cts_speed.Cancel(); //stop calculating network speed
-
-                //reset speed counters
-                DownloadSpeed = 0;
-                UploadSpeed = 0;
-                //recreate file
-                FileIO.DeleteFile(completePath);
-                FileIO.CreateFile(completePath);
-
-                //restart write file and capturing speed
-                SetNetworkStatus(true);
-                CaptureNetworkSpeed();
-            }
-            else
-            {
-                //recreate file
-                FileIO.DeleteFile(completePath);
-                FileIO.CreateFile(completePath);
-            }
-        }
-        public void WriteToFile()
+        private void WriteToFile()
         {
             //init tokens
             cts_file = new CancellationTokenSource();

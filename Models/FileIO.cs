@@ -90,7 +90,8 @@ namespace OpenNetMeter.Models
                         dusvm_ref.TotalUploadData = data.Item2;
 
                         DateTime dateTime = File.GetCreationTime(completePath);
-                        dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
+                        int timeDiffInMins = (int)((DateToMins(DateTime.Now) - DateToMins(dateTime))/(60.0 * 24.0));
+                        dusvm_ref.TotalUsageText = "Total data usage of the past " + timeDiffInMins.ToString() + " days";
                     }
                 }
                 catch (Exception e)
@@ -100,10 +101,16 @@ namespace OpenNetMeter.Models
             }
             else
             {
-                File.Create(completePath);
+                CreateFile(completePath);
                 DateTime dateTime = File.GetCreationTime(completePath);
-                dusvm_ref.TotalUsageText = "Total data usage of the past " + (DateTime.Now.DayOfYear - dateTime.DayOfYear).ToString() + " days";
+                int timeDiffInMins = (int)((DateToMins(DateTime.Now) - DateToMins(dateTime)) / (60.0 * 24.0));
+                dusvm_ref.TotalUsageText = "Total data usage of the past " + timeDiffInMins.ToString() + " days";
             }
+        }
+
+        private static double DateToMins(DateTime t1)
+        {
+            return t1.Minute + 60 * ( t1.Hour + 24 * ( t1.Day + 30 * ( t1.Month + 12 * ( t1.Year ) ) ) ) ;
         }
 
         //read the file data into a collection
@@ -163,6 +170,7 @@ namespace OpenNetMeter.Models
             {
                 var file = File.Create(pathString);
                 file.Close();
+                File.SetCreationTime(pathString, DateTime.Now);
             }
             catch (Exception ex) { Debug.WriteLine("Cant create: " + ex.Message); }
         }

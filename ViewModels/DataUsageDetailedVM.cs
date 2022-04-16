@@ -143,16 +143,10 @@ namespace OpenNetMeter.ViewModels
         {
             if(SelectedProfile == CurrentConnection)
             {
-                dusvm.CurrentSessionDownloadData = 0;
-                dusvm.CurrentSessionUploadData = 0;
-                dusvm.TotalDownloadData = 0;
-                dusvm.TotalUploadData = 0;
-                foreach (var row in OnProfVM.MyProcesses.ToList())
-                {
-                    OnProfVM.MyProcesses.Remove(row.Key);
-                }
-
-                netInfo.ResetWriteFileAndSpeed();
+                netInfo.SetNetworkStatus(false);
+                FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
+                netInfo.SetNetworkStatus(true); //recreates file inside this function
+                netInfo.CaptureNetworkSpeed();
             }
             else
             {
