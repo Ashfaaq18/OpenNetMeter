@@ -57,7 +57,7 @@ namespace OpenNetMeter.Views
             {
                 InitializeComponent();
 
-                confDialog = new ConfirmationDialog();
+                confDialog = new ConfirmationDialog(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
                 trayWin = new TrayPopupWinV();
                 navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = navWin;
@@ -289,6 +289,9 @@ namespace OpenNetMeter.Views
             //Do end of resize processing
             Properties.Settings.Default.WinSize =  new System.Drawing.Size((int)this.Width, (int)this.Height);
             Properties.Settings.Default.Save();
+
+            //pass parent window dimensions to confirmation dialog
+            confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -305,6 +308,9 @@ namespace OpenNetMeter.Views
             //Do end of relocation processing
             Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
             Properties.Settings.Default.Save();
+
+            //pass parent window dimensions to confirmation dialog
+            confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_LocationChanged(object sender, EventArgs e)

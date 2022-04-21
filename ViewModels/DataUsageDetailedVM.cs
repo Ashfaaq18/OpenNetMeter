@@ -199,7 +199,7 @@ namespace OpenNetMeter.ViewModels
                     if(GetConfirmBtnVal == "Yes")
                         ResetTotalData();
                     else
-                        cdvm.IsVisible = System.Windows.Visibility.Hidden;
+                        cdvm.IsVisible = System.Windows.Visibility.Collapsed;
                     break;
                 default:
                     break;

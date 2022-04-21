@@ -8,8 +8,11 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
-        Title="Confirm" WindowStartupLocation="CenterOwner"
-        Visibility="{Binding IsVisible , Mode=TwoWay}">
+        Title="Confirm" 
+        Topmost="True"
+        Visibility="{Binding IsVisible , Mode=TwoWay}"
+        IsVisibleChanged="Window_IsVisibleChanged"
+        WindowStartupLocation="Manual" Loaded="Window_Loaded">
     
     <Grid>
         <Grid.RowDefinitions>
@@ -17,7 +20,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid>
-            <Grid Grid.Row="0" IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource BackgroundColor1}">
+            <Grid Grid.Row="0" IsHitTestVisible="True" Style="{StaticResource BackgroundColor1}">
                 <Button Width="50" Height="32" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Exit_Button_Click" >
                     <Button.Style>
                         <Style TargetType="{x:Type Button}">
