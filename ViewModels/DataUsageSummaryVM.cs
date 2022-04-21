@@ -79,8 +79,6 @@ namespace OpenNetMeter.ViewModels
 
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        public TrayPopupVM tpvm;
-
         private ulong totalDownloadData;
         public ulong TotalDownloadData
         {
@@ -109,7 +107,6 @@ namespace OpenNetMeter.ViewModels
             set
             {
                 currentSessionDownloadData = value;
-                tpvm.CurrentSessionDownloadData = value;
                 OnPropertyChanged("CurrentSessionDownloadData");
             }
         }
@@ -120,7 +117,6 @@ namespace OpenNetMeter.ViewModels
             set
             {
                 currentSessionUploadData = value;
-                tpvm.CurrentSessionUploadData = value;
                 OnPropertyChanged("CurrentSessionUploadData");
             }
         }
@@ -136,6 +132,9 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        public ulong UploadSpeed { get; set; }
+        public ulong DownloadSpeed { get; set; }
+
         public double GraphWidth { get; set; }
         public double GraphHeight { get; set; }
         public double Xstart { get; set; }
@@ -147,13 +146,14 @@ namespace OpenNetMeter.ViewModels
         const int GridXCount = 7;
         const int GridYCount = 7;
         public int XaxisResolution { get; set; }
-        public DataUsageSummaryVM(ref TrayPopupVM tpvm_ref)
+        public DataUsageSummaryVM()
         {
-            tpvm = tpvm_ref;
             TotalDownloadData = 0;
             TotalUploadData = 0;
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
+            UploadSpeed = 0;
+            DownloadSpeed = 0;
             TotalUsageText = "Total data usage of the past 0 days";
 
             MyGraph = new Graph();
@@ -324,18 +324,18 @@ namespace OpenNetMeter.ViewModels
                         if(drawPointCount == 0)
                         {
                             MyGraph.DownloadPoints[drawPointCount].From = new Point(drawPointCount, 0);
-                            MyGraph.DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                            MyGraph.DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), DownloadSpeed);
 
                             MyGraph.UploadPoints[drawPointCount].From = new Point(drawPointCount, 0);
-                            MyGraph.UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
+                            MyGraph.UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), UploadSpeed);
                         }
                         else
                         {
                             MyGraph.DownloadPoints[drawPointCount].From = new Point(drawPointCount, MyGraph.DownloadPoints[drawPointCount-1].To.Y);
-                            MyGraph.DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.DownloadSpeed);
+                            MyGraph.DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), DownloadSpeed);
 
                             MyGraph.UploadPoints[drawPointCount].From = new Point(drawPointCount, MyGraph.UploadPoints[drawPointCount-1].To.Y);
-                            MyGraph.UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), tpvm.UploadSpeed);
+                            MyGraph.UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), UploadSpeed);
                         }
                         
                         if (!pauseDraw)

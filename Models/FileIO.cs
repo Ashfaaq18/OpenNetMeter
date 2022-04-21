@@ -62,7 +62,7 @@ namespace OpenNetMeter.Models
             catch (Exception e) { Debug.WriteLine("Cant Write: " + e.Message); }
         }
 
-        public static void ReadFile(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref, string adapterName, bool IsOnlineProfile)
+        public static void ReadFile(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, string adapterName, bool IsOnlineProfile)
         {
             string filename = adapterName + ".onm";
             string completePath = Path.Combine(FolderPath(), filename);

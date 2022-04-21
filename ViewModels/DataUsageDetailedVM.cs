@@ -125,7 +125,7 @@ namespace OpenNetMeter.ViewModels
         private ConfirmationDialogVM cdvm;
 
         private NetworkInfo netInfo;
-        public DataUsageDetailedVM(ref ConfirmationDialogVM cdvm_ref)
+        public DataUsageDetailedVM(ConfirmationDialogVM cdvm_ref)
         {
             cdvm = cdvm_ref;
             cdvm.SetVM(this);
@@ -145,7 +145,7 @@ namespace OpenNetMeter.ViewModels
             ResetBtn = new BaseCommand(Reset);
         }
 
-        public void SetNetInfo(ref NetworkInfo netInfo_ref)
+        public void SetNetInfo(NetworkInfo netInfo_ref)
         {
             netInfo = netInfo_ref;
         }

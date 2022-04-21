@@ -22,23 +22,12 @@ namespace OpenNetMeter.Models
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
+        private NavigationAndTasksVM main;
+        private TrayPopupVM tpvm;
 
         private byte[] defaultIP; 
         private byte[] localIP;
         private byte[] localIPMask;
-
-        private ulong downloadSpeed;
-        public ulong DownloadSpeed
-        {
-            get { return downloadSpeed; }
-            set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
-        }
-        private ulong uploadSpeed;
-        public ulong UploadSpeed
-        {
-            get { return uploadSpeed; }
-            set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
-        }
 
         //token for write file
         private CancellationTokenSource cts_file;
@@ -56,16 +45,17 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-        public NetworkInfo(ref DataUsageSummaryVM dusvm_ref, ref DataUsageDetailedVM dudvm_ref)
+        public NetworkInfo(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, NavigationAndTasksVM main_ref, TrayPopupVM tpvm_ref)
         {
             defaultIP = new byte[] { 0, 0, 0, 0 };
 
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
+            main = main_ref;
+            tpvm = tpvm_ref;
 
-            DownloadSpeed = 0;
-            UploadSpeed = 0;
-            
+            SetSpeed(0, 0);
+
             adapterName = "";
 
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
@@ -118,6 +108,7 @@ namespace OpenNetMeter.Models
         public void InitConnection()
         {
             IsNetworkOnline = "Disconnected";
+            main.NetworkStatus = IsNetworkOnline;
             dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles());
             if (dudvm.Profiles.Count > 0)
                 dudvm.SelectedProfile = dudvm.Profiles[0];
@@ -189,7 +180,7 @@ namespace OpenNetMeter.Models
             {
                 IsNetworkOnline = "Connected : " + adapterName;
                 //read saved data of adapter
-                FileIO.ReadFile(ref dusvm, ref dudvm, adapterName, false);
+                FileIO.ReadFile(dusvm, dudvm, adapterName, false);
 
                 dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //this statement should always be below FileIO.ReadFile, this registers the available saved profiles
 
@@ -208,8 +199,7 @@ namespace OpenNetMeter.Models
                     cts_speed.Cancel(); //stop calculating network speed
 
                 //reset speed counters
-                DownloadSpeed = 0;
-                UploadSpeed = 0;
+                SetSpeed(0, 0);
 
                 dusvm.CurrentSessionDownloadData = 0;
                 dusvm.CurrentSessionUploadData = 0;
@@ -222,6 +212,8 @@ namespace OpenNetMeter.Models
                     dudvm.OnProfVM.MyProcesses.Remove(row.Key);
                 }
             }
+
+            main.NetworkStatus = IsNetworkOnline;
         }
 
         private void WriteToFile()
@@ -254,6 +246,27 @@ namespace OpenNetMeter.Models
                 }
             });
         }
+
+        private void SetSpeed(ulong download, ulong upload)
+        {
+            main.DownloadSpeed = download;
+            main.UploadSpeed = upload;
+
+            dusvm.DownloadSpeed = download;
+            dusvm.UploadSpeed = upload;
+
+            tpvm.DownloadSpeed = download;
+            tpvm.UploadSpeed = upload;
+
+            //update speed in taskbar
+            if (Properties.Settings.Default.DeskBandSetting)
+            {
+                (double, int) down = DataSizeSuffix.SizeSuffixInInt(download);
+                (double, int) up = DataSizeSuffix.SizeSuffixInInt(upload);
+                SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
+            }
+        }
+
         public void CaptureNetworkSpeed()
         {
             cts_speed = new CancellationTokenSource();
@@ -269,8 +282,8 @@ namespace OpenNetMeter.Models
                         ulong temp1 = dusvm.CurrentSessionDownloadData;
                         ulong temp2 = dusvm.CurrentSessionUploadData;
                         await Task.Delay(1000, token_speed);
-                        DownloadSpeed= (dusvm.CurrentSessionDownloadData - temp1)*8;
-                        UploadSpeed= (dusvm.CurrentSessionUploadData - temp2)*8;
+
+                        SetSpeed((dusvm.CurrentSessionDownloadData - temp1) * 8, (dusvm.CurrentSessionUploadData - temp2) * 8);
                     }
                 }
                 catch (OperationCanceledException)
@@ -361,6 +374,8 @@ namespace OpenNetMeter.Models
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
 
+                    tpvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
+
                     dudvm.GetAppDataInfo(name, size, 0);
                 }
             }
@@ -376,6 +391,8 @@ namespace OpenNetMeter.Models
                 {
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
+
+                    tpvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
 
                     dudvm.GetAppDataInfo(name, size, 0);
                 }
@@ -393,6 +410,8 @@ namespace OpenNetMeter.Models
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
 
+                    tpvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
+
                     dudvm.GetAppDataInfo(name, 0, size);
                 }
             }
@@ -407,6 +426,8 @@ namespace OpenNetMeter.Models
                 {
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
+
+                    tpvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
 
                     dudvm.GetAppDataInfo(name, 0, size);
                 }

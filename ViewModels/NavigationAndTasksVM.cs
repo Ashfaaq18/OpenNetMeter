@@ -5,7 +5,7 @@ using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    class NavigationAndTasksVM : INotifyPropertyChanged, IDisposable
+    public class NavigationAndTasksVM : INotifyPropertyChanged, IDisposable
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
@@ -70,12 +70,12 @@ namespace OpenNetMeter.ViewModels
 
             //initialize pages, dusvm == 0, dudvm === 1, svm == 2
             tpvm = tpVM_DataContext;
-            dusvm = new DataUsageSummaryVM(ref tpvm);
-            dudvm = new DataUsageDetailedVM(ref cD_DataContext);
+            dusvm = new DataUsageSummaryVM();
+            dudvm = new DataUsageDetailedVM(cD_DataContext);
             svm = new SettingsVM();
 
-            netInfo = new NetworkInfo(ref dusvm, ref dudvm);
-            dudvm.SetNetInfo(ref netInfo);
+            netInfo = new NetworkInfo(dusvm, dudvm, this, tpvm);
+            dudvm.SetNetInfo(netInfo);
 
             //intial startup page
 
@@ -97,7 +97,6 @@ namespace OpenNetMeter.ViewModels
                     break;
             }
 
-            netInfo.PropertyChanged += NetInfo_PropertyChanged;
             netInfo.InitConnection();
 
             //assign basecommand
@@ -105,24 +104,6 @@ namespace OpenNetMeter.ViewModels
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
             DataUsageSetCommand = new BaseCommand(OpenDataUsageSet);
 
-        }
-
-        private void NetInfo_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            NetworkStatus = netInfo.IsNetworkOnline;
-            //update status bar speeds
-            DownloadSpeed = netInfo.DownloadSpeed;
-            UploadSpeed = netInfo.UploadSpeed;
-            //show speed in tray popup
-            tpvm.DownloadSpeed = netInfo.DownloadSpeed;
-            tpvm.UploadSpeed = netInfo.UploadSpeed;
-            //update speed in taskbar
-            if(Properties.Settings.Default.DeskBandSetting)
-            {
-                (double, int) down = DataSizeSuffix.SizeSuffixInInt(netInfo.DownloadSpeed);
-                (double, int) up = DataSizeSuffix.SizeSuffixInInt(netInfo.UploadSpeed);
-                SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
-            }
         }
 
         private void OpenDataUsageSum(object obj)
