@@ -108,17 +108,27 @@ namespace OpenNetMeter.ViewModels
             /*implement a task runner in the future to run dictionary addition in the background*/
         }
 
+        private string getConfirmBtnVal;
+        public string GetConfirmBtnVal
+        {
+            get { return getConfirmBtnVal; }
+            set
+            {
+                getConfirmBtnVal = value;
+                OnPropertyChanged("GetConfirmBtnVal");
+            }
+        }
         public ICommand ResetBtn { get; set; }
         public OfflineProfileVM OffProfVM { get; set; }
         public OnlineProfileVM OnProfVM { get; set; }
 
-        private DataUsageSummaryVM dusvm;
-        private NetworkInfo netInfo;
-        public DataUsageDetailedVM(ref DataUsageSummaryVM dusvm_ref)
-        {
-            //set references
-            dusvm = dusvm_ref;
+        private ConfirmationDialogVM cdvm;
 
+        private NetworkInfo netInfo;
+        public DataUsageDetailedVM(ref ConfirmationDialogVM cdvm_ref)
+        {
+            cdvm = cdvm_ref;
+            cdvm.SetVM(this);
             //initialize vars
             SelectedProfile = "";
             Profiles = new ObservableCollection<string>();
@@ -132,16 +142,22 @@ namespace OpenNetMeter.ViewModels
             PropertyChanged += SelProfileChange;
 
             //set button command
-            ResetBtn = new BaseCommand(ResetTotalData);
+            ResetBtn = new BaseCommand(Reset);
         }
 
         public void SetNetInfo(ref NetworkInfo netInfo_ref)
         {
             netInfo = netInfo_ref;
         }
-        private void ResetTotalData(object obj)
+        private void Reset(object obj)
         {
-            if(SelectedProfile == CurrentConnection)
+            //show confirmation dialog
+            cdvm.IsVisible = System.Windows.Visibility.Visible;
+        }
+
+        private void ResetTotalData()
+        {
+            if (SelectedProfile == CurrentConnection)
             {
                 netInfo.SetNetworkStatus(false);
                 FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
@@ -163,8 +179,8 @@ namespace OpenNetMeter.ViewModels
                 SelectedProfile = Profiles[0];
             else
                 SelectedProfile = null;
-            
         }
+
 
         private void SelProfileChange(object sender, PropertyChangedEventArgs e)
         {
@@ -178,6 +194,12 @@ namespace OpenNetMeter.ViewModels
                         Debug.WriteLine(selProf);
                         SetVM(selProf);
                     }
+                    break;
+                case "GetConfirmBtnVal":
+                    if(GetConfirmBtnVal == "Yes")
+                        ResetTotalData();
+                    else
+                        cdvm.IsVisible = System.Windows.Visibility.Hidden;
                     break;
                 default:
                     break;

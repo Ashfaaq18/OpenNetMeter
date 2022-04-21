@@ -36,6 +36,7 @@ namespace OpenNetMeter.Views
                 return true;
         }
 
+        private ConfirmationDialog confDialog;
         private AboutWindow aboutWin;
         private TrayPopupWinV trayWin;
         private NavigationAndTasksVM navWin;
@@ -56,8 +57,9 @@ namespace OpenNetMeter.Views
             {
                 InitializeComponent();
 
+                confDialog = new ConfirmationDialog();
                 trayWin = new TrayPopupWinV();
-                navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext);
+                navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = navWin;
                 aboutWin = new AboutWindow();
 
@@ -237,6 +239,7 @@ namespace OpenNetMeter.Views
             cm.Dispose();
             ni.MouseMove -= Ni_MouseMove;
             ni.Dispose();
+            confDialog.Close();
             trayWin.Close();
             aboutWin.Close();
             navWin.Dispose();
@@ -269,6 +272,7 @@ namespace OpenNetMeter.Views
             }
             forceHideTrayWin = true;
             aboutWin.Hide();
+            confDialog.Hide();
             this.Hide();
         }
 

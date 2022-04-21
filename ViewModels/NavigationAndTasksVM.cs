@@ -62,7 +62,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext) //runs once during app init
+        public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
         {
 
             DownloadSpeed = 0;
@@ -71,7 +71,7 @@ namespace OpenNetMeter.ViewModels
             //initialize pages, dusvm == 0, dudvm === 1, svm == 2
             tpvm = tpVM_DataContext;
             dusvm = new DataUsageSummaryVM(ref tpvm);
-            dudvm = new DataUsageDetailedVM(ref dusvm);
+            dudvm = new DataUsageDetailedVM(ref cD_DataContext);
             svm = new SettingsVM();
 
             netInfo = new NetworkInfo(ref dusvm, ref dudvm);
