@@ -9,7 +9,6 @@ namespace OpenNetMeter.ViewModels
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
-        private readonly TrayPopupVM tpvm;
         private readonly SettingsVM svm;
         private readonly NetworkProcess netProc;
         public ICommand DataUsageSumCommand { get; set; }
@@ -64,17 +63,15 @@ namespace OpenNetMeter.ViewModels
 
         public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
         {
-
             DownloadSpeed = 0;
             UploadSpeed = 0;
 
             //initialize pages, dusvm == 0, dudvm === 1, svm == 2
-            tpvm = tpVM_DataContext;
             dusvm = new DataUsageSummaryVM();
             dudvm = new DataUsageDetailedVM(cD_DataContext);
             svm = new SettingsVM();
 
-            netProc = new NetworkProcess(dusvm, dudvm, this, tpvm);
+            netProc = new NetworkProcess(dusvm, dudvm, this, tpVM_DataContext);
             dudvm.SetNetProc(netProc);
 
             //intial startup page

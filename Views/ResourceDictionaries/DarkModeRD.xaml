@@ -386,7 +386,8 @@
         <Setter Property="Height" Value="30"/>
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Padding" Value="3,2,2,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="5,2,5,2"/>
         <Setter Property="Background" Value="#c0e3da" />
         <Setter Property="Foreground" Value="Black"/>
         <Setter Property="BorderBrush" Value="#999999"/>
@@ -430,6 +431,12 @@
             </MultiDataTrigger>
 
         </Style.Triggers>
+    </Style>
+    <Style x:Key="DGCellStyle1" TargetType="DataGridCell">
+        <Setter Property="TextBlock.TextAlignment" Value="Left" />
+    </Style>
+    <Style x:Key="DGCellStyle2" TargetType="DataGridCell">
+        <Setter Property="TextBlock.TextAlignment" Value="Right" />
     </Style>
     
     <!-- custom combo box -->
