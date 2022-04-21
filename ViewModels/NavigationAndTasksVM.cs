@@ -11,7 +11,7 @@ namespace OpenNetMeter.ViewModels
         private readonly DataUsageDetailedVM dudvm;
         private readonly TrayPopupVM tpvm;
         private readonly SettingsVM svm;
-        private readonly NetworkInfo netInfo;
+        private readonly NetworkProcess netProc;
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
         public ICommand DataUsageSetCommand { get; set; }
@@ -74,8 +74,8 @@ namespace OpenNetMeter.ViewModels
             dudvm = new DataUsageDetailedVM(cD_DataContext);
             svm = new SettingsVM();
 
-            netInfo = new NetworkInfo(dusvm, dudvm, this, tpvm);
-            dudvm.SetNetInfo(netInfo);
+            netProc = new NetworkProcess(dusvm, dudvm, this, tpvm);
+            dudvm.SetNetProc(netProc);
 
             //intial startup page
 
@@ -97,7 +97,7 @@ namespace OpenNetMeter.ViewModels
                     break;
             }
 
-            netInfo.InitConnection();
+            netProc.InitConnection();
 
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);

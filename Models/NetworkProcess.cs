@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace OpenNetMeter.Models
 {
-    public class NetworkInfo : INotifyPropertyChanged
+    public class NetworkProcess : INotifyPropertyChanged
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
@@ -45,7 +45,7 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-        public NetworkInfo(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, NavigationAndTasksVM main_ref, TrayPopupVM tpvm_ref)
+        public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, NavigationAndTasksVM main_ref, TrayPopupVM tpvm_ref)
         {
             defaultIP = new byte[] { 0, 0, 0, 0 };
 
@@ -153,7 +153,6 @@ namespace OpenNetMeter.Models
                                         adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids().FirstOrDefault().ToString() + ")";
 
                                     SetNetworkStatus(true);
-                                    CaptureNetworkSpeed();
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                     break;
                                 }
@@ -187,7 +186,8 @@ namespace OpenNetMeter.Models
                 dudvm.CurrentConnection = adapterName;
                 dudvm.SelectedProfile = adapterName;
 
-                WriteToFile();
+                WriteToFile(); //start writing to file
+                CaptureNetworkSpeed(); //start logging the speed
             }
             else //if network is disconnected
             {

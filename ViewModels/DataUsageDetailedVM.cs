@@ -124,7 +124,7 @@ namespace OpenNetMeter.ViewModels
 
         private ConfirmationDialogVM cdvm;
 
-        private NetworkInfo netInfo;
+        private NetworkProcess netProc;
         public DataUsageDetailedVM(ConfirmationDialogVM cdvm_ref)
         {
             cdvm = cdvm_ref;
@@ -145,9 +145,9 @@ namespace OpenNetMeter.ViewModels
             ResetBtn = new BaseCommand(Reset);
         }
 
-        public void SetNetInfo(NetworkInfo netInfo_ref)
+        public void SetNetProc(NetworkProcess netProc_ref)
         {
-            netInfo = netInfo_ref;
+            netProc = netProc_ref;
         }
         private void Reset(object obj)
         {
@@ -159,10 +159,9 @@ namespace OpenNetMeter.ViewModels
         {
             if (SelectedProfile == CurrentConnection)
             {
-                netInfo.SetNetworkStatus(false);
+                netProc.SetNetworkStatus(false);
                 FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
-                netInfo.SetNetworkStatus(true); //recreates file inside this function
-                netInfo.CaptureNetworkSpeed();
+                netProc.SetNetworkStatus(true); //recreates file inside this function
             }
             else
             {
