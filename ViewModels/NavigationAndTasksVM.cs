@@ -26,39 +26,33 @@ namespace OpenNetMeter.ViewModels
         public object SelectedViewModel
         {
             get { return selectedViewModel; }
-
             set { selectedViewModel = value; OnPropertyChanged("SelectedViewModel"); }
         }
         public ulong downloadSpeed;
         public ulong DownloadSpeed
         {
             get { return downloadSpeed; }
-            set
-            {
-                downloadSpeed = value;
-                OnPropertyChanged("DownloadSpeed");
-            }
+            set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
         }
         public ulong uploadSpeed;
         public ulong UploadSpeed
         {
             get { return uploadSpeed; }
-            set
-            {
-                uploadSpeed = value;
-                OnPropertyChanged("UploadSpeed");
-            }
+            set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
         }
 
         private string networkStatus;
         public string NetworkStatus
         {
             get { return networkStatus; }
-            set
-            {
-                networkStatus = value; 
-                OnPropertyChanged("NetworkStatus");
-            }
+            set { networkStatus = value; OnPropertyChanged("NetworkStatus"); }
+        }
+
+        private enum TabPage
+        {
+            Summary,
+            Detailed,
+            Settings
         }
 
         public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
@@ -79,18 +73,18 @@ namespace OpenNetMeter.ViewModels
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
             switch (TabBtnToggle)
             {
-                case 0:
+                case ((int)TabPage.Summary):
                     SelectedViewModel = dusvm;
                     break;
-                case 1:
+                case ((int)TabPage.Detailed):
                     SelectedViewModel = dudvm;
                     break;
-                case 2:
+                case ((int)TabPage.Settings):
                     SelectedViewModel = svm;
                     break;
                 default:
                     SelectedViewModel = dusvm;
-                    TabBtnToggle = 0;
+                    TabBtnToggle = ((int)TabPage.Summary);
                     break;
             }
 
@@ -105,10 +99,10 @@ namespace OpenNetMeter.ViewModels
 
         private void OpenDataUsageSum(object obj)
         {
-            if (TabBtnToggle != 0)
+            if (TabBtnToggle != ((int)TabPage.Summary))
             {
                 SelectedViewModel = dusvm;
-                TabBtnToggle = 0;
+                TabBtnToggle = ((int)TabPage.Summary);
                 Properties.Settings.Default.LaunchPage = TabBtnToggle;
                 Properties.Settings.Default.Save();
             }
@@ -116,20 +110,20 @@ namespace OpenNetMeter.ViewModels
 
         private void OpenDataUsageDet(object obj)
         {
-            if(TabBtnToggle!=1)
+            if(TabBtnToggle != ((int)TabPage.Detailed))
             {
                 SelectedViewModel = dudvm;
-                TabBtnToggle = 1;
+                TabBtnToggle = ((int)TabPage.Detailed);
                 Properties.Settings.Default.LaunchPage = TabBtnToggle;
                 Properties.Settings.Default.Save();
             }
         }
         private void OpenDataUsageSet(object obj)
         {
-            if (TabBtnToggle != 2)
+            if (TabBtnToggle != ((int)TabPage.Settings))
             {
                 SelectedViewModel = svm;
-                TabBtnToggle = 2;
+                TabBtnToggle = ((int)TabPage.Settings);
                 Properties.Settings.Default.LaunchPage = TabBtnToggle;
                 Properties.Settings.Default.Save();
             }
