@@ -162,7 +162,7 @@
                                 <DataTemplate>
                                     <Line x:Name="UploadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
                                             X2="{Binding To.X}" Y2="{Binding To.Y}"
-                                            Stroke="LightSalmon" StrokeThickness="3" StrokeLineJoin="Round" />
+                                            Stroke="LightSalmon" StrokeThickness="3" StrokeEndLineCap="Round" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -177,7 +177,7 @@
                                 <DataTemplate>
                                     <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
                                             X2="{Binding To.X}" Y2="{Binding To.Y}"
-                                            Stroke="LightSeaGreen" StrokeThickness="3" StrokeLineJoin="Round" />
+                                            Stroke="LightSeaGreen" StrokeThickness="3" StrokeEndLineCap="Round" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
