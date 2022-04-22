@@ -252,8 +252,8 @@ namespace OpenNetMeter.Models
             main.DownloadSpeed = download;
             main.UploadSpeed = upload;
 
-            dusvm.DownloadSpeed = download;
-            dusvm.UploadSpeed = upload;
+            dusvm.Graph.DownloadSpeed = download;
+            dusvm.Graph.UploadSpeed = upload;
 
             tpvm.DownloadSpeed = download;
             tpvm.UploadSpeed = upload;

@@ -51,7 +51,7 @@
         <Setter Property="Background" Value="White"></Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#101010"></Setter>
+                <Setter Property="Background" Value="#151515"></Setter>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -60,7 +60,17 @@
         <Setter Property="Background" Value="#f1f1f1"></Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#202020"></Setter>
+                <Setter Property="Background" Value="#252525"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="BorderColor">
+        <Setter Property="Control.BorderBrush" Value="#4F5050"></Setter>
+        <Setter Property="Control.BorderThickness" Value="1"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Control.BorderBrush" Value="#616161"></Setter>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -282,7 +292,7 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#272727"/>
+                <Setter Property="Background" Value="#303030"/>
                 <Setter Property="Effect">
                     <Setter.Value>
                         <DropShadowEffect BlurRadius="20" Color="#0d0d0d" Opacity="0.4" Direction="280" ShadowDepth="0" />

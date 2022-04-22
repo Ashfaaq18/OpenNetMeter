@@ -57,11 +57,11 @@ namespace OpenNetMeter.Views
             {
                 InitializeComponent();
 
-                confDialog = new ConfirmationDialog(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+                confDialog = new ConfirmationDialog(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));     
+                aboutWin = new AboutWindow(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));        
                 trayWin = new TrayPopupWinV();
                 navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = navWin;
-                aboutWin = new AboutWindow();
 
                 //initialize window position and size
                 MainWinPosAndSizeInit();
@@ -82,7 +82,15 @@ namespace OpenNetMeter.Views
                 cm.Items.Add("Exit", null, Cm_Exit_Click);
                 ni.ContextMenuStrip = cm;
                 CheckMousePos();
+
+                SourceInitialized += MainWindow_SourceInitialized;
             }
+        }
+
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            confDialog.Owner = this;
+            aboutWin.Owner = this;
         }
 
         private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
@@ -226,7 +234,7 @@ namespace OpenNetMeter.Views
 
         private void Cm_Open_Click(object sender, EventArgs e)
         {
-            this.Show();
+            this.Visibility = Visibility.Visible;
             this.Activate();
         }
 
@@ -237,7 +245,9 @@ namespace OpenNetMeter.Views
                 cts.Cancel();
 
             cm.Dispose();
+            ni.DoubleClick -= Ni_DoubleClick;
             ni.MouseMove -= Ni_MouseMove;
+            ni.MouseClick -= Ni_MouseClick;
             ni.Dispose();
             confDialog.Close();
             trayWin.Close();
@@ -249,7 +259,7 @@ namespace OpenNetMeter.Views
 
         private void Ni_DoubleClick(object sender, EventArgs e)
         {
-            this.Show();
+            this.Visibility = Visibility.Visible;
             this.Activate();
         }
 
@@ -271,14 +281,14 @@ namespace OpenNetMeter.Views
                 balloonShow = true;
             }
             forceHideTrayWin = true;
-            aboutWin.Hide();
-            confDialog.Hide();
-            this.Hide();
+            aboutWin.Visibility = Visibility.Collapsed;
+            confDialog.Visibility = Visibility.Collapsed;
+            this.Visibility = Visibility.Collapsed;
         }
 
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
-            aboutWin.Show(this);
+            aboutWin.Visibility = Visibility.Visible;
         }
 
         //save window size and position at the end of the respective events
@@ -292,6 +302,7 @@ namespace OpenNetMeter.Views
 
             //pass parent window dimensions to confirmation dialog
             confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -311,6 +322,7 @@ namespace OpenNetMeter.Views
 
             //pass parent window dimensions to confirmation dialog
             confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_LocationChanged(object sender, EventArgs e)

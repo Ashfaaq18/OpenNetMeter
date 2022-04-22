@@ -12,65 +12,76 @@
         Topmost="True"
         Visibility="{Binding IsVisible , Mode=TwoWay}"
         IsVisibleChanged="Window_IsVisibleChanged"
-        WindowStartupLocation="Manual" Loaded="Window_Loaded">
-    
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Grid>
-            <Grid Grid.Row="0" IsHitTestVisible="True" Style="{StaticResource BackgroundColor1}">
-                <Button Width="50" Height="32" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Exit_Button_Click" >
-                    <Button.Style>
-                        <Style TargetType="{x:Type Button}">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border>
-                                            <Border.Style>
-                                                <Style TargetType="{x:Type Border}">
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#e81123"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Grid Background="Transparent">
-                                                <ContentPresenter></ContentPresenter>
-                                            </Grid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <Button.Content >
-                        <Grid Margin="20,11">
-                            <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                            <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                        </Grid>
-                    </Button.Content>
-                </Button>
+        WindowStartupLocation="Manual" Loaded="Window_Loaded"
+        ShowInTaskbar="False">
 
-                <TextBlock Text="Confirm" FontFamily="Segoe UI"
-                    VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15,0" Style="{StaticResource FontColor3}"/>
-            </Grid>
-        </Grid>
-        
-        <Grid Margin="20,10,20,20" Grid.Row="1">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
+
+    <Border Style="{StaticResource BorderColor}">
+        <Grid Style="{StaticResource BackgroundColor2}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Name="confirmation">Are you sure?</TextBlock>
+            <Grid>
+                <Grid Grid.Row="0" IsHitTestVisible="True" Style="{StaticResource BackgroundColor1}">
+                    <Button Width="50" Height="32" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Exit_Button_Click" >
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border>
+                                                <Border.Style>
+                                                    <Style TargetType="{x:Type Border}">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#e81123"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid Background="Transparent">
+                                                    <ContentPresenter></ContentPresenter>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Button.Content >
+                            <Grid Margin="20,11">
+                                <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                                <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                            </Grid>
+                        </Button.Content>
+                    </Button>
 
-            <WrapPanel Grid.Row="1" HorizontalAlignment="Right" Margin="0,20,0,0">
-                <Button MinWidth="60" Margin="0,0,20,0" Command="{Binding BtnCommand, Mode=OneWay}" CommandParameter="Yes">Yes</Button>
-                <Button MinWidth="60" Command="{Binding BtnCommand, Mode=OneWay}" CommandParameter="No">No</Button>
-            </WrapPanel>
+                    <TextBlock Text="Confirm" FontFamily="Segoe UI"
+                    VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15,0" Style="{StaticResource FontColor1}"/>
+                </Grid>
+            </Grid>
+
+            <Grid Margin="20,10,20,20" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Name="confirmation" Style="{StaticResource FontColor1}">Are you sure?</TextBlock>
+
+                <WrapPanel Grid.Row="1" HorizontalAlignment="Right" Margin="0,20,0,0">
+                    <Button MinWidth="60" MinHeight="24" Margin="0,0,20,0" Command="{Binding BtnCommand, Mode=OneWay}" CommandParameter="Yes" Style="{StaticResource ButtonColor}">
+                        <TextBlock FontFamily="Segoe UI" Text="Yes" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                    </Button>
+                    <Button MinWidth="60" MinHeight="24" Command="{Binding BtnCommand, Mode=OneWay}" CommandParameter="No" Style="{StaticResource ButtonColor}">
+                        <TextBlock FontFamily="Segoe UI" Text="No" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                    </Button>
+                </WrapPanel>
+            </Grid>
+
         </Grid>
-        
-    </Grid>
+    </Border>
 </Window>

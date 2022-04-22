@@ -11,13 +11,12 @@
         ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         UseLayoutRounding="True"
-        BorderBrush="Black"
         MinHeight="500" Height="500" MinWidth="670" Width="670"
         SizeChanged="MyWindow_SizeChanged"
         Window.LocationChanged ="MyWindow_LocationChanged">
     
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" GlassFrameThickness="0" CornerRadius="0"/>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" GlassFrameThickness="1" CornerRadius="0"/>
     </WindowChrome.WindowChrome>
     
     <Window.Resources>
@@ -42,129 +41,131 @@
         </DataTemplate>
 
     </Window.Resources>
-
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="30"/>
-        </Grid.RowDefinitions>
-
-        <Grid IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource BackgroundColor1}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60"/>
-                <ColumnDefinition Width="430"/>
-            </Grid.ColumnDefinitions>
+    <Border Style="{StaticResource BorderColor}">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Image Source="{Binding Source={x:Static res:Resources.x48}, Converter={StaticResource BitmapToImage}}" Height="35" Width="35" Margin="10,0"/>
+            <Grid IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource BackgroundColor1}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="430"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Image Source="{Binding Source={x:Static res:Resources.x48}, Converter={StaticResource BitmapToImage}}" Height="35" Width="35" Margin="10,0"/>
+                </StackPanel>
+
+                <Grid  Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Height="35" BorderThickness="0,0,0,5" Margin="0,0,5,0" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSummaryTab}" Command="{Binding DataUsageSumCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe UI" Text="Summary" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowDetailedTab}" Command="{Binding DataUsageDetCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="2" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding DataUsageSetCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
+                    </Button>
+
+
+                </Grid>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="150">
+
+                <Button BorderThickness="0" Width="50" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Click="About_Button_Click" Style="{StaticResource ButtonColor}">
+                    <TextBlock FontFamily="Segoe UI" Text="About" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                </Button>
+
+                <Button Width="50"  
+                    HorizontalAlignment="Right" Click="Minimize_Button_Click" BorderThickness="0" Style="{StaticResource ButtonColor}">
+                    <Button.Content >
+                        <Grid Margin="18,0">
+                            <Line X1="0" Y1="0.5" Y2="0.5" X2="0.5" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                <Button Width="50"  HorizontalAlignment="Right" Click="Exit_Button_Click" >
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border>
+                                            <Border.Style>
+                                                <Style TargetType="{x:Type Border}">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#e81123"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid Background="Transparent">
+                                                <ContentPresenter></ContentPresenter>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <Button.Content >
+                        <Grid Margin="20,11">
+                            <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                            <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                        </Grid>
+                    </Button.Content>
+                </Button>
             </StackPanel>
 
-            <Grid  Grid.Column="1">
+            <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
+
+            <Grid Grid.Row="2" DockPanel.Dock="Bottom"  Style="{StaticResource BackgroundColor1}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="104"/>
+                    <ColumnDefinition Width="84"/>
+                    <ColumnDefinition Width="84"/>
+                    <ColumnDefinition Width="84"/>
                 </Grid.ColumnDefinitions>
-                <Button Height="35" BorderThickness="0,0,0,5" Margin="0,0,5,0" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSummaryTab}" Command="{Binding DataUsageSumCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe UI" Text="Summary" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-                    </StackPanel>
-                </Button>
 
-                <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowDetailedTab}" Command="{Binding DataUsageDetCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-                    </StackPanel>
-                </Button>
+                <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Style="{StaticResource FontColor1}"></TextBlock>
 
-                <Button Grid.Column="2" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding DataUsageSetCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-                    </StackPanel>
-                </Button>
+                <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}" />
+                <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
+                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
+                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
+                </WrapPanel>
 
-
+                <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}"/>
+                <WrapPanel Grid.Column="4" VerticalAlignment="Center">
+                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
+                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
+                </WrapPanel>
             </Grid>
+
         </Grid>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Height="32" Width="150">
-
-            <Button BorderThickness="0" Width="50" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Click="About_Button_Click" Style="{StaticResource ButtonColor}">
-                <TextBlock FontFamily="Segoe UI" Text="About" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-            </Button>
-
-            <Button Width="50"  
-                    HorizontalAlignment="Right" Click="Minimize_Button_Click" BorderThickness="0" Style="{StaticResource ButtonColor}">
-                <Button.Content >
-                    <Grid Margin="18,0">
-                        <Line X1="0" Y1="0.5" Y2="0.5" X2="0.5" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                    </Grid>
-                </Button.Content>
-            </Button>
-            <Button Width="50"  HorizontalAlignment="Right" Click="Exit_Button_Click" >
-                <Button.Style>
-                    <Style TargetType="{x:Type Button}">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border>
-                                        <Border.Style>
-                                            <Style TargetType="{x:Type Border}">
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#e81123"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid Background="Transparent">
-                                            <ContentPresenter></ContentPresenter>
-                                        </Grid>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
-                <Button.Content >
-                    <Grid Margin="20,11">
-                        <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                        <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                    </Grid>
-                </Button.Content>
-            </Button>
-        </StackPanel>
-
-        <ContentControl x:Name="Pages" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
-
-        <Grid Grid.Row="2" DockPanel.Dock="Bottom"  Style="{StaticResource BackgroundColor1}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="104"/>
-                <ColumnDefinition Width="84"/>
-                <ColumnDefinition Width="84"/>
-                <ColumnDefinition Width="84"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12" FontFamily="Segoe UI" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Style="{StaticResource FontColor1}"></TextBlock>
-
-            <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}" />
-            <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
-            </WrapPanel>
-
-            <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}"/>
-            <WrapPanel Grid.Column="4" VerticalAlignment="Center">
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
-            </WrapPanel>
-        </Grid>
-
-    </Grid>
+    </Border>
+    
 </Window>

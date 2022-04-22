@@ -110,7 +110,7 @@
 
                     <Grid Grid.Row="1" x:Name="GraphGrid" SizeChanged="Graph_SizeChanged">
 
-                        <ItemsControl ItemsSource="{Binding MyGraph.XLines}" >
+                        <ItemsControl ItemsSource="{Binding Graph.XLines}" >
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -124,7 +124,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding MyGraph.YLines}" >
+                        <ItemsControl ItemsSource="{Binding Graph.YLines}" >
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -138,7 +138,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding MyGraph.Borders}" >
+                        <ItemsControl ItemsSource="{Binding Graph.Borders}" >
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -151,8 +151,8 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        
-                        <ItemsControl ItemsSource="{Binding MyGraph.UploadLines}">
+
+                        <ItemsControl ItemsSource="{Binding Graph.UploadLines}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -167,7 +167,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding MyGraph.DownloadLines}">
+                        <ItemsControl ItemsSource="{Binding Graph.DownloadLines}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -182,7 +182,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding MyGraph.Xlabels}" Style="{StaticResource GraphLabels}">
+                        <ItemsControl ItemsSource="{Binding Graph.Xlabels}" Style="{StaticResource GraphLabels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -190,7 +190,7 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding MyGraph.Ylabels}" Style="{StaticResource GraphLabels}">
+                        <ItemsControl ItemsSource="{Binding Graph.Ylabels}" Style="{StaticResource GraphLabels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>

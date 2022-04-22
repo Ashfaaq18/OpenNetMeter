@@ -9,66 +9,66 @@
         mc:Ignorable="d"
         WindowStyle="None"
         ResizeMode="NoResize"
-        AllowsTransparency="True"
         UseLayoutRounding="True"
-        Background="Transparent"
-        Title="About OpenNetMeter" Height="260" Width="380">
+        Title="About OpenNetMeter"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual" Loaded="Window_Loaded"
+        Topmost="True"
+        IsVisibleChanged="Window_IsVisibleChanged"
+        ShowInTaskbar="False">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
+
     <Window.Resources>
         <vm:BitmapToImageConverter x:Key="BitmapToImage"/>
     </Window.Resources>
-    <Border Margin="10">
-        <Border.Effect>
-            <DropShadowEffect Color="Black"
-                          Direction="270"
-                          BlurRadius="10"
-                          ShadowDepth="2" />
-        </Border.Effect>
-        <Grid Background="Transparent">
-
+    <Border Style="{StaticResource BorderColor}">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.5*"/>
                 <RowDefinition />
             </Grid.RowDefinitions>
-
             <Grid Grid.Row="0" IsHitTestVisible="True" MouseLeftButtonDown="Grid_MouseDown" Style="{StaticResource BackgroundColor1}">
-                <Button Width="50" Height="32" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Exit_Button_Click" >
-                    <Button.Style>
-                        <Style TargetType="{x:Type Button}">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border>
-                                            <Border.Style>
-                                                <Style TargetType="{x:Type Border}">
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#e81123"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Grid Background="Transparent">
-                                                <ContentPresenter></ContentPresenter>
-                                            </Grid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <Button.Content >
-                        <Grid Margin="20,11">
-                            <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                            <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
-                        </Grid>
-                    </Button.Content>
-                </Button>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" >
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,8,0,8" >
                     <Image Source="{Binding Source={x:Static res:Resources.x64}, Converter={StaticResource BitmapToImage}}" Height="64" Width="64" Margin="10,0"/>
                     <TextBlock Text="OpenNetMeter" FontFamily="Segoe UI" FontWeight="Bold" 
                     FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource FontColor3}"/>
                 </StackPanel>
             </Grid>
+            <Button Width="50" Height="32" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Exit_Button_Click" >
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border>
+                                        <Border.Style>
+                                            <Style TargetType="{x:Type Border}">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#e81123"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid Background="Transparent">
+                                            <ContentPresenter></ContentPresenter>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+                <Button.Content >
+                    <Grid Margin="20,11">
+                        <Line X1="0" Y1="0" Y2="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                        <Line Y1="1" X2="1" Style="{StaticResource LineColor}" StrokeThickness="1" Stretch="Fill" />
+                    </Grid>
+                </Button.Content>
+            </Button>
             <Grid Grid.Row="1" Style="{StaticResource BackgroundColor2}">
 
                 <Border Margin="8" Style="{StaticResource BorderStyle1}">

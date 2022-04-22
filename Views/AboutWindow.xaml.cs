@@ -11,10 +11,12 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class AboutWindow : Window
     {
-        public AboutWindow()
+        private Rect parentWindowRect;
+        public AboutWindow(Rect parentWindowRect_param)
         {
             this.Resources.Add("AppVersion", "Version: " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
             InitializeComponent();
+            parentWindowRect = parentWindowRect_param;
         }
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -27,8 +29,9 @@ namespace OpenNetMeter.Views
         }
         private void Exit_Button_Click(object sender, RoutedEventArgs e)
         {
-            Hide();
+            this.Visibility = Visibility.Collapsed;
         }
+
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             ProcessStartInfo psi = new ProcessStartInfo(e.Uri.AbsoluteUri);
@@ -37,13 +40,24 @@ namespace OpenNetMeter.Views
             e.Handled = true;
         }
 
-        public void Show(Window owner)
+        public void SetParentWindowRect(Rect parentWindowRect_param)
         {
-            this.Owner = owner;
-            //always centre the about window to the parent window
-            this.Left = owner.Left + owner.Width / 2 - this.Width/2;
-            this.Top = owner.Top + owner.Height / 2 - this.Height/2;
-            this.Show();
+            parentWindowRect = parentWindowRect_param;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.Left = parentWindowRect.Left + (parentWindowRect.Width / 2) - this.ActualWidth / 2;
+            this.Top = parentWindowRect.Top + (parentWindowRect.Height / 2) - this.ActualHeight / 2;
+        }
+
+        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (this.Visibility == Visibility.Visible)
+            {
+                this.Left = parentWindowRect.Left + (parentWindowRect.Width / 2) - this.ActualWidth / 2;
+                this.Top = parentWindowRect.Top + (parentWindowRect.Height / 2) - this.ActualHeight / 2;
+            }
         }
     }
 }
