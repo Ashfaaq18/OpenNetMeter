@@ -50,7 +50,7 @@ namespace OpenNetMeter.Views
             resizeTimer.IsEnabled = false;
 
             //Do end of resize processing
-            dusvm.Graph.pauseDraw = false;
+            dusvm.Graph.resumeDraw = true;
         }
 
 
@@ -76,7 +76,7 @@ namespace OpenNetMeter.Views
                 resizeTimer.Start();
 
                 //Stop drawing MyGraph
-                dusvm.Graph.pauseDraw = true;
+                dusvm.Graph.resumeDraw = false;
 
                 double GraphHeight = GraphSize.Height;
                 double GraphWidth = GraphSize.Width;
@@ -146,6 +146,8 @@ namespace OpenNetMeter.Views
 
                 dusvm.Graph.Borders[3].From = new Point(maxYtextSize.Width, GraphHeight);
                 dusvm.Graph.Borders[3].To = new Point(GraphWidth + maxYtextSize.Width, GraphHeight);
+
+                dusvm.Graph.firstDrawAfterResume = true;
 
             }
         }

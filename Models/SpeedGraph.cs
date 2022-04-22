@@ -69,10 +69,10 @@ namespace OpenNetMeter.Models
         public int GridYCount;
 
         public int XaxisResolution { get; set; } 
-        public bool pauseDraw { get; set; }
+        public bool resumeDraw { get; set; }
         public ulong UploadSpeed { get; set; }
         public ulong DownloadSpeed { get; set; }
-
+        public bool firstDrawAfterResume { get; set; }
         public SpeedGraph(int XlineCount, int YlineCount)
         {
             GridXCount = XlineCount;
@@ -86,6 +86,8 @@ namespace OpenNetMeter.Models
             XLines = new List<MyLine>();
             YLines = new List<MyLine>();
             Borders = new List<MyLine>();
+
+            firstDrawAfterResume = false;
         }
 
         public Size ShapeMeasure(TextBlock tb)
@@ -224,7 +226,7 @@ namespace OpenNetMeter.Models
 
                             }
 
-                            if (!pauseDraw)
+                            if (resumeDraw)
                             {
                                 //reset the chart
                                 await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
@@ -245,11 +247,11 @@ namespace OpenNetMeter.Models
 
                         if (drawPointCount == 0)
                         {
-                            DownloadPoints[drawPointCount].From = new Point(drawPointCount, 0);
-                            DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), DownloadSpeed);
+                            DownloadPoints[drawPointCount].From = new Point(0, 0);
+                            DownloadPoints[drawPointCount].To = new Point(1, DownloadSpeed);
 
-                            UploadPoints[drawPointCount].From = new Point(drawPointCount, 0);
-                            UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), UploadSpeed);
+                            UploadPoints[drawPointCount].From = new Point(0, 0);
+                            UploadPoints[drawPointCount].To = new Point(1, UploadSpeed);
                         }
                         else
                         {
@@ -260,10 +262,21 @@ namespace OpenNetMeter.Models
                             UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), UploadSpeed);
                         }
 
-                        if (!pauseDraw)
+                        if (resumeDraw)
                         {
                             await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                             {
+                                if(firstDrawAfterResume && drawPointCount > 0)
+                                {
+                                    DownloadLines[drawPointCount-1].From = new Point(Xstart + DownloadPoints[drawPointCount-1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount-1].From.Y, GraphHeight));
+                                    DownloadLines[drawPointCount-1].To = new Point(Xstart + DownloadPoints[drawPointCount-1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount-1].To.Y, GraphHeight));
+
+                                    UploadLines[drawPointCount-1].From = new Point(Xstart + UploadPoints[drawPointCount-1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount-1].From.Y, GraphHeight));
+                                    UploadLines[drawPointCount-1].To = new Point(Xstart + UploadPoints[drawPointCount-1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount-1].To.Y, GraphHeight));
+                                }
+
+                                firstDrawAfterResume = false;
+
                                 DownloadLines[drawPointCount].From = new Point(Xstart + DownloadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount].From.Y, GraphHeight));
                                 DownloadLines[drawPointCount].To = new Point(Xstart + DownloadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount].To.Y, GraphHeight));
 
