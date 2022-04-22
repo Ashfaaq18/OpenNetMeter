@@ -9,7 +9,6 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
         Title="Confirm" 
-        Topmost="True"
         Visibility="{Binding IsVisible , Mode=TwoWay}"
         IsVisibleChanged="Window_IsVisibleChanged"
         WindowStartupLocation="Manual" Loaded="Window_Loaded"

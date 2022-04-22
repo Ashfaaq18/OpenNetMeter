@@ -13,7 +13,6 @@
         Title="About OpenNetMeter"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="Manual" Loaded="Window_Loaded"
-        Topmost="True"
         IsVisibleChanged="Window_IsVisibleChanged"
         ShowInTaskbar="False">
 
