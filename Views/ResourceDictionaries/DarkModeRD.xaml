@@ -90,7 +90,7 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#0d0d0d"></Setter>
+                <Setter Property="Background" Value="#151515"></Setter>
             </DataTrigger>
             <!-- set button highlight light mode color -->
             <Trigger Property="IsMouseOver" Value="True">
