@@ -10,6 +10,7 @@ using OpenNetMeter.Models;
 using System.Windows.Threading;
 using System.Diagnostics;
 using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace OpenNetMeter.Views
 {
@@ -62,7 +63,7 @@ namespace OpenNetMeter.Views
                 trayWin = new TrayPopupWinV();
                 navWin = new NavigationAndTasksVM((TrayPopupVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = navWin;
-
+                this.Closing += MainWindow_Closing;
                 //initialize window position and size
                 MainWinPosAndSizeInit();
 
@@ -85,6 +86,13 @@ namespace OpenNetMeter.Views
 
                 SourceInitialized += MainWindow_SourceInitialized;
             }
+        }
+
+        // this is for when the user clicks the window exit button through the alt+tab program switcher
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Visibility = Visibility.Collapsed;
         }
 
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
@@ -254,6 +262,7 @@ namespace OpenNetMeter.Views
             aboutWin.Close();
             navWin.Dispose();
             mutex.Close();
+            this.Closing -= MainWindow_Closing;
             this.Close();
         }
 
@@ -285,6 +294,8 @@ namespace OpenNetMeter.Views
             confDialog.Visibility = Visibility.Collapsed;
             this.Visibility = Visibility.Collapsed;
         }
+
+
 
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
