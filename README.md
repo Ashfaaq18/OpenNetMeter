@@ -31,12 +31,15 @@ This program provides the following features,
 
 ### Summary tab
 
-![Summary - Copy](https://user-images.githubusercontent.com/27722888/151661081-e8bb7411-eba3-4078-9ac2-47075f45b880.png)
+![4](https://user-images.githubusercontent.com/27722888/164838606-8b4144aa-1f51-4d5e-891d-a7a98e6e4fed.png)
 
 ### Detailed tab
 
-![Detailed - Copy](https://user-images.githubusercontent.com/27722888/151661086-44ead811-858e-4db6-af9d-dd1ad1dd5d4b.png)
+![5](https://user-images.githubusercontent.com/27722888/164840174-b917c3ed-7cc9-4c2c-aaab-3fe5d7064265.png)
 
+### Darkmode
+
+![image](https://user-images.githubusercontent.com/27722888/164841661-a104f40c-442c-4c87-9408-da1793d25b77.png)
 
 ### System tray
 
