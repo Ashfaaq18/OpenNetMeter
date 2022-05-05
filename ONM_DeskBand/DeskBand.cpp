@@ -48,10 +48,12 @@ CDeskBand::~CDeskBand()
     if (m_pSite)
     {
         m_pSite->Release();
+        m_pSite = NULL;
     }
     if (m_pInputObjectSite)
     {
         m_pInputObjectSite->Release();
+        m_pInputObjectSite = NULL;
     }
     InterlockedDecrement(&g_cDllRef);
 }
@@ -427,61 +429,64 @@ void CDeskBand::OnPaint(const HDC hdcIn)
             {
                 HDC hdcPaint = NULL;
                 HPAINTBUFFER hBufferedPaint = BeginBufferedPaint(hdc, &rc, BPBF_TOPDOWNDIB, NULL, &hdcPaint);
-                LOGFONT lf = { 0 };
-                const HRESULT hr = ::GetThemeFont(hTheme, NULL, RP_BAND, 0, TMT_FONT, &lf);
-                if (SUCCEEDED(hr))
+                if (hBufferedPaint)
                 {
-                    hFont = ::CreateFontIndirect(&lf);
+                    LOGFONT lf = { 0 };
+                    const HRESULT hr = ::GetThemeFont(hTheme, NULL, RP_BAND, 0, TMT_FONT, &lf);
+                    if (SUCCEEDED(hr))
+                    {
+                        hFont = ::CreateFontIndirect(&lf);
+                    }
+                    else
+                    {
+                        hFont = ::CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                            CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"@system");
+                    }
+                    HFONT hOldFont = static_cast<HFONT>(::SelectObject(hdcPaint, hFont));
+                    DrawThemeParentBackground(m_hwnd, hdcPaint, &rc);
+
+                    SIZE sRecv, sSend;
+                    GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &sRecv);
+                    GetTextExtentPointW(hdc, strSend.c_str(), static_cast<int>(strSend.length()), &sSend);
+
+                    RECT rcRecv = { 0 };
+                    RECT rcSend = { 0 };
+                    rcSend.left = (RECTWIDTH(rc) - sSend.cx) / 2;
+                    rcSend.right = rcSend.left + sSend.cx;
+                    rcSend.top = RECTHEIGHT(rc) / 2 + 1;
+                    rcSend.bottom = RECTHEIGHT(rc) + 1;
+
+                    rcRecv.left = (RECTWIDTH(rc) - sRecv.cx) / 2;
+                    rcRecv.right = rcRecv.left + sRecv.cx;
+                    rcRecv.bottom = RECTHEIGHT(rc) / 2 - 1;
+                    rcRecv.top = RECTHEIGHT(rc) / 2 - sRecv.cy - 1;
+
+                    DTTOPTS dttOptsRecv = { sizeof(dttOptsRecv) };
+                    dttOptsRecv.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
+                    dttOptsRecv.iGlowSize = 10;
+
+                    DTTOPTS dttOptsSend = dttOptsRecv;
+                    if (color == 1)
+                    {
+                        dttOptsRecv.crText = RGB(1, 1, 1);
+                        dttOptsSend.crText = RGB(1, 1, 1);
+                    }
+                    else if (color == 2)
+                    {
+                        dttOptsRecv.crText = RGB(250, 250, 250);
+                        dttOptsSend.crText = RGB(250, 250, 250);
+                    }
+                    else
+                    {
+                        dttOptsRecv.crText = RGB(28, 200, 190);
+                        dttOptsSend.crText = RGB(255, 160, 122);
+                    }
+
+                    DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOptsRecv);
+                    DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOptsSend);
+
+                    EndBufferedPaint(hBufferedPaint, TRUE);
                 }
-                else
-                {
-                    hFont = ::CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
-                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"@system");
-                }
-                HFONT hOldFont = static_cast<HFONT>(::SelectObject(hdcPaint, hFont));
-                DrawThemeParentBackground(m_hwnd, hdcPaint, &rc);
-
-                SIZE sRecv,sSend;
-                GetTextExtentPointW(hdc, strRecv.c_str(), static_cast<int>(strRecv.length()), &sRecv);
-                GetTextExtentPointW(hdc, strSend.c_str(), static_cast<int>(strSend.length()), &sSend);
-
-                RECT rcRecv = { 0 };
-                RECT rcSend = { 0 };
-                rcSend.left = (RECTWIDTH(rc) - sSend.cx) / 2;
-                rcSend.right = rcSend.left + sSend.cx;
-                rcSend.top = RECTHEIGHT(rc) / 2 + 1;
-                rcSend.bottom = RECTHEIGHT(rc) + 1;
-
-                rcRecv.left = (RECTWIDTH(rc) - sRecv.cx) / 2;
-                rcRecv.right = rcRecv.left + sRecv.cx;
-                rcRecv.bottom = RECTHEIGHT(rc) / 2 - 1;
-                rcRecv.top = RECTHEIGHT(rc) / 2 - sRecv.cy -1;
-
-                DTTOPTS dttOptsRecv = { sizeof(dttOptsRecv) };
-                dttOptsRecv.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
-                dttOptsRecv.iGlowSize = 10;
-
-                DTTOPTS dttOptsSend = dttOptsRecv;
-                if (color == 1)
-                {
-                    dttOptsRecv.crText = RGB(1, 1, 1);
-                    dttOptsSend.crText = RGB(1, 1, 1);
-                }
-                else if (color == 2)
-                {
-                    dttOptsRecv.crText = RGB(250, 250, 250);
-                    dttOptsSend.crText = RGB(250, 250, 250);
-                }
-                else
-                {
-                    dttOptsRecv.crText = RGB(28, 200, 190);
-                    dttOptsSend.crText = RGB(255, 160, 122);
-                }
-
-                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strRecv.c_str(), -1, 0, &rcRecv, &dttOptsRecv);
-                DrawThemeTextEx(hTheme, hdcPaint, 0, 0, strSend.c_str(), -1, 0, &rcSend, &dttOptsSend);
-
-                EndBufferedPaint(hBufferedPaint, TRUE);
 
                 CloseThemeData(hTheme);
             }
