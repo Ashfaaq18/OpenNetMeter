@@ -43,15 +43,15 @@ namespace OpenNetMeter.Models
                     {
                         byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
 
-                        for (int i = 7 * 1; i >= 7 * 0; i--)
+                        for (int i = 7 * 1; i >= 7 * 0; i--) // index 7 to 0
                             Bytes[i] = (byte)(app.Value.TotalDataRecv >> 8 * i);
 
-                        for (int i = 7 * 2; i >= 7 * 1; i--)
+                        for (int i = 7 * 2 + 1; i >= (7 * 1 + 1); i--) // index 15 to 8
                             Bytes[i] = (byte)(app.Value.TotalDataSend >> 8 * i);
 
                         Bytes[16] = (byte)app.Value.Name.Length;
 
-                        for (int i = 0; i < app.Value.Name.Length; i++)
+                        for (int i = 0; i < app.Value.Name.Length; i++) //index from 17 to array max
                         {
                             Bytes[17 + i] = (byte)app.Value.Name[i];
                         }
