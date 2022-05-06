@@ -5,7 +5,7 @@ using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class NavigationAndTasksVM : INotifyPropertyChanged, IDisposable
+    public class MainWindowVM : INotifyPropertyChanged, IDisposable
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
@@ -55,7 +55,7 @@ namespace OpenNetMeter.ViewModels
             Settings
         }
 
-        public NavigationAndTasksVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
+        public MainWindowVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
         {
             DownloadSpeed = 0;
             UploadSpeed = 0;

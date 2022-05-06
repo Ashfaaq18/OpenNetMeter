@@ -22,7 +22,7 @@ namespace OpenNetMeter.Models
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
-        private NavigationAndTasksVM main;
+        private MainWindowVM main;
         private TrayPopupVM tpvm;
 
         private byte[] defaultIP; 
@@ -45,7 +45,7 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-        public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, NavigationAndTasksVM main_ref, TrayPopupVM tpvm_ref)
+        public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, MainWindowVM main_ref, TrayPopupVM tpvm_ref)
         {
             defaultIP = new byte[] { 0, 0, 0, 0 };
 

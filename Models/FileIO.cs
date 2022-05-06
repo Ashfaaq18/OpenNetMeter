@@ -90,8 +90,8 @@ namespace OpenNetMeter.Models
                         dusvm_ref.TotalUploadData = data.Item2;
 
                         DateTime dateTime = File.GetCreationTime(completePath);
-                        int timeDiffInMins = (int)((DateToMins(DateTime.Now) - DateToMins(dateTime))/(60.0 * 24.0));
-                        dusvm_ref.TotalUsageText = "Total data usage of the past " + timeDiffInMins.ToString() + " days";
+                        int timeDiffInDays = (int)((DateToMins(DateTime.Now) - DateToMins(dateTime))/(60.0 * 24.0));
+                        dusvm_ref.TotalUsageText = "Total data usage of the past " + timeDiffInDays.ToString() + " days";
                     }
                 }
                 catch (Exception e)

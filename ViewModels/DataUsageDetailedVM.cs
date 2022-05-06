@@ -129,7 +129,6 @@ namespace OpenNetMeter.ViewModels
         {
             cdvm = cdvm_ref;
             cdvm.SetVM(this);
-            //initialize vars
             SelectedProfile = "";
             Profiles = new ObservableCollection<string>();
 
@@ -214,7 +213,7 @@ namespace OpenNetMeter.ViewModels
             if (selProf != CurrentConnection)
             {
                 SelectedViewModel = OffProfVM;
-                //read file into the OnProfVM.MyProcesses1 dictionary
+                //read file into the OffProfVM.MyProcesses dictionary
                 try
                 {
                     using (FileStream stream = new FileStream(completePath, FileMode.Open, FileAccess.Read))
