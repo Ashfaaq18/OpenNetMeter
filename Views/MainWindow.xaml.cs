@@ -274,6 +274,15 @@ namespace OpenNetMeter.Views
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (WindowState == WindowState.Maximized)
+            {
+                double fullScreenWidth = this.RenderSize.Width;
+                double fullScreenHeight = this.RenderSize.Height;
+                WindowState = WindowState.Normal;
+                this.Left = e.GetPosition(this).X - (this.RenderSize.Width / fullScreenWidth) * e.GetPosition(this).X;
+                this.Top = e.GetPosition(this).Y - (this.RenderSize.Height / fullScreenHeight) * e.GetPosition(this).Y;
+            }
+
             DragMove();
         }
 
