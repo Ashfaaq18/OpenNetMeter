@@ -23,7 +23,7 @@ namespace OpenNetMeter.Models
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
         private MainWindowVM main;
-        private MiniWidgetVM tpvm;
+        private MiniWidgetVM mwvm;
 
         private byte[] defaultIP; 
         private byte[] localIP;
@@ -45,14 +45,14 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
         }
-        public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, MainWindowVM main_ref, MiniWidgetVM tpvm_ref)
+        public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, MainWindowVM main_ref, MiniWidgetVM mwvm_ref)
         {
             defaultIP = new byte[] { 0, 0, 0, 0 };
 
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
             main = main_ref;
-            tpvm = tpvm_ref;
+            mwvm = mwvm_ref;
 
             SetSpeed(0, 0);
 
@@ -255,8 +255,8 @@ namespace OpenNetMeter.Models
             dusvm.Graph.DownloadSpeed = download;
             dusvm.Graph.UploadSpeed = upload;
 
-            tpvm.DownloadSpeed = download;
-            tpvm.UploadSpeed = upload;
+            mwvm.DownloadSpeed = download;
+            mwvm.UploadSpeed = upload;
         }
 
         public void CaptureNetworkSpeed()
@@ -366,7 +366,7 @@ namespace OpenNetMeter.Models
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
 
-                    tpvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
+                    mwvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
 
                     dudvm.GetAppDataInfo(name, size, 0);
                 }
@@ -384,7 +384,7 @@ namespace OpenNetMeter.Models
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
 
-                    tpvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
+                    mwvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
 
                     dudvm.GetAppDataInfo(name, size, 0);
                 }
@@ -402,7 +402,7 @@ namespace OpenNetMeter.Models
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
 
-                    tpvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
+                    mwvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
 
                     dudvm.GetAppDataInfo(name, 0, size);
                 }
@@ -419,7 +419,7 @@ namespace OpenNetMeter.Models
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
 
-                    tpvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
+                    mwvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
 
                     dudvm.GetAppDataInfo(name, 0, size);
                 }

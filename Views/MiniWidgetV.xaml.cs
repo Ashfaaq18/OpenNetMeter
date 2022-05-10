@@ -67,7 +67,7 @@ namespace OpenNetMeter.Views
 
         private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
         {
-            this.Owner.Visibility = Visibility.Visible;
+            //this.Owner.Visibility = Visibility.Visible;
         }
     }
 }

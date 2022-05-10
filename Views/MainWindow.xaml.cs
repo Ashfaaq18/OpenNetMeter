@@ -40,7 +40,7 @@ namespace OpenNetMeter.Views
 
         private ConfirmationDialog confDialog;
         private AboutWindow aboutWin;
-        private MiniWidgetV trayWin;
+        private MiniWidgetV miniWidget;
         private MainWindowVM mainWin;
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
@@ -56,16 +56,15 @@ namespace OpenNetMeter.Views
                 InitializeComponent();
 
                 confDialog = new ConfirmationDialog(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));     
-                aboutWin = new AboutWindow(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));        
-                trayWin = new MiniWidgetV();
-                mainWin = new MainWindowVM((MiniWidgetVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
+                aboutWin = new AboutWindow(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+                miniWidget = new MiniWidgetV();
+                mainWin = new MainWindowVM((MiniWidgetVM)miniWidget.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = mainWin;
                 this.Closing += MainWindow_Closing;
                 //initialize window position and size
                 MainWinPosAndSizeInit();
 
                 //initialize system tray
-                trayWin.Topmost = true;
                 ni = new Forms.NotifyIcon();
                 cm = new Forms.ContextMenuStrip();
                 balloonShow = false;
@@ -85,7 +84,7 @@ namespace OpenNetMeter.Views
 
         private void MiniWidget_Show_Click(object sender, EventArgs e)
         {
-            trayWin.Visibility = Visibility.Visible;
+            miniWidget.Visibility = Visibility.Visible;
 
             Properties.Settings.Default.MiniWidgetVisibility = true;
             Properties.Settings.Default.Save();
@@ -103,9 +102,9 @@ namespace OpenNetMeter.Views
             confDialog.Owner = this;
             aboutWin.Owner = this;
 
-            WindowInteropHelper trayWinHwnd = new WindowInteropHelper(trayWin);
+            WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
             IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-            trayWinHwnd.Owner = shellTrayHwnd;
+            miniWidgetHwnd.Owner = shellTrayHwnd;
         }
 
         private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
@@ -129,8 +128,8 @@ namespace OpenNetMeter.Views
                 Properties.Settings.Default.WinSize = new System.Drawing.Size((int)this.MinWidth, (int)this.MinHeight);
                 this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
                 Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
-                trayWin.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
-                Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)trayWin.Left, (int)trayWin.Top);
+                miniWidget.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)miniWidget.Left, (int)miniWidget.Top);
                 Properties.Settings.Default.LaunchFirstTime = false;
                 Properties.Settings.Default.Save();
             }
@@ -180,7 +179,7 @@ namespace OpenNetMeter.Views
             ni.MouseClick -= Ni_MouseClick;
             ni.Dispose();
             confDialog.Close();
-            trayWin.Close();
+            miniWidget.Close();
             aboutWin.Close();
             mutex.Close();
             this.Closing -= MainWindow_Closing;

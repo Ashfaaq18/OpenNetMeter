@@ -55,7 +55,7 @@ namespace OpenNetMeter.ViewModels
             Settings
         }
 
-        public MainWindowVM(MiniWidgetVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
+        public MainWindowVM(MiniWidgetVM mwvm_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
         {
             DownloadSpeed = 0;
             UploadSpeed = 0;
@@ -65,7 +65,7 @@ namespace OpenNetMeter.ViewModels
             dudvm = new DataUsageDetailedVM(cD_DataContext);
             svm = new SettingsVM();
 
-            netProc = new NetworkProcess(dusvm, dudvm, this, tpVM_DataContext);
+            netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
             dudvm.SetNetProc(netProc);
 
             //intial startup page
