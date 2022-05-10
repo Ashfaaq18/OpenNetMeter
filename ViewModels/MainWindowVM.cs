@@ -55,7 +55,7 @@ namespace OpenNetMeter.ViewModels
             Settings
         }
 
-        public MainWindowVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
+        public MainWindowVM(MiniWidgetVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
         {
             DownloadSpeed = 0;
             UploadSpeed = 0;

@@ -2,7 +2,7 @@
 
 namespace OpenNetMeter.ViewModels
 {
-    public class TrayPopupVM : INotifyPropertyChanged
+    public class MiniWidgetVM : INotifyPropertyChanged
     {
         private ulong currentSessionDownloadData;
         public ulong CurrentSessionDownloadData
@@ -46,7 +46,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public TrayPopupVM()
+        public MiniWidgetVM()
         {
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;

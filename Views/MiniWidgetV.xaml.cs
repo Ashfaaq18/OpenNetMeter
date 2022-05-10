@@ -10,18 +10,18 @@ using OpenNetMeter.ViewModels;
 namespace OpenNetMeter.Views
 {
     /// <summary>
-    /// Interaction logic for trayPopupWinV.xaml
+    /// Interaction logic for MiniWidgetV.xaml
     /// </summary>
-    public partial class TrayPopupWinV : Window
+    public partial class MiniWidgetV : Window
     {
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
         private ContextMenuStrip menuStrip;
-        public TrayPopupWinV()
+        public MiniWidgetV()
         {
             InitializeComponent();
-            DataContext = new TrayPopupVM();
+            DataContext = new MiniWidgetVM();
             menuStrip = new ContextMenuStrip();
             menuStrip.Renderer = new CustomSystemTray();
             menuStrip.Items.Add("Open");

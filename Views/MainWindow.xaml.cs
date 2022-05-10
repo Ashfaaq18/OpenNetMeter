@@ -40,7 +40,7 @@ namespace OpenNetMeter.Views
 
         private ConfirmationDialog confDialog;
         private AboutWindow aboutWin;
-        private TrayPopupWinV trayWin;
+        private MiniWidgetV trayWin;
         private MainWindowVM mainWin;
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
@@ -57,8 +57,8 @@ namespace OpenNetMeter.Views
 
                 confDialog = new ConfirmationDialog(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));     
                 aboutWin = new AboutWindow(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));        
-                trayWin = new TrayPopupWinV();
-                mainWin = new MainWindowVM((TrayPopupVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
+                trayWin = new MiniWidgetV();
+                mainWin = new MainWindowVM((MiniWidgetVM)trayWin.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = mainWin;
                 this.Closing += MainWindow_Closing;
                 //initialize window position and size
