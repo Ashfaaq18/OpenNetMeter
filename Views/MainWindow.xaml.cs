@@ -86,6 +86,9 @@ namespace OpenNetMeter.Views
         private void MiniWidget_Show_Click(object sender, EventArgs e)
         {
             trayWin.Visibility = Visibility.Visible;
+
+            Properties.Settings.Default.MiniWidgetVisibility = true;
+            Properties.Settings.Default.Save();
         }
 
         // this is for when the user clicks the window exit button through the alt+tab program switcher
@@ -103,10 +106,6 @@ namespace OpenNetMeter.Views
             WindowInteropHelper trayWinHwnd = new WindowInteropHelper(trayWin);
             IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
             trayWinHwnd.Owner = shellTrayHwnd;
-
-            //trayWin.Top = 1100;
-            //trayWin.Left = 900;
-            trayWin.Visibility = Visibility.Visible;
         }
 
         private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
@@ -130,6 +129,8 @@ namespace OpenNetMeter.Views
                 Properties.Settings.Default.WinSize = new System.Drawing.Size((int)this.MinWidth, (int)this.MinHeight);
                 this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
                 Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+                trayWin.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)trayWin.Left, (int)trayWin.Top);
                 Properties.Settings.Default.LaunchFirstTime = false;
                 Properties.Settings.Default.Save();
             }
@@ -272,6 +273,7 @@ namespace OpenNetMeter.Views
             relocationTimer.IsEnabled = true;
             relocationTimer.Stop();
             relocationTimer.Start();
+            
         }
     }
 }

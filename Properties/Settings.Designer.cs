@@ -142,5 +142,29 @@ namespace OpenNetMeter.Properties {
                 this["DarkMode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point MiniWidgetPos {
+            get {
+                return ((global::System.Drawing.Point)(this["MiniWidgetPos"]));
+            }
+            set {
+                this["MiniWidgetPos"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MiniWidgetVisibility {
+            get {
+                return ((bool)(this["MiniWidgetVisibility"]));
+            }
+            set {
+                this["MiniWidgetVisibility"] = value;
+            }
+        }
     }
 }
