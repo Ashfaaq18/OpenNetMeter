@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.ComponentModel;
+using System.Windows.Interop;
 
 namespace OpenNetMeter.Views
 {
@@ -47,10 +48,6 @@ namespace OpenNetMeter.Views
         private Forms.NotifyIcon ni;
         private Forms.ContextMenuStrip cm;
         private bool balloonShow;
-        private bool forceHideTrayWin;
-        private System.Drawing.Point p;
-        private CancellationTokenSource cts;
-        private CancellationToken token;
 
         public MainWindow()
         {
@@ -69,23 +66,26 @@ namespace OpenNetMeter.Views
 
                 //initialize system tray
                 trayWin.Topmost = true;
-                trayWin.Visibility = Visibility.Hidden;
                 ni = new Forms.NotifyIcon();
                 cm = new Forms.ContextMenuStrip();
                 balloonShow = false;
-                forceHideTrayWin = true;
                 ni.Icon = Properties.Resources.AppIcon;
                 ni.Visible = true;
                 ni.DoubleClick += Ni_DoubleClick;
-                ni.MouseMove += Ni_MouseMove;
                 ni.MouseClick += Ni_MouseClick;
+                cm.Items.Add("Show Mini Widget", null, MiniWidget_Show_Click);
+                cm.Items.Add(new Forms.ToolStripSeparator());
                 cm.Items.Add("Open", null, Cm_Open_Click);
                 cm.Items.Add("Exit", null, Cm_Exit_Click);
                 ni.ContextMenuStrip = cm;
-                CheckMousePos();
 
                 SourceInitialized += MainWindow_SourceInitialized;
             }
+        }
+
+        private void MiniWidget_Show_Click(object sender, EventArgs e)
+        {
+            trayWin.Visibility = Visibility.Visible;
         }
 
         // this is for when the user clicks the window exit button through the alt+tab program switcher
@@ -99,6 +99,14 @@ namespace OpenNetMeter.Views
         {
             confDialog.Owner = this;
             aboutWin.Owner = this;
+
+            WindowInteropHelper trayWinHwnd = new WindowInteropHelper(trayWin);
+            IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
+            trayWinHwnd.Owner = shellTrayHwnd;
+
+            //trayWin.Top = 1100;
+            //trayWin.Left = 900;
+            trayWin.Visibility = Visibility.Visible;
         }
 
         private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
@@ -157,88 +165,6 @@ namespace OpenNetMeter.Views
             resizeTimer.Tick += ResizeTimer_Tick;
             relocationTimer.Tick += RelocationTimer_Tick;
         }
-        private void CheckMousePos()
-        {
-            //init tokens
-            cts = new CancellationTokenSource();
-            token = cts.Token;
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    Debug.WriteLine("Operation Started : check mouse pos");
-                    while (!token.IsCancellationRequested)
-                    {
-                        //check mouse pos and hide the visible tray win
-                        if (Forms.Cursor.Position != p)
-                        {
-                            if (trayWin.Visibility == Visibility.Visible)
-                            {
-                                await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
-                                {
-                                    trayWin.Visibility = Visibility.Hidden;
-                                }));
-                            }
-                        }
-
-                        await Task.Delay(500, token);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    Debug.WriteLine("Operation Cancelled : check mouse pos");
-                    cts.Dispose();
-                    cts = null;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Critical error: " + ex.Message);
-                }
-            });
-        }
-
-        private void Ni_MouseMove(object sender, Forms.MouseEventArgs e)
-        {
-            if (!forceHideTrayWin)
-            {
-                p = Forms.Cursor.Position;
-                if (trayWin.Visibility == Visibility.Hidden)
-                {
-                    //Shell Tray rectangle
-                    IntPtr hWnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-                    Rectangle shellTrayArea = NativeMethods.GetWindowRectangle(hWnd);
-
-                    //screen rectangle
-                    Forms.Screen scrn = Forms.Screen.FromPoint(p);
-                    Rectangle workArea = scrn.Bounds;
-
-                    if(shellTrayArea.X == 0 && shellTrayArea.Y == 0) //taskbar pos top or left
-                    {
-                        if(workArea.Width == shellTrayArea.Width) //top
-                        {
-                            trayWin.Left = p.X - trayWin.Width;
-                            trayWin.Top = p.Y;
-                        }
-                        else //left
-                        {
-                            trayWin.Left = p.X;
-                            trayWin.Top = p.Y - trayWin.Height;
-                        }
-                    }
-                    else //taskbar pos right or bottom
-                    {
-                        trayWin.Left = p.X - trayWin.Width;
-                        trayWin.Top = p.Y - trayWin.Height;
-                    }
-
-                    trayWin.Topmost = true;
-                    trayWin.Visibility = Visibility.Visible;
-                }
-            }
-            else
-                forceHideTrayWin = false;
-        }
 
         private void Cm_Open_Click(object sender, EventArgs e)
         {
@@ -248,13 +174,9 @@ namespace OpenNetMeter.Views
 
         private void Cm_Exit_Click(object sender, EventArgs e)
         {
-            //stop MainWindowTasks
-            if (cts != null)
-                cts.Cancel();
 
             cm.Dispose();
             ni.DoubleClick -= Ni_DoubleClick;
-            ni.MouseMove -= Ni_MouseMove;
             ni.MouseClick -= Ni_MouseClick;
             ni.Dispose();
             confDialog.Close();
@@ -298,7 +220,7 @@ namespace OpenNetMeter.Views
                 ni.ShowBalloonTip(1000, null, "Minimized to system tray", Forms.ToolTipIcon.None);
                 balloonShow = true;
             }
-            forceHideTrayWin = true;
+
             aboutWin.Visibility = Visibility.Collapsed;
             confDialog.Visibility = Visibility.Collapsed;
             this.Visibility = Visibility.Collapsed;

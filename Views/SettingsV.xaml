@@ -70,6 +70,39 @@
                 <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
                     <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Dark mode</TextBlock>
                 </StackPanel>
+
+                <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Orientation="Vertical" VerticalAlignment="Top" Margin="5">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5,5" >
+                        <TextBlock TextDecorations="Underline" Style="{StaticResource FontColor1}">Mini Widget</TextBlock>
+                        <TextBlock ToolTipService.InitialShowDelay="100" ToolTipService.ShowDuration="10000" Style="{StaticResource FontColor4}" Margin="5,0">
+                            <TextBlock.ToolTip>
+                                <TextBlock>
+                                    To hide mini widget, right click it and select hide
+                                    <LineBreak/>
+                                    To show it again, right click the system tray and select show
+                                </TextBlock>
+                            </TextBlock.ToolTip>
+                            ?
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal"  Margin="5,5" >
+                        <TextBlock FontSize="11" Padding="0" Style="{StaticResource FontColor1}">Alignment:</TextBlock>
+                        <RadioButton FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Horizontal</RadioButton>
+                        <RadioButton FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Vertical</RadioButton>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"  Margin="5,5" >
+                        <TextBlock FontSize="11" Padding="0" Style="{StaticResource FontColor1}">Content:</TextBlock>
+                        <RadioButton FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Speed</RadioButton>
+                        <RadioButton FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Volume</RadioButton>
+                        <RadioButton FontSize="11" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Both</RadioButton>
+                    </StackPanel>
+                    <CheckBox FontSize="11" Style="{StaticResource FontColor1}" Margin="5,5">Transparent Background</CheckBox>
+                    
+                </StackPanel>
+                
             </Grid>
         </Border>
     </Grid>

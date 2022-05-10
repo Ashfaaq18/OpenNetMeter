@@ -26,6 +26,9 @@ namespace OpenNetMeter.Models
         [DllImport("User32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         internal static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
+        [DllImport("User32.dll")]
+        internal static extern IntPtr SetParent(IntPtr hWnd, IntPtr hParent);
+
         public static IntPtr FindWindowByClassName(IntPtr hwndParent, string className)
         {
             return FindWindowEx(hwndParent, IntPtr.Zero, className, null);

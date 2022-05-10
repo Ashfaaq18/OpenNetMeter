@@ -5,56 +5,55 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
         mc:Ignorable="d"
-        ShowInTaskbar="False"
+        WindowStyle="None"
         ResizeMode="NoResize"
-        Title="TrayPopupWinV" Height="100" Width="100">
+        ShowInTaskbar="False"
+        SizeToContent="WidthAndHeight"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        WindowStartupLocation="CenterOwner">
     <WindowChrome.WindowChrome>
-        <WindowChrome GlassFrameThickness="0" CornerRadius="0" CaptionHeight="0"/>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
     </WindowChrome.WindowChrome>
-    <Window.Style>
-        <Style TargetType="{x:Type Window}">
-            <Style.Triggers>
-                <Trigger Property="Visibility" Value="Visible">
-                    <Trigger.EnterActions>
-                        <BeginStoryboard Name="MyFadeEffect1">
-                            <Storyboard>
-                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                         From="0.0" To="1.0" Duration="0:0:0.2"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </Trigger.EnterActions>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Style>
     <Window.Resources>
         <vm:UnitConverterBytes x:Key="converterBytes"/>
         <vm:UnitConverterBits x:Key="converterBits"/>
     </Window.Resources>
-    <Grid Style="{StaticResource BackgroundColor2}">
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-Volume : </TextBlock>
-            <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
-        </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-Volume : </TextBlock>
-            <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-        </StackPanel>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-Speed : </TextBlock>
-            <TextBlock Padding="5,0,0,0"  Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">ps</TextBlock>
-        </StackPanel>
-        <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-Speed :</TextBlock>
-            <TextBlock Padding="5,0,0,0" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
-            <TextBlock Padding="0" VerticalAlignment="Center" Style="{StaticResource FontColor1}">ps</TextBlock>
-        </StackPanel>
-    </Grid>
+    <Border Style="{StaticResource MiniWidgetBorderStyle}">
+        <Grid Style="{StaticResource BackgroundColor2}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ContextMenu>
+                <ContextMenu Style="{StaticResource miniWidgetContextMenuColor}">
+                    <MenuItem Header="Open"/>
+                    <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
+                </ContextMenu>
+            </Grid.ContextMenu>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+                <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-V :</TextBlock>
+                <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+                <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-V :</TextBlock>
+                <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+                <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-S :</TextBlock>
+                <TextBlock Padding="5,0,0,0"  Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                <TextBlock Padding="0" Style="{StaticResource FontColor1}">ps</TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+                <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-S :</TextBlock>
+                <TextBlock Padding="5,0,0,0" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center"/>
+                <TextBlock Padding="0" VerticalAlignment="Center" Style="{StaticResource FontColor1}">ps</TextBlock>
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>
