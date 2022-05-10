@@ -17,8 +17,9 @@ namespace OpenNetMeter.Views
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
+        private Window mainWindow;
         private ContextMenuStrip menuStrip;
-        public MiniWidgetV()
+        public MiniWidgetV(Window mainWindow_ref)
         {
             InitializeComponent();
             DataContext = new MiniWidgetVM();
@@ -35,6 +36,8 @@ namespace OpenNetMeter.Views
             this.Visibility = Properties.Settings.Default.MiniWidgetVisibility ? Visibility.Visible : Visibility.Collapsed;
 
             relocationTimer.Tick += RelocationTimer_Tick;
+
+            mainWindow = mainWindow_ref;
         }
 
         private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -67,7 +70,12 @@ namespace OpenNetMeter.Views
 
         private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
         {
-            //this.Owner.Visibility = Visibility.Visible;
+            if (mainWindow != null)
+            {
+                mainWindow.Visibility = Visibility.Visible;
+                mainWindow.Activate();
+            }
         }
+
     }
 }

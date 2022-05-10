@@ -57,7 +57,7 @@ namespace OpenNetMeter.Views
 
                 confDialog = new ConfirmationDialog(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));     
                 aboutWin = new AboutWindow(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
-                miniWidget = new MiniWidgetV();
+                miniWidget = new MiniWidgetV(this);
                 mainWin = new MainWindowVM((MiniWidgetVM)miniWidget.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = mainWin;
                 this.Closing += MainWindow_Closing;

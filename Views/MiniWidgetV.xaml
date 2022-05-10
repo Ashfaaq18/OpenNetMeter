@@ -8,9 +8,10 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        SizeToContent="WidthAndHeight"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        LocationChanged="Window_LocationChanged">
+        LocationChanged="Window_LocationChanged"
+        Width="{Binding Width}"
+        Height="{Binding Height}">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
     </WindowChrome.WindowChrome>
@@ -22,11 +23,8 @@
     <Grid Style="{StaticResource BackgroundColor2}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
-            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
@@ -36,14 +34,14 @@
                 <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
             </ContextMenu>
         </Grid.ContextMenu>
-        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+        <!--<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
             <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-V :</TextBlock>
             <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
             <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-V :</TextBlock>
             <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-        </StackPanel>
+        </StackPanel>-->
         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
             <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-S :</TextBlock>
             <TextBlock Padding="5,0,0,0"  Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
