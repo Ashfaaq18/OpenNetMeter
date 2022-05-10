@@ -64,5 +64,10 @@ namespace OpenNetMeter.Views
             relocationTimer.Stop();
             relocationTimer.Start();
         }
+
+        private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
+        {
+            this.Owner.Visibility = Visibility.Visible;
+        }
     }
 }

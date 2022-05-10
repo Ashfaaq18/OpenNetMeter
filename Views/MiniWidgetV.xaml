@@ -32,7 +32,7 @@
         </Grid.RowDefinitions>
         <Grid.ContextMenu>
             <ContextMenu Style="{StaticResource miniWidgetContextMenuColor}">
-                <MenuItem Header="Open"/>
+                <MenuItem Header="Open" Click="MenuItem_Open_Click"/>
                 <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
             </ContextMenu>
         </Grid.ContextMenu>

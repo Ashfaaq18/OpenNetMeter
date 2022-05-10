@@ -175,7 +175,6 @@ namespace OpenNetMeter.Views
 
         private void Cm_Exit_Click(object sender, EventArgs e)
         {
-
             cm.Dispose();
             ni.DoubleClick -= Ni_DoubleClick;
             ni.MouseClick -= Ni_MouseClick;
@@ -183,7 +182,6 @@ namespace OpenNetMeter.Views
             confDialog.Close();
             trayWin.Close();
             aboutWin.Close();
-            mainWin.Dispose();
             mutex.Close();
             this.Closing -= MainWindow_Closing;
             this.Close();

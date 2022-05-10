@@ -5,7 +5,7 @@ using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class MainWindowVM : INotifyPropertyChanged, IDisposable
+    public class MainWindowVM : INotifyPropertyChanged
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
@@ -127,10 +127,6 @@ namespace OpenNetMeter.ViewModels
                 Properties.Settings.Default.LaunchPage = TabBtnToggle;
                 Properties.Settings.Default.Save();
             }
-        }
-        public void Dispose()
-        {
-            svm.Dispose();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

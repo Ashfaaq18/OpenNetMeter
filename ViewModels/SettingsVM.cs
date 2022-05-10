@@ -9,7 +9,7 @@ using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class SettingsVM : INotifyPropertyChanged, IDisposable
+    public class SettingsVM : INotifyPropertyChanged
     {
         private bool setStartWithWin;
         public bool SetStartWithWin
@@ -51,75 +51,6 @@ namespace OpenNetMeter.ViewModels
                 {
                     unlockOptionStartWin = value;
                     OnPropertyChanged("UnlockOptionStartWin");
-                }
-            }
-        }
-
-        //1 == black, 2 == white
-        private int fontColorDeskBand;
-        public int FontColorDeskBand
-        {
-            get { return fontColorDeskBand; }
-
-            set
-            {
-                if (fontColorDeskBand != value)
-                {
-                    fontColorDeskBand = value;
-                    OnPropertyChanged("FontColorDeskBand");
-
-                    //set the app settings
-                    Properties.Settings.Default.FontColor = value;
-                    Properties.Settings.Default.Save();
-                }
-            }
-        }
-
-        private bool unlockFontColorDeskBand;
-        public bool UnlockFontColorDeskBand
-        {
-            get { return unlockFontColorDeskBand; }
-
-            set
-            {
-                if (unlockFontColorDeskBand != value)
-                {
-                    unlockFontColorDeskBand = value;
-                    OnPropertyChanged("UnlockFontColorDeskBand");
-                }
-            }
-        }
-
-        private bool setDeskBand;
-        public bool SetDeskBand
-        {
-            get { return setDeskBand; }
-
-            set
-            {
-                if (setDeskBand != value)
-                {
-                    setDeskBand = value;
-                    OnPropertyChanged("SetDeskBand");
-
-                    //set the app settings
-                    Properties.Settings.Default.DeskBandSetting = value;
-                    Properties.Settings.Default.Save();
-
-                    if (value)
-                    {
-                        UnlockFontColorDeskBand = false;
-                        DllRegisterServer();
-                        ShowDeskband();
-                        SetFontColor(FontColorDeskBand);
-                    }
-                    else
-                    {
-                        HideDeskband();
-                        DllUnregisterServer();
-                        UnlockFontColorDeskBand = true;
-                    }
-
                 }
             }
         }
@@ -198,14 +129,6 @@ namespace OpenNetMeter.ViewModels
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
-            //deskband setting
-            FontColorDeskBand = Properties.Settings.Default.FontColor;
-            SetDeskBand = Properties.Settings.Default.DeskBandSetting;
-            if (SetDeskBand)
-                UnlockFontColorDeskBand = false;
-            else
-                UnlockFontColorDeskBand = true;
-
             //start with windows setting
             UnlockOptionStartWin = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
@@ -221,26 +144,6 @@ namespace OpenNetMeter.ViewModels
             //DarkMode setting
             SetDarkMode = Properties.Settings.Default.DarkMode;
         }
-
-        // ---------- DeskBand Stuff ---------------------//
-
-        [DllImport("ONM_DeskBand.dll", EntryPoint = "DllRegisterServer")]
-        static extern IntPtr DllRegisterServer();
-
-        [DllImport("ONM_DeskBand.dll", EntryPoint = "DllUnregisterServer")]
-        static extern IntPtr DllUnregisterServer();
-
-        [DllImport("ONM_DeskBand.dll", EntryPoint = "ShowDeskband")]
-        static extern bool ShowDeskband();
-
-        [DllImport("ONM_DeskBand.dll", EntryPoint = "HideDeskband")]
-        static extern bool HideDeskband();
-
-        [DllImport("ONM_DeskBand.dll", EntryPoint = "SetDataVars")]
-        public static extern void SetDataVars(double down, Int32 downSuffix, double up, Int32 upSuffix);
-
-        [DllImport("ONM_DeskBand.dll", EntryPoint = "SetFontColor")]
-        public static extern void SetFontColor(Int32 color);
 
         // --------- Task Scheduler stuff ------------------//
         private readonly string taskName;
@@ -322,15 +225,6 @@ namespace OpenNetMeter.ViewModels
             catch(Exception ex)
             {
                 Debug.WriteLine("Error: " + ex.Message);
-            }
-        }
-
-        public void Dispose()
-        {
-            if(SetDeskBand)
-            {
-                HideDeskband();
-                DllUnregisterServer();
             }
         }
 

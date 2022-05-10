@@ -257,14 +257,6 @@ namespace OpenNetMeter.Models
 
             tpvm.DownloadSpeed = download;
             tpvm.UploadSpeed = upload;
-
-            //update speed in taskbar
-            if (Properties.Settings.Default.DeskBandSetting)
-            {
-                (double, int) down = DataSizeSuffix.SizeSuffixInInt(download);
-                (double, int) up = DataSizeSuffix.SizeSuffixInInt(upload);
-                SettingsVM.SetDataVars(down.Item1, down.Item2, up.Item1, up.Item2);
-            }
         }
 
         public void CaptureNetworkSpeed()
