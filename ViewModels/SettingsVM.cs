@@ -124,6 +124,23 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private bool miniWidgetTransparent;
+
+        public bool MiniWidgetTransparent
+        {
+            get { return miniWidgetTransparent; }
+            set
+            {
+                miniWidgetTransparent = value;
+                OnPropertyChanged("MiniWidgetTransparent");
+
+                Properties.Settings.Default.MiniWidgetTransparent = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+
+
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
@@ -133,6 +150,8 @@ namespace OpenNetMeter.ViewModels
             UnlockOptionStartWin = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             MinimizeOnStart = Properties.Settings.Default.MinimizeOnStart;
+            MiniWidgetTransparent = Properties.Settings.Default.MiniWidgetTransparent;
+
             if (SetStartWithWin)
                 UnlockMinimizeOnStart = false;
             else

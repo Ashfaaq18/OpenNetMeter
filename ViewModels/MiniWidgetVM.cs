@@ -78,9 +78,12 @@ namespace OpenNetMeter.ViewModels
             DownloadSpeed = 0;
             UploadSpeed = 0;
 
-            Size size = ShapeMeasure(new TextBlock { Text = " D-S : 1024.00Mbps ", FontSize = 11, Padding = new Thickness(0) });
-            Width = size.Width + 10;
-            Height = size.Height * 2 + 10;
+            Size size1 = ShapeMeasure(new TextBlock { Text = "D-S :", FontSize = 12, Padding = new Thickness(0) });
+            Size size2 = ShapeMeasure(new TextBlock { Text = "1024.00Mbps", FontSize = 12, Padding = new Thickness(5,0,0,0) });
+            int widthMargins = 5 + 5; //these are from the miniwidget xaml margins
+            Width = size1.Width + size2.Width + widthMargins;
+            int heightMargins = 2 + 2; //these are from the miniwidget xaml margins
+            Height = size1.Height * 2 + heightMargins * 2;
         }
 
         public Size ShapeMeasure(TextBlock tb)

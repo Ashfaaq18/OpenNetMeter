@@ -142,5 +142,17 @@ namespace OpenNetMeter.Properties {
                 this["MiniWidgetVisibility"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MiniWidgetTransparent {
+            get {
+                return ((bool)(this["MiniWidgetTransparent"]));
+            }
+            set {
+                this["MiniWidgetTransparent"] = value;
+            }
+        }
     }
 }

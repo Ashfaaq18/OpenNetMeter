@@ -57,9 +57,9 @@
                     <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Dark mode</TextBlock>
                 </StackPanel>
 
-                <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="1" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
-                <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="2" Orientation="Vertical" VerticalAlignment="Top" Margin="5">
+                <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="1" Orientation="Vertical" VerticalAlignment="Top" Margin="5">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5,5" >
                         <TextBlock TextDecorations="Underline" Style="{StaticResource FontColor1}">Mini Widget</TextBlock>
                         <TextBlock ToolTipService.InitialShowDelay="100" ToolTipService.ShowDuration="10000" Style="{StaticResource FontColor4}" Margin="5,0">
@@ -74,7 +74,7 @@
                         </TextBlock>
                     </StackPanel>
                     
-                    <StackPanel Orientation="Horizontal"  Margin="5,5" >
+                    <!--<StackPanel Orientation="Horizontal"  Margin="5,5" >
                         <TextBlock Style="{StaticResource FontColor1}">Alignment:</TextBlock>
                         <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Horizontal</RadioButton>
                         <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Vertical</RadioButton>
@@ -84,8 +84,10 @@
                         <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Speed</RadioButton>
                         <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Volume</RadioButton>
                         <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Both</RadioButton>
-                    </StackPanel>
-                    <CheckBox Style="{StaticResource FontColor1}" Margin="5,5">Transparent Background</CheckBox>
+                    </StackPanel>-->
+                    <CheckBox Style="{StaticResource FontColor1}" Margin="5,2" IsChecked="{Binding MiniWidgetTransparent}">
+                        <TextBlock Margin="5,0,0,0">Transparent Background</TextBlock>
+                    </CheckBox>
                     
                 </StackPanel>
                 
