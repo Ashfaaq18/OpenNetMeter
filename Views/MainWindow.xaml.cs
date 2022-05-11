@@ -72,6 +72,7 @@ namespace OpenNetMeter.Views
                 ni.Visible = true;
                 ni.DoubleClick += Ni_DoubleClick;
                 ni.MouseClick += Ni_MouseClick;
+                cm.Items.Add("Reset all window positions", null, ResetWinPos_Click);
                 cm.Items.Add("Show Mini Widget", null, MiniWidget_Show_Click);
                 cm.Items.Add(new Forms.ToolStripSeparator());
                 cm.Items.Add("Open", null, Cm_Open_Click);
@@ -82,9 +83,19 @@ namespace OpenNetMeter.Views
             }
         }
 
+        private void ResetWinPos_Click(object sender, EventArgs e)
+        {
+            this.Left = SystemParameters.PrimaryScreenWidth/2 - this.Width / 2;
+            this.Top = SystemParameters.PrimaryScreenHeight/2 - this.Height / 2;
+
+            miniWidget.Left = this.Left + this.Width / 2 - miniWidget.Width / 2;
+            miniWidget.Top = this.Top + this.Height / 2 - miniWidget.Height / 2;
+        }
+
         private void MiniWidget_Show_Click(object sender, EventArgs e)
         {
             miniWidget.Visibility = Visibility.Visible;
+            miniWidget.Activate();
 
             Properties.Settings.Default.MiniWidgetVisibility = true;
             Properties.Settings.Default.Save();
@@ -104,7 +115,12 @@ namespace OpenNetMeter.Views
 
             WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
             IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-            miniWidgetHwnd.Owner = shellTrayHwnd;
+            if (shellTrayHwnd != IntPtr.Zero)
+            {
+                miniWidgetHwnd.Owner = shellTrayHwnd;
+                //IntPtr test = NativeMethods.SetParent(miniWidgetHwnd.Handle, shellTrayHwnd);
+            }
+
         }
 
         private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)

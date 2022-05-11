@@ -14,21 +14,14 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class MiniWidgetV : Window
     {
-        private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
+        private DispatcherTimer taskBarStatus = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
         private Window mainWindow;
-        private ContextMenuStrip menuStrip;
         public MiniWidgetV(Window mainWindow_ref)
         {
             InitializeComponent();
             DataContext = new MiniWidgetVM();
-            menuStrip = new ContextMenuStrip();
-            menuStrip.Renderer = new CustomSystemTray();
-            menuStrip.Items.Add("Open");
-            menuStrip.Items.Add("Hide");
-            //menuStrip.
-            menuStrip.Visible = true;
 
             this.Left = Properties.Settings.Default.MiniWidgetPos.X;
             this.Top = Properties.Settings.Default.MiniWidgetPos.Y;
@@ -37,7 +30,22 @@ namespace OpenNetMeter.Views
 
             relocationTimer.Tick += RelocationTimer_Tick;
 
+            taskBarStatus.Tick += TaskBarStatus_Tick;
+            taskBarStatus.IsEnabled = false;
+
             mainWindow = mainWindow_ref;
+        }
+
+        private void TaskBarStatus_Tick(object sender, EventArgs e)
+        {
+            //IntPtr hWnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
+            //if (hWnd != IntPtr.Zero)
+            //{
+            //    //IsTaskBarVisible = IsWindowVisible(hWnd);
+            //    if(!NativeMethods.IsWindowVisible(hWnd))
+            //        Debug.WriteLine("taskbar hidden");
+            //}
+            //Debug.WriteLine("Diff: " + Math.Abs(SystemParameters.PrimaryScreenHeight - SystemParameters.WorkArea.Height));
         }
 
         private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

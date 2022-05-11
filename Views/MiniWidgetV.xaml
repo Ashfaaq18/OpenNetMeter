@@ -7,14 +7,14 @@
         mc:Ignorable="d"
         WindowStyle="None"
         ResizeMode="NoResize"
-        ShowInTaskbar="False"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         LocationChanged="Window_LocationChanged"
         Width="{Binding Width}"
         Height="{Binding Height}"
         AllowsTransparency="True"
         Background="#01000000"
-        Topmost="True">
+        Topmost="True"
+        ShowInTaskbar="False">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
     </WindowChrome.WindowChrome>
