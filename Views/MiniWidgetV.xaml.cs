@@ -25,9 +25,6 @@ namespace OpenNetMeter.Views
             InitializeComponent();
             DataContext = new MiniWidgetVM();
 
-            this.Left = Properties.Settings.Default.MiniWidgetPos.X;
-            this.Top = Properties.Settings.Default.MiniWidgetPos.Y;
-
             relocationTimer.Tick += RelocationTimer_Tick;
             zOrderTimer.Tick += TaskBarStatus_Tick;
 

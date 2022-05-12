@@ -62,7 +62,7 @@ namespace OpenNetMeter.Views
                 DataContext = mainWin;
                 this.Closing += MainWindow_Closing;
                 //initialize window position and size
-                MainWinPosAndSizeInit();
+                AllWinPosAndSizeInit();
 
                 //initialize system tray
                 ni = new Forms.NotifyIcon();
@@ -139,24 +139,28 @@ namespace OpenNetMeter.Views
             }
         }
 
-        private void MainWinPosAndSizeInit()
+        private void AllWinPosAndSizeInit()
         {
             if (Properties.Settings.Default.LaunchFirstTime)
             {
                 Properties.Settings.Default.WinSize = new System.Drawing.Size((int)this.MinWidth, (int)this.MinHeight);
                 this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
                 Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+
                 miniWidget.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
                 Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)miniWidget.Left, (int)miniWidget.Top);
+
                 Properties.Settings.Default.LaunchFirstTime = false;
                 Properties.Settings.Default.Save();
             }
 
             this.Left = Properties.Settings.Default.WinPos.X;
             this.Top = Properties.Settings.Default.WinPos.Y;
-
             this.Width = Properties.Settings.Default.WinSize.Width;
             this.Height = Properties.Settings.Default.WinSize.Height;
+
+            miniWidget.Left = Properties.Settings.Default.MiniWidgetPos.X;
+            miniWidget.Top = Properties.Settings.Default.MiniWidgetPos.Y;   
 
             //check if window is out of bounds. This is for, when the user last opened the app in the 2nd monitor and then reopens it with a 1 monitor setup.
             bool isInScreen = false;
