@@ -97,6 +97,8 @@ namespace OpenNetMeter.Views
             miniWidget.Visibility = Visibility.Visible;
             miniWidget.Activate();
 
+            miniWidget.EnableMiniWidgetZorderTimer();
+
             Properties.Settings.Default.MiniWidgetVisibility = true;
             Properties.Settings.Default.Save();
         }

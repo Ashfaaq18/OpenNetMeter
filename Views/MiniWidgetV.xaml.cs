@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using OpenNetMeter.Models;
 using OpenNetMeter.ViewModels;
@@ -14,7 +16,7 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class MiniWidgetV : Window
     {
-        private DispatcherTimer taskBarStatus = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
+        private DispatcherTimer zOrderTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
         private Window mainWindow;
@@ -26,26 +28,49 @@ namespace OpenNetMeter.Views
             this.Left = Properties.Settings.Default.MiniWidgetPos.X;
             this.Top = Properties.Settings.Default.MiniWidgetPos.Y;
 
-            this.Visibility = Properties.Settings.Default.MiniWidgetVisibility ? Visibility.Visible : Visibility.Collapsed;
-
             relocationTimer.Tick += RelocationTimer_Tick;
-
-            taskBarStatus.Tick += TaskBarStatus_Tick;
-            taskBarStatus.IsEnabled = false;
+            zOrderTimer.Tick += TaskBarStatus_Tick;
 
             mainWindow = mainWindow_ref;
+
+            if (Properties.Settings.Default.MiniWidgetVisibility)
+            {
+                this.Visibility = Visibility.Visible;
+                zOrderTimer.IsEnabled = true;
+            }
+            else
+            {
+                this.Visibility = Visibility.Collapsed;
+                zOrderTimer.IsEnabled = false;
+            }
+        }
+
+        private void FixZorder()
+        {
+            //const uint GW_CHILD = 5;
+            //const uint GW_HWNDNEXT = 2;
+            const uint GW_HWNDPREV = 3;
+            
+            WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(this);
+            IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
+            for (IntPtr h = miniWidgetHwnd.Handle; h != IntPtr.Zero; h = NativeMethods.GetWindow(h, GW_HWNDPREV))
+            {
+                if(h == shellTrayHwnd)
+                {
+                    //Debug.WriteLine("this window is behind Shell_TrayWnd");
+                    //miniWidgetHwnd.Owner = shellTrayHwnd;
+                    NativeMethods.BringWindowToTop(miniWidgetHwnd.Handle);
+                    break;
+                }
+            }
         }
 
         private void TaskBarStatus_Tick(object sender, EventArgs e)
         {
-            //IntPtr hWnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-            //if (hWnd != IntPtr.Zero)
-            //{
-            //    //IsTaskBarVisible = IsWindowVisible(hWnd);
-            //    if(!NativeMethods.IsWindowVisible(hWnd))
-            //        Debug.WriteLine("taskbar hidden");
-            //}
-            //Debug.WriteLine("Diff: " + Math.Abs(SystemParameters.PrimaryScreenHeight - SystemParameters.WorkArea.Height));
+            if(Properties.Settings.Default.MiniWidgetVisibility)
+            {
+                FixZorder();
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -53,9 +78,16 @@ namespace OpenNetMeter.Views
             this.DragMove();
         }
 
+        public void EnableMiniWidgetZorderTimer()
+        {
+            zOrderTimer.IsEnabled = true;
+        }
+
         private void MenuItem_Hide_Click(object sender, RoutedEventArgs e)
         {
             this.Visibility = Visibility.Collapsed;
+
+            zOrderTimer.IsEnabled = false;
 
             Properties.Settings.Default.MiniWidgetVisibility = false;
             Properties.Settings.Default.Save();
