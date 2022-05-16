@@ -19,7 +19,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
     <Style x:Key="FontColor2">
         <Setter Property="Control.Foreground" Value="Gray"></Setter>
         <Style.Triggers>
@@ -64,8 +64,20 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
+    
+    <Style TargetType="Grid" x:Key="MiniWidgetBackgroundColor">
+        <Setter Property="Background" Value="#f1f1f1"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#252525"></Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = MiniWidgetTransparent}" Value="True">
+                <Setter Property="Background" Value="Transparent"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
 
-    <Style x:Key="BorderColor">
+    <Style TargetType="Border" x:Key="BorderColor">
         <Setter Property="Control.BorderBrush" Value="#4F5050"></Setter>
         <Setter Property="Control.BorderThickness" Value="1"></Setter>
         <Style.Triggers>
@@ -582,6 +594,38 @@
     </Style>
     <!-- End of Flat ComboBox -->
 
+    
+    <!-- mini widget context menu style  -->
+    
+    <Style TargetType="ContextMenu" x:Key="miniWidgetContextMenuColor">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Foreground" Value="#202020"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContextMenu}">
+                    <Border Background="#f0f0f0" BorderBrush="DarkGray" BorderThickness="1">
+                        <StackPanel ClipToBounds="True" Orientation="Vertical" IsItemsHost="True"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Foreground" Value="#f0f0f0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ContextMenu}">
+                            <Border Background="#202020" BorderBrush="DarkGray" BorderThickness="1">
+                                <StackPanel ClipToBounds="True" Orientation="Vertical" IsItemsHost="True"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
     <!-- Settings -->
 
 </ResourceDictionary>

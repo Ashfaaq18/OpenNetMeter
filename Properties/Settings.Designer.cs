@@ -37,30 +37,6 @@ namespace OpenNetMeter.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool DeskBandSetting {
-            get {
-                return ((bool)(this["DeskBandSetting"]));
-            }
-            set {
-                this["DeskBandSetting"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2")]
-        public int FontColor {
-            get {
-                return ((int)(this["FontColor"]));
-            }
-            set {
-                this["FontColor"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool MinimizeOnStart {
             get {
@@ -140,6 +116,42 @@ namespace OpenNetMeter.Properties {
             }
             set {
                 this["DarkMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point MiniWidgetPos {
+            get {
+                return ((global::System.Drawing.Point)(this["MiniWidgetPos"]));
+            }
+            set {
+                this["MiniWidgetPos"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MiniWidgetVisibility {
+            get {
+                return ((bool)(this["MiniWidgetVisibility"]));
+            }
+            set {
+                this["MiniWidgetVisibility"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MiniWidgetTransparent {
+            get {
+                return ((bool)(this["MiniWidgetTransparent"]));
+            }
+            set {
+                this["MiniWidgetTransparent"] = value;
             }
         }
     }

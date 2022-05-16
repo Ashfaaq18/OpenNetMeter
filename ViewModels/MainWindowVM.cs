@@ -5,7 +5,7 @@ using OpenNetMeter.Models;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class MainWindowVM : INotifyPropertyChanged, IDisposable
+    public class MainWindowVM : INotifyPropertyChanged
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
@@ -55,7 +55,7 @@ namespace OpenNetMeter.ViewModels
             Settings
         }
 
-        public MainWindowVM(TrayPopupVM tpVM_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
+        public MainWindowVM(MiniWidgetVM mwvm_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
         {
             DownloadSpeed = 0;
             UploadSpeed = 0;
@@ -65,7 +65,7 @@ namespace OpenNetMeter.ViewModels
             dudvm = new DataUsageDetailedVM(cD_DataContext);
             svm = new SettingsVM();
 
-            netProc = new NetworkProcess(dusvm, dudvm, this, tpVM_DataContext);
+            netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
             dudvm.SetNetProc(netProc);
 
             //intial startup page
@@ -127,10 +127,6 @@ namespace OpenNetMeter.ViewModels
                 Properties.Settings.Default.LaunchPage = TabBtnToggle;
                 Properties.Settings.Default.Save();
             }
-        }
-        public void Dispose()
-        {
-            svm.Dispose();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
