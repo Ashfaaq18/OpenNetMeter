@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using OpenNetMeter.Models;
@@ -16,7 +13,7 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class MiniWidgetV : Window
     {
-        private DispatcherTimer zOrderTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500), IsEnabled = false };
+        private DispatcherTimer fixZorderTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = true };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
         private Window mainWindow;
@@ -25,48 +22,48 @@ namespace OpenNetMeter.Views
             InitializeComponent();
             DataContext = new MiniWidgetVM();
 
+            fixZorderTimer.Tick += FixZorderTimer_Tick;
             relocationTimer.Tick += RelocationTimer_Tick;
-            zOrderTimer.Tick += TaskBarStatus_Tick;
 
             mainWindow = mainWindow_ref;
 
             if (Properties.Settings.Default.MiniWidgetVisibility)
-            {
                 this.Visibility = Visibility.Visible;
-                zOrderTimer.IsEnabled = true;
-            }
             else
-            {
                 this.Visibility = Visibility.Collapsed;
-                zOrderTimer.IsEnabled = false;
-            }
+
         }
 
-        private void FixZorder()
+        private void FixZorderTimer_Tick(object sender, EventArgs e)
         {
-            //const uint GW_CHILD = 5;
-            //const uint GW_HWNDNEXT = 2;
-            const uint GW_HWNDPREV = 3;
-            
-            WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(this);
-            IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-            for (IntPtr h = miniWidgetHwnd.Handle; h != IntPtr.Zero; h = NativeMethods.GetWindow(h, GW_HWNDPREV))
+            const int HWND_TOPMOST = -1;
+            const int HWND_NOTOPMOST = -2;
+            const string SHELLTRAY = "Shell_traywnd";
+
+            WindowInteropHelper thisWin = new WindowInteropHelper(this);
+            IntPtr shellTray = NativeMethods.GetWindowByClassName(IntPtr.Zero ,SHELLTRAY);
+
+            //Reassign owner when explorer.exe restarts
+            if (thisWin.Owner != shellTray)
             {
-                if(h == shellTrayHwnd)
+                Debug.WriteLine("set owner again");
+                thisWin.Owner = shellTray;
+            }
+
+            //check if window is behind the taskbar. If yes, bring it in front without activating it.
+            for (IntPtr h = thisWin.Handle; h != IntPtr.Zero; h = NativeMethods.GetWindow(h, (uint)NativeMethods.GW.HWNDPREV))
+            {
+                if (h == shellTray)
                 {
-                    //Debug.WriteLine("this window is behind Shell_TrayWnd");
-                    //miniWidgetHwnd.Owner = shellTrayHwnd;
-                    NativeMethods.BringWindowToTop(miniWidgetHwnd.Handle);
+                    Debug.WriteLine("this window is behind Shell_TrayWnd");
+                    NativeMethods.SetWindowPos(thisWin.Handle, (IntPtr)HWND_TOPMOST, 0, 0, 0, 0, 
+                        (int)NativeMethods.SWP.ASYNCWINDOWPOS |
+                        (int)NativeMethods.SWP.NOACTIVATE |
+                        (int)NativeMethods.SWP.NOMOVE |
+                        (int)NativeMethods.SWP.NOSIZE);
+                    //NativeMethods.SetWindowPos(thisWin.Handle, (IntPtr)HWND_NOTOPMOST, 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
                     break;
                 }
-            }
-        }
-
-        private void TaskBarStatus_Tick(object sender, EventArgs e)
-        {
-            if(Properties.Settings.Default.MiniWidgetVisibility)
-            {
-                FixZorder();
             }
         }
 
@@ -75,24 +72,35 @@ namespace OpenNetMeter.Views
             this.DragMove();
         }
 
-        public void EnableMiniWidgetZorderTimer()
+        public void EnableZorderCheck()
         {
-            zOrderTimer.IsEnabled = true;
+            fixZorderTimer.IsEnabled = true;
         }
-
         private void MenuItem_Hide_Click(object sender, RoutedEventArgs e)
         {
             this.Visibility = Visibility.Collapsed;
-
-            zOrderTimer.IsEnabled = false;
+            fixZorderTimer.IsEnabled = false;
 
             Properties.Settings.Default.MiniWidgetVisibility = false;
             Properties.Settings.Default.Save();
         }
+        private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
+        {
+            if (mainWindow != null)
+            {
+                mainWindow.Visibility = Visibility.Visible;
+                mainWindow.Activate();
+            }
+        }
+
+        /// <summary>
+        /// Save window position when user moves window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RelocationTimer_Tick(object sender, EventArgs e)
         {
             relocationTimer.IsEnabled = false;
-
             //Do end of relocation processing
             Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
             Properties.Settings.Default.Save();
@@ -104,15 +112,5 @@ namespace OpenNetMeter.Views
             relocationTimer.Stop();
             relocationTimer.Start();
         }
-
-        private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
-        {
-            if (mainWindow != null)
-            {
-                mainWindow.Visibility = Visibility.Visible;
-                mainWindow.Activate();
-            }
-        }
-
     }
 }

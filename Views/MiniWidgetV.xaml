@@ -6,14 +6,14 @@
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
         mc:Ignorable="d"
         WindowStyle="None"
+        AllowsTransparency="True"
         ResizeMode="NoResize"
+        Topmost="True"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         LocationChanged="Window_LocationChanged"
         Width="{Binding Width}"
         Height="{Binding Height}"
-        AllowsTransparency="True"
         Background="#01000000"
-        Topmost="True"
         ShowInTaskbar="False">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />

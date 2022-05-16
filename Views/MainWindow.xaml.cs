@@ -45,8 +45,7 @@ namespace OpenNetMeter.Views
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
-        private Forms.NotifyIcon ni;
-        private Forms.ContextMenuStrip cm;
+        private Forms.NotifyIcon trayIcon;
         private bool balloonShow;
 
         public MainWindow()
@@ -65,22 +64,33 @@ namespace OpenNetMeter.Views
                 AllWinPosAndSizeInit();
 
                 //initialize system tray
-                ni = new Forms.NotifyIcon();
-                cm = new Forms.ContextMenuStrip();
+                trayIcon = new Forms.NotifyIcon();
+                Forms.ContextMenuStrip cm = new Forms.ContextMenuStrip();
                 balloonShow = false;
-                ni.Icon = Properties.Resources.AppIcon;
-                ni.Visible = true;
-                ni.DoubleClick += Ni_DoubleClick;
-                ni.MouseClick += Ni_MouseClick;
+                trayIcon.Icon = Properties.Resources.AppIcon;
+                trayIcon.Visible = true;
+                trayIcon.DoubleClick += Ni_DoubleClick;
+                trayIcon.MouseClick += Ni_MouseClick;
                 cm.Items.Add("Reset all window positions", null, ResetWinPos_Click);
                 cm.Items.Add("Show Mini Widget", null, MiniWidget_Show_Click);
                 cm.Items.Add(new Forms.ToolStripSeparator());
                 cm.Items.Add("Open", null, Cm_Open_Click);
                 cm.Items.Add("Exit", null, Cm_Exit_Click);
-                ni.ContextMenuStrip = cm;
+                trayIcon.ContextMenuStrip = cm;
 
-                SourceInitialized += MainWindow_SourceInitialized;
+                Loaded += MainWindow_Loaded;
             }
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            const string SHELLTRAY = "Shell_traywnd";
+            IntPtr shellTray = NativeMethods.GetWindowByClassName(IntPtr.Zero ,SHELLTRAY);
+            WindowInteropHelper miniWidgetInter = new WindowInteropHelper(miniWidget);
+            miniWidgetInter.Owner = shellTray;
+
+            confDialog.Owner = this;
+            aboutWin.Owner = this;
         }
 
         private void ResetWinPos_Click(object sender, EventArgs e)
@@ -94,13 +104,16 @@ namespace OpenNetMeter.Views
 
         private void MiniWidget_Show_Click(object sender, EventArgs e)
         {
-            miniWidget.Visibility = Visibility.Visible;
-            miniWidget.Activate();
+            WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
+            if (miniWidgetHwnd.Handle != IntPtr.Zero)
+            {
+                miniWidget.EnableZorderCheck();
+                miniWidget.Visibility = Visibility.Visible;
+                miniWidget.Activate();
 
-            miniWidget.EnableMiniWidgetZorderTimer();
-
-            Properties.Settings.Default.MiniWidgetVisibility = true;
-            Properties.Settings.Default.Save();
+                Properties.Settings.Default.MiniWidgetVisibility = true;
+                Properties.Settings.Default.Save();
+            } 
         }
 
         // this is for when the user clicks the window exit button through the alt+tab program switcher
@@ -109,32 +122,16 @@ namespace OpenNetMeter.Views
             e.Cancel = true;
             this.Visibility = Visibility.Collapsed;
         }
-
-        private void MainWindow_SourceInitialized(object sender, EventArgs e)
-        {
-            confDialog.Owner = this;
-            aboutWin.Owner = this;
-
-            WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
-            IntPtr shellTrayHwnd = NativeMethods.FindWindowByClassName(IntPtr.Zero, "Shell_TrayWnd");
-            if (shellTrayHwnd != IntPtr.Zero)
-            {
-                miniWidgetHwnd.Owner = shellTrayHwnd;
-                //IntPtr test = NativeMethods.SetParent(miniWidgetHwnd.Handle, shellTrayHwnd);
-            }
-
-        }
-
         private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
         {
             switch (e.Button)
             {
                 case Forms.MouseButtons.Right:
                     if (Properties.Settings.Default.DarkMode)
-                        ni.ContextMenuStrip.ForeColor = Color.White;
+                        trayIcon.ContextMenuStrip.ForeColor = Color.White;
                     else
-                        ni.ContextMenuStrip.ForeColor = Color.Black;
-                    ni.ContextMenuStrip.Renderer = new CustomSystemTray();
+                        trayIcon.ContextMenuStrip.ForeColor = Color.Black;
+                    trayIcon.ContextMenuStrip.Renderer = new CustomSystemTray();
                     break;
             }
         }
@@ -196,16 +193,12 @@ namespace OpenNetMeter.Views
 
         private void Cm_Exit_Click(object sender, EventArgs e)
         {
-            cm.Dispose();
-            ni.DoubleClick -= Ni_DoubleClick;
-            ni.MouseClick -= Ni_MouseClick;
-            ni.Dispose();
             confDialog.Close();
             miniWidget.Close();
             aboutWin.Close();
-            mutex.Close();
             this.Closing -= MainWindow_Closing;
             this.Close();
+            trayIcon.Visible = false;
         }
 
         private void Ni_DoubleClick(object sender, EventArgs e)
@@ -237,7 +230,7 @@ namespace OpenNetMeter.Views
         {
             if (!balloonShow)
             {
-                ni.ShowBalloonTip(1000, null, "Minimized to system tray", Forms.ToolTipIcon.None);
+                trayIcon.ShowBalloonTip(1000, null, "Minimized to system tray", Forms.ToolTipIcon.None);
                 balloonShow = true;
             }
 
