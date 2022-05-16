@@ -27,10 +27,9 @@ namespace OpenNetMeter.Views
 
             mainWindow = mainWindow_ref;
 
-            if (Properties.Settings.Default.MiniWidgetVisibility)
-                this.Visibility = Visibility.Visible;
-            else
-                this.Visibility = Visibility.Collapsed;
+            this.Visibility = Visibility.Visible;
+            if (!Properties.Settings.Default.MiniWidgetVisibility)
+                this.Visibility = Visibility.Hidden;
 
         }
 
@@ -78,7 +77,7 @@ namespace OpenNetMeter.Views
         }
         private void MenuItem_Hide_Click(object sender, RoutedEventArgs e)
         {
-            this.Visibility = Visibility.Collapsed;
+            this.Visibility = Visibility.Hidden;
             fixZorderTimer.IsEnabled = false;
 
             Properties.Settings.Default.MiniWidgetVisibility = false;
