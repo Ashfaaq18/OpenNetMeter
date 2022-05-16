@@ -98,8 +98,12 @@ namespace OpenNetMeter.Views
             this.Left = SystemParameters.PrimaryScreenWidth/2 - this.Width / 2;
             this.Top = SystemParameters.PrimaryScreenHeight/2 - this.Height / 2;
 
+            SaveWinPos((int)this.Left, (int)this.Top);
+
             miniWidget.Left = this.Left + this.Width / 2 - miniWidget.Width / 2;
             miniWidget.Top = this.Top + this.Height / 2 - miniWidget.Height / 2;
+
+            miniWidget.SaveWinPos((int)miniWidget.Left, (int)miniWidget.Top);
         }
 
         private void MiniWidget_Show_Click(object sender, EventArgs e)
@@ -272,10 +276,15 @@ namespace OpenNetMeter.Views
             relocationTimer.IsEnabled = false;
 
             //Do end of relocation processing
-            Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+            SaveWinPos((int)this.Left, (int)this.Top);
+        }
+
+        private void SaveWinPos(int x, int y)
+        {
+            Properties.Settings.Default.WinPos = new System.Drawing.Point(x, y);
             Properties.Settings.Default.Save();
 
-            //pass parent window dimensions to confirmation dialog
+            //pass parent window dimensions to confirmation and about dialog
             confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
             aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
@@ -284,8 +293,7 @@ namespace OpenNetMeter.Views
         {
             relocationTimer.IsEnabled = true;
             relocationTimer.Stop();
-            relocationTimer.Start();
-            
+            relocationTimer.Start();    
         }
     }
 }

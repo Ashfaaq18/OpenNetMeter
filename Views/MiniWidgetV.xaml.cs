@@ -102,7 +102,12 @@ namespace OpenNetMeter.Views
         {
             relocationTimer.IsEnabled = false;
             //Do end of relocation processing
-            Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
+            SaveWinPos((int)this.Left, (int)this.Top);
+        }
+
+        public void SaveWinPos(int x, int y)
+        {
+            Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point(x, y);
             Properties.Settings.Default.Save();
         }
 
