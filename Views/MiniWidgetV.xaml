@@ -11,8 +11,8 @@
         Topmost="True"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         LocationChanged="Window_LocationChanged"
-        Width="{Binding Width}"
-        Height="{Binding Height}"
+        Width="{Binding Width, Mode=TwoWay}"
+        Height="{Binding Height, Mode=TwoWay}"
         Background="#01000000"
         ShowInTaskbar="False">
     <WindowChrome.WindowChrome>

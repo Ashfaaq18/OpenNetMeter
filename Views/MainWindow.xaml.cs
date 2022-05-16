@@ -84,11 +84,6 @@ namespace OpenNetMeter.Views
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            const string SHELLTRAY = "Shell_traywnd";
-            IntPtr shellTray = NativeMethods.GetWindowByClassName(IntPtr.Zero ,SHELLTRAY);
-            WindowInteropHelper miniWidgetInter = new WindowInteropHelper(miniWidget);
-            miniWidgetInter.Owner = shellTray;
-
             confDialog.Owner = this;
             aboutWin.Owner = this;
         }
