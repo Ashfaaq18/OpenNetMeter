@@ -13,7 +13,7 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class MiniWidgetV : Window
     {
-        private DispatcherTimer fixZorderTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = true };
+        private DispatcherTimer fixZorderTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
         private Window mainWindow;
@@ -28,9 +28,18 @@ namespace OpenNetMeter.Views
             mainWindow = mainWindow_ref;
 
             this.Visibility = Visibility.Visible;
-            if (!Properties.Settings.Default.MiniWidgetVisibility)
-                this.Visibility = Visibility.Hidden;
+            fixZorderTimer.IsEnabled = true;
 
+            Loaded += MiniWidgetV_Loaded;
+        }
+
+        private void MiniWidgetV_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!Properties.Settings.Default.MiniWidgetVisibility)
+            {
+                this.Visibility = Visibility.Hidden;
+                fixZorderTimer.IsEnabled = false;
+            }
         }
 
         private void FixZorderTimer_Tick(object sender, EventArgs e)
@@ -71,17 +80,9 @@ namespace OpenNetMeter.Views
             this.DragMove();
         }
 
-        public void EnableZorderCheck()
-        {
-            fixZorderTimer.IsEnabled = true;
-        }
         private void MenuItem_Hide_Click(object sender, RoutedEventArgs e)
         {
-            this.Visibility = Visibility.Hidden;
-            fixZorderTimer.IsEnabled = false;
-
-            Properties.Settings.Default.MiniWidgetVisibility = false;
-            Properties.Settings.Default.Save();
+            HideMiniWidget();
         }
         private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
         {
@@ -115,6 +116,25 @@ namespace OpenNetMeter.Views
             relocationTimer.IsEnabled = true;
             relocationTimer.Stop();
             relocationTimer.Start();
+        }
+
+        public void ShowMiniWidget()
+        {
+            this.Visibility = Visibility.Visible;
+            this.Activate();
+            fixZorderTimer.IsEnabled = true;
+
+            Properties.Settings.Default.MiniWidgetVisibility = true;
+            Properties.Settings.Default.Save();
+        }
+
+        public void HideMiniWidget()
+        {
+            this.Visibility = Visibility.Hidden;
+            fixZorderTimer.IsEnabled = false;
+
+            Properties.Settings.Default.MiniWidgetVisibility = false;
+            Properties.Settings.Default.Save();
         }
     }
 }

@@ -106,12 +106,7 @@ namespace OpenNetMeter.Views
             WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
             if (miniWidgetHwnd.Handle != IntPtr.Zero)
             {
-                miniWidget.EnableZorderCheck();
-                miniWidget.Visibility = Visibility.Visible;
-                miniWidget.Activate();
-
-                Properties.Settings.Default.MiniWidgetVisibility = true;
-                Properties.Settings.Default.Save();
+                miniWidget.ShowMiniWidget();
             } 
         }
 
