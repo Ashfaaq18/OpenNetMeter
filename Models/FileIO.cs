@@ -41,13 +41,43 @@ namespace OpenNetMeter.Models
                 {
                     foreach (KeyValuePair<string, MyProcess> app in apps)
                     {
+                        /// example of how this section works (for reference)
+                        /// test entry:
+                        /// app.Value.Name = firefox,                       size: 7
+                        /// app.Value.TotalDataRecv = 63.22 KB <= 64737,    size: 8
+                        /// app.Value.TotalDataSend = 1.89 KB <= 1931,      size: 8
+                        /// app.Value.Name.Length = 7,                      size: 1
+                        /// 
+                        /// byte[] Byte = new byte[8*2+1+7]                 size: 7+8+8+1 = 24   
+                        /// 
+                        /// TotalDataRecv           
+                        /// ------------------------
+                        /// 64737 => ... 0000 0000 1111 1100 1110 0001
+                        /// 
+                        /// Byte[7] = 64737 >> 8*7 = 0000 0000         
+                        /// Byte[6] = 64737 >> 8*6 = 0000 0000          
+                        /// Byte[5] = 64737 >> 8*5 = 0000 0000      
+                        /// Byte[4] = 64737 >> 8*4 = 0000 0000           
+                        /// Byte[3] = 64737 >> 8*3 = 0000 0000
+                        /// Byte[2] = 64737 >> 8*2 = 0000 0000
+                        /// Byte[1] = 64737 >> 8*1 = 1111 1100
+                        /// Byte[0] = 64737 >> 8*0 = 1110 0001
+                        /// 
+                        /// Byte[0 & 1] = 1111 1100 1110 0001 => 2^15 + 2^14 + 2^13 + 2^12 + 2^11 + 2^10 + 2^7 + 2^6 + 2^5 + 2^0 = 64737
+                        /// 64737 / 1024 = 63.22 KB
+                        /// 
+                        /// Byte[16] = 07
+                        /// 
+                        /// Byte[17 to 23] = "firefox"
+                        /// 
+
                         byte[] Bytes = new byte[8 * 2 + 1 + app.Value.Name.Length];
 
                         for (int i = 7 * 1; i >= 7 * 0; i--) // index 7 to 0
-                            Bytes[i] = (byte)(app.Value.TotalDataRecv >> 8 * i);
+                            Bytes[i] = (byte)(app.Value.TotalDataRecv >> 8 * i); //shift bits by 8 to the right
 
                         for (int i = 7 * 2 + 1; i >= (7 * 1 + 1); i--) // index 15 to 8
-                            Bytes[i] = (byte)(app.Value.TotalDataSend >> 8 * i);
+                            Bytes[i] = (byte)(app.Value.TotalDataSend >> 8 * i); //shift bits by 8 to the right
 
                         Bytes[16] = (byte)app.Value.Name.Length;
 
