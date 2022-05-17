@@ -41,17 +41,14 @@ This program provides the following features,
 
 ![image](https://user-images.githubusercontent.com/27722888/164841661-a104f40c-442c-4c87-9408-da1793d25b77.png)
 
-### System tray
+### Network speed mini widget
+
+![MiniWidget_demo1](https://user-images.githubusercontent.com/27722888/168587020-10bb15cc-7176-4d46-a4e9-8fdaf380bbe5.gif)
+
+### System tray & TaskBarSpeed (Discontinued since v0.9.0)
+
+These are replaced by the mini widget
 
 ![TrayPopup_GIF1](https://user-images.githubusercontent.com/27722888/151661088-71349a72-f687-48be-ad33-805f7bf6771d.gif)
 
-### TaskBar Speed
-
 ![DeskBand_GIF1](https://user-images.githubusercontent.com/27722888/153745070-669027d8-56eb-4982-b009-1be23e5b5d51.gif)
-
-#### to enable this:
-
-Tick the "Show Network speed from task bar" from the settings page, </br>
-Right click the system taskbar, Click "Toolbars" and select "OpenNetMeter Speed"
-
-<img src="https://user-images.githubusercontent.com/27722888/153760855-54475896-5c97-4a00-8b16-7f6b2b9e6a76.png" alt="drawing" width="500" height="500"/>
