@@ -54,12 +54,12 @@ namespace OpenNetMeter.Models
 
         public static string SuffixBytes(int value)
         {
-            return value == 4 ? "TB" : value == 3 ? "GB" : value == 2 ? "MB" : value == 1 ? "KB" : value == 0 ? "B" : "Error";
+            return value == 6 ? "EB" : value == 5 ? "PB" : value == 4 ? "TB" : value == 3 ? "GB" : value == 2 ? "MB" : value == 1 ? "KB" : value == 0 ? "B" : "Error";
         }
         
         public static string SuffixBits(int value)
         {
-            return value == 4 ? "Tb" : value == 3 ? "Gb" : value == 2 ? "Mb" : value == 1 ? "Kb" : value == 0 ? "b" : "Error";
+            return value == 6 ? "Eb" : value == 5 ? "Pb" : value == 4 ? "Tb" : value == 3 ? "Gb" : value == 2 ? "Mb" : value == 1 ? "Kb" : value == 0 ? "b" : "Error";
         }
     }
 }
