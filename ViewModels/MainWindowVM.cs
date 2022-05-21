@@ -9,10 +9,12 @@ namespace OpenNetMeter.ViewModels
     {
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageDetailedVM dudvm;
+        private readonly DataUsageHistoryVM duhvm;
         private readonly SettingsVM svm;
         private readonly NetworkProcess netProc;
         public ICommand DataUsageSumCommand { get; set; }
         public ICommand DataUsageDetCommand { get; set; }
+        public ICommand DataUsageHisCommand { get; set; }
         public ICommand DataUsageSetCommand { get; set; }
 
         private int tabBtnToggle;
@@ -52,6 +54,7 @@ namespace OpenNetMeter.ViewModels
         {
             Summary,
             Detailed,
+            History,
             Settings
         }
 
@@ -62,6 +65,7 @@ namespace OpenNetMeter.ViewModels
 
             //initialize pages, dusvm == 0, dudvm === 1, svm == 2
             dusvm = new DataUsageSummaryVM();
+            duhvm = new DataUsageHistoryVM();
             dudvm = new DataUsageDetailedVM(cD_DataContext);
             svm = new SettingsVM();
 
@@ -79,6 +83,9 @@ namespace OpenNetMeter.ViewModels
                 case ((int)TabPage.Detailed):
                     SelectedViewModel = dudvm;
                     break;
+                case ((int)TabPage.History):
+                    SelectedViewModel = duhvm;
+                    break;
                 case ((int)TabPage.Settings):
                     SelectedViewModel = svm;
                     break;
@@ -93,6 +100,7 @@ namespace OpenNetMeter.ViewModels
             //assign basecommand
             DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
             DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
+            DataUsageHisCommand = new BaseCommand(OpenDataUsageHis);
             DataUsageSetCommand = new BaseCommand(OpenDataUsageSet);
 
         }
@@ -114,6 +122,16 @@ namespace OpenNetMeter.ViewModels
             {
                 SelectedViewModel = dudvm;
                 TabBtnToggle = ((int)TabPage.Detailed);
+                Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                Properties.Settings.Default.Save();
+            }
+        }
+        private void OpenDataUsageHis(object obj)
+        {
+            if (TabBtnToggle != ((int)TabPage.History))
+            {
+                SelectedViewModel = duhvm;
+                TabBtnToggle = ((int)TabPage.History);
                 Properties.Settings.Default.LaunchPage = TabBtnToggle;
                 Properties.Settings.Default.Save();
             }
