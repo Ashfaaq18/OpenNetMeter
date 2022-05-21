@@ -110,8 +110,8 @@ namespace OpenNetMeter.Models
             IsNetworkOnline = "Disconnected";
             main.NetworkStatus = IsNetworkOnline;
             dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles());
-            if (dudvm.Profiles.Count > 0)
-                dudvm.SelectedProfile = dudvm.Profiles[0];
+            //if (dudvm.Profiles.Count > 0)
+               // dudvm.SelectedProfile = dudvm.Profiles[0];
             NetworkChange_NetworkAddressChanged(null, null);
         }
 
@@ -179,14 +179,14 @@ namespace OpenNetMeter.Models
             {
                 IsNetworkOnline = "Connected : " + adapterName;
                 //read saved data of adapter
-                FileIO.ReadFile(dusvm, dudvm, adapterName, false);
+                //FileIO.ReadFile(dusvm, dudvm, adapterName, false);
 
-                dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //this statement should always be below FileIO.ReadFile, this registers the available saved profiles
+                //dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //this statement should always be below FileIO.ReadFile, this registers the available saved profiles
 
                 dudvm.CurrentConnection = adapterName;
-                dudvm.SelectedProfile = adapterName;
+                //dudvm.SelectedProfile = adapterName;
 
-                WriteToFile(); //start writing to file
+                //WriteToFile(); //start writing to file
                 CaptureNetworkSpeed(); //start logging the speed
             }
             else //if network is disconnected
@@ -207,9 +207,9 @@ namespace OpenNetMeter.Models
                 dusvm.TotalUploadData = 0;
                 dudvm.CurrentConnection = "";
 
-                foreach (var row in dudvm.OnProfVM.MyProcesses.ToList())
+                foreach (var row in dudvm.MyProcesses.ToList())
                 {
-                    dudvm.OnProfVM.MyProcesses.Remove(row.Key);
+                    dudvm.MyProcesses.Remove(row.Key);
                 }
             }
 
@@ -230,7 +230,7 @@ namespace OpenNetMeter.Models
                     Debug.WriteLine("Operation Started : Write file");
                     while (!token_file.IsCancellationRequested)
                     {
-                        FileIO.WriteFile_MyProcess(dudvm.OnProfVM.MyProcesses, Path.Combine(FileIO.FolderPath(), adapterName + ".onm"));
+                        FileIO.WriteFile_MyProcess(dudvm.MyProcesses, Path.Combine(FileIO.FolderPath(), adapterName + ".onm"));
                         await Task.Delay(1000, token_file);
                     }
                 }

@@ -114,7 +114,7 @@ namespace OpenNetMeter.Models
                     using (FileStream stream = new FileStream(completePath, FileMode.Open, FileAccess.Read))
                     {
                         (ulong, ulong) data;
-                        data = FileIO.ReadFile_MyProcess(dudvm_ref.OnProfVM.MyProcesses, stream);
+                        data = FileIO.ReadFile_MyProcess(dudvm_ref.MyProcesses, stream);
 
                         dusvm_ref.TotalDownloadData = data.Item1;
                         dusvm_ref.TotalUploadData = data.Item2;

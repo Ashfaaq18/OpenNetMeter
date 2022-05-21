@@ -70,7 +70,7 @@ namespace OpenNetMeter.ViewModels
             svm = new SettingsVM();
 
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
-            dudvm.SetNetProc(netProc);
+            //dudvm.SetNetProc(netProc);
 
             //intial startup page
 

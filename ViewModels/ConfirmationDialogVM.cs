@@ -30,13 +30,13 @@ namespace OpenNetMeter.ViewModels
         public ConfirmationDialogVM()
         {
             IsVisible = Visibility.Hidden;
-            BtnCommand = new BaseCommand(Result);
+            //BtnCommand = new BaseCommand(Result);
         }
-        private void Result(object obj)
-        {
-            if(vmObj != null)
-                vmObj.GetConfirmBtnVal = obj as string;
-        }
+        //private void Result(object obj)
+        //{
+        //    if(vmObj != null)
+        //        vmObj.GetConfirmBtnVal = obj as string;
+        //}
 
         public void SetVM(in object vm)
         {

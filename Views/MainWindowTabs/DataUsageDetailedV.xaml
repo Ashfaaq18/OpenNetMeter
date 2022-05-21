@@ -9,41 +9,18 @@
              xmlns:vp="clr-namespace:OpenNetMeter.Views.DataUsageDetailedPagesV" 
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="650">
-    <UserControl.Resources>
-        <vm:UnitConverterBytes x:Key="converterBytes"/>
-
-        <DataTemplate DataType="{x:Type vmp:OnlineProfileVM}">
-
-            <vp:OnlinePagesV/>
-
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vmp:OfflineProfileVM}">
-
-            <vp:OfflinePagesV/>
-
-        </DataTemplate>
-        
-    </UserControl.Resources>
-    <Grid Style="{StaticResource BackgroundColor2}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition />
-            <RowDefinition Height="32"/>
-        </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+    
+        <!--<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Detailed Data Usage of </Label>
             <StackPanel Grid.Row="0" Margin="10" Width="150">
                 <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComboBoxFlatStyle}" />
             </StackPanel>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Since: </Label>
             <Label VerticalAlignment="Center" Content="{Binding Date}" Style="{StaticResource FontColor1}"/>
-        </StackPanel>
+        </StackPanel>-->
 
-        <Grid Grid.Row="1">
-            <ContentControl x:Name="Profiles_Page" Margin="8,0,8,0" Content="{Binding SelectedViewModel, Mode=OneWay}"/>
-        </Grid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0">
+
+        <!--<StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0">
             <Label Style="{StaticResource FontColor1}">Reset this profile : </Label>
             <Button Height="24" Width="64" Command="{Binding ResetBtn}" Style="{StaticResource ButtonColor}">
                 <TextBlock FontFamily="Segoe UI" Text="Reset" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
@@ -53,7 +30,19 @@
                     </Style>
                 </Button.Resources>
             </Button> 
-        </StackPanel>
+        </StackPanel>-->
 
+    <UserControl.Resources>
+        <vm:UnitConverterBytes x:Key="converterBytes"/>
+    </UserControl.Resources>
+    <Grid>
+        <DataGrid Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" CellStyle="{StaticResource DGCellStyle1}"/>
+                <DataGridTextColumn Header="Current Data Received" Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn Header="Current Data Sent" Binding="{Binding Value.CurrentDataSend, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
+    
 </UserControl>
