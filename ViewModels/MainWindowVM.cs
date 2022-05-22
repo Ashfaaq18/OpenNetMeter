@@ -12,10 +12,7 @@ namespace OpenNetMeter.ViewModels
         private readonly DataUsageHistoryVM duhvm;
         private readonly SettingsVM svm;
         private readonly NetworkProcess netProc;
-        public ICommand DataUsageSumCommand { get; set; }
-        public ICommand DataUsageDetCommand { get; set; }
-        public ICommand DataUsageHisCommand { get; set; }
-        public ICommand DataUsageSetCommand { get; set; }
+        public ICommand SwitchTabCommand { get; set; }
 
         private int tabBtnToggle;
         public int TabBtnToggle
@@ -98,52 +95,53 @@ namespace OpenNetMeter.ViewModels
             netProc.InitConnection();
 
             //assign basecommand
-            DataUsageSumCommand = new BaseCommand(OpenDataUsageSum);
-            DataUsageDetCommand = new BaseCommand(OpenDataUsageDet);
-            DataUsageHisCommand = new BaseCommand(OpenDataUsageHis);
-            DataUsageSetCommand = new BaseCommand(OpenDataUsageSet);
+            SwitchTabCommand = new BaseCommand(SwitchTab);
 
         }
 
-        private void OpenDataUsageSum(object obj)
+        private void SwitchTab(object obj)
         {
-            if (TabBtnToggle != ((int)TabPage.Summary))
+            string tab = obj as string;
+            switch (tab)
             {
-                SelectedViewModel = dusvm;
-                TabBtnToggle = ((int)TabPage.Summary);
-                Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                Properties.Settings.Default.Save();
-            }
-        }
-
-        private void OpenDataUsageDet(object obj)
-        {
-            if(TabBtnToggle != ((int)TabPage.Detailed))
-            {
-                SelectedViewModel = dudvm;
-                TabBtnToggle = ((int)TabPage.Detailed);
-                Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                Properties.Settings.Default.Save();
-            }
-        }
-        private void OpenDataUsageHis(object obj)
-        {
-            if (TabBtnToggle != ((int)TabPage.History))
-            {
-                SelectedViewModel = duhvm;
-                TabBtnToggle = ((int)TabPage.History);
-                Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                Properties.Settings.Default.Save();
-            }
-        }
-        private void OpenDataUsageSet(object obj)
-        {
-            if (TabBtnToggle != ((int)TabPage.Settings))
-            {
-                SelectedViewModel = svm;
-                TabBtnToggle = ((int)TabPage.Settings);
-                Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                Properties.Settings.Default.Save();
+                case "summary":
+                    if (TabBtnToggle != ((int)TabPage.Summary))
+                    {
+                        SelectedViewModel = dusvm;
+                        TabBtnToggle = ((int)TabPage.Summary);
+                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                        Properties.Settings.Default.Save();
+                    }
+                    break;
+                case "detailed":
+                    if (TabBtnToggle != ((int)TabPage.Detailed))
+                    {
+                        SelectedViewModel = dudvm;
+                        TabBtnToggle = ((int)TabPage.Detailed);
+                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                        Properties.Settings.Default.Save();
+                    }
+                    break;
+                case "history":
+                    if (TabBtnToggle != ((int)TabPage.History))
+                    {
+                        SelectedViewModel = duhvm;
+                        TabBtnToggle = ((int)TabPage.History);
+                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                        Properties.Settings.Default.Save();
+                    }
+                    break;
+                case "settings":
+                    if (TabBtnToggle != ((int)TabPage.Settings))
+                    {
+                        SelectedViewModel = svm;
+                        TabBtnToggle = ((int)TabPage.Settings);
+                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
+                        Properties.Settings.Default.Save();
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace OpenNetMeter.Models
 {
-    public class NetworkProcess : INotifyPropertyChanged
+    public class NetworkProcess
     {
         private DataUsageSummaryVM dusvm;
         private DataUsageDetailedVM dudvm;
@@ -40,11 +40,6 @@ namespace OpenNetMeter.Models
         private string adapterName;
 
         private string isNetworkOnline;
-        public string IsNetworkOnline
-        {
-            get { return isNetworkOnline; }
-            set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
-        }
         public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, MainWindowVM main_ref, MiniWidgetVM mwvm_ref)
         {
             defaultIP = new byte[] { 0, 0, 0, 0 };
@@ -107,8 +102,8 @@ namespace OpenNetMeter.Models
 
         public void InitConnection()
         {
-            IsNetworkOnline = "Disconnected";
-            main.NetworkStatus = IsNetworkOnline;
+            isNetworkOnline = "Disconnected";
+            main.NetworkStatus = isNetworkOnline;
             dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles());
             //if (dudvm.Profiles.Count > 0)
                // dudvm.SelectedProfile = dudvm.Profiles[0];
@@ -144,7 +139,7 @@ namespace OpenNetMeter.Models
                                         //Debug.WriteLine("temp: " + (localIP[0] & localIPMask[0]) + "," + (localIP[1] & localIPMask[1]) + ","+ (localIP[2] & localIPMask[2]) + ","+ (localIP[3] & localIPMask[3]) + ",");
                                     }
 
-                                    if (IsNetworkOnline != "Disconnected") //if there was already a connection available
+                                    if (isNetworkOnline != "Disconnected") //if there was already a connection available
                                         SetNetworkStatus(false); //reset the connection
 
                                     adapterName = n.Name;
@@ -168,7 +163,7 @@ namespace OpenNetMeter.Models
             {
                 localIP = new byte[]{0,0,0,0};
                 Debug.WriteLine("No connection");
-                if (IsNetworkOnline != "Disconnected")
+                if (isNetworkOnline != "Disconnected")
                     SetNetworkStatus(false);
             }
         }
@@ -177,7 +172,7 @@ namespace OpenNetMeter.Models
         {
             if (isOnline)
             {
-                IsNetworkOnline = "Connected : " + adapterName;
+                isNetworkOnline = "Connected : " + adapterName;
                 //read saved data of adapter
                 //FileIO.ReadFile(dusvm, dudvm, adapterName, false);
 
@@ -191,7 +186,7 @@ namespace OpenNetMeter.Models
             }
             else //if network is disconnected
             {
-                IsNetworkOnline = "Disconnected";
+                isNetworkOnline = "Disconnected";
 
                 if(cts_file != null)
                     cts_file.Cancel(); //stop writing to file
@@ -213,7 +208,7 @@ namespace OpenNetMeter.Models
                 }
             }
 
-            main.NetworkStatus = IsNetworkOnline;
+            main.NetworkStatus = isNetworkOnline;
         }
 
         private void WriteToFile()
@@ -423,18 +418,6 @@ namespace OpenNetMeter.Models
 
                     dudvm.GetAppDataInfo(name, 0, size);
                 }
-            }
-        }
-
-        //------property changers---------------//
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(string propName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
         }
     }

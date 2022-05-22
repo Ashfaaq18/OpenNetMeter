@@ -45,7 +45,7 @@ namespace OpenNetMeter.Views
         private void FixZorderTimer_Tick(object sender, EventArgs e)
         {
             const int HWND_TOPMOST = -1;
-            const int HWND_NOTOPMOST = -2;
+            //const int HWND_NOTOPMOST = -2;
             const string SHELLTRAY = "Shell_traywnd";
 
             WindowInteropHelper thisWin = new WindowInteropHelper(this);
