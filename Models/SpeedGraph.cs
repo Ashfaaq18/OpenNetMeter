@@ -90,20 +90,10 @@ namespace OpenNetMeter.Models
             firstDrawAfterResume = false;
         }
 
-        public Size ShapeMeasure(TextBlock tb)
-        {
-            // Measured Size is bounded to be less than maxSize
-            Size maxSize = new Size(
-                 double.PositiveInfinity,
-                 double.PositiveInfinity);
-            tb.Measure(maxSize);
-            return tb.DesiredSize;
-        }
-
         public void InitGraph()
         {
             XaxisResolution = (GridYCount - 1) * 10;
-            maxYtextSize = ShapeMeasure(new TextBlock { Text = "0512Mb", FontSize = 11, Padding = new Thickness(0) });
+            maxYtextSize =  UIMeasure.Shape(new TextBlock { Text = "0512Mb", FontSize = 11, Padding = new Thickness(0) });
             maxYtextSize.Width += 2.0;
             Xstart = maxYtextSize.Width;
 

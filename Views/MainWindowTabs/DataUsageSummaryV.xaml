@@ -16,7 +16,7 @@
         <Grid Style="{StaticResource BackgroundColor2}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="16"/>
-                <RowDefinition Height="160"/>
+                <RowDefinition Height="140"/>
                 <RowDefinition Height="16"/>
                 <RowDefinition/>
                 <RowDefinition Height="16"/>
@@ -25,74 +25,68 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="24"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition/>
                 <ColumnDefinition  Width="24"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="290"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="290"/>
-                </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource BorderStyle1}" Grid.Row="1" Grid.Column="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                <Border Style="{StaticResource BorderStyle1}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="0.5*"/>
-                            <RowDefinition />
-                            <RowDefinition Height="0.5*"/>
-                        </Grid.RowDefinitions>
+                    <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" FontSize="14" Margin="20 0"  Style="{StaticResource FontColor2}"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StaticResource ResourceKey="Download_Icon" />
+                            <TextBlock  FontSize="20" x:Name="downloadData" Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
 
-                        <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" Margin="10 0 10 0"  Style="{StaticResource FontColor2}"/>
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <StaticResource ResourceKey="Download_Icon" />
-                                <TextBlock  FontSize="20" x:Name="downloadData" Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <StaticResource ResourceKey="Upload_Icon" />
-                                <TextBlock  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
-                            </StackPanel>
-                        </Grid>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StaticResource ResourceKey="Upload_Icon" />
+                            <TextBlock  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
                     </Grid>
+                </Grid>
 
-                </Border>
+            </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource BorderStyle1}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="0.25*"/>
-                            <RowDefinition Height="0.5*"/>
-                            <RowDefinition Height="0.25*"/>
-                        </Grid.RowDefinitions>
+            <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource BorderStyle1}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding TotalUsageText}" Margin="10,0" Style="{StaticResource FontColor2}"/>
+                    <TextBlock Grid.ColumnSpan="4"  Text="Data usage this month" VerticalAlignment="Center" FontSize="14" Margin="20 0"  Style="{StaticResource FontColor2}"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StaticResource ResourceKey="Download_Icon" />
+                            <TextBlock  FontSize="20" x:Name="TotalDownloadData" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
 
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <StaticResource ResourceKey="Download_Icon" />
-                                <TextBlock Grid.Column="0" FontSize="20" x:Name="TotaldownloadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <StaticResource ResourceKey="Upload_Icon" />
-                                <TextBlock Grid.Column="1" FontSize="20" x:Name="TotaluploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
-                            </StackPanel>
-                        </Grid>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StaticResource ResourceKey="Upload_Icon" />
+                            <TextBlock  Grid.Column="1"  FontSize="20" x:Name="TotalUploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
+                        </StackPanel>
                     </Grid>
-                </Border>
+                </Grid>
+            </Border>
 
-            </Grid>
-            <Border Grid.Row="3"  Grid.Column="1" Style="{StaticResource BorderStyle1}">
+
+            <Border Grid.Row="3"  Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource BorderStyle1}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="20"/>

@@ -35,7 +35,7 @@
     <UserControl.Resources>
         <vm:UnitConverterBytes x:Key="converterBytes"/>
     </UserControl.Resources>
-    <Grid>
+    <Grid Style="{StaticResource BackgroundColor2}">
         <DataGrid Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" CellStyle="{StaticResource DGCellStyle1}"/>
