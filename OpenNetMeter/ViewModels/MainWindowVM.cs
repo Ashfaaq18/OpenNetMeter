@@ -69,6 +69,8 @@ namespace OpenNetMeter.ViewModels
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
             //dudvm.SetNetProc(netProc);
 
+            Database.Class1 class1 = new Database.Class1();
+
             //intial startup page
 
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
