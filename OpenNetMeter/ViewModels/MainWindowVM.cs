@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
+using System.Reflection;
 using System.Windows.Input;
 using OpenNetMeter.Models;
 
@@ -69,8 +71,15 @@ namespace OpenNetMeter.ViewModels
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
             //dudvm.SetNetProc(netProc);
 
-            Database.Class1 class1 = new Database.Class1();
-
+            string appName = Assembly.GetEntryAssembly().GetName().Name;
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string fullPath = "";
+            if (appName != null)
+                fullPath = Path.Combine(path, appName);
+            else
+                fullPath = Path.Combine(path, "OpenNetMeter");
+            Database.DB myDB = new Database.DB(fullPath, "test");
+            myDB.CreateTable("tb1", "(name varchar(20), score int)");
             //intial startup page
 
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
