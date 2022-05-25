@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -78,8 +79,25 @@ namespace OpenNetMeter.ViewModels
                 fullPath = Path.Combine(path, appName);
             else
                 fullPath = Path.Combine(path, "OpenNetMeter");
-            Database.DB myDB = new Database.DB(fullPath, "test");
-            myDB.CreateTable("tb1", "(name varchar(20), score int)");
+            Database.DB myDB = new(fullPath, "test");
+            myDB.CreateTable("phones", 
+                new string[] { 
+                    $"brand {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}", 
+                    $"model {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}" 
+                });
+
+            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+            list.Add(new KeyValuePair<string, string>("brand", "samsung"));
+            list.Add(new KeyValuePair<string, string>("model", "j2"));
+
+            myDB.CreateRecord("phones", list);
+
+            list[0] = new KeyValuePair<string, string>("brand", "iPhone");
+            list[1] = new KeyValuePair<string, string>("model", "13 Max");
+
+            myDB.CreateRecord("phones", list);
+
+            myDB.DeleteRecord("phones", new KeyValuePair<string, string>("brand","samsung"));
             //intial startup page
 
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
