@@ -81,13 +81,13 @@ namespace Database
 
                         try
                         {
-                            cmd.CommandText = "INSERT INTO " + tableName + allColumnNames + " VALUES" + allValueNames;
+                            cmd.CommandText = $"INSERT INTO {tableName}{allColumnNames} VALUES{allValueNames}";
 
                             Debug.WriteLine(cmd.CommandText);
 
                             for (int i = 0; i < columnAndItsValue.Count; i++)
                             {
-                                cmd.Parameters.AddWithValue("@" + columnAndItsValue[i].Key, columnAndItsValue[i].Value);
+                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Key}", columnAndItsValue[i].Value);
                             }
 
                             cmd.Prepare();
@@ -102,13 +102,59 @@ namespace Database
                 connection.Close();
             }
         }
+
+        public void CreateOrUpdateIfRecordExists(string tableName, List<KeyValuePair<string, string>> columnAndItsValue, int uniqueColIndex)
+        {
+            if(UpdateRecord(tableName, columnAndItsValue, uniqueColIndex) < 1)
+            {
+                CreateRecord(tableName, columnAndItsValue);
+            }
+        }
         public void ReadRecord()
         {
 
         }
-        public void UpdateRecord()
+        public int UpdateRecord(string tableName, List<KeyValuePair<string, string>> columnAndItsValue, int uniqueColIndex)
         {
+            int rowChangeCount = 0;
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                {
+                    if (columnAndItsValue.Count > 0)
+                    {
+                        try
+                        {
+                            string setString = $"SET ";
+                            for (int i = 0; i < columnAndItsValue.Count; i++) //3
+                            {
+                                setString += $"{columnAndItsValue[i].Key} = @{columnAndItsValue[i].Key}";
+                                if ((columnAndItsValue.Count - 1) > i)
+                                {
+                                    setString += ", ";
+                                }
 
+                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Key}", columnAndItsValue[i].Value);
+                            }
+                            cmd.CommandText = $"UPDATE {tableName} {setString} WHERE {columnAndItsValue[uniqueColIndex].Key} = @{columnAndItsValue[uniqueColIndex].Key}";
+                            cmd.Parameters.AddWithValue($"@{columnAndItsValue[uniqueColIndex].Key}", columnAndItsValue[uniqueColIndex].Value);
+                            cmd.Prepare();
+                            rowChangeCount = cmd.ExecuteNonQuery();
+                            //Debug.WriteLine($"Count: {rowChange}");
+                            //Debug.WriteLine(cmd.CommandText);
+                            //Debug.WriteLine(cmd.Parameters.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.ToString());
+                            rowChangeCount = -1;
+                        }  
+                    }
+                }
+                connection.Close();
+                return rowChangeCount;
+            }
         }
         public void DeleteRecord(string tableName, KeyValuePair<string, string> name)
         {

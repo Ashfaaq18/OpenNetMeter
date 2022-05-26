@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows.Input;
@@ -70,7 +71,6 @@ namespace OpenNetMeter.ViewModels
             svm = new SettingsVM();
 
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
-            //dudvm.SetNetProc(netProc);
 
             string appName = Assembly.GetEntryAssembly().GetName().Name;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -79,27 +79,30 @@ namespace OpenNetMeter.ViewModels
                 fullPath = Path.Combine(path, appName);
             else
                 fullPath = Path.Combine(path, "OpenNetMeter");
+
             Database.DB myDB = new(fullPath, "test");
-            myDB.CreateTable("phones", 
+            myDB.CreateTable(
+                "phones",
                 new string[] { 
                     $"brand {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}", 
-                    $"model {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}" 
+                    $"model {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}",
+                    $"description {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}"
                 });
 
             List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
             list.Add(new KeyValuePair<string, string>("brand", "samsung"));
             list.Add(new KeyValuePair<string, string>("model", "j2"));
+            list.Add(new KeyValuePair<string, string>("description", "this is a desc samsungs"));
 
-            myDB.CreateRecord("phones", list);
+            myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 
-            list[0] = new KeyValuePair<string, string>("brand", "iPhone");
-            list[1] = new KeyValuePair<string, string>("model", "13 Max");
+            list[0] = new KeyValuePair<string, string>("brand", "xiaomi");
+            list[1] = new KeyValuePair<string, string>("model", "Mi 10");
+            list[2] = new KeyValuePair<string, string>("description", "this is a desc Xiaomi");
 
-            myDB.CreateRecord("phones", list);
+            myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 
-            myDB.DeleteRecord("phones", new KeyValuePair<string, string>("brand","samsung"));
             //intial startup page
-
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
             switch (TabBtnToggle)
             {
