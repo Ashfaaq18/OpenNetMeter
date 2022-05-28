@@ -104,7 +104,7 @@ namespace OpenNetMeter.Models
         {
             isNetworkOnline = "Disconnected";
             main.NetworkStatus = isNetworkOnline;
-            dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles());
+            dudvm.Profiles = new ObservableCollection<string>();
             //if (dudvm.Profiles.Count > 0)
                // dudvm.SelectedProfile = dudvm.Profiles[0];
             NetworkChange_NetworkAddressChanged(null, null);
@@ -173,15 +173,8 @@ namespace OpenNetMeter.Models
             if (isOnline)
             {
                 isNetworkOnline = "Connected : " + adapterName;
-                //read saved data of adapter
-                //FileIO.ReadFile(dusvm, dudvm, adapterName, false);
-
-                //dudvm.Profiles = new ObservableCollection<string>(FileIO.GetProfiles()); //this statement should always be below FileIO.ReadFile, this registers the available saved profiles
-
                 dudvm.CurrentConnection = adapterName;
-                //dudvm.SelectedProfile = adapterName;
 
-                //WriteToFile(); //start writing to file
                 CaptureNetworkSpeed(); //start logging the speed
             }
             else //if network is disconnected
@@ -209,37 +202,6 @@ namespace OpenNetMeter.Models
             }
 
             main.NetworkStatus = isNetworkOnline;
-        }
-
-        private void WriteToFile()
-        {
-            //init tokens
-            cts_file = new CancellationTokenSource();
-            token_file = cts_file.Token;
-
-            //start writing to file every second
-            Task.Run(async () =>
-            {
-                try
-                {
-                    Debug.WriteLine("Operation Started : Write file");
-                    while (!token_file.IsCancellationRequested)
-                    {
-                        FileIO.WriteFile_MyProcess(dudvm.MyProcesses, Path.Combine(FileIO.FolderPath(), adapterName + ".onm"));
-                        await Task.Delay(1000, token_file);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    Debug.WriteLine("Operation Cancelled : Write file");
-                    cts_file.Dispose();
-                    cts_file = null;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Critical error: " + ex.Message);
-                }
-            });
         }
 
         private void SetSpeed(ulong download, ulong upload)
@@ -369,7 +331,7 @@ namespace OpenNetMeter.Models
         }
 
         private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
-        {
+        {   
             if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
