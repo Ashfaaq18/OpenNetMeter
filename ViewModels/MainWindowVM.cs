@@ -22,8 +22,8 @@ namespace OpenNetMeter.ViewModels
             set { tabBtnToggle = value; OnPropertyChanged("TabBtnToggle"); }
         }
 
-        private object selectedViewModel;
-        public object SelectedViewModel
+        private object? selectedViewModel;
+        public object? SelectedViewModel
         {
             get { return selectedViewModel; }
             set { selectedViewModel = value; OnPropertyChanged("SelectedViewModel"); }
@@ -41,7 +41,7 @@ namespace OpenNetMeter.ViewModels
             set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
         }
 
-        private string networkStatus;
+        private string networkStatus = "error";
         public string NetworkStatus
         {
             get { return networkStatus; }
@@ -129,7 +129,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

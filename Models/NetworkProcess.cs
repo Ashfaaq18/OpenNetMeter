@@ -30,16 +30,16 @@ namespace OpenNetMeter.Models
         private byte[] localIPv6;
 
         //token for write file
-        private CancellationTokenSource cts_file;
+        private CancellationTokenSource? cts_file;
         private CancellationToken token_file;
 
         //token for network speed
-        private CancellationTokenSource cts_speed;
+        private CancellationTokenSource? cts_speed;
         private CancellationToken token_speed;
 
         private string adapterName;
 
-        private string isNetworkOnline;
+        private string isNetworkOnline = "error";
         public string IsNetworkOnline
         {
             get { return isNetworkOnline; }
@@ -58,6 +58,8 @@ namespace OpenNetMeter.Models
                 0, 0, 0, 0,
                 0, 0, 0, 0
             };
+            localIPv4 = defaultIPv4;
+            localIPv6 = defaultIPv6;
 
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
@@ -84,9 +86,9 @@ namespace OpenNetMeter.Models
                 try
                 {
                     socket.Connect("2001:4860:4860::8888", 65530);
-                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-
-                    tempv6 = endPoint.Address.GetAddressBytes();
+                    IPEndPoint? endPoint = socket.LocalEndPoint as IPEndPoint;
+                    if(endPoint != null)
+                        tempv6 = endPoint.Address.GetAddressBytes();
                 }
                 catch (Exception ex)
                 {
@@ -100,8 +102,9 @@ namespace OpenNetMeter.Models
                 try
                 {
                     socket.Connect("8.8.8.8", 65530);
-                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                    tempv4 = endPoint.Address.GetAddressBytes();
+                    IPEndPoint? endPoint = socket.LocalEndPoint as IPEndPoint;
+                    if(endPoint != null)
+                        tempv4 = endPoint.Address.GetAddressBytes();
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +131,7 @@ namespace OpenNetMeter.Models
         }
 
 
-        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs? e)
         {
             (byte[], byte[]) tempIP = (defaultIPv4, defaultIPv6);
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
@@ -177,7 +180,7 @@ namespace OpenNetMeter.Models
                                 adapterName = n.Name;
 
                                 if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                    adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids().FirstOrDefault().ToString() + ")";
+                                    adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
 
                                 SetNetworkStatus(true);
                             }
@@ -504,7 +507,7 @@ namespace OpenNetMeter.Models
 
         //------property changers---------------//
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

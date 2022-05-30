@@ -34,16 +34,18 @@ namespace OpenNetMeter.Models
             set { totaldataSend = value; OnPropertyChanged("TotalDataSend"); }
         }
 
-        public ImageSource Icon { get; set; }
+        public ImageSource? Icon { get; set; }
 
         public string Image { get; set; }
-        public MyProcess(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon icon)
+        public MyProcess(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon? icon)
         {
             Name = nameP;
             TotalDataRecv = dataRecvP;
             TotalDataSend = dataSendP;
             CurrentDataRecv = 0;
             CurrentDataSend = 0;
+            Icon = null;
+            Image = "";
             if(icon != null)
             {
                 ImageSource im = IconToImgSource.ToImageSource(icon);
@@ -52,7 +54,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propName)
         {
             if (PropertyChanged != null)

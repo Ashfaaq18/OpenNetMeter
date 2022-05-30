@@ -144,7 +144,7 @@ namespace OpenNetMeter.ViewModels
         public SettingsVM()
         {
             taskFolder = "OpenNetMeter";
-            taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3);
 
             //start with windows setting
             UnlockOptionStartWin = true;
@@ -249,7 +249,7 @@ namespace OpenNetMeter.ViewModels
 
         //------property changers---------------//
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

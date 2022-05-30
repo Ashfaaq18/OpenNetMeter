@@ -9,8 +9,13 @@ namespace OpenNetMeter.ViewModels
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             int integer = (int)value;
-            if (integer == int.Parse(parameter.ToString()))
-                return true;
+            if (parameter != null)
+            {
+                if (integer == int.Parse(parameter.ToString()!))
+                    return true;
+                else
+                    return false;
+            }
             else
                 return false;
         }

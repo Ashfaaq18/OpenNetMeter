@@ -35,7 +35,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propName)
         {
             if (PropertyChanged != null)
@@ -184,7 +184,7 @@ namespace OpenNetMeter.Models
                         // reset the graph after it completes a full run
                         if (drawPointCount >= XaxisResolution)
                         {
-                            await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
+                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                             {
                                 //shift xaxis label
                                 for (int i = 0; i < Xlabels.Count / 2; i++)
@@ -229,7 +229,7 @@ namespace OpenNetMeter.Models
                             if (resumeDraw)
                             {
                                 //reset the chart
-                                await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
+                                await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                                 {
                                     for (int i = 0; i < DownloadLines.Count; i++)
                                     {
@@ -264,7 +264,7 @@ namespace OpenNetMeter.Models
 
                         if (resumeDraw)
                         {
-                            await Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
+                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
                             {
                                 if(firstDrawAfterResume && drawPointCount > 0)
                                 {

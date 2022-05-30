@@ -19,7 +19,7 @@ namespace OpenNetMeter.Views
     public partial class DataUsageSummaryV : UserControl
     {
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
-        private DataUsageSummaryVM dusvm;
+        private DataUsageSummaryVM? dusvm;
 
         //private Rectangle GridBorder;
         private Size maxYtextSize;
@@ -45,12 +45,13 @@ namespace OpenNetMeter.Views
         }
 
 
-        private void ResizeTimer_Tick(object sender, EventArgs e)
+        private void ResizeTimer_Tick(object? sender, EventArgs e)
         {
             resizeTimer.IsEnabled = false;
 
             //Do end of resize processing
-            dusvm.Graph.resumeDraw = true;
+            if(dusvm != null)
+                dusvm.Graph.resumeDraw = true;
         }
 
 
@@ -67,7 +68,7 @@ namespace OpenNetMeter.Views
         }
 
         //scale the MyGraph coordinates
-        private void Graph_SizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
+        private void Graph_SizeChanged(object? sender, System.Windows.SizeChangedEventArgs? e)
         {
             if (dusvm != null)
             {

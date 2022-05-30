@@ -14,8 +14,8 @@ namespace OpenNetMeter.ViewModels
 {
     public class DataUsageDetailedVM : INotifyPropertyChanged
     {
-        private object selectedViewModel;
-        public object SelectedViewModel
+        private object? selectedViewModel;
+        public object? SelectedViewModel
         {
             get { return selectedViewModel; }
 
@@ -53,8 +53,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private ObservableCollection<string> profiles;
-        public ObservableCollection<string> Profiles
+        private ObservableCollection<string>? profiles;
+        public ObservableCollection<string>? Profiles
         {
             get{ return profiles; }
             set
@@ -67,8 +67,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private string selectedProfile;
-        public string SelectedProfile
+        private string? selectedProfile;
+        public string? SelectedProfile
         {
             get { return selectedProfile; }
             set {
@@ -76,40 +76,49 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("SelectedProfile");
             }
         }
-        private Process[] process;
+        private Process[]? process;
 
         public void GetAppDataInfo(string name, int dataRecv, int dataSend)
         {
             //var watch = Stopwatch.StartNew();
             if (name == null || name == "")
                 name = "System";
-            if (OnProfVM.MyProcesses.TryAdd(name, null))
+            if(OnProfVM.MyProcesses != null)
             {
-                process = Process.GetProcessesByName(name);
-                Icon ic = null;
-                
-                if (process.Length > 0)
+                if (OnProfVM.MyProcesses!.TryAdd(name, null))
                 {
-                    try { ic = Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
-                    catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
-                }
-                OnProfVM.MyProcesses[name] = new MyProcess(name, (ulong)dataRecv, (ulong)dataSend, ic);
-            }
-            else
-            {
-                OnProfVM.MyProcesses[name].TotalDataRecv += (ulong)dataRecv;
-                OnProfVM.MyProcesses[name].TotalDataSend += (ulong)dataSend;
-            }
+                    process = Process.GetProcessesByName(name);
+                    Icon? ic = null;
 
-            OnProfVM.MyProcesses[name].CurrentDataRecv += (ulong)dataRecv;
-            OnProfVM.MyProcesses[name].CurrentDataSend += (ulong)dataSend;
+                    if (process.Length > 0)
+                    {
+                        try
+                        {
+                            if (process[0].MainModule != null)
+                                ic = Icon.ExtractAssociatedIcon(process[0].MainModule!.FileName!);
+                            else
+                                Debug.WriteLine("process[0].MainModule is null");
+                        }
+                        catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
+                    }
+                    OnProfVM.MyProcesses[name] = new MyProcess(name, (ulong)dataRecv, (ulong)dataSend, ic);
+                }
+                else
+                {
+                    OnProfVM.MyProcesses[name].TotalDataRecv += (ulong)dataRecv;
+                    OnProfVM.MyProcesses[name].TotalDataSend += (ulong)dataSend;
+                }
+
+                OnProfVM.MyProcesses[name].CurrentDataRecv += (ulong)dataRecv;
+                OnProfVM.MyProcesses[name].CurrentDataSend += (ulong)dataSend;
+            }          
             // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/
         }
 
-        private string getConfirmBtnVal;
-        public string GetConfirmBtnVal
+        private string? getConfirmBtnVal;
+        public string? GetConfirmBtnVal
         {
             get { return getConfirmBtnVal; }
             set
@@ -124,12 +133,14 @@ namespace OpenNetMeter.ViewModels
 
         private ConfirmationDialogVM cdvm;
 
-        private NetworkProcess netProc;
+        private NetworkProcess? netProc;
         public DataUsageDetailedVM(ConfirmationDialogVM cdvm_ref)
         {
             cdvm = cdvm_ref;
             cdvm.SetVM(this);
-            SelectedProfile = "";
+            selectedProfile = "";
+            currentConnection = "";
+            date = "";
             Profiles = new ObservableCollection<string>();
 
             //initialize user controls
@@ -158,9 +169,12 @@ namespace OpenNetMeter.ViewModels
         {
             if (SelectedProfile == CurrentConnection)
             {
-                netProc.SetNetworkStatus(false);
-                FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
-                netProc.SetNetworkStatus(true); //recreates file inside this function
+                if(netProc != null)
+                {
+                    netProc.SetNetworkStatus(false);
+                    FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
+                    netProc.SetNetworkStatus(true); //recreates file inside this function
+                }    
             }
             else
             {
@@ -170,23 +184,31 @@ namespace OpenNetMeter.ViewModels
                 }
                 Debug.WriteLine("Deleted file: " + SelectedProfile);
                 FileIO.DeleteFile(Path.Combine(FileIO.FolderPath(), SelectedProfile + ".onm")); //delete file
-                Profiles.Remove(SelectedProfile); //remove profile from combo box
+                if(Profiles != null && SelectedProfile != null)
+                    Profiles.Remove(SelectedProfile); //remove profile from combo box
             }
 
-            if (Profiles.Count > 0)
-                SelectedProfile = Profiles[0];
-            else
-                SelectedProfile = null;
+            if(Profiles != null)
+            {
+                if (Profiles.Count > 0)
+                    SelectedProfile = Profiles[0];
+                else
+                    SelectedProfile = null;
+            }
         }
 
 
-        private void SelProfileChange(object sender, PropertyChangedEventArgs e)
+        private void SelProfileChange(object? sender, PropertyChangedEventArgs e)
         {
             switch(e.PropertyName)
             {
                 case "SelectedProfile":
-                    DataUsageDetailedVM temp = sender as DataUsageDetailedVM;
-                    string selProf = temp.SelectedProfile;
+                    DataUsageDetailedVM? temp = sender as DataUsageDetailedVM;
+                    string? selProf = null;
+                    if (temp != null)
+                    {
+                        selProf = temp.SelectedProfile;
+                    }
                     if (selProf != null && selProf != "")
                     {
                         Debug.WriteLine(selProf);
@@ -243,7 +265,7 @@ namespace OpenNetMeter.ViewModels
 
         //------property changers---------------//
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

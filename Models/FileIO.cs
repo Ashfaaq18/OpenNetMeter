@@ -180,10 +180,16 @@ namespace OpenNetMeter.Models
                 }
 
                 Process[] process = Process.GetProcessesByName(tempName);
-                Icon ic = null;
+                Icon? ic = null;
                 if (process.Length > 0)
                 {
-                    try { ic = Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
+                    try 
+                    {
+                        if (process[0].MainModule != null)
+                            ic = Icon.ExtractAssociatedIcon(process[0].MainModule!.FileName!);
+                        else
+                            Debug.WriteLine("process[0].MainModule is null");
+                    }
                     catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
                 }
 
