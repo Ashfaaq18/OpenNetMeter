@@ -104,7 +104,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        //0 == internal, 1 == external, 2 == both
+        //0 == private, 1 == public, 2 == both
         private int networkTrafficType;
         public int NetworkTrafficType
         {

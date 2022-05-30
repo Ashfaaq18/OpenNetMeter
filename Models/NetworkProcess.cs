@@ -14,7 +14,6 @@ using System.Threading;
 using ManagedNativeWifi;
 using System.Collections.ObjectModel;
 using System.Net.Sockets;
-using System.Collections.Generic;
 
 namespace OpenNetMeter.Models
 {
@@ -25,9 +24,10 @@ namespace OpenNetMeter.Models
         private MainWindowVM main;
         private MiniWidgetVM mwvm;
 
-        private byte[] defaultIP; 
-        private byte[] localIP;
-        private byte[] localIPMask;
+        private byte[] defaultIPv4;
+        private byte[] defaultIPv6;
+        private byte[] localIPv4;
+        private byte[] localIPv6;
 
         //token for write file
         private CancellationTokenSource cts_file;
@@ -43,11 +43,21 @@ namespace OpenNetMeter.Models
         public string IsNetworkOnline
         {
             get { return isNetworkOnline; }
-            set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline");  }
+            set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline"); }
         }
         public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, MainWindowVM main_ref, MiniWidgetVM mwvm_ref)
         {
-            defaultIP = new byte[] { 0, 0, 0, 0 };
+            defaultIPv4 = new byte[]
+            {
+                0, 0, 0, 0
+            };
+            defaultIPv6 = new byte[]
+            {
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            };
 
             dusvm = dusvm_ref;
             dudvm = dudvm_ref;
@@ -62,42 +72,44 @@ namespace OpenNetMeter.Models
             CaptureNetworkPackets();
         }
 
-        private byte[] GetLocalIP()
+        // returns (IPv4, IPv6)
+        private (byte[], byte[]) GetLocalIP()
         {
+            byte[] tempv4 = defaultIPv4;
+            byte[] tempv6 = defaultIPv6;
+
+            // IPv4
+            using (Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, 0))
+            {
+                try
+                {
+                    socket.Connect("2001:4860:4860::8888", 65530);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+
+                    tempv6 = endPoint.Address.GetAddressBytes();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+
+            // IPv6
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
                 try
                 {
                     socket.Connect("8.8.8.8", 65530);
                     IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                    return endPoint.Address.GetAddressBytes();
+                    tempv4 = endPoint.Address.GetAddressBytes();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
-
-                return new byte[] { 0, 0, 0, 0 };
             }
-        }
 
-        private bool IsLocalTraffic(ReadOnlySpan<byte> src, ReadOnlySpan<byte> srcMask, ReadOnlySpan<byte> dest)
-        {
-            if(src.Length == srcMask.Length  && srcMask.Length == dest.Length)
-            {
-                int tempCount = 0;
-                for (int i = 0; i < src.Length; i++)
-                {
-                    //Debug.WriteLine("IPS: " + (src[i] & srcMask[i]) + "," + (dest[i] & srcMask[i]));
-                    if ((src[i] & srcMask[i]) == (dest[i] & srcMask[i]))
-                        tempCount++;
-                    else
-                        return false;
-                }
-                if (tempCount == src.Length)
-                    return true;
-            }
-            return false;
+            return (tempv4, tempv6);
         }
 
         private bool ByteArrayCompare(ReadOnlySpan<byte> a1, ReadOnlySpan<byte> a2)
@@ -115,10 +127,10 @@ namespace OpenNetMeter.Models
             NetworkChange_NetworkAddressChanged(null, null);
         }
 
-        
+
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
-            byte[] tempIP = defaultIP;
+            (byte[], byte[]) tempIP = (defaultIPv4, defaultIPv6);
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface n in adapters)
             {
@@ -131,31 +143,43 @@ namespace OpenNetMeter.Models
                         IPInterfaceProperties adapterProperties = n.GetIPProperties();
                         if (adapterProperties.GatewayAddresses.FirstOrDefault() != null)
                         {
+                            bool networkAvailable = false;
                             foreach (UnicastIPAddressInformation ip in adapterProperties.UnicastAddresses)
                             {
-                                if (ByteArrayCompare(ip.Address.GetAddressBytes(), tempIP))
+                                if (ByteArrayCompare(ip.Address.GetAddressBytes(), tempIP.Item1))
                                 {
-                                    if (localIP == tempIP) //this is to prevent this event from firing multiple times during 1 connection change
+                                    if (localIPv4 == tempIP.Item1) //this is to prevent this event from firing multiple times during 1 connection change
                                         break;
                                     else
-                                    {
-                                        localIP = tempIP;
-                                        localIPMask = ip.IPv4Mask.GetAddressBytes();
-                                        //Debug.WriteLine("temp: " + (localIP[0] & localIPMask[0]) + "," + (localIP[1] & localIPMask[1]) + ","+ (localIP[2] & localIPMask[2]) + ","+ (localIP[3] & localIPMask[3]) + ",");
-                                    }
+                                        localIPv4 = tempIP.Item1;
 
-                                    if (IsNetworkOnline != "Disconnected") //if there was already a connection available
-                                        SetNetworkStatus(false); //reset the connection
-
-                                    adapterName = n.Name;
-
-                                    if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                        adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids().FirstOrDefault().ToString() + ")";
-
-                                    SetNetworkStatus(true);
+                                    networkAvailable = true;
+                                    
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
-                                    break;
                                 }
+                                else if(ByteArrayCompare(ip.Address.GetAddressBytes(), tempIP.Item2))
+                                {
+                                    if (localIPv6 == tempIP.Item2) //this is to prevent this event from firing multiple times during 1 connection change
+                                        break;
+                                    else
+                                        localIPv6 = tempIP.Item2;
+
+                                    networkAvailable = true;
+
+                                    Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
+                                }
+                            }
+                            if(networkAvailable)
+                            {
+                                if (IsNetworkOnline != "Disconnected") //if there was already a connection available
+                                    SetNetworkStatus(false); //reset the connection
+
+                                adapterName = n.Name;
+
+                                if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                                    adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids().FirstOrDefault().ToString() + ")";
+
+                                SetNetworkStatus(true);
                             }
                         }
                     }
@@ -164,9 +188,9 @@ namespace OpenNetMeter.Models
 
             //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
             //adapterProperties.GatewayAddresses.FirstOrDefault() in the above foreach loop
-            if (!NetworkInterface.GetIsNetworkAvailable() || ByteArrayCompare(tempIP, defaultIP))
+            if (!NetworkInterface.GetIsNetworkAvailable() || ByteArrayCompare(tempIP.Item1, defaultIPv4))
             {
-                localIP = new byte[]{0,0,0,0};
+                localIPv4 = new byte[] { 0, 0, 0, 0 };
                 Debug.WriteLine("No connection");
                 if (IsNetworkOnline != "Disconnected")
                     SetNetworkStatus(false);
@@ -193,9 +217,9 @@ namespace OpenNetMeter.Models
             {
                 IsNetworkOnline = "Disconnected";
 
-                if(cts_file != null)
+                if (cts_file != null)
                     cts_file.Cancel(); //stop writing to file
-                if(cts_speed != null)
+                if (cts_speed != null)
                     cts_speed.Cancel(); //stop calculating network speed
 
                 //reset speed counters
@@ -332,7 +356,7 @@ namespace OpenNetMeter.Models
         {
             SendProcess(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
- 
+
         //download events    
         private void Kernel_UdpIpRecv(UdpIpTraceData obj)
         {
@@ -357,11 +381,13 @@ namespace OpenNetMeter.Models
         //calculate the Bytes sent and recieved
         private void RecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            if(ByteArrayCompare(src.GetAddressBytes() , localIP) ^ ByteArrayCompare(dest.GetAddressBytes() , localIP))
+            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv4);
+            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv4);
+            if (ipCompSrc ^ ipCompDest)
             {
-                if (Properties.Settings.Default.NetworkType == 2? true: //both
-                    Properties.Settings.Default.NetworkType == 1? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()): //external
-                    Properties.Settings.Default.NetworkType == 0?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()):false) //local
+                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
+                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
@@ -375,11 +401,13 @@ namespace OpenNetMeter.Models
 
         private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
+            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv6);
+            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv6);
+            if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
-                    Properties.Settings.Default.NetworkType == 0 ?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     dusvm.TotalDownloadData += (ulong)size;
                     dusvm.CurrentSessionDownloadData += (ulong)size;
@@ -393,11 +421,13 @@ namespace OpenNetMeter.Models
 
         private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
+            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv4);
+            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv4);
+            if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
-                    Properties.Settings.Default.NetworkType == 0 ?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
@@ -410,11 +440,13 @@ namespace OpenNetMeter.Models
         }
         private void SendProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            if (ByteArrayCompare(src.GetAddressBytes(), localIP) ^ ByteArrayCompare(dest.GetAddressBytes(), localIP))
+            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv6);
+            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv6);
+            if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? !IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : //external
-                    Properties.Settings.Default.NetworkType == 0 ?  IsLocalTraffic(src.GetAddressBytes(), localIPMask, dest.GetAddressBytes()) : false) //local
+                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     dusvm.TotalUploadData += (ulong)size;
                     dusvm.CurrentSessionUploadData += (ulong)size;
@@ -424,6 +456,50 @@ namespace OpenNetMeter.Models
                     dudvm.GetAppDataInfo(name, 0, size);
                 }
             }
+        }
+
+        private bool IsIPv4IPv6Private(IPAddress ip)
+        {
+            // Map back to IPv4 if mapped to IPv6, for example "::ffff:1.2.3.4" to "1.2.3.4".
+            if (ip.IsIPv4MappedToIPv6)
+                ip = ip.MapToIPv4();
+
+            // Checks loopback ranges for both IPv4 and IPv6.
+            if (IPAddress.IsLoopback(ip)) return true;
+
+            // IPv4
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+                return IsIPv4Private(ip.GetAddressBytes());
+
+            // IPv6
+            if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return ip.IsIPv6LinkLocal ||
+#if NET6_0
+                        ip.IsIPv6UniqueLocal ||
+#endif
+                        ip.IsIPv6SiteLocal;
+            }
+
+            throw new NotSupportedException(
+                    $"IP address family {ip.AddressFamily} is not supported, expected only IPv4 (InterNetwork) or IPv6 (InterNetworkV6).");
+        }
+
+        private bool IsIPv4Private(byte[] ipv4Bytes)
+        {
+            // Link local (no IP assigned by DHCP): 169.254.0.0 to 169.254.255.255 (169.254.0.0/16)
+            bool IsLinkLocal() => ipv4Bytes[0] == 169 && ipv4Bytes[1] == 254;
+
+            // Class A private range: 10.0.0.0 – 10.255.255.255 (10.0.0.0/8)
+            bool IsClassA() => ipv4Bytes[0] == 10;
+
+            // Class B private range: 172.16.0.0 – 172.31.255.255 (172.16.0.0/12)
+            bool IsClassB() => ipv4Bytes[0] == 172 && ipv4Bytes[1] >= 16 && ipv4Bytes[1] <= 31;
+
+            // Class C private range: 192.168.0.0 – 192.168.255.255 (192.168.0.0/16)
+            bool IsClassC() => ipv4Bytes[0] == 192 && ipv4Bytes[1] == 168;
+
+            return IsLinkLocal() || IsClassA() || IsClassC() || IsClassB();
         }
 
         //------property changers---------------//

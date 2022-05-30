@@ -41,11 +41,11 @@
                 </Border>
                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="5">
                     <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Monitor these networks</TextBlock>
-                    <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11" Style="{StaticResource FontColor2}">(set to external for internet only)</TextBlock>
+                    <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11" Style="{StaticResource FontColor2}">(set to public for internet only)</TextBlock>
                     <StackPanel Orientation="Horizontal"  Margin="0,5" >
                         <TextBlock Style="{StaticResource FontColor1}">Network:</TextBlock>
-                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Internal</RadioButton>
-                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">External</RadioButton>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Private</RadioButton>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Public</RadioButton>
                         <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Both</RadioButton>
                     </StackPanel>
                 </StackPanel>
