@@ -14,7 +14,6 @@ using System.Threading;
 using ManagedNativeWifi;
 using System.Collections.ObjectModel;
 using System.Net.Sockets;
-using System.Collections.Generic;
 
 namespace OpenNetMeter.Models
 {
@@ -73,12 +72,13 @@ namespace OpenNetMeter.Models
             CaptureNetworkPackets();
         }
 
+        // returns (IPv4, IPv6)
         private (byte[], byte[]) GetLocalIP()
         {
             byte[] tempv4 = defaultIPv4;
             byte[] tempv6 = defaultIPv6;
 
-            //ipv6
+            // IPv4
             using (Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, 0))
             {
                 try
@@ -94,7 +94,7 @@ namespace OpenNetMeter.Models
                 }
             }
 
-            //ipv4
+            // IPv6
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
                 try
@@ -469,7 +469,7 @@ namespace OpenNetMeter.Models
 
             // IPv4
             if (ip.AddressFamily == AddressFamily.InterNetwork)
-                return IsPrivateIPv4(ip.GetAddressBytes());
+                return IsIPv4Private(ip.GetAddressBytes());
 
             // IPv6
             if (ip.AddressFamily == AddressFamily.InterNetworkV6)
@@ -485,7 +485,7 @@ namespace OpenNetMeter.Models
                     $"IP address family {ip.AddressFamily} is not supported, expected only IPv4 (InterNetwork) or IPv6 (InterNetworkV6).");
         }
 
-        private bool IsPrivateIPv4(byte[] ipv4Bytes)
+        private bool IsIPv4Private(byte[] ipv4Bytes)
         {
             // Link local (no IP assigned by DHCP): 169.254.0.0 to 169.254.255.255 (169.254.0.0/16)
             bool IsLinkLocal() => ipv4Bytes[0] == 169 && ipv4Bytes[1] == 254;
