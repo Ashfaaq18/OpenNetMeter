@@ -89,7 +89,7 @@ namespace OpenNetMeter.ViewModels
 
         //------property changers---------------//
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

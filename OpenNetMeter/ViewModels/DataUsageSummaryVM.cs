@@ -58,7 +58,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private string totalUsageText;
+        private string totalUsageText = "";
         public string TotalUsageText
         {
             get { return totalUsageText; }
@@ -86,7 +86,7 @@ namespace OpenNetMeter.ViewModels
 
         //------property changers---------------//
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

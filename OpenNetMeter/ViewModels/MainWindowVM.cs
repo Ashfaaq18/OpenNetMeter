@@ -25,8 +25,8 @@ namespace OpenNetMeter.ViewModels
             set { tabBtnToggle = value; OnPropertyChanged("TabBtnToggle"); }
         }
 
-        private object selectedViewModel;
-        public object SelectedViewModel
+        private object? selectedViewModel;
+        public object? SelectedViewModel
         {
             get { return selectedViewModel; }
             set { selectedViewModel = value; OnPropertyChanged("SelectedViewModel"); }
@@ -64,6 +64,8 @@ namespace OpenNetMeter.ViewModels
             DownloadSpeed = 0;
             UploadSpeed = 0;
 
+            networkStatus = "";
+
             //initialize pages, dusvm == 0, dudvm === 1, svm == 2
             dusvm = new DataUsageSummaryVM();
             duhvm = new DataUsageHistoryVM();
@@ -72,7 +74,7 @@ namespace OpenNetMeter.ViewModels
 
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
 
-            string appName = Assembly.GetEntryAssembly().GetName().Name;
+            string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string fullPath = "";
             if (appName != null)
@@ -133,7 +135,7 @@ namespace OpenNetMeter.ViewModels
 
         private void SwitchTab(object obj)
         {
-            string tab = obj as string;
+            string? tab = obj as string;
             switch (tab)
             {
                 case "summary":
@@ -177,7 +179,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {

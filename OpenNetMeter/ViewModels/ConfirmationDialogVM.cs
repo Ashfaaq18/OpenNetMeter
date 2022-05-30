@@ -21,11 +21,11 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("IsVisible");
             }
         }
-        public string ButtonVal { get; set; }
+        public string? ButtonVal { get; set; }
 
-        public ICommand BtnCommand { get; set; }
+        public ICommand? BtnCommand { get; set; }
 
-        private DataUsageDetailedVM vmObj;
+        private DataUsageDetailedVM? vmObj;
 
         public ConfirmationDialogVM()
         {
@@ -43,7 +43,7 @@ namespace OpenNetMeter.ViewModels
             vmObj = vm as DataUsageDetailedVM;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propName)
         {
             if (PropertyChanged != null)

@@ -42,7 +42,7 @@ namespace OpenNetMeter.Views
             }
         }
 
-        private void FixZorderTimer_Tick(object sender, EventArgs e)
+        private void FixZorderTimer_Tick(object? sender, EventArgs e)
         {
             const int HWND_TOPMOST = -1;
             //const int HWND_NOTOPMOST = -2;
@@ -98,7 +98,7 @@ namespace OpenNetMeter.Views
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void RelocationTimer_Tick(object sender, EventArgs e)
+        private void RelocationTimer_Tick(object? sender, EventArgs e)
         {
             relocationTimer.IsEnabled = false;
             //Do end of relocation processing

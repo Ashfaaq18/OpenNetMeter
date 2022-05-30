@@ -20,7 +20,7 @@ namespace OpenNetMeter.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Mutex mutex;
+        private Mutex? mutex;
         public bool IsSingleInstance()
         {
             bool createdNew;
@@ -38,14 +38,14 @@ namespace OpenNetMeter.Views
                 return true;
         }
 
-        private ConfirmationDialog confDialog;
-        private AboutWindow aboutWin;
-        private MiniWidgetV miniWidget;
-        private MainWindowVM mainWin;
+        private ConfirmationDialog? confDialog;
+        private AboutWindow? aboutWin;
+        private MiniWidgetV? miniWidget;
+        private MainWindowVM? mainWin;
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
-        private Forms.NotifyIcon trayIcon;
+        private Forms.NotifyIcon? trayIcon;
         private bool balloonShow;
 
         public MainWindow()
@@ -84,48 +84,56 @@ namespace OpenNetMeter.Views
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            confDialog.Owner = this;
-            aboutWin.Owner = this;
+            if(confDialog != null)
+                confDialog.Owner = this;
+            if(aboutWin != null)
+                aboutWin.Owner = this;
         }
 
-        private void ResetWinPos_Click(object sender, EventArgs e)
+        private void ResetWinPos_Click(object? sender, EventArgs e)
         {
             this.Left = SystemParameters.PrimaryScreenWidth/2 - this.Width / 2;
             this.Top = SystemParameters.PrimaryScreenHeight/2 - this.Height / 2;
 
             SaveWinPos((int)this.Left, (int)this.Top);
 
-            miniWidget.Left = this.Left + this.Width / 2 - miniWidget.Width / 2;
-            miniWidget.Top = this.Top + this.Height / 2 - miniWidget.Height / 2;
+            if(miniWidget != null)
+            {
+                miniWidget.Left = this.Left + this.Width / 2 - miniWidget.Width / 2;
+                miniWidget.Top = this.Top + this.Height / 2 - miniWidget.Height / 2;
 
-            miniWidget.SaveWinPos((int)miniWidget.Left, (int)miniWidget.Top);
+                miniWidget.SaveWinPos((int)miniWidget.Left, (int)miniWidget.Top);
+            }       
         }
 
-        private void MiniWidget_Show_Click(object sender, EventArgs e)
+        private void MiniWidget_Show_Click(object? sender, EventArgs e)
         {
             WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
-            if (miniWidgetHwnd.Handle != IntPtr.Zero)
+            if (miniWidgetHwnd.Handle != IntPtr.Zero && miniWidget != null)
             {
                 miniWidget.ShowMiniWidget();
             } 
         }
 
         // this is for when the user clicks the window exit button through the alt+tab program switcher
-        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
             e.Cancel = true;
             this.Visibility = Visibility.Collapsed;
         }
-        private void Ni_MouseClick(object sender, Forms.MouseEventArgs e)
+        private void Ni_MouseClick(object? sender, Forms.MouseEventArgs e)
         {
             switch (e.Button)
             {
                 case Forms.MouseButtons.Right:
-                    if (Properties.Settings.Default.DarkMode)
-                        trayIcon.ContextMenuStrip.ForeColor = Color.White;
-                    else
-                        trayIcon.ContextMenuStrip.ForeColor = Color.Black;
-                    trayIcon.ContextMenuStrip.Renderer = new CustomSystemTray();
+                    if(trayIcon != null)
+                    {
+                        if (Properties.Settings.Default.DarkMode)
+                            trayIcon.ContextMenuStrip.ForeColor = Color.White;
+                        else
+                            trayIcon.ContextMenuStrip.ForeColor = Color.Black;
+                        trayIcon.ContextMenuStrip.Renderer = new CustomSystemTray();
+                    }
                     break;
             }
         }
@@ -138,8 +146,11 @@ namespace OpenNetMeter.Views
                 this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
                 Properties.Settings.Default.WinPos = new System.Drawing.Point((int)this.Left, (int)this.Top);
 
-                miniWidget.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
-                Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)miniWidget.Left, (int)miniWidget.Top);
+                if(miniWidget != null)
+                {
+                    miniWidget.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                    Properties.Settings.Default.MiniWidgetPos = new System.Drawing.Point((int)miniWidget.Left, (int)miniWidget.Top);
+                }
 
                 Properties.Settings.Default.LaunchFirstTime = false;
                 Properties.Settings.Default.Save();
@@ -150,8 +161,11 @@ namespace OpenNetMeter.Views
             this.Width = Properties.Settings.Default.WinSize.Width;
             this.Height = Properties.Settings.Default.WinSize.Height;
 
-            miniWidget.Left = Properties.Settings.Default.MiniWidgetPos.X;
-            miniWidget.Top = Properties.Settings.Default.MiniWidgetPos.Y;   
+            if(miniWidget!= null)
+            {
+                miniWidget.Left = Properties.Settings.Default.MiniWidgetPos.X;
+                miniWidget.Top = Properties.Settings.Default.MiniWidgetPos.Y;
+            }
 
             //check if window is out of bounds. This is for, when the user last opened the app in the 2nd monitor and then reopens it with a 1 monitor setup.
             bool isInScreen = false;
@@ -179,23 +193,27 @@ namespace OpenNetMeter.Views
             relocationTimer.Tick += RelocationTimer_Tick;
         }
 
-        private void Cm_Open_Click(object sender, EventArgs e)
+        private void Cm_Open_Click(object? sender, EventArgs e)
         {
             this.Visibility = Visibility.Visible;
             this.Activate();
         }
 
-        private void Cm_Exit_Click(object sender, EventArgs e)
+        private void Cm_Exit_Click(object? sender, EventArgs e)
         {
-            confDialog.Close();
-            miniWidget.Close();
-            aboutWin.Close();
+            if(confDialog != null)
+                confDialog.Close();
+            if (miniWidget != null)
+                miniWidget.Close();
+            if (aboutWin != null)
+                aboutWin.Close();
             this.Closing -= MainWindow_Closing;
             this.Close();
-            trayIcon.Visible = false;
+            if(trayIcon != null)
+                trayIcon.Visible = false;
         }
 
-        private void Ni_DoubleClick(object sender, EventArgs e)
+        private void Ni_DoubleClick(object? sender, EventArgs e)
         {
             this.Visibility = Visibility.Visible;
             this.Activate();
@@ -220,16 +238,17 @@ namespace OpenNetMeter.Views
             WindowState = WindowState.Minimized;
         }
         
-        public void Exit_Button_Click(object sender, RoutedEventArgs e)
+        public void Exit_Button_Click(object? sender, RoutedEventArgs? e)
         {
-            if (!balloonShow)
+            if (!balloonShow && trayIcon != null)
             {
                 trayIcon.ShowBalloonTip(1000, null, "Minimized to system tray", Forms.ToolTipIcon.None);
                 balloonShow = true;
             }
-
-            aboutWin.Visibility = Visibility.Collapsed;
-            confDialog.Visibility = Visibility.Collapsed;
+            if(aboutWin != null)
+                aboutWin.Visibility = Visibility.Collapsed;
+            if(confDialog != null)
+                confDialog.Visibility = Visibility.Collapsed;
             this.Visibility = Visibility.Collapsed;
         }
 
@@ -237,11 +256,12 @@ namespace OpenNetMeter.Views
 
         private void About_Button_Click(object sender, RoutedEventArgs e)
         {
-            aboutWin.Visibility = Visibility.Visible;
+            if(aboutWin != null)
+                aboutWin.Visibility = Visibility.Visible;
         }
 
         //save window size and position at the end of the respective events
-        private void ResizeTimer_Tick(object sender, EventArgs e)
+        private void ResizeTimer_Tick(object? sender, EventArgs e)
         {
             resizeTimer.IsEnabled = false;
 
@@ -250,18 +270,20 @@ namespace OpenNetMeter.Views
             Properties.Settings.Default.Save();
 
             //pass parent window dimensions to confirmation dialog
-            confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
-            aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            if(confDialog != null)
+                confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            if (aboutWin != null)
+                aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
-        private void MyWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void MyWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
             resizeTimer.IsEnabled = true;
             resizeTimer.Stop();
             resizeTimer.Start();
         }
         
-        private void RelocationTimer_Tick(object sender, EventArgs e)
+        private void RelocationTimer_Tick(object? sender, EventArgs e)
         {
             relocationTimer.IsEnabled = false;
 
@@ -275,8 +297,10 @@ namespace OpenNetMeter.Views
             Properties.Settings.Default.Save();
 
             //pass parent window dimensions to confirmation and about dialog
-            confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
-            aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            if (confDialog != null)
+                confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            if (aboutWin != null)
+                aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_LocationChanged(object sender, EventArgs e)

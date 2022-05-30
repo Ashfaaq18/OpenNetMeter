@@ -27,18 +27,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private string date;
-        public string Date
-        {
-            get { return date; }
-            set
-            {
-                date = value; OnPropertyChanged("Date");
-            }
-        }
-
-        private ObservableCollection<string> profiles;
-        public ObservableCollection<string> Profiles
+        private ObservableCollection<string>? profiles;
+        public ObservableCollection<string>? Profiles
         {
             get{ return profiles; }
             set
@@ -51,33 +41,44 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private Process[] process;
+        private Process[]? process;
 
         public void GetAppDataInfo(string name, int dataRecv, int dataSend)
         {
             //var watch = Stopwatch.StartNew();
             if (name == null || name == "")
                 name = "System";
-            if (MyProcesses.TryAdd(name, null))
-            {
-                process = Process.GetProcessesByName(name);
-                Icon ic = null;
-                
-                if (process.Length > 0)
-                {
-                    try { ic = Icon.ExtractAssociatedIcon(process[0].MainModule.FileName); }
-                    catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
-                }
-                MyProcesses[name] = new MyProcess(name, (ulong)dataRecv, (ulong)dataSend, ic);
-            }
-            else
-            {
-                MyProcesses[name].TotalDataRecv += (ulong)dataRecv;
-                MyProcesses[name].TotalDataSend += (ulong)dataSend;
-            }
 
-            MyProcesses[name].CurrentDataRecv += (ulong)dataRecv;
-            MyProcesses[name].CurrentDataSend += (ulong)dataSend;
+            if(MyProcesses!= null)
+            {
+                if (MyProcesses!.TryAdd(name, null))
+                {
+                    process = Process.GetProcessesByName(name);
+                    Icon? ic = null;
+
+                    if (process.Length > 0)
+                    {
+                        try 
+                        {
+                            if (process[0].MainModule != null)
+                                ic = Icon.ExtractAssociatedIcon(process[0].MainModule!.FileName!);
+                            else
+                                Debug.WriteLine("process[0].MainModule is null");
+                        }
+                        catch { Debug.WriteLine("couldnt retrieve icon"); ic = null; }
+                    }
+                    MyProcesses[name] = new MyProcess(name, (ulong)dataRecv, (ulong)dataSend, ic);
+                }
+                else
+                {
+                    MyProcesses[name].TotalDataRecv += (ulong)dataRecv;
+                    MyProcesses[name].TotalDataSend += (ulong)dataSend;
+                }
+
+                MyProcesses[name].CurrentDataRecv += (ulong)dataRecv;
+                MyProcesses[name].CurrentDataSend += (ulong)dataSend;
+            }
+            
             // watch.Stop();
             //Debug.WriteLine(watch.ElapsedTicks);
             /*implement a task runner in the future to run dictionary addition in the background*/
@@ -96,11 +97,12 @@ namespace OpenNetMeter.ViewModels
             MyProcesses = new ObservableConcurrentDictionary<string, MyProcess>();
             //initialize user controls
             OnProfVM = new OnlineProfileVM();
+            currentConnection = "";
         }
 
         //------property changers---------------//
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName)
         {
