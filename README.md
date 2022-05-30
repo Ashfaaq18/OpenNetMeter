@@ -11,12 +11,11 @@ This program provides the following features,
 - current connection's session data usage 
 - total data usage since the detection of a new connection.
 - table of all the individual processes which consumed this data.
-- A system tray icon to show the current session data usage and network speeds.
-- A toolbar in the Taskbar to show the network speed. 
+- A mini widget to show the network speed (can be placed over the taskbar). 
 
 ## Installation
 
-1. Download and Install [.NET Desktop Runtime 5](https://dotnet.microsoft.com/en-us/download/dotnet/5.0) x64 bit version
+1. Download and Install [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) desktop apps version. (for versions 0.9.0 and below, download [.NET 5.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/5.0/runtime))
 2. Download the latest release from this repository and simply extract it.
 3. Run in Admin mode (this is necessary).
 4. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
@@ -24,7 +23,7 @@ This program provides the following features,
 ## Uninstallation
 
 1. Untick the "Start program on windows startup" from the settings page (this is to remove the program from the startup records).
-2. Untick the "Show Network speed from task bar" from the settings page  (this is to remove the dll from the registry).
+2. for versions 0.8.1 to 0.5.1, Untick the "Show Network speed from task bar" from the settings page  (this is to remove the dll from the registry).
 3. Simply delete the folder.
     
 ## Usage/Examples
