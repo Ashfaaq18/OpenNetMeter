@@ -86,23 +86,35 @@ namespace OpenNetMeter.ViewModels
             myDB.CreateTable(
                 "phones",
                 new string[] { 
-                    $"brand {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}", 
-                    $"model {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}",
-                    $"description {Enum.GetName(typeof(Database.DataType), Database.DataType.TEXT)}"
+                    $"brand {Database.DataType.TEXT}", 
+                    $"model {Database.DataType.TEXT}",
+                    $"description {Database.DataType.TEXT}",
+                    $"modelNo {Database.DataType.INTEGER}"
                 });
 
-            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-            list.Add(new KeyValuePair<string, string>("brand", "samsung"));
-            list.Add(new KeyValuePair<string, string>("model", "j2"));
-            list.Add(new KeyValuePair<string, string>("description", "this is a desc samsungs"));
+            List<(string,string)> list = new List<(string, string)>();
+            list.Add(("brand", "samsung"));
+            list.Add(("model", "j2"));
+            list.Add(("description", "this is a desc samsungs"));
+            list.Add(("modelNo", "1"));
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 
-            list[0] = new KeyValuePair<string, string>("brand", "xiaomi");
-            list[1] = new KeyValuePair<string, string>("model", "Mi 10");
-            list[2] = new KeyValuePair<string, string>("description", "this is a desc Xiaomi");
+            list[0] = ("brand", "xiaomi");
+            list[1] = ("model", "Mi 11");
+            list[2] = ("description", "this is a desc Xiaomi");
+            list[2] = ("modelNo", "12");
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
+
+            list[0] = ("brand", "test");
+            list[1] = ("model", "Mi 10");
+            list[2] = ("description", "this is a desc Xiaomi");
+            list[2] = ("modelNo", "3");
+
+            myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
+
+            myDB.ReadAllRecords("phones");
 
             //intial startup page
             TabBtnToggle = Properties.Settings.Default.LaunchPage;

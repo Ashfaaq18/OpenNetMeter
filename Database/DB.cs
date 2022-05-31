@@ -6,14 +6,15 @@ using System.IO;
 
 namespace Database
 {
-    public enum DataType
+    public static class DataType
     {
-        INTEGER,
-        TEXT,
-        BLOB,
-        REAL,
-        NUMERIC
+        public static string INTEGER = "INTEGER";
+        public static string TEXT = "TEXT";
+        public static string BLOB = "BLOB";
+        public static string REAL = "REAL";
+        public static string NUMERIC = "NUMERIC";
     }
+
     public class DB
     {
         
@@ -56,7 +57,7 @@ namespace Database
         /// <summary>
         /// CRUD opereations
         /// </summary>
-        public void CreateRecord(string tableName, List<KeyValuePair<string,string>> columnAndItsValue)
+        public void CreateRecord(string tableName, List<(string, string)> columnAndItsValue)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -72,12 +73,12 @@ namespace Database
 
                         for (int i = 0; i < columnAndItsValue.Count-1; i++)
                         {
-                            allColumnNames += columnAndItsValue[i].Key + ", ";
-                            allValueNames += "@" + columnAndItsValue[i].Key + ", ";
+                            allColumnNames += columnAndItsValue[i].Item1 + ", ";
+                            allValueNames += "@" + columnAndItsValue[i].Item1 + ", ";
                         }
 
-                        allColumnNames += columnAndItsValue[columnAndItsValue.Count - 1].Key + ")";
-                        allValueNames += "@" + columnAndItsValue[columnAndItsValue.Count - 1].Key + ")";
+                        allColumnNames += columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
+                        allValueNames += "@" + columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
 
                         try
                         {
@@ -87,7 +88,7 @@ namespace Database
 
                             for (int i = 0; i < columnAndItsValue.Count; i++)
                             {
-                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Key}", columnAndItsValue[i].Value);
+                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Item1}", columnAndItsValue[i].Item2);
                             }
 
                             cmd.Prepare();
@@ -95,7 +96,7 @@ namespace Database
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine(ex.ToString());
+                            Debug.WriteLine(ex.Message);
                         }  
                     }     
                 }    
@@ -103,18 +104,49 @@ namespace Database
             }
         }
 
-        public void CreateOrUpdateIfRecordExists(string tableName, List<KeyValuePair<string, string>> columnAndItsValue, int uniqueColIndex)
+        public void CreateOrUpdateIfRecordExists(string tableName, List<(string, string)> columnAndItsValue, int uniqueColIndex)
         {
             if(UpdateRecord(tableName, columnAndItsValue, uniqueColIndex) < 1)
             {
                 CreateRecord(tableName, columnAndItsValue);
             }
         }
-        public void ReadRecord()
+        public void ReadAllRecords(string tableName)
         {
-
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                {
+                    try
+                    {
+                        cmd.CommandText = $"SELECT * from {tableName}";
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                int colCount = reader.FieldCount;
+                                while (reader.Read())
+                                {
+                                    for (int i = 0; i < colCount; i++)
+                                    {
+                                        Debug.Write($"{reader[i]} {reader.GetFieldType(i)}|");
+                                    }
+                                    Debug.WriteLine("");
+                                }
+                            }
+                            reader.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                }
+                connection.Close();
+            }
         }
-        public int UpdateRecord(string tableName, List<KeyValuePair<string, string>> columnAndItsValue, int uniqueColIndex)
+        public int UpdateRecord(string tableName, List<(string, string)> columnAndItsValue, int uniqueColIndex)
         {
             int rowChangeCount = 0;
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -129,16 +161,16 @@ namespace Database
                             string setString = $"SET ";
                             for (int i = 0; i < columnAndItsValue.Count; i++) //3
                             {
-                                setString += $"{columnAndItsValue[i].Key} = @{columnAndItsValue[i].Key}";
+                                setString += $"{columnAndItsValue[i].Item1} = @{columnAndItsValue[i].Item1}";
                                 if ((columnAndItsValue.Count - 1) > i)
                                 {
                                     setString += ", ";
                                 }
 
-                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Key}", columnAndItsValue[i].Value);
+                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Item1}", columnAndItsValue[i].Item2);
                             }
-                            cmd.CommandText = $"UPDATE {tableName} {setString} WHERE {columnAndItsValue[uniqueColIndex].Key} = @{columnAndItsValue[uniqueColIndex].Key}";
-                            cmd.Parameters.AddWithValue($"@{columnAndItsValue[uniqueColIndex].Key}", columnAndItsValue[uniqueColIndex].Value);
+                            cmd.CommandText = $"UPDATE {tableName} {setString} WHERE {columnAndItsValue[uniqueColIndex].Item1} = @{columnAndItsValue[uniqueColIndex].Item1}";
+                            cmd.Parameters.AddWithValue($"@{columnAndItsValue[uniqueColIndex].Item1}", columnAndItsValue[uniqueColIndex].Item2);
                             cmd.Prepare();
                             rowChangeCount = cmd.ExecuteNonQuery();
                             //Debug.WriteLine($"Count: {rowChange}");
@@ -147,7 +179,7 @@ namespace Database
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine(ex.ToString());
+                            Debug.WriteLine(ex.Message);
                             rowChangeCount = -1;
                         }  
                     }
@@ -156,7 +188,7 @@ namespace Database
                 return rowChangeCount;
             }
         }
-        public void DeleteRecord(string tableName, KeyValuePair<string, string> name)
+        public void DeleteRecord(string tableName, (string, string) name)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -165,13 +197,13 @@ namespace Database
                 {
                     try
                     {
-                        cmd.CommandText = $"DELETE FROM {tableName} WHERE {name.Key} = @ItemToDelete";
-                        cmd.Parameters.AddWithValue("@ItemToDelete", name.Value);
+                        cmd.CommandText = $"DELETE FROM {tableName} WHERE {name.Item1} = @ItemToDelete";
+                        cmd.Parameters.AddWithValue("@ItemToDelete", name.Item2);
                         cmd.ExecuteNonQuery();
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine(ex.ToString());
+                        Debug.WriteLine(ex.Message);
                     }
                 }
                 connection.Close();
