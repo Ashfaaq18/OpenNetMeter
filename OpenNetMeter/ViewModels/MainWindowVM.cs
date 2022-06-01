@@ -103,14 +103,14 @@ namespace OpenNetMeter.ViewModels
             list[0] = ("brand", "xiaomi");
             list[1] = ("model", "Mi 11");
             list[2] = ("description", "this is a desc Xiaomi");
-            list[2] = ("modelNo", "12");
+            list[3] = ("modelNo", "12");
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 
             list[0] = ("brand", "test");
             list[1] = ("model", "Mi 10");
-            list[2] = ("description", "this is a desc Xiaomi");
-            list[2] = ("modelNo", "3");
+            list[2] = ("description", "this is a desc test");
+            list[3] = ("modelNo", "3");
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 

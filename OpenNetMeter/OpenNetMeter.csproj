@@ -16,13 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ONM_DeskBand\**" />
-    <EmbeddedResource Remove="ONM_DeskBand\**" />
-    <None Remove="ONM_DeskBand\**" />
-    <Page Remove="ONM_DeskBand\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ManagedNativeWifi" Version="2.1.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.0.0" />
     <PackageReference Include="ParallelExtensionsCore" Version="2.1.0" />
