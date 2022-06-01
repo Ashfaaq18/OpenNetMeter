@@ -82,35 +82,38 @@ namespace OpenNetMeter.ViewModels
             else
                 fullPath = Path.Combine(path, "OpenNetMeter");
 
+            string tableName = "phones";
             Database.DB myDB = new(fullPath, "test");
-            myDB.CreateTable(
-                "phones",
-                new string[] { 
-                    $"brand {Database.DataType.TEXT}", 
-                    $"model {Database.DataType.TEXT}",
-                    $"description {Database.DataType.TEXT}",
-                    $"modelNo {Database.DataType.INTEGER}"
-                });
 
+            if(!myDB.TableExists(tableName))
+            {
+                myDB.CreateTable(tableName, new string[] {
+                    $"brand {Database.DataType.TEXT}",
+                    $"model {Database.DataType.TEXT}",
+                    $"description {Database.DataType.TEXT}"
+                   // $"modelNo {Database.DataType.INTEGER}"
+                });
+            }
+            
             List<(string,string)> list = new List<(string, string)>();
             list.Add(("brand", "samsung"));
             list.Add(("model", "j2"));
             list.Add(("description", "this is a desc samsungs"));
-            list.Add(("modelNo", "1"));
+            //list.Add(("modelNo", "1"));
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 
             list[0] = ("brand", "xiaomi");
-            list[1] = ("model", "Mi 11");
+            list[1] = ("model", "Mi 15");
             list[2] = ("description", "this is a desc Xiaomi");
-            list[3] = ("modelNo", "12");
+            //list[3] = ("modelNo", "12");
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 
             list[0] = ("brand", "test");
-            list[1] = ("model", "Mi 10");
+            list[1] = ("model", "Mi 20");
             list[2] = ("description", "this is a desc test");
-            list[3] = ("modelNo", "3");
+            //list[3] = ("modelNo", "3");
 
             myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
 

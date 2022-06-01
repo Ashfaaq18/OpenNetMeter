@@ -29,27 +29,73 @@ namespace Database
             }
         }
 
+        public int GetTableColumns(string tableName)
+        {
+
+            return 0;
+        }
+
+        public bool TableExists(string tableName)
+        {
+            bool result = false;
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                {
+                    try
+                    {
+                        cmd.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name=@name";
+                        cmd.Parameters.AddWithValue("@name", tableName);
+                        if (cmd.ExecuteScalar().ToString() == tableName)
+                            result = true;
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.WriteLine($"TableExists error: {ex.Message}");
+                    }
+                }
+                connection.Close();
+            }
+            return result;
+        }
+
         public void CreateTable(string tableName, string[] columnNames)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
-                string allColumnNames = "";
-                if (columnNames.Length > 0)
-                {
-                    allColumnNames += "(";
-
-                    for (int i = 0; i < columnNames.Length - 1; i++)
-                    {
-                        allColumnNames += columnNames[i] + ", ";
-                    }
-
-                    allColumnNames += columnNames[columnNames.Length - 1] + ")";
-                }
-
                 connection.Open();
-                string sql = "CREATE TABLE IF NOT EXISTS " + tableName + allColumnNames;
-                SQLiteCommand cmd = new SQLiteCommand(sql, connection);
-                cmd.ExecuteNonQuery();
+                using(SQLiteCommand cmd = new SQLiteCommand(connection))
+                {
+                    try
+                    {
+                        string allColumnNames = "";
+                        string allValueNames = "";
+                        if (columnNames.Length > 0)
+                        {
+                            allColumnNames += "(";
+                            allValueNames += "(";
+                            for (int i = 0; i < columnNames.Length - 1; i++)
+                            {
+                                allColumnNames += columnNames[i] + ", ";
+                                allValueNames += "@" + columnNames[i] + ", ";
+                            }
+
+                            allColumnNames += columnNames[columnNames.Length - 1] + ")";
+                            allValueNames += "@" + columnNames[columnNames.Length - 1] + ")";
+                        }
+                        cmd.CommandText = $"CREATE TABLE {tableName}{allColumnNames} VALUES{allValueNames}";
+                        for (int i = 0; i < columnNames.Length; i++)
+                        {
+                            cmd.Parameters.AddWithValue($"@{columnNames[i]}", columnNames[i]);
+                        }
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"CreateTable error: {ex.Message}");
+                    }
+                }
                 connection.Close();
             }
         }
@@ -64,24 +110,24 @@ namespace Database
                 connection.Open();
                 using(SQLiteCommand cmd = new SQLiteCommand(connection))
                 {
-                    string allColumnNames = "";
-                    string allValueNames = "";
-                    if(columnAndItsValue.Count > 0)
+                    try
                     {
-                        allColumnNames += "(";
-                        allValueNames += "(";
-
-                        for (int i = 0; i < columnAndItsValue.Count-1; i++)
+                        string allColumnNames = "";
+                        string allValueNames = "";
+                        if (columnAndItsValue.Count > 0)
                         {
-                            allColumnNames += columnAndItsValue[i].Item1 + ", ";
-                            allValueNames += "@" + columnAndItsValue[i].Item1 + ", ";
-                        }
+                            allColumnNames += "(";
+                            allValueNames += "(";
 
-                        allColumnNames += columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
-                        allValueNames += "@" + columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
+                            for (int i = 0; i < columnAndItsValue.Count - 1; i++)
+                            {
+                                allColumnNames += columnAndItsValue[i].Item1 + ", ";
+                                allValueNames += "@" + columnAndItsValue[i].Item1 + ", ";
+                            }
 
-                        try
-                        {
+                            allColumnNames += columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
+                            allValueNames += "@" + columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
+
                             cmd.CommandText = $"INSERT INTO {tableName}{allColumnNames} VALUES{allValueNames}";
 
                             Debug.WriteLine(cmd.CommandText);
@@ -94,11 +140,11 @@ namespace Database
                             cmd.Prepare();
                             cmd.ExecuteNonQuery();
                         }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }  
-                    }     
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"CreateRecord error: {ex.Message}");
+                    }  
                 }    
                 connection.Close();
             }
@@ -140,7 +186,7 @@ namespace Database
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine($"ReadAllRecords error: {ex.Message}");
                     }
                 }
                 connection.Close();
@@ -154,9 +200,9 @@ namespace Database
                 connection.Open();
                 using (SQLiteCommand cmd = new SQLiteCommand(connection))
                 {
-                    if (columnAndItsValue.Count > 0)
+                    try
                     {
-                        try
+                        if (columnAndItsValue.Count > 0)
                         {
                             string setString = $"SET ";
                             for (int i = 0; i < columnAndItsValue.Count; i++) //3
@@ -173,15 +219,12 @@ namespace Database
                             cmd.Parameters.AddWithValue($"@{columnAndItsValue[uniqueColIndex].Item1}", columnAndItsValue[uniqueColIndex].Item2);
                             cmd.Prepare();
                             rowChangeCount = cmd.ExecuteNonQuery();
-                            //Debug.WriteLine($"Count: {rowChange}");
-                            //Debug.WriteLine(cmd.CommandText);
-                            //Debug.WriteLine(cmd.Parameters.ToString());
                         }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                            rowChangeCount = -1;
-                        }  
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"UpdateRecord error: {ex.Message}");
+                        rowChangeCount = -1;
                     }
                 }
                 connection.Close();
@@ -203,7 +246,7 @@ namespace Database
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine($"DeleteRecord error: {ex.Message}");
                     }
                 }
                 connection.Close();
