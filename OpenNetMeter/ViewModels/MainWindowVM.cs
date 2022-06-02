@@ -74,50 +74,7 @@ namespace OpenNetMeter.ViewModels
 
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
 
-            string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string fullPath = "";
-            if (appName != null)
-                fullPath = Path.Combine(path, appName);
-            else
-                fullPath = Path.Combine(path, "OpenNetMeter");
-
-            string tableName = "phones";
-            Database.DB myDB = new(fullPath, "test");
-
-            if(!myDB.TableExists(tableName))
-            {
-                myDB.CreateTable(tableName, new string[] {
-                    $"brand {Database.DataType.TEXT}",
-                    $"model {Database.DataType.TEXT}",
-                    $"description {Database.DataType.TEXT}"
-                   // $"modelNo {Database.DataType.INTEGER}"
-                });
-            }
-            
-            List<(string,string)> list = new List<(string, string)>();
-            list.Add(("brand", "samsung"));
-            list.Add(("model", "j2"));
-            list.Add(("description", "this is a desc samsungs"));
-            //list.Add(("modelNo", "1"));
-
-            myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
-
-            list[0] = ("brand", "xiaomi");
-            list[1] = ("model", "Mi 15");
-            list[2] = ("description", "this is a desc Xiaomi");
-            //list[3] = ("modelNo", "12");
-
-            myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
-
-            list[0] = ("brand", "test");
-            list[1] = ("model", "Mi 20");
-            list[2] = ("description", "this is a desc test");
-            //list[3] = ("modelNo", "3");
-
-            myDB.CreateOrUpdateIfRecordExists("phones", list, 0);
-
-            myDB.ReadAllRecords("phones");
+            ApplicationDB dB = new ApplicationDB();
 
             //intial startup page
             TabBtnToggle = Properties.Settings.Default.LaunchPage;

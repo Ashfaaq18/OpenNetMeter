@@ -29,10 +29,31 @@ namespace Database
             }
         }
 
-        public int GetTableColumns(string tableName)
+        public int GetTableColumnCount(string tableName)
         {
-
-            return 0;
+            int result = 0;
+            using(SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                {
+                    try
+                    {
+                        cmd.CommandText = $"SELECT * from {tableName}";
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        {
+                            result = reader.FieldCount;
+                            reader.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"ReadAllRecords error: {ex.Message}");
+                    }
+                }
+                connection.Close();
+            }
+            return result;
         }
 
         public bool TableExists(string tableName)
@@ -47,8 +68,13 @@ namespace Database
                     {
                         cmd.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name=@name";
                         cmd.Parameters.AddWithValue("@name", tableName);
-                        if (cmd.ExecuteScalar().ToString() == tableName)
-                            result = true;
+                        object getTableName = cmd.ExecuteScalar();
+                        if(getTableName != null)
+                        {
+                            if (getTableName.ToString() == tableName)
+                                result = true;
+                        }
+                        
                     }
                     catch(Exception ex)
                     {
@@ -70,25 +96,16 @@ namespace Database
                     try
                     {
                         string allColumnNames = "";
-                        string allValueNames = "";
                         if (columnNames.Length > 0)
                         {
                             allColumnNames += "(";
-                            allValueNames += "(";
                             for (int i = 0; i < columnNames.Length - 1; i++)
                             {
-                                allColumnNames += columnNames[i] + ", ";
-                                allValueNames += "@" + columnNames[i] + ", ";
+                                allColumnNames += $"{columnNames[i]} , ";
                             }
-
-                            allColumnNames += columnNames[columnNames.Length - 1] + ")";
-                            allValueNames += "@" + columnNames[columnNames.Length - 1] + ")";
                         }
-                        cmd.CommandText = $"CREATE TABLE {tableName}{allColumnNames} VALUES{allValueNames}";
-                        for (int i = 0; i < columnNames.Length; i++)
-                        {
-                            cmd.Parameters.AddWithValue($"@{columnNames[i]}", columnNames[i]);
-                        }
+                        allColumnNames += $"{columnNames[columnNames.Length - 1]})";
+                        cmd.CommandText = $"CREATE TABLE {tableName}{allColumnNames}";
                         cmd.ExecuteNonQuery();
                     }
                     catch (Exception ex)
@@ -101,9 +118,9 @@ namespace Database
         }
 
         /// <summary>
-        /// CRUD opereations
+        /// CRUD operations
         /// </summary>
-        public void CreateRecord(string tableName, List<(string, string)> columnAndItsValue)
+        public void CreateRecord(string tableName, string[,] columnAndItsValue)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -114,27 +131,27 @@ namespace Database
                     {
                         string allColumnNames = "";
                         string allValueNames = "";
-                        if (columnAndItsValue.Count > 0)
+                        if (columnAndItsValue.GetLength(0) > 0)
                         {
                             allColumnNames += "(";
                             allValueNames += "(";
 
-                            for (int i = 0; i < columnAndItsValue.Count - 1; i++)
+                            for (int i = 0; i < columnAndItsValue.GetLength(0) - 1; i++)
                             {
-                                allColumnNames += columnAndItsValue[i].Item1 + ", ";
-                                allValueNames += "@" + columnAndItsValue[i].Item1 + ", ";
+                                allColumnNames += columnAndItsValue[i, 0] + ", ";
+                                allValueNames += "@" + columnAndItsValue[i, 0] + ", ";
                             }
 
-                            allColumnNames += columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
-                            allValueNames += "@" + columnAndItsValue[columnAndItsValue.Count - 1].Item1 + ")";
+                            allColumnNames += columnAndItsValue[columnAndItsValue.GetLength(0) - 1, 0] + ")";
+                            allValueNames += "@" + columnAndItsValue[columnAndItsValue.GetLength(0) - 1, 0] + ")";
 
                             cmd.CommandText = $"INSERT INTO {tableName}{allColumnNames} VALUES{allValueNames}";
 
                             Debug.WriteLine(cmd.CommandText);
 
-                            for (int i = 0; i < columnAndItsValue.Count; i++)
+                            for (int i = 0; i < columnAndItsValue.GetLength(0); i++)
                             {
-                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Item1}", columnAndItsValue[i].Item2);
+                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i, 0]}", columnAndItsValue[i, 1]);
                             }
 
                             cmd.Prepare();
@@ -150,7 +167,7 @@ namespace Database
             }
         }
 
-        public void CreateOrUpdateIfRecordExists(string tableName, List<(string, string)> columnAndItsValue, int uniqueColIndex)
+        public void CreateOrUpdateIfRecordExists(string tableName, string[,] columnAndItsValue, int uniqueColIndex)
         {
             if(UpdateRecord(tableName, columnAndItsValue, uniqueColIndex) < 1)
             {
@@ -192,7 +209,7 @@ namespace Database
                 connection.Close();
             }
         }
-        public int UpdateRecord(string tableName, List<(string, string)> columnAndItsValue, int uniqueColIndex)
+        public int UpdateRecord(string tableName, string[,] columnAndItsValue, int uniqueColIndex)
         {
             int rowChangeCount = 0;
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -202,21 +219,21 @@ namespace Database
                 {
                     try
                     {
-                        if (columnAndItsValue.Count > 0)
+                        if (columnAndItsValue.GetLength(0) > 0)
                         {
                             string setString = $"SET ";
-                            for (int i = 0; i < columnAndItsValue.Count; i++) //3
+                            for (int i = 0; i < columnAndItsValue.GetLength(0); i++) //3
                             {
-                                setString += $"{columnAndItsValue[i].Item1} = @{columnAndItsValue[i].Item1}";
-                                if ((columnAndItsValue.Count - 1) > i)
+                                setString += $"{columnAndItsValue[i, 0]} = @{columnAndItsValue[i, 0]}";
+                                if ((columnAndItsValue.GetLength(0) - 1) > i)
                                 {
                                     setString += ", ";
                                 }
 
-                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i].Item1}", columnAndItsValue[i].Item2);
+                                cmd.Parameters.AddWithValue($"@{columnAndItsValue[i, 0]}", columnAndItsValue[i, 1]);
                             }
-                            cmd.CommandText = $"UPDATE {tableName} {setString} WHERE {columnAndItsValue[uniqueColIndex].Item1} = @{columnAndItsValue[uniqueColIndex].Item1}";
-                            cmd.Parameters.AddWithValue($"@{columnAndItsValue[uniqueColIndex].Item1}", columnAndItsValue[uniqueColIndex].Item2);
+                            cmd.CommandText = $"UPDATE {tableName} {setString} WHERE {columnAndItsValue[uniqueColIndex, 0]} = @{columnAndItsValue[uniqueColIndex, 0]}";
+                            cmd.Parameters.AddWithValue($"@{columnAndItsValue[uniqueColIndex, 0]}", columnAndItsValue[uniqueColIndex, 1]);
                             cmd.Prepare();
                             rowChangeCount = cmd.ExecuteNonQuery();
                         }
