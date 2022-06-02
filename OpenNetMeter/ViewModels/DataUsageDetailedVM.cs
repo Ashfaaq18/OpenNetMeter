@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using OpenNetMeter.Models;
-using OpenNetMeter.ViewModels.DataUsageDetailedPagesVM;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -84,7 +83,6 @@ namespace OpenNetMeter.ViewModels
             /*implement a task runner in the future to run dictionary addition in the background*/
         }
 
-        public OnlineProfileVM OnProfVM { get; set; }
         public ObservableConcurrentDictionary<string, MyProcess> MyProcesses { get; set; }
 
         private ConfirmationDialogVM cdvm;
@@ -95,8 +93,6 @@ namespace OpenNetMeter.ViewModels
             cdvm.SetVM(this);
             Profiles = new ObservableCollection<string>();
             MyProcesses = new ObservableConcurrentDictionary<string, MyProcess>();
-            //initialize user controls
-            OnProfVM = new OnlineProfileVM();
             currentConnection = "";
         }
 
