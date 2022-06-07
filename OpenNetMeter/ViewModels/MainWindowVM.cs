@@ -74,7 +74,25 @@ namespace OpenNetMeter.ViewModels
 
             netProc = new NetworkProcess(dusvm, dudvm, this, mwvm_DataContext);
 
-            ApplicationDB dB = new ApplicationDB();
+            //---- sample db section --------//
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            ApplicationDB dB = new ApplicationDB("Profiles");
+            string adapterName = "WiFi 41";
+            dB.CreateTable(adapterName);
+            string appName = "system";
+            ulong dataR = 20456;
+            ulong dataS = 654;
+            int result = dB.UpdateRecord(adapterName, appName, dataR, dataS);
+            if (result < 1)
+            {
+                dB.CreateRecord(adapterName, appName, dataR, dataS);
+            }
+
+            dB.ReadRecord(adapterName);
+            Debug.WriteLine("Start Date: " + dB.GetStartDate(adapterName));
+            sw.Stop();
+            Debug.WriteLine("time: " + sw.ElapsedMilliseconds);
 
             //intial startup page
             TabBtnToggle = Properties.Settings.Default.LaunchPage;

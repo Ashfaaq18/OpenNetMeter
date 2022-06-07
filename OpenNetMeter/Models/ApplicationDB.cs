@@ -2,94 +2,118 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using DatabaseEngine;
 
 namespace OpenNetMeter.Models
 {
     internal class ApplicationDB
     {
-        private string filePath;
-        private Database.DB dB;
-        public ApplicationDB()
+        private Database dB;
+
+        /// <summary>
+        /// creates a database file if it does not exist
+        /// </summary>
+        /// <param name="dbName"></param>
+        public ApplicationDB(string dbName)
         {
-            //set DB file path
+            dB = new Database(GetFilePath(), dbName);
+        }
+
+        private string GetFilePath()
+        {
             string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (appName != null)
-                filePath = Path.Combine(path, appName);
+                path = Path.Combine(path, appName);
             else
-                filePath = Path.Combine(path, "OpenNetMeter");
+                path = Path.Combine(path, "OpenNetMeter");
 
-            //create or update table
-            string tableName = "phones";
-            string[] columns = new string[] {
-                    $"brand {Database.DataType.TEXT}",
-                    $"model {Database.DataType.TEXT}",
-                    $"description {Database.DataType.TEXT}",
-                    $"modelNo {Database.DataType.INTEGER}"
-                };
-            dB = new(filePath, "test");
-
-            if (!dB.TableExists(tableName))
-            {
-                dB.CreateTable(tableName, columns);
-            }
-            else
-            {
-                int temp = dB.GetTableColumnCount(tableName);
-                if (columns.Length == temp)
-                {
-                   
-                }
-                else
-                {
-                    if(columns.Length < temp)
-                    {
-
-                    }
-                    else
-                    {
-
-                    }
-                }
-            }
-
-            dB.CreateOrUpdateIfRecordExists("phones",
-            new string[,]{
-                { "brand", "samsung"},
-                { "model", "j3"},
-                { "description", "this is a desc samsungs"}
-            }, 0);
-
-            dB.CreateOrUpdateIfRecordExists("phones",
-            new string[,]{
-                { "brand", "xiaomi"},
-                { "model", "Mi 3"},
-                { "description", "this is a desc Xiaomi"}
-            }, 0);
-
-            dB.CreateOrUpdateIfRecordExists("phones",
-            new string[,]{
-                { "brand", "test"},
-                { "model", "Mi 12"},
-                { "description", "this is a desc test"}
-            }, 0);
-
-            dB.ReadAllRecords("phones");
+            return path;
         }
 
-        public void Update(string[,] record)
+        private string TrimString(string str)
         {
-            if(dB != null)
-                dB.CreateOrUpdateIfRecordExists("phones", record, 0);
+            str = string.Join("", str.Split(" ", StringSplitOptions.RemoveEmptyEntries));
+            str = string.Join("", str.Split("(", StringSplitOptions.RemoveEmptyEntries));
+            str = string.Join("", str.Split(")", StringSplitOptions.RemoveEmptyEntries));
+            return str;
         }
 
-        public void Remove()
+        public int CreateTable(string tableName)
         {
+            return dB.RunSQLiteNonQuery($"CREATE TABLE IF NOT EXISTS {TrimString(tableName)}(" +
+                $"ProcessName TEXT NOT NULL, " +
+                $"Date INTEGER NOT NULL, " +
+                $"DataReceived INTEGER NOT NULL, " +
+                $"DataSent INTEGER NOT NULL, " +
+                $"PRIMARY KEY (ProcessName, Date))");
+        }
 
+        public int CreateRecord(string tableName, string appName, ulong DataRecieved, ulong DataSent)
+        {
+            DateTime today = DateTime.Now;
+            int todayInt = today.Year * 10000 + today.Month * 100 + today.Day;
+            return dB.RunSQLiteNonQuery($"INSERT OR IGNORE INTO " +
+                $"{TrimString(tableName)}(ProcessName, Date, DataReceived, DataSent) " +
+                $"VALUES(@ProcessName, @Date, @DataReceived, @DataSent)", 
+                new string[,] {
+                    {"@ProcessName", appName },
+                    {"@Date",  todayInt.ToString()},
+                    {"@DataReceived", DataRecieved.ToString() },
+                    {"@DataSent", DataSent.ToString() }
+                });
+        }
+
+        public int UpdateRecord(string tableName, string appName, ulong DataRecieved, ulong DataSent)
+        {
+            DateTime today = DateTime.Now;
+            int todayInt = today.Year * 10000 + today.Month * 100 + today.Day;
+            return dB.RunSQLiteNonQuery($"UPDATE {TrimString(tableName)} SET " +
+                $"DataReceived = @DataReceived, " +
+                $"DataSent = @DataSent " +
+                $"WHERE " +
+                $"ProcessName = @ProcessName " +
+                $"AND " +
+                $"Date = @Date ",
+                new string[,]
+                {
+                    {"@DataReceived", DataRecieved.ToString() },
+                    {"@DataSent", DataSent.ToString() },
+                    {"@ProcessName", appName },
+                    {"@Date",  todayInt.ToString()}
+                });
+        }
+
+        public long GetStartDate(string tableName)
+        {
+            List<List<object>> test = dB.RunSQLiteReader($"SELECT " +
+                $"Date " +
+                $"From {TrimString(tableName)} " +
+                $"ORDER BY " +
+                $"Date ASC " +
+                $"LIMIT 1");
+
+            if(test.Count == 1)
+            {
+                if(test[0].Count == 1)
+                {
+                    return (long)test[0][0];
+                }
+            }
+            return 0;
+        }
+
+        public void ReadRecord(string tableName)
+        {
+            List<List<object>> test =  dB.RunSQLiteReader($"SELECT * From {TrimString(tableName)}");
+            for (int i = 0; i < test.Count; i++)
+            {
+                for(int j = 0; j< test[i].Count; j++)
+                    Debug.Write(test[i][j].ToString() + ",");
+                Debug.WriteLine("");
+            }
+                
         }
     }
 }
