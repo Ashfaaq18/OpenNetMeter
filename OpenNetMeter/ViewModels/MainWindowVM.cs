@@ -77,20 +77,21 @@ namespace OpenNetMeter.ViewModels
             //---- sample db section --------//
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ApplicationDB dB = new ApplicationDB("Profiles");
-            string adapterName = "WiFi 41";
-            dB.CreateTable(adapterName);
-            string appName = "system";
-            ulong dataR = 20456;
-            ulong dataS = 654;
-            int result = dB.UpdateRecord(adapterName, appName, dataR, dataS);
-            if (result < 1)
+            ApplicationDB dB = new ApplicationDB("WiFi 4");
+            //string adapterName = "WiFi 41";
+            if(dB.CreateTable() < 0)
+                Debug.WriteLine("Error: Create table");
+            else
             {
-                dB.CreateRecord(adapterName, appName, dataR, dataS);
-            }
+                Debug.WriteLine("Success: Create table");
+                dB.InsertUniqueProcessTableRow("app1");
+                dB.InsertUniqueProcessTableRow("app1");
+                dB.InsertUniqueProcessTableRow("app2");
 
-            dB.ReadRecord(adapterName);
-            Debug.WriteLine("Start Date: " + dB.GetStartDate(adapterName));
+                dB.InsertUniqueDateTableRow(new DateTime(2021, 03, 15));
+                dB.InsertUniqueDateTableRow(new DateTime(2021, 03, 15));
+                dB.InsertUniqueDateTableRow(new DateTime(2021, 11, 21));
+            }
             sw.Stop();
             Debug.WriteLine("time: " + sw.ElapsedMilliseconds);
 
