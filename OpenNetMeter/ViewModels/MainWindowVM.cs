@@ -78,19 +78,37 @@ namespace OpenNetMeter.ViewModels
             Stopwatch sw = new Stopwatch();
             sw.Start();
             ApplicationDB dB = new ApplicationDB("WiFi 4");
-            //string adapterName = "WiFi 41";
             if(dB.CreateTable() < 0)
                 Debug.WriteLine("Error: Create table");
             else
             {
                 Debug.WriteLine("Success: Create table");
-                dB.InsertUniqueProcessTableRow("app1");
-                dB.InsertUniqueProcessTableRow("app1");
-                dB.InsertUniqueProcessTableRow("app2");
+                dB.InsertUniqueRow_ProcessTable("app1");
+                dB.InsertUniqueRow_ProcessTable("app1");
+                dB.InsertUniqueRow_ProcessTable("app2");
 
-                dB.InsertUniqueDateTableRow(new DateTime(2021, 03, 15));
-                dB.InsertUniqueDateTableRow(new DateTime(2021, 03, 15));
-                dB.InsertUniqueDateTableRow(new DateTime(2021, 11, 21));
+                //populate date table with past 60 days
+                //dB.BulkInsertDateRange_DateTable(DateTime.Now, -60);
+                
+                dB.InsertUniqueRow_DateTable(new DateTime(2021, 03, 15));
+                dB.InsertUniqueRow_DateTable(new DateTime(2021, 03, 15));
+                dB.InsertUniqueRow_DateTable(new DateTime(2021, 11, 21));
+                dB.InsertUniqueRow_DateTable(new DateTime(2022, 06, 10));
+                dB.InsertUniqueRow_DateTable(new DateTime(2022, 06, 08));
+                dB.InsertUniqueRow_DateTable(new DateTime(2022, 06, 02));
+                dB.RemoveOldDates();
+
+                long dateID = dB.GetID_DateTable(new DateTime(2022, 06, 02));
+                long processID = dB.GetID_ProcessTable("app2");
+                //example data insert to processDate table
+                Debug.WriteLine("date Id: " + dateID);
+                Debug.WriteLine("Process Id: " + processID);
+
+                if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 2056, 123) < 1)
+                {
+                    dB.UpdateRow_ProcessDateTable(processID, dateID, 2056, 123);
+                }
+
             }
             sw.Stop();
             Debug.WriteLine("time: " + sw.ElapsedMilliseconds);
