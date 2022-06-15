@@ -207,6 +207,8 @@ namespace OpenNetMeter.Views
                 miniWidget.Close();
             if (aboutWin != null)
                 aboutWin.Close();
+            if (mainWin != null)
+                mainWin.Dispose();
             this.Closing -= MainWindow_Closing;
             this.Close();
             if(trayIcon != null)

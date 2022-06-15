@@ -7,7 +7,7 @@ using DatabaseEngine;
 
 namespace OpenNetMeter.Models
 {
-    internal class ApplicationDB
+    internal class ApplicationDB : IDisposable
     {
         private Database dB;
         private int dataStoragePeriodInDays;
@@ -15,10 +15,10 @@ namespace OpenNetMeter.Models
         /// creates a database file if it does not exist
         /// </summary>
         /// <param name="dbName"></param>
-        public ApplicationDB(string dbName)
+        public ApplicationDB(string dBFileName)
         {
-            dB = new Database(GetFilePath(), TrimString(dbName));
-            dataStoragePeriodInDays = 10;
+            dB = new Database(GetFilePath(), TrimString(dBFileName));
+            dataStoragePeriodInDays = 3;
         }
 
         private string TrimString(string str)
@@ -229,7 +229,7 @@ namespace OpenNetMeter.Models
         /// <summary>
         /// remove dates past the time range from date table
         /// </summary>
-        public void RemoveOldDates()
+        public void RemoveOldEntries()
         {
             DateTime time = DateTime.Now;
             time = time.AddDays(-1*dataStoragePeriodInDays);
@@ -240,6 +240,12 @@ namespace OpenNetMeter.Models
                 "(Year * 10000 + Month * 100 + day) " +
                 "< " +
                 $"({time.Year * 10000 + time.Month * 100 + time.Day})");
+        }
+
+        public void Dispose()
+        {
+            if(dB != null)
+                dB.Dispose();
         }
 
         //public void ReadRecord(string tableName)

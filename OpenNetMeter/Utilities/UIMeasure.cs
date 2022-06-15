@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace OpenNetMeter.Models
+namespace OpenNetMeter.Utilities
 {
     public static class UIMeasure
     {

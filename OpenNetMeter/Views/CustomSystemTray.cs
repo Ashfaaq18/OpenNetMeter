@@ -6,16 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace OpenNetMeter.Models
+namespace OpenNetMeter.Views
 {
     public class MyColorTable : ProfessionalColorTable
     {
         public override Color MenuItemBorder
         {
-            get 
-            { 
-                if(Properties.Settings.Default.DarkMode)
-                    return Color.FromArgb(32, 32, 32); 
+            get
+            {
+                if (Properties.Settings.Default.DarkMode)
+                    return Color.FromArgb(32, 32, 32);
                 else
                     return Color.FromArgb(240, 240, 240);
             }

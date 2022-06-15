@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenNetMeter.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -146,7 +147,7 @@ namespace OpenNetMeter.Models
 
                     Ylabels.Add(new TextBlock
                     {
-                        Text = DataSizeSuffix.SizeSuffixInStr(temp, 1, false),
+                        Text = DataSizeSuffix.InStr(temp, 1, false),
                         FontSize = 11,
                         Padding = new Thickness(0, 0, 0, 0)
                     });

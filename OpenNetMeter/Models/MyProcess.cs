@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using OpenNetMeter.Utilities;
+using System.ComponentModel;
 using System.Windows.Media;
 
 namespace OpenNetMeter.Models

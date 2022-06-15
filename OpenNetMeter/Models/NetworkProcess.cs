@@ -12,17 +12,15 @@ using Microsoft.Diagnostics.Tracing.Session;
 using OpenNetMeter.ViewModels;
 using System.Threading;
 using ManagedNativeWifi;
-using System.Collections.ObjectModel;
 using System.Net.Sockets;
+using System.Collections.Generic;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Models
 {
-    public class NetworkProcess
+    public class NetworkProcess : IDisposable
     {
-        private DataUsageSummaryVM dusvm;
-        private DataUsageDetailedVM dudvm;
-        private MainWindowVM main;
-        private MiniWidgetVM mwvm;
+        //---------- private variables ------------//
 
         private byte[] defaultIPv4;
         private byte[] defaultIPv6;
@@ -33,7 +31,46 @@ namespace OpenNetMeter.Models
         private CancellationTokenSource? cts_speed;
         private CancellationToken token_speed;
 
+        private TraceEventSession? kernelSession;
+
         private string adapterName;
+
+        private Dictionary<string, MyProcess>? myProcess;
+
+        //---------- variables with property changers ------------//
+        private ulong currentSessionDownloadData;
+        public ulong CurrentSessionDownloadData
+        {
+            get { return currentSessionDownloadData; }
+            set
+            {
+                currentSessionDownloadData = value;
+                OnPropertyChanged("CurrentSessionDownloadData");
+            }
+        }
+        private ulong currentSessionUploadData;
+        public ulong CurrentSessionUploadData
+        {
+            get { return currentSessionUploadData; }
+            set
+            {
+                currentSessionUploadData = value;
+                OnPropertyChanged("CurrentSessionUploadData");
+            }
+        }
+
+        public ulong downloadSpeed;
+        public ulong DownloadSpeed
+        {
+            get { return downloadSpeed; }
+            set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
+        }
+        public ulong uploadSpeed;
+        public ulong UploadSpeed
+        {
+            get { return uploadSpeed; }
+            set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
+        }
 
         private string isNetworkOnline = "error";
         public string IsNetworkOnline
@@ -41,8 +78,9 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline"); }
         }
-        public NetworkProcess(DataUsageSummaryVM dusvm_ref, DataUsageDetailedVM dudvm_ref, MainWindowVM main_ref, MiniWidgetVM mwvm_ref)
+        public NetworkProcess()
         {
+            //initialize variables
             defaultIPv4 = new byte[]
             {
                 0, 0, 0, 0
@@ -56,21 +94,34 @@ namespace OpenNetMeter.Models
             };
             localIPv4 = defaultIPv4;
             localIPv6 = defaultIPv6;
-
-            dusvm = dusvm_ref;
-            dudvm = dudvm_ref;
-            main = main_ref;
-            mwvm = mwvm_ref;
-
-            SetSpeed(0, 0);
-
             adapterName = "";
-
-            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
-            CaptureNetworkPackets();
         }
 
-        // returns (IPv4, IPv6)
+        /// <summary>
+        /// call after subscribing to the property handlers
+        /// </summary>
+        public void Initialize()
+        {
+            IsNetworkOnline = "Disconnected";
+            currentSessionDownloadData = 0;
+            currentSessionUploadData = 0;
+            downloadSpeed = 0;
+            uploadSpeed = 0;
+
+            //subscribe address network address change
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+
+            //capture network packets
+            CaptureNetworkPackets();
+
+            //check for online network addresses
+            NetworkChange_NetworkAddressChanged(null, null);
+        }
+
+        /// <summary>
+        /// returns local IP (IPv4, IPv6)
+        /// </summary>
+        /// <returns></returns>
         private (byte[], byte[]) GetLocalIP()
         {
             byte[] tempv4 = defaultIPv4;
@@ -111,22 +162,6 @@ namespace OpenNetMeter.Models
             return (tempv4, tempv6);
         }
 
-        private bool ByteArrayCompare(ReadOnlySpan<byte> a1, ReadOnlySpan<byte> a2)
-        {
-            return a1.SequenceEqual(a2);
-        }
-
-        public void InitConnection()
-        {
-            isNetworkOnline = "Disconnected";
-            main.NetworkStatus = isNetworkOnline;
-            dudvm.Profiles = new ObservableCollection<string>();
-            //if (dudvm.Profiles.Count > 0)
-               // dudvm.SelectedProfile = dudvm.Profiles[0];
-            NetworkChange_NetworkAddressChanged(null, null);
-        }
-
-
         private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs? e)
         {
             (byte[], byte[]) tempIP = (defaultIPv4, defaultIPv6);
@@ -145,7 +180,7 @@ namespace OpenNetMeter.Models
                             bool networkAvailable = false;
                             foreach (UnicastIPAddressInformation ip in adapterProperties.UnicastAddresses)
                             {
-                                if (ByteArrayCompare(ip.Address.GetAddressBytes(), tempIP.Item1))
+                                if (ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item1))
                                 {
                                     if (localIPv4 == tempIP.Item1) //this is to prevent this event from firing multiple times during 1 connection change
                                         break;
@@ -156,7 +191,7 @@ namespace OpenNetMeter.Models
                                     
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                 }
-                                else if(ByteArrayCompare(ip.Address.GetAddressBytes(), tempIP.Item2))
+                                else if(ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item2))
                                 {
                                     if (localIPv6 == tempIP.Item2) //this is to prevent this event from firing multiple times during 1 connection change
                                         break;
@@ -187,7 +222,7 @@ namespace OpenNetMeter.Models
 
             //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
             //adapterProperties.GatewayAddresses.FirstOrDefault() in the above foreach loop
-            if (!NetworkInterface.GetIsNetworkAvailable() || ByteArrayCompare(tempIP.Item1, defaultIPv4))
+            if (!NetworkInterface.GetIsNetworkAvailable() || ByteArray.Compare(tempIP.Item1, defaultIPv4))
             {
                 localIPv4 = new byte[] { 0, 0, 0, 0 };
                 Debug.WriteLine("No connection");
@@ -196,53 +231,42 @@ namespace OpenNetMeter.Models
             }
         }
 
-        public void SetNetworkStatus(bool isOnline)
+        private void SetNetworkStatus(bool isOnline)
         {
             if (isOnline)
             {
-                isNetworkOnline = "Connected : " + adapterName;
-                dudvm.CurrentConnection = adapterName;
+                IsNetworkOnline = "Connected : " + adapterName;
+
+                //create DB file if it does not exists
+                using (ApplicationDB dB = new ApplicationDB(adapterName))
+                {
+                    if (dB.CreateTable() < 0)
+                        Debug.WriteLine("Error: Create table");
+                    else
+                    {
+                        //insert todays date
+                        dB.InsertUniqueRow_DateTable(DateTime.Today);
+                        //remove old entries
+                        dB.RemoveOldEntries();
+                    }
+                }
 
                 CaptureNetworkSpeed(); //start logging the speed
             }
             else //if network is disconnected
             {
-                isNetworkOnline = "Disconnected";
+                IsNetworkOnline = "Disconnected";
 
                 if (cts_speed != null)
                     cts_speed.Cancel(); //stop calculating network speed
 
                 //reset speed counters
-                SetSpeed(0, 0);
-
-                dusvm.CurrentSessionDownloadData = 0;
-                dusvm.CurrentSessionUploadData = 0;
-                dusvm.TotalDownloadData = 0;
-                dusvm.TotalUploadData = 0;
-                dudvm.CurrentConnection = "";
-
-                foreach (var row in dudvm.MyProcesses.ToList())
-                {
-                    dudvm.MyProcesses.Remove(row.Key);
-                }
+                DownloadSpeed = 0;
+                UploadSpeed = 0;
             }
-
-            main.NetworkStatus = isNetworkOnline;
         }
 
-        private void SetSpeed(ulong download, ulong upload)
-        {
-            main.DownloadSpeed = download;
-            main.UploadSpeed = upload;
-
-            dusvm.Graph.DownloadSpeed = download;
-            dusvm.Graph.UploadSpeed = upload;
-
-            mwvm.DownloadSpeed = download;
-            mwvm.UploadSpeed = upload;
-        }
-
-        public void CaptureNetworkSpeed()
+        private void CaptureNetworkSpeed()
         {
             cts_speed = new CancellationTokenSource();
             token_speed = cts_speed.Token;
@@ -254,11 +278,12 @@ namespace OpenNetMeter.Models
                     Debug.WriteLine("Operation Started : Network speed");
                     while (!token_speed.IsCancellationRequested)
                     {
-                        ulong temp1 = dusvm.CurrentSessionDownloadData;
-                        ulong temp2 = dusvm.CurrentSessionUploadData;
+                        ulong tempDownload = currentSessionDownloadData;
+                        ulong tempUpload = currentSessionUploadData;
                         await Task.Delay(1000, token_speed);
 
-                        SetSpeed((dusvm.CurrentSessionDownloadData - temp1) * 8, (dusvm.CurrentSessionUploadData - temp2) * 8);
+                        DownloadSpeed = (currentSessionDownloadData - tempDownload) * 8;
+                        UploadSpeed = (currentSessionUploadData - tempUpload) * 8;
                     }
                 }
                 catch (OperationCanceledException)
@@ -273,11 +298,12 @@ namespace OpenNetMeter.Models
                 }
             });
         }
-        public void CaptureNetworkPackets()
+        private void CaptureNetworkPackets()
         {
             Task.Run(() =>
             {
-                using (TraceEventSession kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName))
+                kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
+                if(kernelSession != null)
                 {
                     kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
                     kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
@@ -337,82 +363,132 @@ namespace OpenNetMeter.Models
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
+        //update db
+
         //calculate the Bytes sent and recieved
         private void RecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv4);
-            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv4);
+            bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv4);
+            bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv4);
             if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    dusvm.TotalDownloadData += (ulong)size;
-                    dusvm.CurrentSessionDownloadData += (ulong)size;
+                    CurrentSessionDownloadData += (ulong)size;
+                    using (ApplicationDB dB = new ApplicationDB(adapterName))
+                    {
+                        if (dB.CreateTable() < 0)
+                            Debug.WriteLine("Error: Create table");
+                        else
+                        {
+                            dB.InsertUniqueRow_ProcessTable(name);
 
-                    mwvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
+                            long dateID = dB.GetID_DateTable(DateTime.Today);
+                            long processID = dB.GetID_ProcessTable(name);
 
-                    dudvm.GetAppDataInfo(name, size, 0);
+                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, size, 0) < 1)
+                            {
+                                dB.UpdateRow_ProcessDateTable(processID, dateID, size, 0);
+                            }
+                        }
+                    }
                 }
             }
         }
 
         private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv6);
-            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv6);
+            bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv6);
+            bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv6);
             if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    dusvm.TotalDownloadData += (ulong)size;
-                    dusvm.CurrentSessionDownloadData += (ulong)size;
+                    CurrentSessionDownloadData += (ulong)size;
+                    using (ApplicationDB dB = new ApplicationDB(adapterName))
+                    {
+                        if (dB.CreateTable() < 0)
+                            Debug.WriteLine("Error: Create table");
+                        else
+                        {
+                            dB.InsertUniqueRow_ProcessTable(name);
 
-                    mwvm.CurrentSessionDownloadData = dusvm.CurrentSessionDownloadData;
+                            long dateID = dB.GetID_DateTable(DateTime.Today);
+                            long processID = dB.GetID_ProcessTable(name);
 
-                    dudvm.GetAppDataInfo(name, size, 0);
+                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, size, 0) < 1)
+                            {
+                                dB.UpdateRow_ProcessDateTable(processID, dateID, size, 0);
+                            }
+                        }
+                    }
                 }
             }
         }
 
         private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv4);
-            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv4);
+            bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv4);
+            bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv4);
             if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    dusvm.TotalUploadData += (ulong)size;
-                    dusvm.CurrentSessionUploadData += (ulong)size;
+                    CurrentSessionUploadData += (ulong)size;
+                    using (ApplicationDB dB = new ApplicationDB(adapterName))
+                    {
+                        if (dB.CreateTable() < 0)
+                            Debug.WriteLine("Error: Create table");
+                        else
+                        {
+                            dB.InsertUniqueRow_ProcessTable(name);
 
-                    mwvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
+                            long dateID = dB.GetID_DateTable(DateTime.Today);
+                            long processID = dB.GetID_ProcessTable(name);
 
-                    dudvm.GetAppDataInfo(name, 0, size);
+                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 0, size) < 1)
+                            {
+                                dB.UpdateRow_ProcessDateTable(processID, dateID, 0, size);
+                            }
+                        }
+                    }
                 }
             }
         }
         private void SendProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
         {
-            bool ipCompSrc = ByteArrayCompare(src.GetAddressBytes(), localIPv6);
-            bool ipCompDest = ByteArrayCompare(dest.GetAddressBytes(), localIPv6);
+            bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv6);
+            bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv6);
             if (ipCompSrc ^ ipCompDest)
             {
                 if (Properties.Settings.Default.NetworkType == 2 ? true : //both
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    dusvm.TotalUploadData += (ulong)size;
-                    dusvm.CurrentSessionUploadData += (ulong)size;
+                    CurrentSessionUploadData += (ulong)size;
+                    using (ApplicationDB dB = new ApplicationDB(adapterName))
+                    {
+                        if (dB.CreateTable() < 0)
+                            Debug.WriteLine("Error: Create table");
+                        else
+                        {
+                            dB.InsertUniqueRow_ProcessTable(name);
 
-                    mwvm.CurrentSessionUploadData = dusvm.CurrentSessionUploadData;
+                            long dateID = dB.GetID_DateTable(DateTime.Today);
+                            long processID = dB.GetID_ProcessTable(name);
 
-                    dudvm.GetAppDataInfo(name, 0, size);
+                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 0, size) < 1)
+                            {
+                                dB.UpdateRow_ProcessDateTable(processID, dateID, 0, size);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -470,6 +546,14 @@ namespace OpenNetMeter.Models
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
+        }
+
+        public void Dispose()
+        {
+            if(kernelSession != null)
+            {
+                kernelSession.Dispose();
             }
         }
     }

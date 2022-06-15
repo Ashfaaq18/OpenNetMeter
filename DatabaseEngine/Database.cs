@@ -6,17 +6,17 @@ using System.IO;
 
 namespace DatabaseEngine
 {
-    public class Database
+    public class Database : IDisposable
     {
-        
-        private string connectionString;
+        private SQLiteConnection? connection;
+        private SQLiteCommand? command;
         public Database(string path, string dbFileName)
         {
-            var filePath = Path.Combine(path, dbFileName + ".sqlite");
-            connectionString = @"Data Source=" + Path.Combine(path, dbFileName + ".sqlite;" + " foreign keys=true;");  
-            if (!System.IO.File.Exists(filePath))
+            connection = new SQLiteConnection(new Connection(path, dbFileName).ConnectionString);
+            if(connection != null)
             {
-                SQLiteConnection.CreateFile(filePath);
+                connection.Open();
+                command = new SQLiteCommand(connection);
             }
         }
 
@@ -28,54 +28,50 @@ namespace DatabaseEngine
         public int RunSQLiteNonQuery(string query)
         {
             int rowChangeCount = 0;
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+
+            try
             {
-                connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                if (command != null)
                 {
-                    try
-                    {
-                        Debug.WriteLine(query);
-                        cmd.CommandText = query;
-                        rowChangeCount = cmd.ExecuteNonQuery();
-                    }
-                    catch(Exception ex)
-                    {
-                        Debug.WriteLine($"SQLite Error: {ex.Message}");
-                        rowChangeCount = -1;
-                    }
+                    //Debug.WriteLine(query);
+                    command.CommandText = query;
+                    rowChangeCount = command.ExecuteNonQuery();
                 }
-                connection.Close();
+                else
+                    rowChangeCount = -2;
             }
+            catch(Exception ex)
+            {
+                Debug.WriteLine($"SQLite Error: {ex.Message}");
+                rowChangeCount = -1;
+            }
+
             return rowChangeCount;
         }
 
         public int RunSQLiteNonQuery(string query, string[,] paramAndValue)
         {
             int rowChangeCount = 0;
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            try
             {
-                connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                if (command != null)
                 {
-                    try
+                    //Debug.WriteLine(query);
+                    command.CommandText = query;
+                    for (int i = 0; i < paramAndValue.GetLength(0); i++)
                     {
-                        Debug.WriteLine(query);
-                        cmd.CommandText = query;
-                        for(int i = 0; i<paramAndValue.GetLength(0); i++)
-                        {
-                            cmd.Parameters.AddWithValue(paramAndValue[i,0], paramAndValue[i,1]);
-                        }
-                        cmd.Prepare();
-                        rowChangeCount = cmd.ExecuteNonQuery();
+                        command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"SQLite Error: {ex.Message}");
-                        rowChangeCount = -1;
-                    }
+                    command.Prepare();
+                    rowChangeCount = command.ExecuteNonQuery();
                 }
-                connection.Close();
+                else
+                    rowChangeCount = -2;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SQLite Error: {ex.Message}");
+                rowChangeCount = -1;
             }
             return rowChangeCount;
         }
@@ -83,41 +79,38 @@ namespace DatabaseEngine
         public int RunSQLiteNonQueryTransaction(string query, string[] columns, List<string[]> values)
         {
             int rowChangeCount = 0;
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            try
             {
-                connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                if (connection != null && command != null)
                 {
-                    try
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (SQLiteTransaction transaction = connection.BeginTransaction())
+                        if (columns.GetLength(0) == values[0].GetLength(0))
                         {
-                            if (columns.GetLength(0) == values[0].GetLength(0))
+                            for (int i = 0; i < values.Count; i++)
                             {
-                                for (int i = 0; i < values.Count; i++)
+                                command.CommandText = query;
+                                for (int j = 0; j < columns.GetLength(0); j++)
                                 {
-                                    cmd.CommandText = query;
-                                    for (int j = 0; j < columns.GetLength(0); j++)
-                                    {
-                                        cmd.Parameters.AddWithValue($"@{columns[j]}", values[i][j]);
-                                        //Debug.Write(values[i][j] + ",");
-                                    }
-                                    //Debug.WriteLine("");
-                                    cmd.Prepare();
-                                    rowChangeCount += cmd.ExecuteNonQuery();
+                                    command.Parameters.AddWithValue($"@{columns[j]}", values[i][j]);
+                                    //Debug.Write(values[i][j] + ",");
                                 }
-                                transaction.Commit();
+                                //Debug.WriteLine("");
+                                command.Prepare();
+                                rowChangeCount += command.ExecuteNonQuery();
                             }
+                            transaction.Commit();
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"SQLite Error: {ex.Message}");
-                        rowChangeCount = -1;
-                    }
-                    
                 }
-                connection.Close();
+                else
+                    rowChangeCount = -2;
+                
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SQLite Error: {ex.Message}");
+                rowChangeCount = -1;
             }
             return rowChangeCount;
         }
@@ -125,15 +118,15 @@ namespace DatabaseEngine
         public List<List<object>> GetMultipleCellData(string query)
         {
             List<List<object>> temp = new List<List<object>>();
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(""))
             {
                 connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                using (SQLiteCommand command = new SQLiteCommand(connection))
                 {
                     try
                     {
-                        cmd.CommandText = query;
-                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        command.CommandText = query;
+                        using (SQLiteDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
                             {
@@ -164,20 +157,20 @@ namespace DatabaseEngine
         public List<List<object>> GetMultipleCellData(string query, string[,] paramAndValue)
         {
             List<List<object>> temp = new List<List<object>>();
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(""))
             {
                 connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                using (SQLiteCommand command = new SQLiteCommand(connection))
                 {
                     try
                     {
-                        cmd.CommandText = query;
+                        command.CommandText = query;
                         for (int i = 0; i < paramAndValue.GetLength(0); i++)
                         {
-                            cmd.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
+                            command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                         }
-                        cmd.Prepare();
-                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        command.Prepare();
+                        using (SQLiteDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
                             {
@@ -208,15 +201,15 @@ namespace DatabaseEngine
         public object? GetSingleCellData(string query)
         {
             object? temp = null;
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(""))
             {
                 connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                using (SQLiteCommand command = new SQLiteCommand(connection))
                 {
                     try
                     {
-                        cmd.CommandText = query;
-                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        command.CommandText = query;
+                        using (SQLiteDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
                             {
@@ -242,42 +235,48 @@ namespace DatabaseEngine
         public object? GetSingleCellData(string query, string[,] paramAndValue)
         {
             object? temp = null;
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            try
             {
-                connection.Open();
-                using (SQLiteCommand cmd = new SQLiteCommand(connection))
+                if(command != null)
                 {
-                    try
+                    command.CommandText = query;
+                    for (int i = 0; i < paramAndValue.GetLength(0); i++)
                     {
-                        cmd.CommandText = query;
-                        for (int i = 0; i < paramAndValue.GetLength(0); i++)
-                        {
-                            cmd.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
-                        }
-                        cmd.Prepare();
-                        using (SQLiteDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-                                while (reader.Read())
-                                {
-                                    Debug.Write($"{reader[0]} {reader.GetFieldType(0)}|");
-                                    return reader[0];
-                                }
-                            }
-                            reader.Close();
-                        }
+                        command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                     }
-                    catch (Exception ex)
+                    command.Prepare();
+                    using (SQLiteDataReader reader = command.ExecuteReader())
                     {
-                        Debug.WriteLine($"SQLite read error: {ex.Message}");
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                //Debug.Write($"{reader[0]} {reader.GetFieldType(0)}|");
+                                return reader[0];
+                            }
+                        }
+                        reader.Close();
                     }
                 }
-                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SQLite read error: {ex.Message}");
             }
             return temp;
         }
 
+        public void Dispose()
+        {
+            if (command != null)
+            {
+                command.Dispose();
+            }
 
+            if (connection != null)
+            {
+                connection.Dispose();
+            }
+        }
     }
 }

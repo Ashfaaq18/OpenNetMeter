@@ -42,7 +42,7 @@ namespace OpenNetMeter.ViewModels
 
         private Process[]? process;
 
-        public void GetAppDataInfo(string name, int dataRecv, int dataSend)
+        public void SetAppDataInfo(string name, int dataRecv, int dataSend)
         {
             //var watch = Stopwatch.StartNew();
             if (name == null || name == "")

@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace OpenNetMeter.Models
+namespace OpenNetMeter.Utilities
 {
     public class DataSizeSuffix
     {
         //Bytes = false will give the suffix in bits. Size passed to this should aready be multiplied by 8 for bits
-        public static string SizeSuffixInStr(ulong value, int decimalPlaces = 1, bool Bytes = true)
+        public static string InStr(ulong value, int decimalPlaces = 1, bool bytes = true)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag;
@@ -16,7 +16,7 @@ namespace OpenNetMeter.Models
 
             // 1L << (mag * 10) == 2 ^ (10 * mag) 
             // [i.e. the number of bytes in the unit corresponding to mag]
-            decimal adjustedSize = (decimal)value / (1L << (mag * 10));
+            decimal adjustedSize = (decimal)value / (1L << mag * 10);
 
             if (Math.Round(adjustedSize, decimalPlaces) >= 1000)
             {
@@ -24,13 +24,13 @@ namespace OpenNetMeter.Models
                 adjustedSize /= 1024;
             }
 
-            if(Bytes)
-                return Decimal.Round(adjustedSize, 2).ToString() + SuffixBytes(mag);
+            if (bytes)
+                return decimal.Round(adjustedSize, 2).ToString() + InBytes(mag);
             else
-                return Decimal.Round(adjustedSize, 2).ToString() + SuffixBits(mag);
+                return decimal.Round(adjustedSize, 2).ToString() + InBits(mag);
         }
 
-        public static (double, int) SizeSuffixInInt(ulong value, int decimalPlaces = 1)
+        public static (double, int) InInt(ulong value, int decimalPlaces = 1)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag;
@@ -41,7 +41,7 @@ namespace OpenNetMeter.Models
 
             // 1L << (mag * 10) == 2 ^ (10 * mag) 
             // [i.e. the number of bytes in the unit corresponding to mag]
-            decimal adjustedSize = (decimal)value / (1L << (mag * 10));
+            decimal adjustedSize = (decimal)value / (1L << mag * 10);
 
             if (Math.Round(adjustedSize, decimalPlaces) >= 1000)
             {
@@ -49,15 +49,15 @@ namespace OpenNetMeter.Models
                 adjustedSize /= 1024;
             }
 
-            return ((double) Decimal.Round(adjustedSize, 2), mag);
+            return ((double)decimal.Round(adjustedSize, 2), mag);
         }
 
-        public static string SuffixBytes(int value)
+        private static string InBytes(int value)
         {
             return value == 6 ? "EB" : value == 5 ? "PB" : value == 4 ? "TB" : value == 3 ? "GB" : value == 2 ? "MB" : value == 1 ? "KB" : value == 0 ? "B" : "Error";
         }
-        
-        public static string SuffixBits(int value)
+
+        private static string InBits(int value)
         {
             return value == 6 ? "Eb" : value == 5 ? "Pb" : value == 4 ? "Tb" : value == 3 ? "Gb" : value == 2 ? "Mb" : value == 1 ? "Kb" : value == 0 ? "b" : "Error";
         }

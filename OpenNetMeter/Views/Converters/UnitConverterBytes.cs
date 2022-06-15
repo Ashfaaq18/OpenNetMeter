@@ -1,15 +1,15 @@
-﻿using OpenNetMeter.Models;
+﻿using OpenNetMeter.Utilities;
 using System;
 using System.Globalization;
 using System.Windows.Data;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class UnitConverterBits : IValueConverter
+    public class UnitConverterBytes : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return DataSizeSuffix.SizeSuffixInStr((ulong)value, 1, false);
+            return DataSizeSuffix.InStr((ulong)value, 1, true);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
