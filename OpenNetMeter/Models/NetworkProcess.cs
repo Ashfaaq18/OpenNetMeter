@@ -33,7 +33,7 @@ namespace OpenNetMeter.Models
 
         private TraceEventSession? kernelSession;
 
-        private string adapterName;
+        public string AdapterName { get; private set; }
 
         public Dictionary<string, MyProcess?>? MyProcesses { get; private set; }
         public Dictionary<string, MyProcess?>? MyProcessesBuffer { get; private set; }
@@ -75,10 +75,15 @@ namespace OpenNetMeter.Models
             };
             localIPv4 = defaultIPv4;
             localIPv6 = defaultIPv6;
-            adapterName = "";
+            AdapterName = "";
             MyProcesses = new Dictionary<string, MyProcess?>();
             MyProcessesBuffer = new Dictionary<string, MyProcess?>();
             IsBufferTime = false;
+
+            CurrentSessionDownloadData = 0;
+            CurrentSessionUploadData = 0;
+            DownloadSpeed = 0;
+            UploadSpeed = 0;
         }
 
         /// <summary>
@@ -87,10 +92,6 @@ namespace OpenNetMeter.Models
         public void Initialize()
         {
             IsNetworkOnline = "Disconnected";
-            CurrentSessionDownloadData = 0;
-            CurrentSessionUploadData = 0;
-            DownloadSpeed = 0;
-            UploadSpeed = 0;
 
             //subscribe address network address change
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
@@ -192,10 +193,10 @@ namespace OpenNetMeter.Models
                                 if (IsNetworkOnline != "Disconnected") //if there was already a connection available
                                     SetNetworkStatus(false); //reset the connection
 
-                                adapterName = n.Name;
+                                AdapterName = n.Name;
 
                                 if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                    adapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
+                                    AdapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
 
                                 SetNetworkStatus(true);
                             }
@@ -219,10 +220,10 @@ namespace OpenNetMeter.Models
         {
             if (isOnline)
             {
-                IsNetworkOnline = "Connected : " + adapterName;
+                IsNetworkOnline = "Connected : " + AdapterName;
 
                 //create DB file if it does not exists
-                using (ApplicationDB dB = new ApplicationDB(adapterName))
+                using (ApplicationDB dB = new ApplicationDB(AdapterName))
                 {
                     if (dB.CreateTable() < 0)
                         Debug.WriteLine("Error: Create table");
@@ -411,9 +412,6 @@ namespace OpenNetMeter.Models
 
         private void Recv(string name, int size)
         {
-            //Stopwatch sw = new Stopwatch();
-            //sw.Start();
-
             CurrentSessionDownloadData += (ulong)size;
 
             if (IsBufferTime)
@@ -425,31 +423,6 @@ namespace OpenNetMeter.Models
 
             if (size == 0)
                 Debug.WriteLine($"but whyyy {name} | recv");
-
-            //if(!AddNewProcess.Add(name))
-            //{
-            //    UpdateProcess.Add(name);
-            //}
-
-            //using (ApplicationDB dB = new ApplicationDB(adapterName))
-            //{
-            //    if (dB.CreateTable() < 0)
-            //        Debug.WriteLine("Error: Create table");
-            //    else
-            //    {
-            //        dB.InsertUniqueRow_ProcessTable(name);
-
-            //        long dateID = dB.GetID_DateTable(DateTime.Today);
-            //        long processID = dB.GetID_ProcessTable(name);
-
-            //        if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, size, 0) < 1)
-            //        {
-            //            dB.UpdateRow_ProcessDateTable(processID, dateID, size, 0);
-            //        }
-            //    }
-            //}
-            // sw.Stop();
-            // Debug.WriteLine("stopwatch recv: " + sw.ElapsedMilliseconds);
         }
 
         private void Send(string name, int size)
@@ -465,23 +438,6 @@ namespace OpenNetMeter.Models
 
             if (size == 0)
                 Debug.WriteLine($"but whyyy {name} | send");
-            //using (ApplicationDB dB = new ApplicationDB(adapterName))
-            //{
-            //    if (dB.CreateTable() < 0)
-            //        Debug.WriteLine("Error: Create table");
-            //    else
-            //    {
-            //        dB.InsertUniqueRow_ProcessTable(name);
-
-            //        long dateID = dB.GetID_DateTable(DateTime.Today);
-            //        long processID = dB.GetID_ProcessTable(name);
-
-            //        if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 0, size) < 1)
-            //        {
-            //            dB.UpdateRow_ProcessDateTable(processID, dateID, 0, size);
-            //        }
-            //    }
-            //}
         }
 
         private bool IsIPv4IPv6Private(IPAddress ip)

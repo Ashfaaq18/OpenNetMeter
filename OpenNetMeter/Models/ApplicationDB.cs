@@ -159,28 +159,6 @@ namespace OpenNetMeter.Models
                 });
         }
 
-        public int BulkInsertDateRange_DateTable(DateTime date, int rangeInDays)
-        {
-            List<string[]> values = new List<string[]>();
-
-            for(int i = 0; i < Math.Abs(rangeInDays); i++)
-            {
-                DateTime temp = date.AddDays(i * (rangeInDays/(Math.Abs(rangeInDays))));
-                values.Add(new string[] 
-                {
-                    temp.Year.ToString(),
-                    temp.Month.ToString(),
-                    temp.Day.ToString() 
-                });
-            }
-
-            return dB.RunSQLiteNonQueryTransaction("INSERT OR IGNORE INTO " +
-                "Date(Year, Month, Day) " +
-                "Values(@Year, @Month, @Day)",
-                new string[] {"Year", "Month", "Day"}, 
-                values);
-        }
-
         public long GetID_DateTable(DateTime time)
         {
             object? test = dB.GetSingleCellData("SELECT ID From " +

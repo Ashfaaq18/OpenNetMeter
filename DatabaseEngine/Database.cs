@@ -10,13 +10,18 @@ namespace DatabaseEngine
     {
         private SQLiteConnection? connection;
         private SQLiteCommand? command;
+        private SQLiteTransaction? transaction;
         public Database(string path, string dbFileName)
         {
             connection = new SQLiteConnection(new Connection(path, dbFileName).ConnectionString);
             if(connection != null)
             {
                 connection.Open();
-                command = new SQLiteCommand(connection);
+                transaction = connection.BeginTransaction();
+                if(transaction != null)
+                {
+                    command = new SQLiteCommand(connection);
+                }
             }
         }
 
@@ -67,45 +72,6 @@ namespace DatabaseEngine
                 }
                 else
                     rowChangeCount = -2;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SQLite Error: {ex.Message}");
-                rowChangeCount = -1;
-            }
-            return rowChangeCount;
-        }
-
-        public int RunSQLiteNonQueryTransaction(string query, string[] columns, List<string[]> values)
-        {
-            int rowChangeCount = 0;
-            try
-            {
-                if (connection != null && command != null)
-                {
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        if (columns.GetLength(0) == values[0].GetLength(0))
-                        {
-                            for (int i = 0; i < values.Count; i++)
-                            {
-                                command.CommandText = query;
-                                for (int j = 0; j < columns.GetLength(0); j++)
-                                {
-                                    command.Parameters.AddWithValue($"@{columns[j]}", values[i][j]);
-                                    //Debug.Write(values[i][j] + ",");
-                                }
-                                //Debug.WriteLine("");
-                                command.Prepare();
-                                rowChangeCount += command.ExecuteNonQuery();
-                            }
-                            transaction.Commit();
-                        }
-                    }
-                }
-                else
-                    rowChangeCount = -2;
-                
             }
             catch (Exception ex)
             {
@@ -269,14 +235,16 @@ namespace DatabaseEngine
         public void Dispose()
         {
             if (command != null)
-            {
                 command.Dispose();
+
+            if (transaction != null)
+            {
+                transaction.Commit();
+                transaction.Dispose();
             }
 
             if (connection != null)
-            {
                 connection.Dispose();
-            }
         }
     }
 }

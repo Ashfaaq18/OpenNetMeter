@@ -105,8 +105,9 @@ namespace OpenNetMeter.ViewModels
             SwitchTabCommand = new BaseCommand(SwitchTab);
         }
 
-        private void RefreshVMData()
+        private void UpdateData()
         {
+            // -------------- Set download speed across all vms -------------- //
             DownloadSpeed = netProc.DownloadSpeed;
             UploadSpeed = netProc.UploadSpeed;
 
@@ -119,37 +120,58 @@ namespace OpenNetMeter.ViewModels
             dusvm.Graph.DownloadSpeed = DownloadSpeed;
             dusvm.Graph.UploadSpeed = UploadSpeed;
 
-            //Debug.WriteLine($"current thread (RefreshVMData): {Thread.CurrentThread.ManagedThreadId}");
+            // -------------- Update current session details -------------- //
             if (netProc.MyProcesses != null && dudvm.MyProcesses != null)
             {
                 netProc.IsBufferTime = true;
                 //Debug.WriteLine("Buffer var: Start");
-                foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (refer NetworkProcess.cs=>CaptureNetworkSpeed())
+                using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
                 {
-                    dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
-                    if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
-                    { 
-                        Debug.WriteLine($"Both zero {app.Key}"); 
+                    if (dB.CreateTable() < 0)
+                        Debug.WriteLine("Error: Create table");
+                    else
+                    {
+                        foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
+                        {
+                            dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
+                            if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
+                            {
+                                Debug.WriteLine($"Both zero {app.Key}");
+                            }
+                            dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
+                            dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
+
+                            dB.InsertUniqueRow_ProcessTable(app.Key);
+
+                            long dateID = dB.GetID_DateTable(DateTime.Today);
+                            long processID = dB.GetID_ProcessTable(app.Key);
+
+                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 
+                                (long)dudvm.MyProcesses[app.Key].CurrentDataRecv,
+                                (long)dudvm.MyProcesses[app.Key].CurrentDataSend) < 1)
+                            {
+                                dB.UpdateRow_ProcessDateTable(processID, dateID,
+                                    (long)app.Value!.CurrentDataRecv,
+                                    (long)app.Value!.CurrentDataSend);
+                            }
+                        }
+                        //Thread.Sleep(800);
+                        netProc.MyProcesses.Clear();
                     }
-                    dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
-                    dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
-                }
-                //Thread.Sleep(800);
-                netProc.MyProcesses.Clear();
-                netProc.IsBufferTime = false;
-               // Debug.WriteLine("Buffer var: Stop");
+                    netProc.IsBufferTime = false;
+                }       
+                // Debug.WriteLine("Buffer var: Stop");
             }
         }
 
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            //Stopwatch sw = new Stopwatch();
-            //sw.Start();
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             switch (e.PropertyName)
             {
                 case "DownloadSpeed":
-                    //--------- update download and upload together, why? because they update concurrently ----------//
-                    RefreshVMData();
+                    UpdateData();
                     break;
                 case "IsNetworkOnline":
                     NetworkStatus = netProc.IsNetworkOnline;
@@ -157,8 +179,8 @@ namespace OpenNetMeter.ViewModels
                 default:
                     break;
             }
-            //sw.Stop();
-            //Debug.WriteLine($"elapsed time: {sw.ElapsedMilliseconds}");
+            sw.Stop();
+            Debug.WriteLine($"elapsed time: {sw.ElapsedMilliseconds}");
         }
 
         private void SwitchTab(object obj)
