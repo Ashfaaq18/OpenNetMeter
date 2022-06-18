@@ -144,6 +144,7 @@ namespace OpenNetMeter.ViewModels
                             dB.InsertUniqueRow_ProcessTable(app.Key);
 
                             long dateID = dB.GetID_DateTable(DateTime.Today);
+                            //long dateID = dB.GetID_DateTable(DateTime.Today.AddDays(-3));
                             long processID = dB.GetID_ProcessTable(app.Key);
 
                             if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 

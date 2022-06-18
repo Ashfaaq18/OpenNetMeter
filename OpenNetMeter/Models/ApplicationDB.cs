@@ -18,7 +18,7 @@ namespace OpenNetMeter.Models
         public ApplicationDB(string dBFileName)
         {
             dB = new Database(GetFilePath(), TrimString(dBFileName));
-            dataStoragePeriodInDays = 3;
+            dataStoragePeriodInDays = 2;
         }
 
         private string TrimString(string str)
@@ -92,8 +92,8 @@ namespace OpenNetMeter.Models
                     "DateID INTEGER NOT NULL, " +
                     "DataReceived INTEGER NOT NULL, " +
                     "DataSent INTEGER NOT NULL, " +
-                    "FOREIGN KEY(ProcessID) REFERENCES Process(ID), " +
-                    "FOREIGN KEY(DateID) REFERENCES Date(ID), " +
+                    "FOREIGN KEY(ProcessID) REFERENCES Process(ID) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(DateID) REFERENCES Date(ID) ON DELETE CASCADE, " +
                     "UNIQUE (ProcessID, DateID) ON CONFLICT IGNORE" +
                 ")");
         }
@@ -157,6 +157,27 @@ namespace OpenNetMeter.Models
                     { "@ProcessID", processID.ToString()},
                     { "@DateID", dateID.ToString()},
                 });
+        }
+
+        public void RemoveOldDate()
+        {
+            DateTime time = DateTime.Now;
+            time = time.AddDays(-1 * dataStoragePeriodInDays);
+
+            dB.RunSQLiteNonQuery("DELETE FROM " +
+                "Date " +
+                "WHERE " +
+                "(Year * 10000 + Month * 100 + day) " +
+                "< " +
+                $"({time.Year * 10000 + time.Month * 100 + time.Day})");
+        }
+
+        public void RemoveOldProcess()
+        {
+            dB.RunSQLiteNonQuery("DELETE FROM " +
+                "Process WHERE ID IN " +
+                "(SELECT ID FROM Process WHERE ID NOT IN " +
+                "(SELECT DISTINCT ProcessID FROM ProcessDate))");
         }
 
         public long GetID_DateTable(DateTime time)
