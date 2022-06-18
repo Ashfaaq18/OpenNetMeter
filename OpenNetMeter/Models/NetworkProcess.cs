@@ -542,10 +542,11 @@ namespace OpenNetMeter.Models
 
         public void Dispose()
         {
+            if(cts_speed != null)
+                cts_speed.Cancel();
+
             if(kernelSession != null)
-            {
                 kernelSession.Dispose();
-            }
         }
     }
 }
