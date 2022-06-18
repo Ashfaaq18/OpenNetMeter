@@ -3,7 +3,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace OpenNetMeter.ViewModels
+namespace OpenNetMeter.Views
 {
     public class UnitConverterBytes : IValueConverter
     {

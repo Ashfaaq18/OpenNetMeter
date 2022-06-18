@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
-namespace OpenNetMeter.ViewModels
+namespace OpenNetMeter.Views
 {
     class BitmapToImageConverter : IValueConverter
     {

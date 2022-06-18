@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
         xmlns:res="clr-namespace:OpenNetMeter.Properties"
-        xmlns:local="clr-namespace:OpenNetMeter.Views"
+        xmlns:v="clr-namespace:OpenNetMeter.Views"
         mc:Ignorable="d"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -21,7 +21,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
-        <vm:BitmapToImageConverter x:Key="BitmapToImage"/>
+        <v:BitmapToImageConverter x:Key="BitmapToImage"/>
     </Window.Resources>
     <Border Style="{StaticResource BorderColor}">
         <Grid>

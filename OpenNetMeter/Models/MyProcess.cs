@@ -6,7 +6,12 @@ namespace OpenNetMeter.Models
 {
     public class MyProcess : INotifyPropertyChanged
     {
-        public string Name { get; set; }
+        private string? name;
+        public string? Name
+        {
+            get { return name; }
+            set { name = value; OnPropertyChanged("Name"); }
+        }
 
         private ulong currentdataRecv;
         public ulong CurrentDataRecv

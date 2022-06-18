@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -45,7 +44,7 @@ namespace OpenNetMeter.Models
             }
         }
     }
-    public class SpeedGraph
+    public class SpeedGraph : IDisposable
     {
         // ---------- Graph geometries ------------//
         public List<MyLine> XLines { get; set; }
@@ -164,18 +163,26 @@ namespace OpenNetMeter.Models
         }
 
         private int drawPointCount;
+        private CancellationTokenSource? cts_speed;
+        private CancellationToken token_speed;
+
         public void DrawPoints()
         {
+            cts_speed = new CancellationTokenSource();
+            token_speed = cts_speed.Token;
+
             Task.Run(async () =>
             {
                 try
                 {
-                    while (true)
+                    Debug.WriteLine("Operation Started : Speed graph");
+                    while (!token_speed.IsCancellationRequested)
                     {
+                        Stopwatch sw = Stopwatch.StartNew();
                         // reset the graph after it completes a full run
                         if (drawPointCount >= XaxisResolution)
                         {
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                            await App.Current.Dispatcher.BeginInvoke(() =>
                             {
                                 //shift xaxis label
                                 for (int i = 0; i < Xlabels.Count / 2; i++)
@@ -184,7 +191,7 @@ namespace OpenNetMeter.Models
                                     Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
                                     Xlabels[i + Xlabels.Count / 2].Text = temp;
                                 }
-                            }));
+                            });
 
                             drawPointCount = XaxisResolution / 2;
                             for (int i = 0; i < DownloadPoints.Count; i++)
@@ -220,7 +227,7 @@ namespace OpenNetMeter.Models
                             if (resumeDraw)
                             {
                                 //reset the chart
-                                await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                                await App.Current.Dispatcher.BeginInvoke(() =>
                                 {
                                     for (int i = 0; i < DownloadLines.Count; i++)
                                     {
@@ -232,7 +239,7 @@ namespace OpenNetMeter.Models
                                         UploadLines[i].From = new Point(Xstart + UploadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[i].From.Y, GraphHeight));
                                         UploadLines[i].To = new Point(Xstart + UploadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[i].To.Y, GraphHeight));
                                     }
-                                }));
+                                });
                             }
                         }
 
@@ -255,15 +262,15 @@ namespace OpenNetMeter.Models
 
                         if (resumeDraw)
                         {
-                            await Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                            await App.Current.Dispatcher.BeginInvoke(() =>
                             {
-                                if(firstDrawAfterResume && drawPointCount > 0)
+                                if (firstDrawAfterResume && drawPointCount > 0)
                                 {
-                                    DownloadLines[drawPointCount-1].From = new Point(Xstart + DownloadPoints[drawPointCount-1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount-1].From.Y, GraphHeight));
-                                    DownloadLines[drawPointCount-1].To = new Point(Xstart + DownloadPoints[drawPointCount-1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount-1].To.Y, GraphHeight));
+                                    DownloadLines[drawPointCount - 1].From = new Point(Xstart + DownloadPoints[drawPointCount - 1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount - 1].From.Y, GraphHeight));
+                                    DownloadLines[drawPointCount - 1].To = new Point(Xstart + DownloadPoints[drawPointCount - 1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount - 1].To.Y, GraphHeight));
 
-                                    UploadLines[drawPointCount-1].From = new Point(Xstart + UploadPoints[drawPointCount-1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount-1].From.Y, GraphHeight));
-                                    UploadLines[drawPointCount-1].To = new Point(Xstart + UploadPoints[drawPointCount-1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount-1].To.Y, GraphHeight));
+                                    UploadLines[drawPointCount - 1].From = new Point(Xstart + UploadPoints[drawPointCount - 1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount - 1].From.Y, GraphHeight));
+                                    UploadLines[drawPointCount - 1].To = new Point(Xstart + UploadPoints[drawPointCount - 1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount - 1].To.Y, GraphHeight));
                                 }
 
                                 firstDrawAfterResume = false;
@@ -274,16 +281,27 @@ namespace OpenNetMeter.Models
                                 UploadLines[drawPointCount].From = new Point(Xstart + UploadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount].From.Y, GraphHeight));
                                 UploadLines[drawPointCount].To = new Point(Xstart + UploadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount].To.Y, GraphHeight));
 
-                            }));
+                            });
                         }
                         drawPointCount++;
-                        await Task.Delay(1000);
+                        sw.Stop();
+                        if (sw.ElapsedMilliseconds < 1000)
+                            await Task.Delay(1000 - (int)sw.ElapsedMilliseconds, token_speed);
+                        else
+                            await Task.Delay(1000, token_speed);
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.WriteLine("Operation Cancelled : Speed graph");
+                    cts_speed.Dispose();
+                    cts_speed = null;
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine("Critical error: " + ex.Message);
                 }
+
             });
         }
 
@@ -302,6 +320,12 @@ namespace OpenNetMeter.Models
             {
                 return (height) * ((3.0 / 3.0) - (value) / (1024.0 * 3.0));
             }
+        }
+
+        public void Dispose()
+        {
+            if (cts_speed != null)
+                cts_speed.Cancel(); //stop speed graph
         }
     }
 }

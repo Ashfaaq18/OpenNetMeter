@@ -3,13 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:OpenNetMeter.Views"
+             xmlns:v="clr-namespace:OpenNetMeter.Views"
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
              xmlns:properties="clr-namespace:OpenNetMeter.Properties"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="650">
     <UserControl.Resources>
-        <vm:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
+        <v:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
         <properties:Settings x:Key="Settings"/>
     </UserControl.Resources>
     <Grid Style="{StaticResource BackgroundColor2}">

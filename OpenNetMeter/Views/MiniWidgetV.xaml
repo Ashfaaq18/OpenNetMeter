@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+        xmlns:v="clr-namespace:OpenNetMeter.Views"
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -19,8 +20,8 @@
         <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
     </WindowChrome.WindowChrome>
     <Window.Resources>
-        <vm:UnitConverterBytes x:Key="converterBytes"/>
-        <vm:UnitConverterBits x:Key="converterBits"/>
+        <v:UnitConverterBytes x:Key="converterBytes"/>
+        <v:UnitConverterBits x:Key="converterBits"/>
     </Window.Resources>
 
     <Border Style="{StaticResource BorderColor}">

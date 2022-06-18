@@ -6,6 +6,8 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Input;
 using OpenNetMeter.Models;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -70,56 +72,12 @@ namespace OpenNetMeter.ViewModels
             mwvm = mwvm_DataContext;
             dusvm = new DataUsageSummaryVM();
             duhvm = new DataUsageHistoryVM();
-            dudvm = new DataUsageDetailedVM(cD_DataContext);
+            dudvm = new DataUsageDetailedVM();
             svm = new SettingsVM();
 
             netProc = new NetworkProcess();
             netProc.PropertyChanged += NetProc_PropertyChanged;
-            netProc.Initialize();
-
-            //---- sample db section --------//
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
-
-            //using (ApplicationDB dB = new ApplicationDB("WiFi 4"))
-            //{
-            //    if (dB.CreateTable() < 0)
-            //        Debug.WriteLine("Error: Create table");
-            //    else
-            //    {
-            //        Debug.WriteLine("Success: Create table");
-            //        dB.InsertUniqueRow_ProcessTable("app1");
-            //        dB.InsertUniqueRow_ProcessTable("app1");
-            //        dB.InsertUniqueRow_ProcessTable("app2");
-
-            //        //populate date table with past 60 days
-            //        //dB.BulkInsertDateRange_DateTable(DateTime.Now, -60);
-
-            //        dB.InsertUniqueRow_DateTable(new DateTime(2021, 03, 15));
-            //        dB.InsertUniqueRow_DateTable(new DateTime(2021, 03, 15));
-            //        dB.InsertUniqueRow_DateTable(new DateTime(2021, 11, 21));
-            //        dB.InsertUniqueRow_DateTable(new DateTime(2022, 06, 10));
-            //        dB.InsertUniqueRow_DateTable(new DateTime(2022, 06, 08));
-            //        dB.InsertUniqueRow_DateTable(new DateTime(2022, 06, 02));
-            //        dB.RemoveOldDates();
-
-            //        long dateID = dB.GetID_DateTable(new DateTime(2022, 06, 08));
-            //        long processID = dB.GetID_ProcessTable("app2");
-            //        //example data insert to processDate table
-            //        Debug.WriteLine("date Id: " + dateID);
-            //        Debug.WriteLine("Process Id: " + processID);
-
-            //        if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 2056, 123) < 1)
-            //        {
-            //            dB.UpdateRow_ProcessDateTable(processID, dateID, 2056, 123);
-            //        }
-
-            //    }
-            //}
-                
-            sw.Stop();
-            Debug.WriteLine("time: " + sw.ElapsedMilliseconds);
+            netProc.Initialize(); //have to call this after subscribing to property changer
 
             //intial startup page
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
@@ -147,19 +105,51 @@ namespace OpenNetMeter.ViewModels
             SwitchTabCommand = new BaseCommand(SwitchTab);
         }
 
+        private void RefreshVMData()
+        {
+            DownloadSpeed = netProc.DownloadSpeed;
+            UploadSpeed = netProc.UploadSpeed;
+
+            mwvm.DownloadSpeed = DownloadSpeed;
+            mwvm.UploadSpeed = UploadSpeed;
+
+            dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
+            dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
+
+            dusvm.Graph.DownloadSpeed = DownloadSpeed;
+            dusvm.Graph.UploadSpeed = UploadSpeed;
+
+            //Debug.WriteLine($"current thread (RefreshVMData): {Thread.CurrentThread.ManagedThreadId}");
+            if (netProc.MyProcesses != null && dudvm.MyProcesses != null)
+            {
+                netProc.IsBufferTime = true;
+                //Debug.WriteLine("Buffer var: Start");
+                foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (refer NetworkProcess.cs=>CaptureNetworkSpeed())
+                {
+                    dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
+                    if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
+                    { 
+                        Debug.WriteLine($"Both zero {app.Key}"); 
+                    }
+                    dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
+                    dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
+                }
+                //Thread.Sleep(800);
+                netProc.MyProcesses.Clear();
+                netProc.IsBufferTime = false;
+               // Debug.WriteLine("Buffer var: Stop");
+            }
+        }
+
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            //Stopwatch sw = new Stopwatch();
+            //sw.Start();
             switch (e.PropertyName)
             {
                 case "DownloadSpeed":
-                    //update download and upload together, why? because they update concurrently
-                    DownloadSpeed = netProc.DownloadSpeed;
-                    mwvm.DownloadSpeed = DownloadSpeed;
-                    UploadSpeed = netProc.UploadSpeed;
-                    mwvm.UploadSpeed = UploadSpeed;
-
-                    dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
-                    dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
+                    //--------- update download and upload together, why? because they update concurrently ----------//
+                    RefreshVMData();
                     break;
                 case "IsNetworkOnline":
                     NetworkStatus = netProc.IsNetworkOnline;
@@ -167,6 +157,8 @@ namespace OpenNetMeter.ViewModels
                 default:
                     break;
             }
+            //sw.Stop();
+            //Debug.WriteLine($"elapsed time: {sw.ElapsedMilliseconds}");
         }
 
         private void SwitchTab(object obj)
@@ -227,8 +219,13 @@ namespace OpenNetMeter.ViewModels
 
         public void Dispose()
         {
-            if(netProc != null)
+            if(dusvm != null)
+                dusvm.Dispose();
+            if (netProc != null)
+            {
+                netProc.PropertyChanged -= NetProc_PropertyChanged;
                 netProc.Dispose();
+            }
         }
     }
 }

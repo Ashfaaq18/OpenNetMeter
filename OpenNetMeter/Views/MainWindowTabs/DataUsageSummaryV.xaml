@@ -4,12 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+             xmlns:v="clr-namespace:OpenNetMeter.Views"
              mc:Ignorable="d" 
              UseLayoutRounding="True"
              d:DesignHeight="400" d:DesignWidth="650">
     <!-- UseLayoutRounding="True" <fixes blurry text/> -->
     <UserControl.Resources>
-        <vm:UnitConverterBytes x:Key="converterBytes"/>
+        <v:UnitConverterBytes x:Key="converterBytes"/>
     </UserControl.Resources>
 
     <Grid>

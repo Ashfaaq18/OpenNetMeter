@@ -22,8 +22,8 @@ namespace OpenNetMeter.Models
     {
         //---------- private variables ------------//
 
-        private byte[] defaultIPv4;
-        private byte[] defaultIPv6;
+        private readonly byte[] defaultIPv4;
+        private readonly byte[] defaultIPv6;
         private byte[] localIPv4;
         private byte[] localIPv6;
 
@@ -35,29 +35,14 @@ namespace OpenNetMeter.Models
 
         private string adapterName;
 
-        private Dictionary<string, MyProcess>? myProcess;
+        public Dictionary<string, MyProcess?>? MyProcesses { get; private set; }
+        public Dictionary<string, MyProcess?>? MyProcessesBuffer { get; private set; }
+        public bool IsBufferTime { get; set; }
 
         //---------- variables with property changers ------------//
-        private ulong currentSessionDownloadData;
-        public ulong CurrentSessionDownloadData
-        {
-            get { return currentSessionDownloadData; }
-            set
-            {
-                currentSessionDownloadData = value;
-                OnPropertyChanged("CurrentSessionDownloadData");
-            }
-        }
-        private ulong currentSessionUploadData;
-        public ulong CurrentSessionUploadData
-        {
-            get { return currentSessionUploadData; }
-            set
-            {
-                currentSessionUploadData = value;
-                OnPropertyChanged("CurrentSessionUploadData");
-            }
-        }
+        public ulong CurrentSessionDownloadData;
+
+        public ulong CurrentSessionUploadData;
 
         public ulong downloadSpeed;
         public ulong DownloadSpeed
@@ -65,12 +50,8 @@ namespace OpenNetMeter.Models
             get { return downloadSpeed; }
             set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
         }
-        public ulong uploadSpeed;
-        public ulong UploadSpeed
-        {
-            get { return uploadSpeed; }
-            set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
-        }
+
+        public ulong UploadSpeed;
 
         private string isNetworkOnline = "error";
         public string IsNetworkOnline
@@ -95,18 +76,21 @@ namespace OpenNetMeter.Models
             localIPv4 = defaultIPv4;
             localIPv6 = defaultIPv6;
             adapterName = "";
+            MyProcesses = new Dictionary<string, MyProcess?>();
+            MyProcessesBuffer = new Dictionary<string, MyProcess?>();
+            IsBufferTime = false;
         }
 
         /// <summary>
-        /// call after subscribing to the property handlers
+        /// call after subscribing to the property handlers in the MainWindowVM
         /// </summary>
         public void Initialize()
         {
             IsNetworkOnline = "Disconnected";
-            currentSessionDownloadData = 0;
-            currentSessionUploadData = 0;
-            downloadSpeed = 0;
-            uploadSpeed = 0;
+            CurrentSessionDownloadData = 0;
+            CurrentSessionUploadData = 0;
+            DownloadSpeed = 0;
+            UploadSpeed = 0;
 
             //subscribe address network address change
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
@@ -278,12 +262,14 @@ namespace OpenNetMeter.Models
                     Debug.WriteLine("Operation Started : Network speed");
                     while (!token_speed.IsCancellationRequested)
                     {
-                        ulong tempDownload = currentSessionDownloadData;
-                        ulong tempUpload = currentSessionUploadData;
+                        ulong tempDownload = CurrentSessionDownloadData;
+                        ulong tempUpload = CurrentSessionUploadData;
                         await Task.Delay(1000, token_speed);
 
-                        DownloadSpeed = (currentSessionDownloadData - tempDownload) * 8;
-                        UploadSpeed = (currentSessionUploadData - tempUpload) * 8;
+                        DownloadSpeed = (CurrentSessionDownloadData - tempDownload) * 8;
+                        UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
+                        //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
+                        //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                     }
                 }
                 catch (OperationCanceledException)
@@ -363,10 +349,8 @@ namespace OpenNetMeter.Models
             RecvProcessIPV6(obj.saddr, obj.daddr, obj.size, obj.ProcessName);
         }
 
-        //update db
-
         //calculate the Bytes sent and recieved
-        private void RecvProcess(IPAddress src, IPAddress dest, int size, string name)
+        private void RecvProcess(in IPAddress src, in IPAddress dest, in int size, in string name)
         {
             bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv4);
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv4);
@@ -376,24 +360,7 @@ namespace OpenNetMeter.Models
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    CurrentSessionDownloadData += (ulong)size;
-                    using (ApplicationDB dB = new ApplicationDB(adapterName))
-                    {
-                        if (dB.CreateTable() < 0)
-                            Debug.WriteLine("Error: Create table");
-                        else
-                        {
-                            dB.InsertUniqueRow_ProcessTable(name);
-
-                            long dateID = dB.GetID_DateTable(DateTime.Today);
-                            long processID = dB.GetID_ProcessTable(name);
-
-                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, size, 0) < 1)
-                            {
-                                dB.UpdateRow_ProcessDateTable(processID, dateID, size, 0);
-                            }
-                        }
-                    }
+                    Recv(name, size);
                 }
             }
         }
@@ -408,24 +375,7 @@ namespace OpenNetMeter.Models
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    CurrentSessionDownloadData += (ulong)size;
-                    using (ApplicationDB dB = new ApplicationDB(adapterName))
-                    {
-                        if (dB.CreateTable() < 0)
-                            Debug.WriteLine("Error: Create table");
-                        else
-                        {
-                            dB.InsertUniqueRow_ProcessTable(name);
-
-                            long dateID = dB.GetID_DateTable(DateTime.Today);
-                            long processID = dB.GetID_ProcessTable(name);
-
-                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, size, 0) < 1)
-                            {
-                                dB.UpdateRow_ProcessDateTable(processID, dateID, size, 0);
-                            }
-                        }
-                    }
+                    Recv(name, size);
                 }
             }
         }
@@ -440,24 +390,7 @@ namespace OpenNetMeter.Models
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    CurrentSessionUploadData += (ulong)size;
-                    using (ApplicationDB dB = new ApplicationDB(adapterName))
-                    {
-                        if (dB.CreateTable() < 0)
-                            Debug.WriteLine("Error: Create table");
-                        else
-                        {
-                            dB.InsertUniqueRow_ProcessTable(name);
-
-                            long dateID = dB.GetID_DateTable(DateTime.Today);
-                            long processID = dB.GetID_ProcessTable(name);
-
-                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 0, size) < 1)
-                            {
-                                dB.UpdateRow_ProcessDateTable(processID, dateID, 0, size);
-                            }
-                        }
-                    }
+                    Send(name, size);
                 }
             }
         }
@@ -471,26 +404,84 @@ namespace OpenNetMeter.Models
                     Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
                     Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
-                    CurrentSessionUploadData += (ulong)size;
-                    using (ApplicationDB dB = new ApplicationDB(adapterName))
-                    {
-                        if (dB.CreateTable() < 0)
-                            Debug.WriteLine("Error: Create table");
-                        else
-                        {
-                            dB.InsertUniqueRow_ProcessTable(name);
-
-                            long dateID = dB.GetID_DateTable(DateTime.Today);
-                            long processID = dB.GetID_ProcessTable(name);
-
-                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 0, size) < 1)
-                            {
-                                dB.UpdateRow_ProcessDateTable(processID, dateID, 0, size);
-                            }
-                        }
-                    }
+                    Send(name, size);
                 }
             }
+        }
+
+        private void Recv(string name, int size)
+        {
+            //Stopwatch sw = new Stopwatch();
+            //sw.Start();
+
+            CurrentSessionDownloadData += (ulong)size;
+
+            if (IsBufferTime)
+                Debug.WriteLine("Recv buffer");
+
+            MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
+            MyProcesses[name]!.CurrentDataRecv += (ulong)size;
+            MyProcesses[name]!.CurrentDataSend += 0;
+
+            if (size == 0)
+                Debug.WriteLine($"but whyyy {name} | recv");
+
+            //if(!AddNewProcess.Add(name))
+            //{
+            //    UpdateProcess.Add(name);
+            //}
+
+            //using (ApplicationDB dB = new ApplicationDB(adapterName))
+            //{
+            //    if (dB.CreateTable() < 0)
+            //        Debug.WriteLine("Error: Create table");
+            //    else
+            //    {
+            //        dB.InsertUniqueRow_ProcessTable(name);
+
+            //        long dateID = dB.GetID_DateTable(DateTime.Today);
+            //        long processID = dB.GetID_ProcessTable(name);
+
+            //        if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, size, 0) < 1)
+            //        {
+            //            dB.UpdateRow_ProcessDateTable(processID, dateID, size, 0);
+            //        }
+            //    }
+            //}
+            // sw.Stop();
+            // Debug.WriteLine("stopwatch recv: " + sw.ElapsedMilliseconds);
+        }
+
+        private void Send(string name, int size)
+        {
+            CurrentSessionUploadData += (ulong)size;
+
+            if (IsBufferTime)
+                Debug.WriteLine("send buffer");
+
+            MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
+            MyProcesses[name]!.CurrentDataRecv += 0;
+            MyProcesses[name]!.CurrentDataSend += (ulong)size;
+
+            if (size == 0)
+                Debug.WriteLine($"but whyyy {name} | send");
+            //using (ApplicationDB dB = new ApplicationDB(adapterName))
+            //{
+            //    if (dB.CreateTable() < 0)
+            //        Debug.WriteLine("Error: Create table");
+            //    else
+            //    {
+            //        dB.InsertUniqueRow_ProcessTable(name);
+
+            //        long dateID = dB.GetID_DateTable(DateTime.Today);
+            //        long processID = dB.GetID_ProcessTable(name);
+
+            //        if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 0, size) < 1)
+            //        {
+            //            dB.UpdateRow_ProcessDateTable(processID, dateID, 0, size);
+            //        }
+            //    }
+            //}
         }
 
         private bool IsIPv4IPv6Private(IPAddress ip)

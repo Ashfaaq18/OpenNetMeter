@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace OpenNetMeter.ViewModels
+namespace OpenNetMeter.Views
 {
     public class RadioBoolToIntConverter : IValueConverter
     {

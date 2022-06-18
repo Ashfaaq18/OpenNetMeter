@@ -14,7 +14,7 @@ using System.Windows.Shapes;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class DataUsageSummaryVM : INotifyPropertyChanged
+    public class DataUsageSummaryVM : INotifyPropertyChanged, IDisposable
     {
         private ulong totalDownloadData;
         public ulong TotalDownloadData
@@ -94,6 +94,12 @@ namespace OpenNetMeter.ViewModels
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
+        }
+
+        public void Dispose()
+        {
+            if(Graph != null)
+                Graph.Dispose();
         }
     }
 }

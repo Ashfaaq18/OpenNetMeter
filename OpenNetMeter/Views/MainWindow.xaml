@@ -20,8 +20,8 @@
     </WindowChrome.WindowChrome>
     
     <Window.Resources>
-        <vm:BitmapToImageConverter x:Key="BitmapToImage"/>
-        <vm:UnitConverterBits x:Key="converterBits"/>
+        <v:BitmapToImageConverter x:Key="BitmapToImage"/>
+        <v:UnitConverterBits x:Key="converterBits"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
             <v:DataUsageSummaryV/>
