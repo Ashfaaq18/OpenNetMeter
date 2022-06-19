@@ -33,12 +33,7 @@ namespace OpenNetMeter.Models
         {
             string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (appName != null)
-                path = Path.Combine(path, appName);
-            else
-                path = Path.Combine(path, "OpenNetMeter");
-
-            return path;
+            return Path.Combine(path, appName ?? "OpenNetMeter");
         }
 
         //
@@ -197,12 +192,7 @@ namespace OpenNetMeter.Models
                     {"@Day", time.Day.ToString() }
                 });
 
-            if (test != null)
-            {
-               return (long)test;
-            }
-
-            return -1;
+            return (long)(test ?? -1);
         }
         
         public long GetID_ProcessTable(string appName)
@@ -216,13 +206,7 @@ namespace OpenNetMeter.Models
                     {"@Name", appName}
                 });
 
-
-            if (test != null)
-            {
-                return (long)test;
-            }
-
-            return -1;
+            return (long)(test ?? -1);
         }
 
         /// <summary>
