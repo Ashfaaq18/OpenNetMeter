@@ -15,9 +15,9 @@ namespace OpenNetMeter.Models
         /// creates a database file if it does not exist
         /// </summary>
         /// <param name="dbName"></param>
-        public ApplicationDB(string dBFileName)
+        public ApplicationDB(string dBFileName, string[]? extraParams = null)
         {
-            dB = new Database(GetFilePath(), TrimString(dBFileName));
+            dB = new Database(GetFilePath(), TrimString(dBFileName), extraParams);
             dataStoragePeriodInDays = 2;
         }
 
@@ -29,7 +29,7 @@ namespace OpenNetMeter.Models
             return str;
         }
 
-        private string GetFilePath()
+        public static string GetFilePath()
         {
             string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

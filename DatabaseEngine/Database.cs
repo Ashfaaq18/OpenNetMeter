@@ -11,9 +11,17 @@ namespace DatabaseEngine
         private SQLiteConnection? connection;
         private SQLiteCommand? command;
         private SQLiteTransaction? transaction;
-        public Database(string path, string dbFileName)
+        public Database(string path, string dbFileName, string[]? extraParams = null)
         {
-            connection = new SQLiteConnection(new Connection(path, dbFileName).ConnectionString);
+            string connectionString = new Connection(path, dbFileName).ConnectionString;
+            if(extraParams != null)
+            {
+                for (int i = 0; i < extraParams.Length; i++)
+                {
+                    connectionString += $";{extraParams[i]}";
+                }
+            }
+            connection = new SQLiteConnection(connectionString);
             if(connection != null)
             {
                 connection.Open();

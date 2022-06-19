@@ -79,6 +79,8 @@ namespace OpenNetMeter.ViewModels
             netProc.PropertyChanged += NetProc_PropertyChanged;
             netProc.Initialize(); //have to call this after subscribing to property changer
 
+            duhvm.GetAllDBFiles();
+
             //intial startup page
             TabBtnToggle = Properties.Settings.Default.LaunchPage;
             switch (TabBtnToggle)

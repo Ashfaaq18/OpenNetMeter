@@ -14,12 +14,12 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Usage of</Label>
             <StackPanel Grid.Row="0" Margin="10" Width="150">
-                <ComboBox x:Name="combo_box" Style="{StaticResource ComboBoxFlatStyle}" />
+                <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComboBoxFlatStyle}" />
             </StackPanel>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">From:</Label>
-            <DatePicker VerticalAlignment="Center"></DatePicker>
+            <DatePicker VerticalAlignment="Center" Text="{Binding DateStart}"></DatePicker>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">To:</Label>
-            <DatePicker VerticalAlignment="Center"></DatePicker>
+            <DatePicker VerticalAlignment="Center" Text="{Binding DateEnd}"></DatePicker>
         </StackPanel>
         <DataGrid Grid.Row="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
