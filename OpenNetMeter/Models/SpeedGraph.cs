@@ -36,13 +36,7 @@ namespace OpenNetMeter.Models
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged(string propName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
-            }
-        }
+        private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
     public class SpeedGraph : IDisposable
     {
@@ -324,8 +318,7 @@ namespace OpenNetMeter.Models
 
         public void Dispose()
         {
-            if (cts_speed != null)
-                cts_speed.Cancel(); //stop speed graph
+            cts_speed?.Cancel(); //stop speed graph
         }
     }
 }

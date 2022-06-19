@@ -249,8 +249,7 @@ namespace OpenNetMeter.Models
             {
                 IsNetworkOnline = "Disconnected";
 
-                if (cts_speed != null)
-                    cts_speed.Cancel(); //stop calculating network speed
+                cts_speed?.Cancel(); //stop calculating network speed
 
                 //reset speed counters
                 DownloadSpeed = 0;
@@ -297,21 +296,21 @@ namespace OpenNetMeter.Models
             Task.Run(() =>
             {
                 kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
-                if(kernelSession != null)
-                {
-                    kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
-                    kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
-                    kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
-                    kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
-                    kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
 
-                    kernelSession.Source.Kernel.TcpIpSend += Kernel_TcpIpSend;
-                    kernelSession.Source.Kernel.TcpIpSendIPV6 += Kernel_TcpIpSendIPV6;
-                    kernelSession.Source.Kernel.UdpIpSend += Kernel_UdpIpSend;
-                    kernelSession.Source.Kernel.UdpIpSendIPV6 += Kernel_UdpIpSendIPV6;
+                kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
 
-                    kernelSession.Source.Process();
-                }
+                kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
+                kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
+                kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
+                kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
+
+                kernelSession.Source.Kernel.TcpIpSend += Kernel_TcpIpSend;
+                kernelSession.Source.Kernel.TcpIpSendIPV6 += Kernel_TcpIpSendIPV6;
+                kernelSession.Source.Kernel.UdpIpSend += Kernel_UdpIpSend;
+                kernelSession.Source.Kernel.UdpIpSendIPV6 += Kernel_UdpIpSendIPV6;
+
+                kernelSession.Source.Process();
+                
             });
         }
 
@@ -495,21 +494,13 @@ namespace OpenNetMeter.Models
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private void OnPropertyChanged(string propName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
-            }
-        }
+        private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
 
         public void Dispose()
         {
-            if(cts_speed != null)
-                cts_speed.Cancel();
+            cts_speed?.Cancel();
 
-            if(kernelSession != null)
-                kernelSession.Dispose();
+            kernelSession?.Dispose();
         }
     }
 }

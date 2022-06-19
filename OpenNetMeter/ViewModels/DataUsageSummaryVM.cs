@@ -88,18 +88,11 @@ namespace OpenNetMeter.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private void OnPropertyChanged(string propName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
-            }
-        }
+        private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
 
         public void Dispose()
         {
-            if(Graph != null)
-                Graph.Dispose();
+            Graph?.Dispose();
         }
     }
 }

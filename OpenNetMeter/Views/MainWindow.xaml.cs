@@ -201,14 +201,11 @@ namespace OpenNetMeter.Views
 
         private void Cm_Exit_Click(object? sender, EventArgs e)
         {
-            if(confDialog != null)
-                confDialog.Close();
-            if (miniWidget != null)
-                miniWidget.Close();
-            if (aboutWin != null)
-                aboutWin.Close();
-            if (mainWin != null)
-                mainWin.Dispose();
+
+            confDialog?.Close();
+            miniWidget?.Close();
+            aboutWin?.Close();
+            mainWin?.Dispose();
             this.Closing -= MainWindow_Closing;
             this.Close();
             if(trayIcon != null)
@@ -272,10 +269,8 @@ namespace OpenNetMeter.Views
             Properties.Settings.Default.Save();
 
             //pass parent window dimensions to confirmation dialog
-            if(confDialog != null)
-                confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
-            if (aboutWin != null)
-                aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            confDialog?.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            aboutWin?.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
@@ -299,10 +294,8 @@ namespace OpenNetMeter.Views
             Properties.Settings.Default.Save();
 
             //pass parent window dimensions to confirmation and about dialog
-            if (confDialog != null)
-                confDialog.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
-            if (aboutWin != null)
-                aboutWin.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            confDialog?.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
+            aboutWin?.SetParentWindowRect(new System.Windows.Rect(this.Left, this.Top, this.ActualWidth, this.ActualHeight));
         }
 
         private void MyWindow_LocationChanged(object sender, EventArgs e)

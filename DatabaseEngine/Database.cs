@@ -14,23 +14,14 @@ namespace DatabaseEngine
         public Database(string path, string dbFileName, string[]? extraParams = null)
         {
             string connectionString = new Connection(path, dbFileName).ConnectionString;
-            if(extraParams != null)
+            for (int i = 0; i < extraParams?.Length; i++)
             {
-                for (int i = 0; i < extraParams.Length; i++)
-                {
-                    connectionString += $";{extraParams[i]}";
-                }
+                connectionString += $";{extraParams[i]}";
             }
             connection = new SQLiteConnection(connectionString);
-            if(connection != null)
-            {
-                connection.Open();
-                transaction = connection.BeginTransaction();
-                if(transaction != null)
-                {
-                    command = new SQLiteCommand(connection);
-                }
-            }
+            connection?.Open();
+            transaction = connection?.BeginTransaction();
+            command = new SQLiteCommand(connection);
         }
 
         /// <summary>
@@ -237,17 +228,12 @@ namespace DatabaseEngine
 
         public void Dispose()
         {
-            if (command != null)
-                command.Dispose();
+            command?.Dispose();
 
-            if (transaction != null)
-            {
-                transaction.Commit();
-                transaction.Dispose();
-            }
+            transaction?.Commit();
+            transaction?.Dispose();
 
-            if (connection != null)
-                connection.Dispose();
+            connection?.Dispose();
         }
     }
 }

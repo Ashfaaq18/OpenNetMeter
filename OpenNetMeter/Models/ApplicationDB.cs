@@ -243,8 +243,7 @@ namespace OpenNetMeter.Models
 
         public void Dispose()
         {
-            if(dB != null)
-                dB.Dispose();
+            dB?.Dispose();
         }
 
         //public void ReadRecord(string tableName)

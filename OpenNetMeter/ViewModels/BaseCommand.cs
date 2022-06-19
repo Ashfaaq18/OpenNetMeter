@@ -38,10 +38,7 @@ namespace OpenNetMeter.ViewModels
 
         public void DoCanExecuteChanged()
         {
-            if (CanExecuteChanged != null)
-            {
-                CanExecuteChanged(this, null!);
-            }
+            CanExecuteChanged?.Invoke(this, null!);
         }
     }
 }
