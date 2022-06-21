@@ -119,8 +119,7 @@ namespace OpenNetMeter.ViewModels
             dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
 
-            dusvm.Graph.DownloadSpeed = DownloadSpeed;
-            dusvm.Graph.UploadSpeed = UploadSpeed;
+            dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
 
             // -------------- Update current session details -------------- //
             if (netProc.MyProcesses != null && dudvm.MyProcesses != null)
@@ -239,7 +238,6 @@ namespace OpenNetMeter.ViewModels
 
         public void Dispose()
         {
-            dusvm?.Dispose();
             if (netProc != null)
             {
                 netProc.PropertyChanged -= NetProc_PropertyChanged;

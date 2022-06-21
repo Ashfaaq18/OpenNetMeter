@@ -38,7 +38,7 @@ namespace OpenNetMeter.Models
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
-    public class SpeedGraph : IDisposable
+    public class SpeedGraph
     {
         // ---------- Graph geometries ------------//
         public List<MyLine> XLines { get; set; }
@@ -64,8 +64,6 @@ namespace OpenNetMeter.Models
 
         public int XaxisResolution { get; set; } 
         public bool resumeDraw { get; set; }
-        public ulong UploadSpeed { get; set; }
-        public ulong DownloadSpeed { get; set; }
         public bool firstDrawAfterResume { get; set; }
         public SpeedGraph(int XlineCount, int YlineCount)
         {
@@ -80,9 +78,6 @@ namespace OpenNetMeter.Models
             XLines = new List<MyLine>();
             YLines = new List<MyLine>();
             Borders = new List<MyLine>();
-
-            timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-            cts_graph = new CancellationTokenSource();
 
             firstDrawAfterResume = false;
         }
@@ -160,152 +155,111 @@ namespace OpenNetMeter.Models
         }
 
         private int drawPointCount;
-        private Task? graphTask;
-        private CancellationTokenSource cts_graph;
-        private readonly PeriodicTimer timer;
-
-        public void Start()
+        public void DrawPoints(ulong downloadSpeed, ulong uploadSpeed)
         {
-            graphTask = DrawPoints();
-        }
-
-        private async Task DrawPoints()
-        {
-            cts_graph = new CancellationTokenSource();
-            try
+            Stopwatch sw = Stopwatch.StartNew();
+            // reset the graph after it completes a full run
+            if (drawPointCount >= XaxisResolution)
             {
-                Debug.WriteLine("Operation Started : Speed graph");
-                while (await timer.WaitForNextTickAsync(cts_graph.Token))
+                //shift xaxis label
+                for (int i = 0; i < Xlabels.Count / 2; i++)
                 {
-                    Stopwatch sw = Stopwatch.StartNew();
-                    // reset the graph after it completes a full run
-                    if (drawPointCount >= XaxisResolution)
+                    string temp = Xlabels[i].Text;
+                    Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
+                    Xlabels[i + Xlabels.Count / 2].Text = temp;
+                }
+
+                drawPointCount = XaxisResolution / 2;
+                for (int i = 0; i < DownloadPoints.Count; i++)
+                {
+                    if (i < XaxisResolution / 2)
                     {
-                        //shift xaxis label
-                        for (int i = 0; i < Xlabels.Count / 2; i++)
-                        {
-                            string temp = Xlabels[i].Text;
-                            Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
-                            Xlabels[i + Xlabels.Count / 2].Text = temp;
-                        }
-
-                        drawPointCount = XaxisResolution / 2;
-                        for (int i = 0; i < DownloadPoints.Count; i++)
-                        {
-                            if (i < XaxisResolution / 2)
-                            {
-                                DownloadPoints[i].From = new Point(DownloadPoints[XaxisResolution / 2 + i].From.X - XaxisResolution / 2, DownloadPoints[XaxisResolution / 2 + i].From.Y);
-                                DownloadPoints[i].To = new Point(DownloadPoints[XaxisResolution / 2 + i].To.X - XaxisResolution / 2, DownloadPoints[XaxisResolution / 2 + i].To.Y);
-                            }
-                            else
-                            {
-                                DownloadPoints[i].From = new Point(0, 0);
-                                DownloadPoints[i].To = new Point(0, 0);
-                            }
-
-                        }
-
-                        for (int i = 0; i < UploadPoints.Count; i++)
-                        {
-                            if (i < XaxisResolution / 2)
-                            {
-                                UploadPoints[i].From = new Point(UploadPoints[XaxisResolution / 2 + i].From.X - XaxisResolution / 2, UploadPoints[XaxisResolution / 2 + i].From.Y);
-                                UploadPoints[i].To = new Point(UploadPoints[XaxisResolution / 2 + i].To.X - XaxisResolution / 2, UploadPoints[XaxisResolution / 2 + i].To.Y);
-                            }
-                            else
-                            {
-                                UploadPoints[i].From = new Point(0, 0);
-                                UploadPoints[i].To = new Point(0, 0);
-                            }
-
-                        }
-
-                        if (resumeDraw)
-                        {
-                            //reset the chart
-
-                            for (int i = 0; i < DownloadLines.Count; i++)
-                            {
-                                DownloadLines[i].From = new Point(Xstart + DownloadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[i].From.Y, GraphHeight));
-                                DownloadLines[i].To = new Point(Xstart + DownloadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[i].To.Y, GraphHeight));
-                            }
-                            for (int i = 0; i < UploadLines.Count; i++)
-                            {
-                                UploadLines[i].From = new Point(Xstart + UploadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[i].From.Y, GraphHeight));
-                                UploadLines[i].To = new Point(Xstart + UploadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[i].To.Y, GraphHeight));
-                            }
-                        }
-                    }
-
-                    if (drawPointCount == 0)
-                    {
-                        DownloadPoints[drawPointCount].From = new Point(0, 0);
-                        DownloadPoints[drawPointCount].To = new Point(1, DownloadSpeed);
-
-                        UploadPoints[drawPointCount].From = new Point(0, 0);
-                        UploadPoints[drawPointCount].To = new Point(1, UploadSpeed);
+                        DownloadPoints[i].From = new Point(DownloadPoints[XaxisResolution / 2 + i].From.X - XaxisResolution / 2, DownloadPoints[XaxisResolution / 2 + i].From.Y);
+                        DownloadPoints[i].To = new Point(DownloadPoints[XaxisResolution / 2 + i].To.X - XaxisResolution / 2, DownloadPoints[XaxisResolution / 2 + i].To.Y);
                     }
                     else
                     {
-                        DownloadPoints[drawPointCount].From = new Point(drawPointCount, DownloadPoints[drawPointCount - 1].To.Y);
-                        DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), DownloadSpeed);
-
-                        UploadPoints[drawPointCount].From = new Point(drawPointCount, UploadPoints[drawPointCount - 1].To.Y);
-                        UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), UploadSpeed);
+                        DownloadPoints[i].From = new Point(0, 0);
+                        DownloadPoints[i].To = new Point(0, 0);
                     }
-
-                    if (resumeDraw)
-                    {
-                        await App.Current.Dispatcher.BeginInvoke(() =>
-                        {
-                            if (firstDrawAfterResume && drawPointCount > 0)
-                            {
-                                DownloadLines[drawPointCount - 1].From = new Point(Xstart + DownloadPoints[drawPointCount - 1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount - 1].From.Y, GraphHeight));
-                                DownloadLines[drawPointCount - 1].To = new Point(Xstart + DownloadPoints[drawPointCount - 1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount - 1].To.Y, GraphHeight));
-
-                                UploadLines[drawPointCount - 1].From = new Point(Xstart + UploadPoints[drawPointCount - 1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount - 1].From.Y, GraphHeight));
-                                UploadLines[drawPointCount - 1].To = new Point(Xstart + UploadPoints[drawPointCount - 1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount - 1].To.Y, GraphHeight));
-                            }
-
-                            firstDrawAfterResume = false;
-
-                            DownloadLines[drawPointCount].From = new Point(Xstart + DownloadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount].From.Y, GraphHeight));
-                            DownloadLines[drawPointCount].To = new Point(Xstart + DownloadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount].To.Y, GraphHeight));
-
-                            UploadLines[drawPointCount].From = new Point(Xstart + UploadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount].From.Y, GraphHeight));
-                            UploadLines[drawPointCount].To = new Point(Xstart + UploadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount].To.Y, GraphHeight));
-
-                        });
-                    }
-                    drawPointCount++;
-                    sw.Stop();
 
                 }
+
+                for (int i = 0; i < UploadPoints.Count; i++)
+                {
+                    if (i < XaxisResolution / 2)
+                    {
+                        UploadPoints[i].From = new Point(UploadPoints[XaxisResolution / 2 + i].From.X - XaxisResolution / 2, UploadPoints[XaxisResolution / 2 + i].From.Y);
+                        UploadPoints[i].To = new Point(UploadPoints[XaxisResolution / 2 + i].To.X - XaxisResolution / 2, UploadPoints[XaxisResolution / 2 + i].To.Y);
+                    }
+                    else
+                    {
+                        UploadPoints[i].From = new Point(0, 0);
+                        UploadPoints[i].To = new Point(0, 0);
+                    }
+
+                }
+
+                if (resumeDraw)
+                {
+                    //reset the chart
+
+                    for (int i = 0; i < DownloadLines.Count; i++)
+                    {
+                        DownloadLines[i].From = new Point(Xstart + DownloadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[i].From.Y, GraphHeight));
+                        DownloadLines[i].To = new Point(Xstart + DownloadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[i].To.Y, GraphHeight));
+                    }
+                    for (int i = 0; i < UploadLines.Count; i++)
+                    {
+                        UploadLines[i].From = new Point(Xstart + UploadPoints[i].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[i].From.Y, GraphHeight));
+                        UploadLines[i].To = new Point(Xstart + UploadPoints[i].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[i].To.Y, GraphHeight));
+                    }
+                }
             }
-            catch (OperationCanceledException)
+
+            if (drawPointCount == 0)
             {
+                DownloadPoints[drawPointCount].From = new Point(0, 0);
+                DownloadPoints[drawPointCount].To = new Point(1, downloadSpeed);
+
+                UploadPoints[drawPointCount].From = new Point(0, 0);
+                UploadPoints[drawPointCount].To = new Point(1, uploadSpeed);
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine("Critical error: " + ex.Message);
+                DownloadPoints[drawPointCount].From = new Point(drawPointCount, DownloadPoints[drawPointCount - 1].To.Y);
+                DownloadPoints[drawPointCount].To = new Point((drawPointCount + 1), downloadSpeed);
+
+                UploadPoints[drawPointCount].From = new Point(drawPointCount, UploadPoints[drawPointCount - 1].To.Y);
+                UploadPoints[drawPointCount].To = new Point((drawPointCount + 1), uploadSpeed);
             }
+
+            if (resumeDraw)
+            {
+                        
+                if (firstDrawAfterResume && drawPointCount > 0)
+                {
+                    DownloadLines[drawPointCount - 1].From = new Point(Xstart + DownloadPoints[drawPointCount - 1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount - 1].From.Y, GraphHeight));
+                    DownloadLines[drawPointCount - 1].To = new Point(Xstart + DownloadPoints[drawPointCount - 1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount - 1].To.Y, GraphHeight));
+
+                    UploadLines[drawPointCount - 1].From = new Point(Xstart + UploadPoints[drawPointCount - 1].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount - 1].From.Y, GraphHeight));
+                    UploadLines[drawPointCount - 1].To = new Point(Xstart + UploadPoints[drawPointCount - 1].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount - 1].To.Y, GraphHeight));
+                }
+
+                firstDrawAfterResume = false;
+
+                DownloadLines[drawPointCount].From = new Point(Xstart + DownloadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount].From.Y, GraphHeight));
+                DownloadLines[drawPointCount].To = new Point(Xstart + DownloadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(DownloadPoints[drawPointCount].To.Y, GraphHeight));
+
+                UploadLines[drawPointCount].From = new Point(Xstart + UploadPoints[drawPointCount].From.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount].From.Y, GraphHeight));
+                UploadLines[drawPointCount].To = new Point(Xstart + UploadPoints[drawPointCount].To.X * (GraphWidth / (double)XaxisResolution), ConvToGraphCoords(UploadPoints[drawPointCount].To.Y, GraphHeight));
+
+            }
+            drawPointCount++;
+            sw.Stop();
+            Debug.WriteLine($"SpeedGraph time : {DateTime.Now.ToString("O")}");
+
         }
-
-        private async Task Stop()
-        {
-            if(graphTask is null)
-            {
-                return;
-            }
-
-            cts_graph.Cancel();
-            await graphTask;
-            cts_graph.Dispose();
-
-            Debug.WriteLine("Operation Cancelled : Speed graph");
-
-        }
-
 
         public double ConvToGraphCoords(double value, double height)
         {
@@ -321,11 +275,6 @@ namespace OpenNetMeter.Models
             {
                 return (height) * ((3.0 / 3.0) - (value) / (1024.0 * 3.0));
             }
-        }
-
-        public async void Dispose()
-        {
-            await Stop();
         }
     }
 }

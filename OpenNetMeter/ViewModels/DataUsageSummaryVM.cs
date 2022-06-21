@@ -14,7 +14,7 @@ using System.Windows.Shapes;
 
 namespace OpenNetMeter.ViewModels
 {
-    public class DataUsageSummaryVM : INotifyPropertyChanged, IDisposable
+    public class DataUsageSummaryVM : INotifyPropertyChanged
     {
         private ulong totalDownloadData;
         public ulong TotalDownloadData
@@ -79,9 +79,8 @@ namespace OpenNetMeter.ViewModels
             CurrentSessionUploadData = 0;
             TotalUsageText = "Total data usage of the past 0 days";
 
-            Graph = new SpeedGraph(7,7);
+            Graph = new SpeedGraph(7, 7);
             Graph.Init();
-            Graph.Start();
         }
 
         //------property changers---------------//
@@ -89,10 +88,5 @@ namespace OpenNetMeter.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-
-        public void Dispose()
-        {
-            Graph.Dispose();
-        }
     }
 }
