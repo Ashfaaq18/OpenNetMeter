@@ -8,6 +8,7 @@ using System.Windows.Input;
 using OpenNetMeter.Models;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -178,6 +179,14 @@ namespace OpenNetMeter.ViewModels
                     break;
                 case "IsNetworkOnline":
                     NetworkStatus = netProc.IsNetworkOnline;
+                    if(NetworkStatus == "Disconnected")
+                    {
+                        foreach (var row in dudvm.MyProcesses.ToList())
+                        {
+                            dudvm.MyProcesses.Remove(row.Key);
+                        }
+                        dusvm.Graph.DrawClear();
+                    }
                     break;
                 default:
                     break;

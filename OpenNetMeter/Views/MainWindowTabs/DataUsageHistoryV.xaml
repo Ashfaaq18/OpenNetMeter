@@ -22,7 +22,15 @@
             <DatePicker VerticalAlignment="Center" Text="{Binding DateStart}"></DatePicker>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">To:</Label>
             <DatePicker VerticalAlignment="Center" Text="{Binding DateEnd}"></DatePicker>
-            <Button Margin="16,0" VerticalAlignment="Center" Padding="16,2">Filter</Button>
+            <Button Height="24" Width="64" Margin="16,0" Command="{Binding FilterBtn}" Style="{StaticResource ButtonColor}">
+                <TextBlock FontFamily="Segoe UI" Text="Filter" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                <Button.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="7"/>
+                    </Style>
+                </Button.Resources>
+            </Button> 
+           
         </StackPanel>
         <DataGrid Grid.Row="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>

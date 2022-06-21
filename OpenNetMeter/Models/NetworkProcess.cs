@@ -254,7 +254,10 @@ namespace OpenNetMeter.Models
             {
                 IsNetworkOnline = "Disconnected";
 
+                MyProcesses?.Clear();
                 //reset speed counters
+                CurrentSessionDownloadData = 0;
+                CurrentSessionUploadData = 0;
                 UploadSpeed = 0;
                 DownloadSpeed = 0;
 
@@ -303,6 +306,7 @@ namespace OpenNetMeter.Models
 
             cts_speed.Cancel();
             await speedTask;
+            speedTask = null;
             cts_speed.Dispose();
             Debug.WriteLine("Operation Cancelled : Network speed");
         }

@@ -157,7 +157,6 @@ namespace OpenNetMeter.Models
         private int drawPointCount;
         public void DrawPoints(ulong downloadSpeed, ulong uploadSpeed)
         {
-            Stopwatch sw = Stopwatch.StartNew();
             // reset the graph after it completes a full run
             if (drawPointCount >= XaxisResolution)
             {
@@ -256,9 +255,19 @@ namespace OpenNetMeter.Models
 
             }
             drawPointCount++;
-            sw.Stop();
-            Debug.WriteLine($"SpeedGraph time : {DateTime.Now.ToString("O")}");
+        }
 
+        public void DrawClear()
+        {
+            drawPointCount = 0;
+            for (int i = 0; i < DownloadPoints.Count; i++)
+            {
+                DownloadLines[i].From = new Point(Xstart, ConvToGraphCoords(0, GraphHeight));  
+                DownloadLines[i].To = new Point(Xstart, ConvToGraphCoords(0, GraphHeight));
+
+                UploadLines[i].From = new Point(Xstart, ConvToGraphCoords(0, GraphHeight));  
+                UploadLines[i].To = new Point(Xstart, ConvToGraphCoords(0, GraphHeight));
+            }
         }
 
         public double ConvToGraphCoords(double value, double height)

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -47,6 +48,7 @@ namespace OpenNetMeter.ViewModels
                 }
             }
         }
+        public ICommand FilterBtn { get; set; }
 
         public DataUsageHistoryVM()
         {
@@ -55,6 +57,16 @@ namespace OpenNetMeter.ViewModels
 
             Profiles = new ObservableCollection<string>();
             PropertyChanged += DataUsageHistoryVM_PropertyChanged;
+
+            //set button command
+            FilterBtn = new BaseCommand(Filter);
+        }
+
+        private void Filter(object obj)
+        {
+            //show confirmation dialog
+            Debug.WriteLine("Filter");
+
         }
 
         public void GetAllDBFiles()
