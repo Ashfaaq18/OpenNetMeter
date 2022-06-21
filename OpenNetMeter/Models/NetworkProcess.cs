@@ -28,8 +28,9 @@ namespace OpenNetMeter.Models
         private byte[] localIPv6;
 
         //token for network speed
-        private CancellationTokenSource? cts_speed;
-        private CancellationToken token_speed;
+        private Task? speedTask;
+        private readonly PeriodicTimer timer;
+        private CancellationTokenSource cts_speed;
 
         private TraceEventSession? kernelSession;
 
@@ -79,11 +80,14 @@ namespace OpenNetMeter.Models
             MyProcesses = new Dictionary<string, MyProcess?>();
             MyProcessesBuffer = new Dictionary<string, MyProcess?>();
             IsBufferTime = false;
+            
+            timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+            cts_speed = new CancellationTokenSource();
 
-            CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
-            DownloadSpeed = 0;
+            CurrentSessionDownloadData = 0;
             UploadSpeed = 0;
+            DownloadSpeed = 0;
         }
 
         /// <summary>
@@ -150,6 +154,7 @@ namespace OpenNetMeter.Models
         private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs? e)
         {
             (byte[], byte[]) tempIP = (defaultIPv4, defaultIPv6);
+            bool networkAvailable = false;
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface n in adapters)
             {
@@ -162,7 +167,6 @@ namespace OpenNetMeter.Models
                         IPInterfaceProperties adapterProperties = n.GetIPProperties();
                         if (adapterProperties.GatewayAddresses.FirstOrDefault() != null)
                         {
-                            bool networkAvailable = false;
                             foreach (UnicastIPAddressInformation ip in adapterProperties.UnicastAddresses)
                             {
                                 if (ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item1))
@@ -173,7 +177,10 @@ namespace OpenNetMeter.Models
                                         localIPv4 = tempIP.Item1;
 
                                     networkAvailable = true;
-                                    
+                                    AdapterName = n.Name;
+                                    if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                                        AdapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
+
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                 }
                                 else if(ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item2))
@@ -184,25 +191,24 @@ namespace OpenNetMeter.Models
                                         localIPv6 = tempIP.Item2;
 
                                     networkAvailable = true;
+                                    AdapterName = n.Name;
+                                    if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                                        AdapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
 
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                 }
                             }
-                            if(networkAvailable)
-                            {
-                                if (IsNetworkOnline != "Disconnected") //if there was already a connection available
-                                    SetNetworkStatus(false); //reset the connection
-
-                                AdapterName = n.Name;
-
-                                if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                    AdapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
-
-                                SetNetworkStatus(true);
-                            }
                         }
                     }
                 }
+            }
+
+            if (networkAvailable)
+            {
+                if (IsNetworkOnline != "Disconnected") //if there was already a connection available
+                    SetNetworkStatus(false); //reset the connection
+
+                SetNetworkStatus(true);
             }
 
             //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
@@ -216,7 +222,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        private void SetNetworkStatus(bool isOnline)
+        private async void SetNetworkStatus(bool isOnline)
         {
             if (isOnline)
             {
@@ -242,55 +248,67 @@ namespace OpenNetMeter.Models
 
                     }
                 }
-
-                CaptureNetworkSpeed(); //start logging the speed
+                speedTask = CaptureNetworkSpeed(); //start logging the speed
             }
             else //if network is disconnected
             {
                 IsNetworkOnline = "Disconnected";
 
-                cts_speed?.Cancel(); //stop calculating network speed
-
                 //reset speed counters
-                DownloadSpeed = 0;
                 UploadSpeed = 0;
+                DownloadSpeed = 0;
+
+                await StopNetworkSpeed();
             }
         }
 
-        private void CaptureNetworkSpeed()
+        //---------------------------------- NETWORK SPEED ------------------------------------//
+
+        private async Task CaptureNetworkSpeed()
         {
             cts_speed = new CancellationTokenSource();
-            token_speed = cts_speed.Token;
-
-            Task.Run(async () =>
+            try
             {
-                try
+                ulong tempDownload = 0;
+                ulong tempUpload = 0;
+                Debug.WriteLine("Operation Started : Network speed");
+                while (await timer.WaitForNextTickAsync(cts_speed.Token))
                 {
-                    Debug.WriteLine("Operation Started : Network speed");
-                    while (!token_speed.IsCancellationRequested)
-                    {
-                        ulong tempDownload = CurrentSessionDownloadData;
-                        ulong tempUpload = CurrentSessionUploadData;
-                        await Task.Delay(1000, token_speed);
+                    Stopwatch sw1 = Stopwatch.StartNew();
 
-                        DownloadSpeed = (CurrentSessionDownloadData - tempDownload) * 8;
-                        UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
-                        //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
-                        //Debug.WriteLine($"networkProcess {DownloadSpeed}");
-                    }
+                    UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
+                    DownloadSpeed = (CurrentSessionDownloadData - tempDownload) * 8;
+
+                    tempUpload = CurrentSessionUploadData;
+                    tempDownload = CurrentSessionDownloadData;
+
+                    sw1.Stop();
+                    Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
+
+                    //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
+                    //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
-                catch (OperationCanceledException)
-                {
-                    Debug.WriteLine("Operation Cancelled : Network speed");
-                    cts_speed.Dispose();
-                    cts_speed = null;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Critical error: " + ex.Message);
-                }
-            });
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
+
+        private async Task StopNetworkSpeed()
+        {
+            if(speedTask is null)
+            {
+                return;
+            }
+
+            cts_speed.Cancel();
+            await speedTask;
+            cts_speed.Dispose();
+            Debug.WriteLine("Operation Cancelled : Network speed");
+        }
+
+        //---------------------------------- NETWORK PACKETS ------------------------------------//
+
         private void CaptureNetworkPackets()
         {
             Task.Run(() =>
@@ -496,9 +514,9 @@ namespace OpenNetMeter.Models
 
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
 
-        public void Dispose()
+        public async void Dispose()
         {
-            cts_speed?.Cancel();
+            await StopNetworkSpeed();
 
             kernelSession?.Dispose();
         }

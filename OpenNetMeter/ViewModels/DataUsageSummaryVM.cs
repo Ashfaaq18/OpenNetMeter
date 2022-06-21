@@ -80,8 +80,8 @@ namespace OpenNetMeter.ViewModels
             TotalUsageText = "Total data usage of the past 0 days";
 
             Graph = new SpeedGraph(7,7);
-            Graph.InitGraph();
-            Graph.DrawPoints();
+            Graph.Init();
+            Graph.Start();
         }
 
         //------property changers---------------//
@@ -92,7 +92,7 @@ namespace OpenNetMeter.ViewModels
 
         public void Dispose()
         {
-            Graph?.Dispose();
+            Graph.Dispose();
         }
     }
 }

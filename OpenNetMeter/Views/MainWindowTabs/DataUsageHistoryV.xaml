@@ -13,13 +13,16 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Usage of</Label>
-            <StackPanel Grid.Row="0" Margin="10" Width="150">
-                <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComboBoxFlatStyle}" />
+            <StackPanel Grid.Row="0" Margin="4,10,10,10" Width="150">
+                <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                          SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                          Style="{StaticResource ComboBoxFlatStyle}"/>
             </StackPanel>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">From:</Label>
             <DatePicker VerticalAlignment="Center" Text="{Binding DateStart}"></DatePicker>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">To:</Label>
             <DatePicker VerticalAlignment="Center" Text="{Binding DateEnd}"></DatePicker>
+            <Button Margin="16,0" VerticalAlignment="Center" Padding="16,2">Filter</Button>
         </StackPanel>
         <DataGrid Grid.Row="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>

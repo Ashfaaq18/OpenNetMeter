@@ -169,6 +169,7 @@ namespace OpenNetMeter.ViewModels
 
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
             switch (e.PropertyName)
@@ -183,7 +184,7 @@ namespace OpenNetMeter.ViewModels
                     break;
             }
             sw.Stop();
-            Debug.WriteLine($"elapsed time: {sw.ElapsedMilliseconds}");
+            Debug.WriteLine($"elapsed time (NetProc): {sw.ElapsedMilliseconds}");
         }
 
         private void SwitchTab(object obj)
