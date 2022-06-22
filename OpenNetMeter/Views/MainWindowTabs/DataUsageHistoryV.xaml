@@ -19,9 +19,9 @@
                           Style="{StaticResource ComboBoxFlatStyle}"/>
             </StackPanel>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">From:</Label>
-            <DatePicker VerticalAlignment="Center" Text="{Binding DateStart}"></DatePicker>
+            <DatePicker VerticalAlignment="Center" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding DateStart}" ></DatePicker>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">To:</Label>
-            <DatePicker VerticalAlignment="Center" Text="{Binding DateEnd}"></DatePicker>
+            <DatePicker VerticalAlignment="Center" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding DateEnd}"></DatePicker>
             <Button Height="24" Width="64" Margin="16,0" Command="{Binding FilterBtn}" Style="{StaticResource ButtonColor}">
                 <TextBlock FontFamily="Segoe UI" Text="Filter" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                 <Button.Resources>

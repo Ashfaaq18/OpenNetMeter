@@ -15,18 +15,10 @@ namespace OpenNetMeter.ViewModels
     
     public class DataUsageHistoryVM : INotifyPropertyChanged
     {
-        private DateTime dateStart;
-        public DateTime DateStart
-        {
-            get { return dateStart; }
-            set { dateStart = value; OnPropertyChanged("DateStart"); }
-        }
-        private DateTime dateEnd;
-        public DateTime DateEnd
-        {
-            get { return dateEnd; }
-            set { dateEnd = value; OnPropertyChanged("DateEnd"); }
-        }
+        public DateTime DateMax { get; private set; }
+        public DateTime DateMin { get; private set; }
+        public DateTime DateStart { get; set; }
+        public DateTime DateEnd { get; set; }
 
         private string? selectedProfile;
         public string? SelectedProfile
@@ -54,6 +46,8 @@ namespace OpenNetMeter.ViewModels
         {
             DateStart = DateTime.Today;
             DateEnd = DateTime.Today;
+            DateMax = DateTime.Today;
+            DateMin = DateTime.Today.AddDays(-60);
 
             Profiles = new ObservableCollection<string>();
             PropertyChanged += DataUsageHistoryVM_PropertyChanged;
@@ -65,8 +59,24 @@ namespace OpenNetMeter.ViewModels
         private void Filter(object obj)
         {
             //show confirmation dialog
-            Debug.WriteLine("Filter");
-
+            Debug.WriteLine($"Filter {DateStart.ToString("d")} | {DateEnd.ToString("d")}");
+            if(SelectedProfile != null)
+            {
+                using (ApplicationDB dB = new ApplicationDB(SelectedProfile))
+                {
+                    if (dB.CreateTable() < 0)
+                        Debug.WriteLine("Error: Create table");
+                    else
+                    {
+                        List<List<object>> dataStats = dB.GetDataSum_ProcessDateTable(DateStart, DateEnd);
+                        for(int i = 0; i< dataStats.Count; i++)
+                        {
+                            if(dataStats[i].Count == 3)
+                                Debug.WriteLine($"processID: {dataStats[i][0]}, dataRecieved: {dataStats[i][1]}, dataSent: {dataStats[i][2]}");
+                        }
+                    }
+                }
+            }
         }
 
         public void GetAllDBFiles()

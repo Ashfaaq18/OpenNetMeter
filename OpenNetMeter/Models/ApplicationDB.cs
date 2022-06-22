@@ -175,6 +175,21 @@ namespace OpenNetMeter.Models
                 "(SELECT DISTINCT ProcessID FROM ProcessDate))");
         }
 
+        public List<List<object>> GetDataSum_ProcessDateTable(DateTime date1, DateTime date2)
+        {
+            List<List<object>> dateIDs = dB.GetMultipleCellData("SELECT ProcessID, SUM(DataReceived), SUM(DataSent) " +
+                "FROM ProcessDate WHERE DateID IN " +
+                "(SELECT ID FROM Date WHERE " +
+                "(Year * 10000 + Month * 100 + Day) " +
+                "BETWEEN " +
+                $"({date1.Year * 10000 + date1.Month * 100 + date1.Day}) " +
+                "AND " +
+                $"({date2.Year * 10000 + date2.Month * 100 + date2.Day})) " +
+                "GROUP BY ProcessID");
+
+            return dateIDs;
+        }
+
         public long GetID_DateTable(DateTime time)
         {
             object? test = dB.GetSingleCellData("SELECT ID From " +
@@ -229,18 +244,6 @@ namespace OpenNetMeter.Models
         {
             dB?.Dispose();
         }
-
-        //public void ReadRecord(string tableName)
-        //{
-        //    List<List<object>> test =  dB.RunSQLiteReader($"SELECT * From {TrimString(tableName)}");
-        //    for (int i = 0; i < test.Count; i++)
-        //    {
-        //        for(int j = 0; j< test[i].Count; j++)
-        //            Debug.Write(test[i][j].ToString() + ",");
-        //        Debug.WriteLine("");
-        //    }
-        //}
-
 
     }
 }
