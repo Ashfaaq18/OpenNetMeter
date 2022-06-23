@@ -13,43 +13,28 @@ namespace OpenNetMeter.Models
             set { name = value; OnPropertyChanged("Name"); }
         }
 
-        private ulong currentdataRecv;
-        public ulong CurrentDataRecv
+        private long currentdataRecv;
+        public long CurrentDataRecv
         {
             get { return currentdataRecv; }
             set { currentdataRecv = value; OnPropertyChanged("CurrentDataRecv"); }
         }
 
-        private ulong currentdataSend;
-        public ulong CurrentDataSend
+        private long currentdataSend;
+        public long CurrentDataSend
         {
             get { return currentdataSend; }
             set { currentdataSend = value; OnPropertyChanged("CurrentDataSend"); }
         }
 
-        private ulong totaldataRecv;
-        public ulong TotalDataRecv
-        {
-            get { return totaldataRecv; }
-            set { totaldataRecv = value; OnPropertyChanged("TotalDataRecv"); }
-        }
-        private ulong totaldataSend;
-        public ulong TotalDataSend
-        {
-            get { return totaldataSend; }
-            set { totaldataSend = value; OnPropertyChanged("TotalDataSend"); }
-        }
-
         public ImageSource? Icon { get; set; }
 
         public string Image { get; set; }
-        public MyProcess(string nameP, ulong dataRecvP, ulong dataSendP, System.Drawing.Icon? icon)
+        public MyProcess(string nameP, long dataRecvP, long dataSendP, System.Drawing.Icon? icon)
         {
             Name = nameP;
-            TotalDataRecv = dataRecvP;
-            TotalDataSend = dataSendP;
-            CurrentDataRecv = 0;
-            CurrentDataSend = 0;
+            CurrentDataRecv = dataRecvP;
+            CurrentDataSend = dataSendP;
             Icon = null;
             Image = "";
             if(icon != null)

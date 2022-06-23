@@ -35,14 +35,14 @@ namespace OpenNetMeter.ViewModels
             get { return selectedViewModel; }
             set { selectedViewModel = value; OnPropertyChanged("SelectedViewModel"); }
         }
-        public ulong downloadSpeed;
-        public ulong DownloadSpeed
+        public long downloadSpeed;
+        public long DownloadSpeed
         {
             get { return downloadSpeed; }
             set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
         }
-        public ulong uploadSpeed;
-        public ulong UploadSpeed
+        public long uploadSpeed;
+        public long UploadSpeed
         {
             get { return uploadSpeed; }
             set { uploadSpeed = value; OnPropertyChanged("UploadSpeed"); }
@@ -247,6 +247,7 @@ namespace OpenNetMeter.ViewModels
 
         public void Dispose()
         {
+            duhvm.Dispose();
             if (netProc != null)
             {
                 netProc.PropertyChanged -= NetProc_PropertyChanged;

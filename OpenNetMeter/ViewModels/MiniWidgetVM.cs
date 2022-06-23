@@ -7,8 +7,8 @@ namespace OpenNetMeter.ViewModels
 {
     public class MiniWidgetVM : INotifyPropertyChanged
     {
-        private ulong currentSessionDownloadData;
-        public ulong CurrentSessionDownloadData
+        private long currentSessionDownloadData;
+        public long CurrentSessionDownloadData
         {
             get { return currentSessionDownloadData; }
             set
@@ -17,8 +17,8 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("CurrentSessionDownloadData");
             }
         }
-        private ulong currentSessionUploadData;
-        public ulong CurrentSessionUploadData
+        private long currentSessionUploadData;
+        public long CurrentSessionUploadData
         {
             get { return currentSessionUploadData; }
             set
@@ -28,8 +28,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        public ulong downloadSpeed;
-        public ulong DownloadSpeed
+        public long downloadSpeed;
+        public long DownloadSpeed
         {
             get { return downloadSpeed; }
             set
@@ -38,8 +38,8 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("DownloadSpeed");
             }
         }
-        public ulong uploadSpeed;
-        public ulong UploadSpeed
+        public long uploadSpeed;
+        public long UploadSpeed
         {
             get { return uploadSpeed; }
             set

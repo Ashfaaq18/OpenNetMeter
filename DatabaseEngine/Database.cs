@@ -99,9 +99,9 @@ namespace DatabaseEngine
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
                                     temp[temp.Count - 1].Add(reader[i]);
-                                    Debug.Write($"{reader[i]} {reader.GetFieldType(i)}|");
+                                    //Debug.Write($"{reader[i]} {reader.GetFieldType(i)}|");
                                 }
-                                Debug.WriteLine("");
+                                //Debug.WriteLine("");
                             }
                         }
                         reader.Close();

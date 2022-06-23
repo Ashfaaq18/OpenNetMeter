@@ -13,7 +13,7 @@ using System.Windows.Input;
 namespace OpenNetMeter.ViewModels
 {
     
-    public class DataUsageHistoryVM : INotifyPropertyChanged
+    public class DataUsageHistoryVM : IDisposable, INotifyPropertyChanged
     {
         public DateTime DateMax { get; private set; }
         public DateTime DateMin { get; private set; }
@@ -21,27 +21,21 @@ namespace OpenNetMeter.ViewModels
         public DateTime DateEnd { get; set; }
 
         private string? selectedProfile;
-        public string? SelectedProfile
+        public string? SelectedProfile 
         {
             get { return selectedProfile; }
-            set { selectedProfile = value; OnPropertyChanged("SelectedProfile"); }
-        }
-
-        private ObservableCollection<string>? profiles;
-        public ObservableCollection<string>? Profiles
-        {
-            get { return profiles; }
             set
             {
-                if (profiles != value)
-                {
-                    profiles = value;
-                    OnPropertyChanged("Profiles");
-                }
+                selectedProfile = value;
+                OnPropertyChanged("SelectedProfile");
             }
         }
+
+        public ObservableCollection<string>? Profiles { get; set; }
+        public ObservableCollection<MyProcess> MyProcesses { get; set; }
         public ICommand FilterBtn { get; set; }
 
+        private FileSystemWatcher watcher;
         public DataUsageHistoryVM()
         {
             DateStart = DateTime.Today;
@@ -50,29 +44,52 @@ namespace OpenNetMeter.ViewModels
             DateMin = DateTime.Today.AddDays(-60);
 
             Profiles = new ObservableCollection<string>();
-            PropertyChanged += DataUsageHistoryVM_PropertyChanged;
+            MyProcesses = new ObservableCollection<MyProcess>();
+            watcher = new FileSystemWatcher(ApplicationDB.GetFilePath(), "*.sqlite");
+            watcher.Created += Watcher_Created;
+            watcher.Deleted += Watcher_Deleted;
+            watcher.EnableRaisingEvents = true;
 
             //set button command
             FilterBtn = new BaseCommand(Filter);
         }
 
+        private void Watcher_Deleted(object sender, FileSystemEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                GetAllDBFiles();
+            });
+        }
+
+        private void Watcher_Created(object sender, FileSystemEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                GetAllDBFiles();
+            });
+        }
+
         private void Filter(object obj)
         {
+            MyProcesses.Clear();
             //show confirmation dialog
             Debug.WriteLine($"Filter {DateStart.ToString("d")} | {DateEnd.ToString("d")}");
             if(SelectedProfile != null)
             {
                 using (ApplicationDB dB = new ApplicationDB(SelectedProfile))
                 {
-                    if (dB.CreateTable() < 0)
-                        Debug.WriteLine("Error: Create table");
-                    else
+                    List<List<object>> dataStats = dB.GetDataSum_ProcessDateTable(DateStart, DateEnd);
+                    for(int i = 0; i< dataStats.Count; i++)
                     {
-                        List<List<object>> dataStats = dB.GetDataSum_ProcessDateTable(DateStart, DateEnd);
-                        for(int i = 0; i< dataStats.Count; i++)
+                        if(dataStats[i].Count == 3)
                         {
-                            if(dataStats[i].Count == 3)
-                                Debug.WriteLine($"processID: {dataStats[i][0]}, dataRecieved: {dataStats[i][1]}, dataSent: {dataStats[i][2]}");
+                            if((string)dataStats[i][0] != "")
+                                MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
+                            else
+                                MyProcesses.Add(new MyProcess("System", (long)dataStats[i][1], (long)dataStats[i][2], null));
+
+                            //Debug.WriteLine($"processID: {dataStats[i][0]}, dataRecieved: {dataStats[i][1]}, dataSent: {dataStats[i][2]}");
                         }
                     }
                 }
@@ -88,21 +105,16 @@ namespace OpenNetMeter.ViewModels
                 Profiles?.Add(Path.GetFileNameWithoutExtension(fileArray[i]));
                 Debug.WriteLine(Path.GetFileNameWithoutExtension(fileArray[i]));
             }
-            SelectedProfile = Profiles?[0];
-        }
-
-        private void DataUsageHistoryVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case "SelectedProfile":
-                    break;
-                default:
-                    break;
-            }
+            if (Profiles?.Count > 0)
+                SelectedProfile = Profiles?[0];
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+
+        public void Dispose()
+        {
+            watcher.Dispose();
+        }
     }
 }

@@ -177,8 +177,10 @@ namespace OpenNetMeter.Models
 
         public List<List<object>> GetDataSum_ProcessDateTable(DateTime date1, DateTime date2)
         {
-            List<List<object>> dateIDs = dB.GetMultipleCellData("SELECT ProcessID, SUM(DataReceived), SUM(DataSent) " +
-                "FROM ProcessDate WHERE DateID IN " +
+            List<List<object>> dateIDs = dB.GetMultipleCellData("SELECT p1.Name, SUM(pd1.DataReceived), SUM(pd1.DataSent) " +
+                "FROM ProcessDate pd1 " +
+                "JOIN Process p1 ON p1.ID = pd1.ProcessID " +
+                "WHERE DateID IN " +
                 "(SELECT ID FROM Date WHERE " +
                 "(Year * 10000 + Month * 100 + Day) " +
                 "BETWEEN " +
@@ -222,22 +224,6 @@ namespace OpenNetMeter.Models
                 });
 
             return (long)(test ?? -1);
-        }
-
-        /// <summary>
-        /// remove dates past the time range from date table
-        /// </summary>
-        public void RemoveOldEntries()
-        {
-            DateTime time = DateTime.Now;
-            time = time.AddDays(-1*dataStoragePeriodInDays);
-            //DELETE FROM "main"."Date" WHERE (Year*10000 + Month * 100 + day) < (2022*10000 + 05*100 + 20)
-            dB.RunSQLiteNonQuery("DELETE FROM " +
-                "Date " +
-                "WHERE " +
-                "(Year * 10000 + Month * 100 + day) " +
-                "< " +
-                $"({time.Year * 10000 + time.Month * 100 + time.Day})");
         }
 
         public void Dispose()

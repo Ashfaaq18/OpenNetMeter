@@ -16,8 +16,8 @@ namespace OpenNetMeter.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private ulong totalDownloadData;
-        public ulong TotalDownloadData
+        private long totalDownloadData;
+        public long TotalDownloadData
         {
             get { return totalDownloadData; }
             set
@@ -26,8 +26,8 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("TotalDownloadData");
             }
         }
-        private ulong totalUploadData;
-        public ulong TotalUploadData
+        private long totalUploadData;
+        public long TotalUploadData
         {
             get { return totalUploadData; }
             set
@@ -37,8 +37,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private ulong currentSessionDownloadData;
-        public ulong CurrentSessionDownloadData
+        private long currentSessionDownloadData;
+        public long CurrentSessionDownloadData
         {
             get { return currentSessionDownloadData; }
             set
@@ -47,8 +47,8 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("CurrentSessionDownloadData");
             }
         }
-        private ulong currentSessionUploadData;
-        public ulong CurrentSessionUploadData
+        private long currentSessionUploadData;
+        public long CurrentSessionUploadData
         {
             get { return currentSessionUploadData; }
             set

@@ -116,7 +116,7 @@ namespace OpenNetMeter.Models
             }
 
             // Add Y labels and X lines
-            ulong temp = 1;
+            long temp = 1;
             for (int i = 0; i < GridXCount; i++)
             {
 
@@ -155,7 +155,7 @@ namespace OpenNetMeter.Models
         }
 
         private int drawPointCount;
-        public void DrawPoints(ulong downloadSpeed, ulong uploadSpeed)
+        public void DrawPoints(long downloadSpeed, long uploadSpeed)
         {
             // reset the graph after it completes a full run
             if (drawPointCount >= XaxisResolution)

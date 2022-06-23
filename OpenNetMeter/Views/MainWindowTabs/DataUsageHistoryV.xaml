@@ -3,9 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:OpenNetMeter.Views"
+             xmlns:v="clr-namespace:OpenNetMeter.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <v:UnitConverterBytes x:Key="converterBytes"/>
+    </UserControl.Resources>
     <Grid Style="{StaticResource BackgroundColor2}">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -15,7 +18,7 @@
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Usage of</Label>
             <StackPanel Grid.Row="0" Margin="4,10,10,10" Width="150">
                 <ComboBox x:Name="combo_box" ItemsSource="{Binding Profiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                          SelectedItem="{Binding SelectedProfile , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                          SelectedItem="{Binding SelectedProfile , Mode=TwoWay}" 
                           Style="{StaticResource ComboBoxFlatStyle}"/>
             </StackPanel>
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">From:</Label>
@@ -32,11 +35,11 @@
             </Button> 
            
         </StackPanel>
-        <DataGrid Grid.Row="1" Style="{DynamicResource DGHeaderStyle}">
+        <DataGrid Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name"/>
-                <DataGridTextColumn Header="Download"/>
-                <DataGridTextColumn Header="Upload"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" CellStyle="{StaticResource DGCellStyle1}"/>
+                <DataGridTextColumn Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -41,18 +41,18 @@ namespace OpenNetMeter.Models
         public bool IsBufferTime { get; set; }
 
         //---------- variables with property changers ------------//
-        public ulong CurrentSessionDownloadData;
+        public long CurrentSessionDownloadData;
 
-        public ulong CurrentSessionUploadData;
+        public long CurrentSessionUploadData;
 
-        public ulong downloadSpeed;
-        public ulong DownloadSpeed
+        public long downloadSpeed;
+        public long DownloadSpeed
         {
             get { return downloadSpeed; }
             set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
         }
 
-        public ulong UploadSpeed;
+        public long UploadSpeed;
 
         private string isNetworkOnline = "error";
         public string IsNetworkOnline
@@ -272,8 +272,8 @@ namespace OpenNetMeter.Models
             cts_speed = new CancellationTokenSource();
             try
             {
-                ulong tempDownload = 0;
-                ulong tempUpload = 0;
+                long tempDownload = 0;
+                long tempUpload = 0;
                 Debug.WriteLine("Operation Started : Network speed");
                 while (await timer.WaitForNextTickAsync(cts_speed.Token))
                 {
@@ -440,13 +440,13 @@ namespace OpenNetMeter.Models
 
         private void Recv(string name, int size)
         {
-            CurrentSessionDownloadData += (ulong)size;
+            CurrentSessionDownloadData += (long)size;
 
             if (IsBufferTime)
                 Debug.WriteLine("Recv buffer");
 
             MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
-            MyProcesses[name]!.CurrentDataRecv += (ulong)size;
+            MyProcesses[name]!.CurrentDataRecv += (long)size;
             MyProcesses[name]!.CurrentDataSend += 0;
 
             if (size == 0)
@@ -455,14 +455,14 @@ namespace OpenNetMeter.Models
 
         private void Send(string name, int size)
         {
-            CurrentSessionUploadData += (ulong)size;
+            CurrentSessionUploadData += (long)size;
 
             if (IsBufferTime)
                 Debug.WriteLine("send buffer");
 
             MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
             MyProcesses[name]!.CurrentDataRecv += 0;
-            MyProcesses[name]!.CurrentDataSend += (ulong)size;
+            MyProcesses[name]!.CurrentDataSend += (long)size;
 
             if (size == 0)
                 Debug.WriteLine($"but whyyy {name} | send");
