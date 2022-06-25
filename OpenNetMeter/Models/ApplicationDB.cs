@@ -10,7 +10,7 @@ namespace OpenNetMeter.Models
     internal class ApplicationDB : IDisposable
     {
         private Database dB;
-        private int dataStoragePeriodInDays;
+        public const int DataStoragePeriodInDays = 10;
         /// <summary>
         /// creates a database file if it does not exist
         /// </summary>
@@ -18,7 +18,6 @@ namespace OpenNetMeter.Models
         public ApplicationDB(string dBFileName, string[]? extraParams = null)
         {
             dB = new Database(GetFilePath(), TrimString(dBFileName), extraParams);
-            dataStoragePeriodInDays = 2;
         }
 
         private string TrimString(string str)
@@ -157,7 +156,7 @@ namespace OpenNetMeter.Models
         public void RemoveOldDate()
         {
             DateTime time = DateTime.Now;
-            time = time.AddDays(-1 * dataStoragePeriodInDays);
+            time = time.AddDays(-1 * DataStoragePeriodInDays);
 
             dB.RunSQLiteNonQuery("DELETE FROM " +
                 "Date " +

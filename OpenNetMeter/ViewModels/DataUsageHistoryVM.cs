@@ -26,8 +26,11 @@ namespace OpenNetMeter.ViewModels
             get { return selectedProfile; }
             set
             {
-                selectedProfile = value;
-                OnPropertyChanged("SelectedProfile");
+                if(value != selectedProfile)
+                {
+                    selectedProfile = value;
+                    OnPropertyChanged("SelectedProfile");
+                }
             }
         }
 
@@ -41,7 +44,9 @@ namespace OpenNetMeter.ViewModels
             DateStart = DateTime.Today;
             DateEnd = DateTime.Today;
             DateMax = DateTime.Today;
-            DateMin = DateTime.Today.AddDays(-60);
+            DateMin = DateTime.Today.AddDays(-1 * ApplicationDB.DataStoragePeriodInDays);
+
+            PropertyChanged += DataUsageHistoryVM_PropertyChanged;
 
             Profiles = new ObservableCollection<string>();
             MyProcesses = new ObservableCollection<MyProcess>();
@@ -52,6 +57,18 @@ namespace OpenNetMeter.ViewModels
 
             //set button command
             FilterBtn = new BaseCommand(Filter);
+        }
+
+        private void DataUsageHistoryVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "SelectedProfile":
+                    MyProcesses.Clear();
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void Watcher_Deleted(object sender, FileSystemEventArgs e)
