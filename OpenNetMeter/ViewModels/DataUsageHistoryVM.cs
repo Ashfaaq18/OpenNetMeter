@@ -51,8 +51,8 @@ namespace OpenNetMeter.ViewModels
             Profiles = new ObservableCollection<string>();
             MyProcesses = new ObservableCollection<MyProcess>();
             watcher = new FileSystemWatcher(ApplicationDB.GetFilePath(), "*.sqlite");
-            watcher.Created += Watcher_Created;
-            watcher.Deleted += Watcher_Deleted;
+            watcher.Created += OnFile_Created;
+            watcher.Deleted += OnFile_Deleted;
             watcher.EnableRaisingEvents = true;
 
             //set button command
@@ -71,7 +71,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private void Watcher_Deleted(object sender, FileSystemEventArgs e)
+        private void OnFile_Created(object sender, FileSystemEventArgs e)
         {
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -79,7 +79,7 @@ namespace OpenNetMeter.ViewModels
             });
         }
 
-        private void Watcher_Created(object sender, FileSystemEventArgs e)
+        private void OnFile_Deleted(object sender, FileSystemEventArgs e)
         {
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -94,7 +94,7 @@ namespace OpenNetMeter.ViewModels
             Debug.WriteLine($"Filter {DateStart.ToString("d")} | {DateEnd.ToString("d")}");
             if(SelectedProfile != null)
             {
-                using (ApplicationDB dB = new ApplicationDB(SelectedProfile))
+                using (ApplicationDB dB = new ApplicationDB(SelectedProfile, new string[] { "Read Only=True"}))
                 {
                     List<List<object>> dataStats = dB.GetDataSum_ProcessDateTable(DateStart, DateEnd);
                     for(int i = 0; i< dataStats.Count; i++)

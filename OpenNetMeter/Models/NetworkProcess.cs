@@ -82,6 +82,7 @@ namespace OpenNetMeter.Models
             IsBufferTime = false;
             
             timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+            speedTask = null;
             cts_speed = new CancellationTokenSource();
 
             CurrentSessionUploadData = 0;
@@ -205,10 +206,18 @@ namespace OpenNetMeter.Models
 
             if (networkAvailable)
             {
-                if (IsNetworkOnline != "Disconnected") //if there was already a connection available
+                if (IsNetworkOnline != AdapterName) //if there was already a connection available
+                {
                     SetNetworkStatus(false); //reset the connection
-
-                SetNetworkStatus(true);
+                    SetNetworkStatus(true);
+                }
+                if (IsNetworkOnline == "Disconnected")
+                    SetNetworkStatus(true);
+            }
+            else
+            {
+                if(IsNetworkOnline != "Disconnected")
+                    SetNetworkStatus(false);
             }
 
             //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
@@ -226,7 +235,7 @@ namespace OpenNetMeter.Models
         {
             if (isOnline)
             {
-                IsNetworkOnline = "Connected : " + AdapterName;
+                IsNetworkOnline = AdapterName;
 
                 //create DB file if it does not exists
                 using (ApplicationDB dB = new ApplicationDB(AdapterName))
@@ -299,16 +308,24 @@ namespace OpenNetMeter.Models
 
         private async Task StopNetworkSpeed()
         {
-            if(speedTask is null)
+            try
             {
-                return;
+                if (speedTask is null)
+                {
+                    return;
+                }
+
+                cts_speed.Cancel();
+                await speedTask;
+                speedTask = null;
+                cts_speed.Dispose();
+                Debug.WriteLine("Operation Cancelled : Network speed");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Stop network speed error: {ex.Message}");
             }
 
-            cts_speed.Cancel();
-            await speedTask;
-            speedTask = null;
-            cts_speed.Dispose();
-            Debug.WriteLine("Operation Cancelled : Network speed");
         }
 
         //---------------------------------- NETWORK PACKETS ------------------------------------//
@@ -521,7 +538,6 @@ namespace OpenNetMeter.Models
         public async void Dispose()
         {
             await StopNetworkSpeed();
-
             kernelSession?.Dispose();
         }
     }

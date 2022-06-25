@@ -55,6 +55,9 @@ namespace OpenNetMeter.ViewModels
             set { networkStatus = value; OnPropertyChanged("NetworkStatus"); }
         }
 
+        private DateTime date1;
+        private DateTime date2;
+
         private enum TabPage
         {
             Summary,
@@ -67,6 +70,8 @@ namespace OpenNetMeter.ViewModels
         {
             DownloadSpeed = 0;
             UploadSpeed = 0;
+            date1 = DateTime.Now;
+            date2 = DateTime.Now;
 
             networkStatus = "";
 
@@ -110,16 +115,33 @@ namespace OpenNetMeter.ViewModels
 
         private void UpdateData()
         {
+            date2 = DateTime.Now;
             // -------------- Set download speed across all vms -------------- //
+
+            //main window speed variables
             DownloadSpeed = netProc.DownloadSpeed;
             UploadSpeed = netProc.UploadSpeed;
 
+            //mini widget speed variables
             mwvm.DownloadSpeed = DownloadSpeed;
             mwvm.UploadSpeed = UploadSpeed;
 
+            //summary tab session usage variables
             dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
 
+            //summary tab todays usage variables
+            if((date2.Date - date1.Date).Days > 0)
+            {
+                dusvm.TodayDownloadData_Temp = 0;
+                dusvm.TodayUploadData_Temp = 0;
+                date1 = date2;
+            }
+
+            dusvm.TodayDownloadData = dusvm.TodayDownloadData_Temp + netProc.CurrentSessionDownloadData;
+            dusvm.TodayUploadData = dusvm.TodayUploadData_Temp + netProc.CurrentSessionUploadData;
+
+            //summary tab graph points
             dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
 
             // -------------- Update current session details -------------- //
@@ -178,14 +200,29 @@ namespace OpenNetMeter.ViewModels
                     UpdateData();
                     break;
                 case "IsNetworkOnline":
-                    NetworkStatus = netProc.IsNetworkOnline;
-                    if(NetworkStatus == "Disconnected")
+                    if(netProc.IsNetworkOnline == "Disconnected")
                     {
+                        NetworkStatus = "Disconnected";
                         foreach (var row in dudvm.MyProcesses.ToList())
                         {
                             dudvm.MyProcesses.Remove(row.Key);
                         }
                         dusvm.Graph.DrawClear();
+                        dusvm.TodayDownloadData = 0;
+                        dusvm.TodayUploadData = 0;
+                    }
+                    else
+                    {
+                        NetworkStatus = "Connected : " + netProc.IsNetworkOnline;
+                        if (netProc.AdapterName != null)
+                        {
+                            using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName, new string[] { "Read Only=True" }))
+                            {
+                                (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
+                                dusvm.TodayDownloadData_Temp = todaySum.Item1;
+                                dusvm.TodayUploadData_Temp = todaySum.Item2;
+                            }
+                        }
                     }
                     break;
                 default:

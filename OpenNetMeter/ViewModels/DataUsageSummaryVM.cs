@@ -16,24 +16,27 @@ namespace OpenNetMeter.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        private long totalDownloadData;
-        public long TotalDownloadData
+        public long TodayDownloadData_Temp { get; set; }
+        public long TodayUploadData_Temp { get; set; }
+
+        private long todayDownloadData;
+        public long TodayDownloadData
         {
-            get { return totalDownloadData; }
+            get { return todayDownloadData; }
             set
             {
-                totalDownloadData = value;
-                OnPropertyChanged("TotalDownloadData");
+                todayDownloadData = value;
+                OnPropertyChanged("TodayDownloadData");
             }
         }
-        private long totalUploadData;
-        public long TotalUploadData
+        private long todayUploadData;
+        public long TodayUploadData
         {
-            get { return totalUploadData; }
+            get { return todayUploadData; }
             set
             {
-                totalUploadData = value;
-                OnPropertyChanged("TotalUploadData");
+                todayUploadData = value;
+                OnPropertyChanged("TodayUploadData");
             }
         }
 
@@ -58,26 +61,16 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private string totalUsageText = "";
-        public string TotalUsageText
-        {
-            get { return totalUsageText; }
-            set
-            {
-                totalUsageText = value;
-                OnPropertyChanged("TotalUsageText");
-            }
-        }
-
         public SpeedGraph Graph { get; set; }
 
         public DataUsageSummaryVM()
         {
-            TotalDownloadData = 0;
-            TotalUploadData = 0;
+            TodayDownloadData = 0;
+            TodayUploadData = 0;
+            TodayDownloadData_Temp = 0;
+            TodayUploadData_Temp = 0;
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
-            TotalUsageText = "Total data usage of the past 0 days";
 
             Graph = new SpeedGraph(7, 7);
             Graph.Init();

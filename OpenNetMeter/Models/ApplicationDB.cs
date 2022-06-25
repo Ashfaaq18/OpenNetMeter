@@ -191,6 +191,30 @@ namespace OpenNetMeter.Models
             return dateIDs;
         }
 
+        public (long, long) GetTodayDataSum_ProcessDateTable()
+        {
+            List<List<object>> sum = dB.GetMultipleCellData("SELECT SUM(DataReceived), SUM(DataSent) FROM ProcessDate " +
+                "WHERE DateID IN " +
+                "(SELECT ID FROM Date " +
+                "WHERE (Year * 10000 + Month * 100 + day) = (@Year * 10000 + @Month * 100 + @Day))",
+                new string[,]
+                {
+                    { "@Year", DateTime.Today.Year.ToString()},
+                    { "@Month", DateTime.Today.Month.ToString()},
+                    { "@Day", DateTime.Today.Day.ToString()}
+                });
+
+            if(sum.Count == 1)
+            {
+                if (sum[0].Count == 2)
+                {
+                    return ((long)sum[0][0], (long)sum[0][1]);
+                }
+            }
+
+            return (0,0);
+        }
+
         public long GetID_DateTable(DateTime time)
         {
             object? test = dB.GetSingleCellData("SELECT ID From " +
