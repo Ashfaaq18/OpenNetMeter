@@ -172,12 +172,12 @@ namespace OpenNetMeter.ViewModels
                             long processID = dB.GetID_ProcessTable(app.Key);
 
                             if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 
-                                (long)dudvm.MyProcesses[app.Key].CurrentDataRecv,
-                                (long)dudvm.MyProcesses[app.Key].CurrentDataSend) < 1)
+                                dudvm.MyProcesses[app.Key].CurrentDataRecv,
+                                dudvm.MyProcesses[app.Key].CurrentDataSend) < 1)
                             {
                                 dB.UpdateRow_ProcessDateTable(processID, dateID,
-                                    (long)app.Value!.CurrentDataRecv,
-                                    (long)app.Value!.CurrentDataSend);
+                                    app.Value!.CurrentDataRecv,
+                                    app.Value!.CurrentDataSend);
                             }
                         }
                         //Thread.Sleep(800);

@@ -208,7 +208,8 @@ namespace OpenNetMeter.Models
             {
                 if (sum[0].Count == 2)
                 {
-                    return ((long)sum[0][0], (long)sum[0][1]);
+                    if (!Convert.IsDBNull(sum[0][0]) && !Convert.IsDBNull(sum[0][1]))
+                        return ((long)(sum[0][0]), (long)(sum[0][1]));
                 }
             }
 

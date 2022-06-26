@@ -653,7 +653,7 @@
 
     
     <!-- mini widget context menu style  -->
-    
+
     <Style TargetType="ContextMenu" x:Key="miniWidgetContextMenuColor">
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -682,7 +682,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- Settings -->
 
 </ResourceDictionary>

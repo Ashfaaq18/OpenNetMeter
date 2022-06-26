@@ -101,11 +101,13 @@ namespace OpenNetMeter.ViewModels
                     {
                         if(dataStats[i].Count == 3)
                         {
-                            if((string)dataStats[i][0] != "")
-                                MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
-                            else
-                                MyProcesses.Add(new MyProcess("System", (long)dataStats[i][1], (long)dataStats[i][2], null));
-
+                            if(!Convert.IsDBNull(dataStats[i][0]) && !Convert.IsDBNull(dataStats[i][1]) && !Convert.IsDBNull(dataStats[i][2]))
+                            {
+                                if ((string)dataStats[i][0] != "")
+                                    MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
+                                else
+                                    MyProcesses.Add(new MyProcess("System", (long)dataStats[i][1], (long)dataStats[i][2], null));
+                            }
                             //Debug.WriteLine($"processID: {dataStats[i][0]}, dataRecieved: {dataStats[i][1]}, dataSent: {dataStats[i][2]}");
                         }
                     }
