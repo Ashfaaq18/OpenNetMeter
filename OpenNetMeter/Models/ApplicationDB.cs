@@ -10,7 +10,7 @@ namespace OpenNetMeter.Models
     internal class ApplicationDB : IDisposable
     {
         private Database dB;
-        public const int DataStoragePeriodInDays = 10;
+        public const int DataStoragePeriodInDays = 60;
         /// <summary>
         /// creates a database file if it does not exist
         /// </summary>

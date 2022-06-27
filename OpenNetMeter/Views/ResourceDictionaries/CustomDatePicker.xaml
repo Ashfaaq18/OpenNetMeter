@@ -3,30 +3,30 @@
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
     <!--Control colors.-->
-    <Color x:Key="WindowColor">#FFE8EDF9</Color>
-    <Color x:Key="ContentAreaColorLight">#FFC5CBF9</Color>
-    <Color x:Key="ContentAreaColorDark">#FF7381F9</Color>
+    <Color x:Key="WindowColor">#FFE8EDF9</Color><Color x:Key="WindowColor_DarkMode">#3b3d40</Color>
+    <Color x:Key="ContentAreaColorLight">#f7bda6</Color><Color x:Key="ContentAreaColorLight_DarkMode">#f7bda6</Color>
+    <Color x:Key="ContentAreaColorDark">#e0a087</Color><Color x:Key="ContentAreaColorDark_DarkMode">#e0a087</Color>
 
     <Color x:Key="DisabledControlLightColor">#FFE8EDF9</Color>
-    <Color x:Key="DisabledControlDarkColor">#FFC5CBF9</Color>
+    <Color x:Key="DisabledControlDarkColor">#f7bda6</Color>
     <Color x:Key="DisabledForegroundColor">#FF888888</Color>
 
-    <Color x:Key="SelectedBackgroundColor">#FFC5CBF9</Color>
+    <Color x:Key="SelectedBackgroundColor">#f7bda6</Color><Color x:Key="SelectedBackgroundColor_DarkMode">#c99079</Color>
     <Color x:Key="SelectedUnfocusedColor">#FFDDDDDD</Color>
 
-    <Color x:Key="ControlLightColor">White</Color>
-    <Color x:Key="ControlMediumColor">#FF7381F9</Color>
-    <Color x:Key="ControlDarkColor">#FF211AA9</Color>
+    <Color x:Key="ControlLightColor">White</Color><Color x:Key="ControlLightColor_DarkMode">#333333</Color>
+    <Color x:Key="ControlMediumColor">#a9d9cc</Color><Color x:Key="ControlMediumColor_DarkMode">#3b695c</Color>
+    <Color x:Key="ControlDarkColor">#8dc2b4</Color><Color x:Key="ControlDarkColor_DarkMode">#1c3b32</Color>
 
-    <Color x:Key="ControlMouseOverColor">#FF3843C4</Color>
-    <Color x:Key="ControlPressedColor">#FF211AA9</Color>
+    <Color x:Key="ControlMouseOverColor">#FFA37E</Color>
+    <Color x:Key="ControlPressedColor">#c97857</Color>
 
 
     <Color x:Key="GlyphColor">#FF444444</Color>
     <Color x:Key="GlyphMouseOver">sc#1, 0.004391443, 0.002428215, 0.242281124</Color>
 
     <!--Border colors-->
-    <Color x:Key="BorderLightColor">#FFCCCCCC</Color>
+    <Color x:Key="BorderLightColor">White</Color>
     <Color x:Key="BorderMediumColor">#FF888888</Color>
     <Color x:Key="BorderDarkColor">#FF444444</Color>
 
@@ -39,39 +39,11 @@
     <Color x:Key="DefaultBorderBrushDarkColor">Black</Color>
 
     <!--Control-specific resources.-->
-    <Color x:Key="HeaderTopColor">#FFC5CBF9</Color>
+    <Color x:Key="HeaderTopColor">#b6e3d7</Color><Color x:Key="HeaderTopColor_DarkMode">#6da395</Color>
     <Color x:Key="DatagridCurrentCellBorderColor">Black</Color>
     <Color x:Key="SliderTrackDarkColor">#FFC5CBF9</Color>
 
     <Color x:Key="NavButtonFrameColor">#FF3843C4</Color>
-
-    <LinearGradientBrush x:Key="MenuPopupBrush"
-                     EndPoint="0.5,1"
-                     StartPoint="0.5,0">
-        <GradientStop Color="{DynamicResource ControlLightColor}"
-                Offset="0" />
-        <GradientStop Color="{DynamicResource ControlMediumColor}"
-                Offset="0.5" />
-        <GradientStop Color="{DynamicResource ControlLightColor}"
-                Offset="1" />
-    </LinearGradientBrush>
-
-    <LinearGradientBrush x:Key="ProgressBarIndicatorAnimatedFill"
-                     StartPoint="0,0"
-                     EndPoint="1,0">
-        <LinearGradientBrush.GradientStops>
-            <GradientStopCollection>
-                <GradientStop Color="#000000FF"
-                    Offset="0" />
-                <GradientStop Color="#600000FF"
-                    Offset="0.4" />
-                <GradientStop Color="#600000FF"
-                    Offset="0.6" />
-                <GradientStop Color="#000000FF"
-                    Offset="1" />
-            </GradientStopCollection>
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
 
     <!--The calendar icon -->
     <Style x:Key="DropDownButtonStyle"
@@ -205,7 +177,7 @@
                     Grid.Row="0"
                     Grid.RowSpan="4">
                                 <Border.BorderBrush>
-                                    <SolidColorBrush Color="{DynamicResource ControlPressedColor}" />
+                                    <SolidColorBrush Color="{DynamicResource ControlDarkColor}" />
                                 </Border.BorderBrush>
                             </Border>
                             <Border x:Name="Background"
@@ -330,7 +302,7 @@
         <Setter Property="MinHeight"
           Value="5" />
         <Setter Property="FontSize"
-          Value="10" />
+          Value="12" />
         <Setter Property="HorizontalContentAlignment"
           Value="Center" />
         <Setter Property="VerticalContentAlignment"
@@ -472,17 +444,31 @@
                      RadiusX="1"
                      RadiusY="1"
                      Opacity="0">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="{DynamicResource SelectedBackgroundColor}" />
-                            </Rectangle.Fill>
+                            <Rectangle.Style>
+                                <Style TargetType="Rectangle">
+                                    <Setter Property="Fill" Value="LightGray"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                            <Setter Property="Fill" Value="DimGray"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Rectangle.Style>
                         </Rectangle>
                         <Rectangle x:Name="SelectedBackground"
                      RadiusX="1"
                      RadiusY="1"
                      Opacity="0">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="{DynamicResource SelectedBackgroundColor}" />
-                            </Rectangle.Fill>
+                            <Rectangle.Style>
+                                <Style TargetType="Rectangle">
+                                    <Setter Property="Fill" Value="#f7bda6"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                            <Setter Property="Fill" Value="#c99079"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Rectangle.Style>
                         </Rectangle>
                         <Border Background="{TemplateBinding Background}"
                   BorderThickness="{TemplateBinding BorderThickness}"
@@ -499,9 +485,16 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Margin="5,1,5,1">
-                            <TextElement.Foreground>
-                                <SolidColorBrush Color="#FF333333" />
-                            </TextElement.Foreground>
+                            <ContentPresenter.Style>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="TextElement.Foreground" Value="#333333"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                            <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentPresenter.Style>
                         </ContentPresenter>
                         <Path x:Name="Blackout"
                 Opacity="0"
@@ -782,9 +775,20 @@
                       Margin="1,4,1,9"
                       ContentTemplate="{TemplateBinding ContentTemplate}"
                       Content="{TemplateBinding Content}"
-                      TextElement.Foreground="#FF333333"
                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                <ContentPresenter.Style>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="TextElement.Foreground" Value="#333333"/>
+                        <Setter Property="TextElement.FontSize" Value="12"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentPresenter.Style>
+            </ContentPresenter>
         </Grid>
     </ControlTemplate>
 
@@ -796,14 +800,25 @@
                 <ControlTemplate TargetType="{x:Type CalendarItem}">
                     <ControlTemplate.Resources>
                         <DataTemplate x:Key="{x:Static CalendarItem.DayTitleTemplateResourceKey}">
-                            <TextBlock Foreground="#FF333333"
+                            <TextBlock
                        FontWeight="Bold"
-                       FontSize="9.5"
+                       FontSize="11"
                        FontFamily="Verdana"
                        Margin="0,6,0,6"
                        Text="{Binding}"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#333333"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                                <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </DataTemplate>
                     </ControlTemplate.Resources>
                     <Grid x:Name="PART_Root">
@@ -828,8 +843,8 @@
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Background="{TemplateBinding Background}"
                   CornerRadius="1">
-                            <Border BorderBrush="#FFFFFFFF"
-                    BorderThickness="2"
+                            <Border
+                    BorderThickness="0"
                     CornerRadius="1">
                                 <Grid>
                                     <Grid.Resources>
@@ -989,13 +1004,7 @@
         </Setter>
         <Setter Property="BorderBrush">
             <Setter.Value>
-                <LinearGradientBrush EndPoint="0,1"
-                           StartPoint="0,0">
-                    <GradientStop Color="{DynamicResource BorderLightColor}"
-                      Offset="0" />
-                    <GradientStop Color="{DynamicResource BorderDarkColor}"
-                      Offset="1" />
-                </LinearGradientBrush>
+                <SolidColorBrush Color="{DynamicResource BorderDarkColor}"/>
             </Setter.Value>
         </Setter>
         <Setter Property="BorderThickness"
@@ -1014,9 +1023,30 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <LinearGradientBrush EndPoint="0.5,1"
+                           StartPoint="0.5,0">
+
+                            <!--The first two gradient stops specifies the background for 
+            the calendar's heading and navigation buttons.-->
+                            <GradientStop Color="{DynamicResource HeaderTopColor_DarkMode}"
+                      Offset="0" />
+                            <GradientStop Color="{DynamicResource ControlMediumColor_DarkMode}"
+                      Offset="0.16" />
+
+                            <!--The next gradient stop specifies the background for 
+            the calendar area.-->
+                            <GradientStop Color="{DynamicResource ControlLightColor_DarkMode}"
+                      Offset="0.16" />
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
-    
-    
 
     <!-- Datepicker (consists of the textbox and the calendar button)-->
 
