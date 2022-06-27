@@ -635,9 +635,17 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Margin="1,0,1,1">
-                            <TextElement.Foreground>
-                                <SolidColorBrush Color="#FF333333" />
-                            </TextElement.Foreground>
+                            <ContentPresenter.Style>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="TextElement.Foreground" Value="#333333"/>
+                                    <Setter Property="TextElement.FontSize" Value="12"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                            <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentPresenter.Style>
                         </ContentPresenter>
                         <Rectangle x:Name="CalendarButtonFocusVisual"
                      Visibility="Collapsed"

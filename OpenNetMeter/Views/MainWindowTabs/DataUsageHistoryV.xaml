@@ -29,7 +29,9 @@
                 <TextBlock FontFamily="Segoe UI" Text="Filter" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                 <Button.Resources>
                     <Style TargetType="{x:Type Border}">
-                        <Setter Property="CornerRadius" Value="7"/>
+                        <Setter Property="CornerRadius" Value="4"/>
+                        <Setter Property="BorderBrush" Value="#888888"/>
+                        <Setter Property="BorderThickness" Value="1"/>
                     </Style>
                 </Button.Resources>
             </Button> 
