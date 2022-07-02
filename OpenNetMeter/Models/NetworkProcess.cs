@@ -2,14 +2,12 @@
 using System.Net;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
-using OpenNetMeter.ViewModels;
 using System.Threading;
 using ManagedNativeWifi;
 using System.Net.Sockets;
@@ -26,6 +24,8 @@ namespace OpenNetMeter.Models
         private readonly byte[] defaultIPv6;
         private byte[] localIPv4;
         private byte[] localIPv6;
+
+        public Task? PacketTask; 
 
         //token for network speed
         private Task? speedTask;
@@ -80,7 +80,10 @@ namespace OpenNetMeter.Models
             MyProcesses = new Dictionary<string, MyProcess?>();
             MyProcessesBuffer = new Dictionary<string, MyProcess?>();
             IsBufferTime = false;
-            
+
+            kernelSession = null;
+            PacketTask = null;
+
             timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
             speedTask = null;
             cts_speed = new CancellationTokenSource();
@@ -203,18 +206,18 @@ namespace OpenNetMeter.Models
 
             if (networkAvailable)
             {
-                if (IsNetworkOnline != AdapterName) //if there was already a connection available
-                {
-                    SetNetworkStatus(false); //reset the connection
-                    SetNetworkStatus(true);
-                }
                 if (IsNetworkOnline == "Disconnected")
-                    SetNetworkStatus(true);
+                    StartNetworkProcess();
+                else if(IsNetworkOnline != AdapterName)
+                {
+                    EndNetworkProcess();
+                    StartNetworkProcess();
+                }
             }
             else
             {
                 if(IsNetworkOnline != "Disconnected")
-                    SetNetworkStatus(false);
+                    EndNetworkProcess();
             }
 
             //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
@@ -224,53 +227,51 @@ namespace OpenNetMeter.Models
                 localIPv4 = new byte[] { 0, 0, 0, 0 };
                 Debug.WriteLine("No connection");
                 if (isNetworkOnline != "Disconnected")
-                    SetNetworkStatus(false);
+                    EndNetworkProcess();
             }
         }
 
-        public async void SetNetworkStatus(bool isOnline)
+        public void StartNetworkProcess()
         {
-            if (isOnline)
+            using (ApplicationDB dB = new ApplicationDB(AdapterName))
             {
-                IsNetworkOnline = AdapterName;
-
-                //create DB file if it does not exists
-                using (ApplicationDB dB = new ApplicationDB(AdapterName))
+                if (dB.CreateTable() < 0)
+                    Debug.WriteLine("Error: Create table");
+                else
                 {
-                    if (dB.CreateTable() < 0)
-                        Debug.WriteLine("Error: Create table");
-                    else
-                    {
-                        //insert todays date
-                        dB.InsertUniqueRow_DateTable(DateTime.Today);
+                    //insert todays date
+                    dB.InsertUniqueRow_DateTable(DateTime.Today);
 
-                        //get invalid dateIDs
-                        //use these invalid dataIDs to remove the respective rows from processDate table
-                        //remove these IDs from date table
-                        dB.RemoveOldDate();
-                        //compare processDate table processID column and process table processID column
-                        //remove rows from process table if they are not present in processDate table
-                        dB.RemoveOldProcess();
+                    //get invalid dateIDs
+                    //use these invalid dataIDs to remove the respective rows from processDate table
+                    //remove these IDs from date table
+                    dB.RemoveOldDate();
+                    //compare processDate table processID column and process table processID column
+                    //remove rows from process table if they are not present in processDate table
+                    dB.RemoveOldProcess();
 
-                    }
                 }
-                speedTask = CaptureNetworkSpeed(); //start logging the speed
-                CaptureNetworkPackets();
             }
-            else //if network is disconnected
-            {
-                IsNetworkOnline = "Disconnected";
 
-                await StopNetworkSpeed();
-                StopNetworkCapture();
+            CaptureNetworkPackets(); //start capturing packets
+            speedTask = CaptureNetworkSpeed(); //start logging the speed
 
-                MyProcesses?.Clear();
-                //reset speed counters
-                CurrentSessionDownloadData = 0;
-                CurrentSessionUploadData = 0;
-                UploadSpeed = 0;
-                DownloadSpeed = 0;
-            }
+            IsNetworkOnline = AdapterName;
+        }
+
+        public void EndNetworkProcess()
+        {
+            StopNetworkCapture();
+            StopNetworkSpeed();
+
+            MyProcesses?.Clear();
+            //reset speed counters
+            CurrentSessionDownloadData = 0;
+            CurrentSessionUploadData = 0;
+            UploadSpeed = 0;
+            DownloadSpeed = 0;
+
+            IsNetworkOnline = "Disconnected";
         }
 
         //---------------------------------- NETWORK SPEED ------------------------------------//
@@ -300,12 +301,13 @@ namespace OpenNetMeter.Models
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
+                Debug.WriteLine($"cancel speed token invoked: {ex.Message}");
             }
         }
 
-        private async Task StopNetworkSpeed()
+        private async void StopNetworkSpeed()
         {
             try
             {
@@ -332,6 +334,9 @@ namespace OpenNetMeter.Models
             try
             {
                 kernelSession?.Dispose();
+                kernelSession = null;
+                PacketTask?.Dispose();
+                PacketTask = null;
                 Debug.WriteLine("Operation Cancelled : Network capture");
             }
             catch (Exception ex)
@@ -345,24 +350,34 @@ namespace OpenNetMeter.Models
 
         private void CaptureNetworkPackets()
         {
-            Task.Run(() =>
+            Debug.WriteLine("Operation Started : Network capture");
+            PacketTask = Task.Run(() =>
             {
-                kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
+                if(kernelSession == null)
+                {
+                    try
+                    {
+                        kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
 
-                kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+                        kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
 
-                kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
-                kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
-                kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
-                kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
+                        kernelSession.Source.Kernel.TcpIpRecv += Kernel_TcpIpRecv;
+                        kernelSession.Source.Kernel.TcpIpRecvIPV6 += Kernel_TcpIpRecvIPV6;
+                        kernelSession.Source.Kernel.UdpIpRecv += Kernel_UdpIpRecv;
+                        kernelSession.Source.Kernel.UdpIpRecvIPV6 += Kernel_UdpIpRecvIPV6;
 
-                kernelSession.Source.Kernel.TcpIpSend += Kernel_TcpIpSend;
-                kernelSession.Source.Kernel.TcpIpSendIPV6 += Kernel_TcpIpSendIPV6;
-                kernelSession.Source.Kernel.UdpIpSend += Kernel_UdpIpSend;
-                kernelSession.Source.Kernel.UdpIpSendIPV6 += Kernel_UdpIpSendIPV6;
+                        kernelSession.Source.Kernel.TcpIpSend += Kernel_TcpIpSend;
+                        kernelSession.Source.Kernel.TcpIpSendIPV6 += Kernel_TcpIpSendIPV6;
+                        kernelSession.Source.Kernel.UdpIpSend += Kernel_UdpIpSend;
+                        kernelSession.Source.Kernel.UdpIpSendIPV6 += Kernel_UdpIpSendIPV6;
 
-                kernelSession.Source.Process();
-                
+                        kernelSession.Source.Process();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                }
             });
         }
 
@@ -548,10 +563,10 @@ namespace OpenNetMeter.Models
 
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
 
-        public async void Dispose()
+        public void Dispose()
         {
-            await StopNetworkSpeed();
-            StopNetworkCapture();
+            if (IsNetworkOnline != "Disconnected")
+                EndNetworkProcess();
         }
     }
 }

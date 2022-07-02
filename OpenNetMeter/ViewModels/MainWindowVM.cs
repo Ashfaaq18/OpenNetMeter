@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 using System.Windows.Input;
 using OpenNetMeter.Models;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Linq;
 
 namespace OpenNetMeter.ViewModels
@@ -123,7 +120,13 @@ namespace OpenNetMeter.ViewModels
                     {
                         if (netProc.IsNetworkOnline != "Disconnected")
                         {
-                            netProc.SetNetworkStatus(false);
+                            netProc.EndNetworkProcess();
+                            duhvm.DeleteAllDBFiles();
+                            netProc.StartNetworkProcess();
+                        }
+                        else
+                        {
+                            duhvm.DeleteAllDBFiles();
                         }
                         svm.DeleteAllFiles = false;
                     }
@@ -222,9 +225,12 @@ namespace OpenNetMeter.ViewModels
                     if(netProc.IsNetworkOnline == "Disconnected")
                     {
                         NetworkStatus = "Disconnected";
-                        foreach (var row in dudvm.MyProcesses.ToList())
+                        if(dudvm.MyProcesses.Count() > 0)
                         {
-                            dudvm.MyProcesses.Remove(row.Key);
+                            foreach (var row in dudvm.MyProcesses.ToList())
+                            {
+                                dudvm.MyProcesses.Remove(row.Key);
+                            }
                         }
                         dusvm.Graph.DrawClear();
                         dusvm.TodayDownloadData = 0;

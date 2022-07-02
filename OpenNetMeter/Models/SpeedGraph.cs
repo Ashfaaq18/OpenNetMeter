@@ -267,6 +267,12 @@ namespace OpenNetMeter.Models
 
                 UploadLines[i].From = new Point(Xstart, ConvToGraphCoords(0, GraphHeight));  
                 UploadLines[i].To = new Point(Xstart, ConvToGraphCoords(0, GraphHeight));
+
+                DownloadPoints[i].From = new Point(0, 0);
+                DownloadPoints[i].To = new Point(0, 0);
+
+                UploadPoints[i].From = new Point(0, 0);
+                UploadPoints[i].To = new Point(0, 0);
             }
         }
 
