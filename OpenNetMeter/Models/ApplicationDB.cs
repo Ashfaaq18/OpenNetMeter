@@ -17,7 +17,7 @@ namespace OpenNetMeter.Models
         /// <param name="dbName"></param>
         public ApplicationDB(string dBFileName, string[]? extraParams = null)
         {
-            dB = new Database(GetFilePath(), TrimString(dBFileName), extraParams);
+            dB = new Database(GetFilePath(), dBFileName, extraParams);
         }
 
         private string TrimString(string str)

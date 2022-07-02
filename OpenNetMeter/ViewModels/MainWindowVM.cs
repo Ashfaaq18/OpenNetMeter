@@ -66,7 +66,7 @@ namespace OpenNetMeter.ViewModels
             Settings
         }
 
-        public MainWindowVM(MiniWidgetVM mwvm_DataContext, ConfirmationDialogVM cD_DataContext) //runs once during app init
+        public MainWindowVM(MiniWidgetVM mw_DataContext, ConfirmationDialogVM cd_DataContext) //runs once during app init
         {
             DownloadSpeed = 0;
             UploadSpeed = 0;
@@ -75,11 +75,12 @@ namespace OpenNetMeter.ViewModels
 
             networkStatus = "";
 
-            mwvm = mwvm_DataContext;
+            mwvm = mw_DataContext;
             dusvm = new DataUsageSummaryVM();
             duhvm = new DataUsageHistoryVM();
             dudvm = new DataUsageDetailedVM();
-            svm = new SettingsVM();
+            svm = new SettingsVM(cd_DataContext);
+            svm.PropertyChanged += Svm_PropertyChanged;
 
             netProc = new NetworkProcess();
             netProc.PropertyChanged += NetProc_PropertyChanged;
@@ -110,7 +111,26 @@ namespace OpenNetMeter.ViewModels
             }
 
             //assign basecommand
-            SwitchTabCommand = new BaseCommand(SwitchTab);
+            SwitchTabCommand = new BaseCommand(SwitchTab, true);
+        }
+
+        private void Svm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "DeleteAllFiles":
+                    if (svm.DeleteAllFiles)
+                    {
+                        if (netProc.IsNetworkOnline != "Disconnected")
+                        {
+                            netProc.SetNetworkStatus(false);
+                        }
+                        svm.DeleteAllFiles = false;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void UpdateData()
@@ -191,7 +211,6 @@ namespace OpenNetMeter.ViewModels
 
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-
             Stopwatch sw = new Stopwatch();
             sw.Start();
             switch (e.PropertyName)
@@ -232,7 +251,7 @@ namespace OpenNetMeter.ViewModels
             Debug.WriteLine($"elapsed time (NetProc): {sw.ElapsedMilliseconds}");
         }
 
-        private void SwitchTab(object obj)
+        private void SwitchTab(object? obj)
         {
             string? tab = obj as string;
             switch (tab)

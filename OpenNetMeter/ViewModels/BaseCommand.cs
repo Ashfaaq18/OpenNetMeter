@@ -5,40 +5,24 @@ namespace OpenNetMeter.ViewModels
 {
     public class BaseCommand : ICommand
     {
-        private readonly Predicate<object?> canExecute;
-        private readonly Action<object?> action;
-
-        public BaseCommand(Action<object> action)
-            : this(action, null)
+        private Action<object?> action;
+        private bool canExecute;
+        public BaseCommand(Action<object?> action, bool canExecute)
         {
+            this.action = action;
+            this.canExecute = canExecute;
         }
 
-        public BaseCommand(Action<object>? action, Predicate<object>? canExecute)
+        public bool CanExecute(object? parameter)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException("action");
-            }
-
-            this.action = action!;
-            this.canExecute = canExecute!;
+            return canExecute;
         }
 
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter)
-        {
-            return canExecute == null ? true : canExecute(parameter);
-        }
-
         public void Execute(object? parameter)
         {
             action(parameter);
-        }
-
-        public void DoCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, null!);
         }
     }
 }

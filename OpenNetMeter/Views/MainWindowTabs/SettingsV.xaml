@@ -25,7 +25,6 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition/>
-                    <ColumnDefinition Width="40"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
@@ -39,30 +38,10 @@
 
                 <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
-                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="5">
-                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Monitor these networks</TextBlock>
-                    <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11" Style="{StaticResource FontColor2}">(set to public for internet only)</TextBlock>
-                    <StackPanel Orientation="Horizontal"  Margin="0,5" >
-                        <TextBlock Style="{StaticResource FontColor1}">Network:</TextBlock>
-                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Private</RadioButton>
-                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Public</RadioButton>
-                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Both</RadioButton>
-                    </StackPanel>
-                </StackPanel>
-
-                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
-                </Border>
-                <CheckBox x:Name="DarkMode"  Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDarkMode}"></CheckBox>
-                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
-                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Dark mode</TextBlock>
-                </StackPanel>
-
-                <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="1" Margin="2" Style="{StaticResource BorderStyle1}">
-                </Border>
-                <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Grid.RowSpan="1" Orientation="Vertical" VerticalAlignment="Top" Margin="5">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5,5" >
-                        <TextBlock TextDecorations="Underline" Style="{StaticResource FontColor1}">Mini Widget</TextBlock>
-                        <TextBlock ToolTipService.InitialShowDelay="100" ToolTipService.ShowDuration="10000" Style="{StaticResource FontColor4}" Margin="5,0">
+                <CheckBox x:Name="miniWidget"  Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding MiniWidgetTransparent}"></CheckBox>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Transparent Mini Widget 
+                    <TextBlock ToolTipService.InitialShowDelay="100" ToolTipService.ShowDuration="10000" Style="{StaticResource FontColor4}" Margin="5,0">
                             <TextBlock.ToolTip>
                                 <TextBlock>
                                     To hide mini widget, right click it and select hide
@@ -72,25 +51,48 @@
                             </TextBlock.ToolTip>
                             ?
                         </TextBlock>
+                    </TextBlock>
+                </StackPanel>
+
+                
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <CheckBox x:Name="DarkMode"  Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDarkMode}"></CheckBox>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Dark mode</TextBlock>
+                </StackPanel>
+
+                <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Vertical" Margin="5">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Monitor these networks</TextBlock>
+                    <TextBlock  HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Style="{StaticResource FontColor2}">(set to public for internet only)</TextBlock>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,5" >
+                        <TextBlock Style="{StaticResource FontColor1}">Network:</TextBlock>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Private</RadioButton>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Public</RadioButton>
+                        <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Both</RadioButton>
                     </StackPanel>
-                    
-                    <!--<StackPanel Orientation="Horizontal"  Margin="5,5" >
-                        <TextBlock Style="{StaticResource FontColor1}">Alignment:</TextBlock>
-                        <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Horizontal</RadioButton>
-                        <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Vertical</RadioButton>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal"  Margin="5,5" >
-                        <TextBlock Style="{StaticResource FontColor1}">Content:</TextBlock>
-                        <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Speed</RadioButton>
-                        <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Volume</RadioButton>
-                        <RadioButton Margin="5,0" Style="{StaticResource FontColor1}">Both</RadioButton>
-                    </StackPanel>-->
-                    <CheckBox Style="{StaticResource FontColor1}" Margin="5,2" IsChecked="{Binding MiniWidgetTransparent}">
-                        <TextBlock Margin="5,0,0,0">Transparent Background</TextBlock>
-                    </CheckBox>
-                    
                 </StackPanel>
                 
+                <Border Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <StackPanel Grid.Row="1" Grid.Column="3" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Delete all saved profiles</TextBlock>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,5" >
+                        <Button Height="24" Width="100" Margin="16,0" Command="{Binding ResetBtn}" Style="{StaticResource ButtonColor}">
+                            <TextBlock FontFamily="Segoe UI" Text="DELETE ALL" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                    <Setter Property="BorderBrush" Value="#888888"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+
             </Grid>
         </Border>
     </Grid>

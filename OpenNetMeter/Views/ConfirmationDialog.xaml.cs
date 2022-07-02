@@ -16,6 +16,11 @@ namespace OpenNetMeter.Views
             DataContext = new ConfirmationDialogVM();
             parentWindowRect = parentWindowRect_param;
         }
+        
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.DragMove();
+        }
 
         public void SetParentWindowRect(Rect parentWindowRect_param)
         {

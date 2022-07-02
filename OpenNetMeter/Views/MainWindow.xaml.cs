@@ -38,13 +38,17 @@ namespace OpenNetMeter.Views
                 return true;
         }
 
+        //--------- windows ------------//
         private ConfirmationDialog? confDialog;
         private AboutWindow? aboutWin;
         private MiniWidgetV? miniWidget;
         private MainWindowVM? mainWin;
+
+        //--------- timers ------------//
         private DispatcherTimer resizeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
         private DispatcherTimer relocationTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 200), IsEnabled = false };
 
+        //--------- tray icon -----------//
         private Forms.NotifyIcon? trayIcon;
         private bool balloonShow;
 
@@ -59,7 +63,7 @@ namespace OpenNetMeter.Views
                 miniWidget = new MiniWidgetV(this);
                 mainWin = new MainWindowVM((MiniWidgetVM)miniWidget.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = mainWin;
-                this.Closing += MainWindow_Closing;
+                
                 //initialize window position and size
                 AllWinPosAndSizeInit();
 
@@ -78,7 +82,9 @@ namespace OpenNetMeter.Views
                 cm.Items.Add("Exit", null, Cm_Exit_Click);
                 trayIcon.ContextMenuStrip = cm;
 
-                Loaded += MainWindow_Loaded;
+                //------- events ----------//
+                this.Closing += MainWindow_Closing;
+                this.Loaded += MainWindow_Loaded;
             }
         }
 
@@ -201,7 +207,6 @@ namespace OpenNetMeter.Views
 
         private void Cm_Exit_Click(object? sender, EventArgs e)
         {
-
             confDialog?.Close();
             miniWidget?.Close();
             aboutWin?.Close();

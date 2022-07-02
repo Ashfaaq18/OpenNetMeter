@@ -101,9 +101,6 @@ namespace OpenNetMeter.Models
             //subscribe address network address change
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
 
-            //capture network packets
-            CaptureNetworkPackets();
-
             //check for online network addresses
             NetworkChange_NetworkAddressChanged(null, null);
         }
@@ -231,7 +228,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        private async void SetNetworkStatus(bool isOnline)
+        public async void SetNetworkStatus(bool isOnline)
         {
             if (isOnline)
             {
@@ -258,10 +255,14 @@ namespace OpenNetMeter.Models
                     }
                 }
                 speedTask = CaptureNetworkSpeed(); //start logging the speed
+                CaptureNetworkPackets();
             }
             else //if network is disconnected
             {
                 IsNetworkOnline = "Disconnected";
+
+                await StopNetworkSpeed();
+                StopNetworkCapture();
 
                 MyProcesses?.Clear();
                 //reset speed counters
@@ -269,8 +270,6 @@ namespace OpenNetMeter.Models
                 CurrentSessionUploadData = 0;
                 UploadSpeed = 0;
                 DownloadSpeed = 0;
-
-                await StopNetworkSpeed();
             }
         }
 
@@ -326,6 +325,20 @@ namespace OpenNetMeter.Models
                 Debug.WriteLine($"Stop network speed error: {ex.Message}");
             }
 
+        }
+
+        private void StopNetworkCapture()
+        {
+            try
+            {
+                kernelSession?.Dispose();
+                Debug.WriteLine("Operation Cancelled : Network capture");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Stop network capture error: {ex.Message}");
+            }
+            
         }
 
         //---------------------------------- NETWORK PACKETS ------------------------------------//
@@ -538,7 +551,7 @@ namespace OpenNetMeter.Models
         public async void Dispose()
         {
             await StopNetworkSpeed();
-            kernelSession?.Dispose();
+            StopNetworkCapture();
         }
     }
 }

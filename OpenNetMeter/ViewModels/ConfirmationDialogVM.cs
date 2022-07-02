@@ -21,20 +21,14 @@ namespace OpenNetMeter.ViewModels
                 OnPropertyChanged("IsVisible");
             }
         }
-        public string? ButtonVal { get; set; }
+
+        public string? DialogMessage { get; set; }
 
         public ICommand? BtnCommand { get; set; }
-
-        private DataUsageDetailedVM? vmObj;
 
         public ConfirmationDialogVM()
         {
             IsVisible = Visibility.Hidden;
-        }
-
-        public void SetVM(in object vm)
-        {
-            vmObj = vm as DataUsageDetailedVM;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -56,7 +56,7 @@ namespace OpenNetMeter.ViewModels
             watcher.EnableRaisingEvents = true;
 
             //set button command
-            FilterBtn = new BaseCommand(Filter);
+            FilterBtn = new BaseCommand(Filter, true);
         }
 
         private void DataUsageHistoryVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -87,7 +87,7 @@ namespace OpenNetMeter.ViewModels
             });
         }
 
-        private void Filter(object obj)
+        private void Filter(object? obj)
         {
             MyProcesses.Clear();
             //show confirmation dialog
@@ -126,6 +126,22 @@ namespace OpenNetMeter.ViewModels
             }
             if (Profiles?.Count > 0)
                 SelectedProfile = Profiles?[0];
+        }
+
+        public void DeleteAllDBFiles()
+        {
+            DirectoryInfo? dir = new DirectoryInfo(ApplicationDB.GetFilePath());
+            foreach (FileInfo? file in dir.GetFiles("*.sqlite"))
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch (IOException ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

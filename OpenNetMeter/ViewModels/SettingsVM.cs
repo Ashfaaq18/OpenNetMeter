@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Windows.Input;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 
@@ -139,9 +140,25 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        public bool deleteAllFiles;
+        public bool DeleteAllFiles
+        {
+            get { return deleteAllFiles; }
+            set
+            {
+                if (deleteAllFiles != value)
+                {
+                    deleteAllFiles = value;
+                    if(value)
+                        OnPropertyChanged("DeleteAllFiles");
+                }
+            }
+        }
+        public ICommand ResetBtn { get; set; }
 
+        private ConfirmationDialogVM cdvm;
 
-        public SettingsVM()
+        public SettingsVM(ConfirmationDialogVM cdvm_ref)
         {
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3);
@@ -162,6 +179,26 @@ namespace OpenNetMeter.ViewModels
 
             //DarkMode setting
             SetDarkMode = Properties.Settings.Default.DarkMode;
+
+            ResetBtn = new BaseCommand(ResetData, true);
+            cdvm = cdvm_ref;
+            cdvm.BtnCommand = new BaseCommand(ResetDataYesOrNo, true);
+            cdvm.DialogMessage = "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
+            DeleteAllFiles = false;
+        }
+        private void ResetData(object? obj)
+        {
+            cdvm.IsVisible = System.Windows.Visibility.Visible;
+        }
+
+        private void ResetDataYesOrNo(object? obj)
+        {
+            if(obj != null)
+            {
+                if ((string)obj == "Yes")
+                    DeleteAllFiles = true;
+                cdvm.IsVisible = System.Windows.Visibility.Hidden;
+            }
         }
 
         // --------- Task Scheduler stuff ------------------//
