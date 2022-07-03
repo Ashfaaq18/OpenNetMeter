@@ -7,10 +7,10 @@ A simple program to monitor your network/data usage. Made for the average window
 
 This program provides the following features,
 
-- network speed
-- current connection's session data usage 
-- total data usage since the detection of a new connection.
-- table of all the individual processes which consumed this data.
+- network speed.
+- current connection's session data usage.
+- Data usage for today.
+- retrieve data usage up to the past 60 days and anywhere in between in detailed format.
 - A mini widget to show the network speed (can be placed over the taskbar). 
 
 ## Installation
@@ -30,15 +30,21 @@ This program provides the following features,
 
 ### Summary tab
 
-![4](https://user-images.githubusercontent.com/27722888/164838606-8b4144aa-1f51-4d5e-891d-a7a98e6e4fed.png)
+![image](https://user-images.githubusercontent.com/27722888/177024162-66ada1ab-05a8-4cea-9903-68eb0abad834.png)
 
 ### Detailed tab
 
-![5](https://user-images.githubusercontent.com/27722888/164840174-b917c3ed-7cc9-4c2c-aaab-3fe5d7064265.png)
+![image](https://user-images.githubusercontent.com/27722888/177024175-952117c6-804e-492d-b5ab-073c766d0bca.png)
+
+### History tab
+
+*can retrieve data up to the past 60 days
+
+![image](https://user-images.githubusercontent.com/27722888/177024251-003625cf-412e-49a8-aff5-e556ea15e80d.png)
 
 ### Darkmode
 
-![image](https://user-images.githubusercontent.com/27722888/164841661-a104f40c-442c-4c87-9408-da1793d25b77.png)
+![image](https://user-images.githubusercontent.com/27722888/177024169-137f804d-a3f6-4cb3-8c9a-6e068357fe2c.png)
 
 ### Network speed mini widget
 
