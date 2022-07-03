@@ -38,7 +38,7 @@ This program provides the following features,
 
 ### History tab
 
-*can retrieve data up to the past 60 days
+*can retrieve data recorded by this application up to the past 60 days
 
 ![image](https://user-images.githubusercontent.com/27722888/177024251-003625cf-412e-49a8-aff5-e556ea15e80d.png)
 
