@@ -96,6 +96,8 @@ namespace OpenNetMeter.ViewModels
             {
                 case "SelectedProfile":
                     MyProcesses.Clear();
+                    TotalDownloadData = 0;
+                    TotalUploadData = 0;
                     break;
                 default:
                     break;
