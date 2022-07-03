@@ -24,5 +24,12 @@ namespace OpenNetMeter.Views
         {
             InitializeComponent();
         }
+
+        private void AllAppsData_LayoutUpdated(object sender, EventArgs e)
+        {
+            Total.Width = AllAppsData.Columns[0].ActualWidth;
+            TotalDataRecv.Width = AllAppsData.Columns[1].ActualWidth;
+            TotalDataSent.Width = AllAppsData.Columns[2].ActualWidth;
+        }
     }
 }

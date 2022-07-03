@@ -36,6 +36,35 @@ namespace OpenNetMeter.ViewModels
 
         public ObservableCollection<string>? Profiles { get; set; }
         public ObservableCollection<MyProcess> MyProcesses { get; set; }
+
+        private long totalDownloadData;
+        public long TotalDownloadData 
+        {
+            get { return totalDownloadData; }
+            set
+            {
+                if (value != totalDownloadData)
+                {
+                    totalDownloadData = value;
+                    OnPropertyChanged("TotalDownloadData");
+                }
+            }
+        }
+
+        private long totalUploadData;
+        public long TotalUploadData
+        {
+            get { return totalUploadData; }
+            set
+            {
+                if (value != totalUploadData)
+                {
+                    totalUploadData = value;
+                    OnPropertyChanged("TotalUploadData");
+                }
+            }
+        }
+
         public ICommand FilterBtn { get; set; }
 
         private FileSystemWatcher watcher;
@@ -45,6 +74,8 @@ namespace OpenNetMeter.ViewModels
             DateEnd = DateTime.Today;
             DateMax = DateTime.Today;
             DateMin = DateTime.Today.AddDays(-1 * ApplicationDB.DataStoragePeriodInDays);
+            TotalDownloadData = 0;
+            TotalUploadData = 0;
 
             PropertyChanged += DataUsageHistoryVM_PropertyChanged;
 
@@ -90,6 +121,8 @@ namespace OpenNetMeter.ViewModels
         private void Filter(object? obj)
         {
             MyProcesses.Clear();
+            TotalDownloadData = 0;
+            TotalUploadData = 0;
             //show confirmation dialog
             Debug.WriteLine($"Filter {DateStart.ToString("d")} | {DateEnd.ToString("d")}");
             if(SelectedProfile != null)
@@ -107,6 +140,9 @@ namespace OpenNetMeter.ViewModels
                                     MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
                                 else
                                     MyProcesses.Add(new MyProcess("System", (long)dataStats[i][1], (long)dataStats[i][2], null));
+
+                                TotalDownloadData += (long)dataStats[i][1];
+                                TotalUploadData += (long)dataStats[i][2];
                             }
                             //Debug.WriteLine($"processID: {dataStats[i][0]}, dataRecieved: {dataStats[i][1]}, dataSent: {dataStats[i][2]}");
                         }

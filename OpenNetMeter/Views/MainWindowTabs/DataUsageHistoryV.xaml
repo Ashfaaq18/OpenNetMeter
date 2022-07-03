@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition/>
+            <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Usage of</Label>
@@ -37,12 +38,23 @@
             </Button> 
            
         </StackPanel>
-        <DataGrid Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
+        <DataGrid LayoutUpdated="AllAppsData_LayoutUpdated" Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" CellStyle="{StaticResource DGCellStyle1}"/>
-                <DataGridTextColumn Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
-                <DataGridTextColumn Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn x:Name="DG_Name" Header="Name" Binding="{Binding Name}" CellStyle="{StaticResource DGCellStyle1}"/>
+                <DataGridTextColumn x:Name="DG_DataRecv" Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn x:Name="DG_DataSent" Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
             </DataGrid.Columns>
         </DataGrid>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Style="{StaticResource FooterStyle}">
+            <Border Style="{StaticResource FooterTextBorder}">
+                <TextBlock x:Name="Total" Style="{StaticResource FooterTextStyle}" >Total</TextBlock>
+            </Border>
+            <Border Style="{StaticResource FooterTextBorder}">
+                <TextBlock x:Name="TotalDataRecv" Style="{StaticResource FooterTextStyle}" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes}}"></TextBlock>
+            </Border>
+            <Border Style="{StaticResource FooterTextBorder}">
+                <TextBlock x:Name="TotalDataSent" Style="{StaticResource FooterTextStyle}" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes}}"></TextBlock>
+            </Border>
+        </StackPanel>
     </Grid>
 </UserControl>

@@ -433,8 +433,38 @@
                                 StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
     </Grid>
 
-    <!-- Detailed view page -->
+    <!-- Detailed and History view page -->
 
+    <Style TargetType="{x:Type StackPanel}" x:Key="FooterStyle">
+        <Setter Property="Background" Value="#c0e3da" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#367061" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type Border}" x:Key="FooterTextBorder">
+        <Setter Property="BorderBrush" Value="#999999"></Setter>
+        <Setter Property="BorderThickness" Value="0,0,1,0"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="BorderBrush" Value="#666666"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
+    <Style TargetType="{x:Type TextBlock}" x:Key="FooterTextStyle">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="TextAlignment" Value="Right"/>
+        <Setter Property="Padding" Value="0,0,5,0"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
     <Style TargetType="{x:Type DataGrid}" x:Key="DGHeaderStyle">
         <Setter Property="ColumnHeaderStyle" Value="{DynamicResource DGCHeaderStyle}"/>
         <Setter Property="RowStyle" Value="{DynamicResource DGRowStyle}"/>
