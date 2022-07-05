@@ -8,7 +8,7 @@
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
     <Version>0.11.0</Version>
     <AssemblyName>OpenNetMeter</AssemblyName>
-    <StartupObject></StartupObject>
+    <StartupObject>OpenNetMeter.App</StartupObject>
     <Win32Resource />
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PlatformTarget>AnyCPU</PlatformTarget>

@@ -32,7 +32,9 @@ namespace OpenNetMeter.Models
         {
             string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
             string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            return Path.Combine(path, appName ?? "OpenNetMeter");
+            path = Path.Combine(path, appName ?? "OpenNetMeter");
+            Directory.CreateDirectory(path);
+            return path;
         }
 
         //

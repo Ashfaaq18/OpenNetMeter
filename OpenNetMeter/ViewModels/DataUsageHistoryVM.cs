@@ -138,10 +138,7 @@ namespace OpenNetMeter.ViewModels
                         {
                             if(!Convert.IsDBNull(dataStats[i][0]) && !Convert.IsDBNull(dataStats[i][1]) && !Convert.IsDBNull(dataStats[i][2]))
                             {
-                                if ((string)dataStats[i][0] != "")
-                                    MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
-                                else
-                                    MyProcesses.Add(new MyProcess("System", (long)dataStats[i][1], (long)dataStats[i][2], null));
+                                MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
 
                                 TotalDownloadData += (long)dataStats[i][1];
                                 TotalUploadData += (long)dataStats[i][2];

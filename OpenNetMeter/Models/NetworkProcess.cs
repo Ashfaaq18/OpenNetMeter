@@ -487,30 +487,36 @@ namespace OpenNetMeter.Models
         {
             CurrentSessionDownloadData += (long)size;
 
-            if (IsBufferTime)
-                Debug.WriteLine("Recv buffer");
+            //if (IsBufferTime)
+            //    Debug.WriteLine("Recv buffer");
+
+            if (name == "")
+                name = "System";
 
             MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
             MyProcesses[name]!.CurrentDataRecv += (long)size;
             MyProcesses[name]!.CurrentDataSend += 0;
 
-            if (size == 0)
-                Debug.WriteLine($"but whyyy {name} | recv");
+            //if (size == 0)
+            //    Debug.WriteLine($"but whyyy {name} | recv");
         }
 
         private void Send(string name, int size)
         {
             CurrentSessionUploadData += (long)size;
 
-            if (IsBufferTime)
-                Debug.WriteLine("send buffer");
+            //if (IsBufferTime)
+            //    Debug.WriteLine("send buffer");
+
+            if (name == "")
+                name = "System";
 
             MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
             MyProcesses[name]!.CurrentDataRecv += 0;
             MyProcesses[name]!.CurrentDataSend += (long)size;
 
-            if (size == 0)
-                Debug.WriteLine($"but whyyy {name} | send");
+            //if (size == 0)
+            //    Debug.WriteLine($"but whyyy {name} | send");
         }
 
         private bool IsIPv4IPv6Private(IPAddress ip)
