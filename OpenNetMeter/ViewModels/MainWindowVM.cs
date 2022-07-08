@@ -139,7 +139,7 @@ namespace OpenNetMeter.ViewModels
         private void UpdateData()
         {
             date2 = DateTime.Now;
-            // -------------- Set download speed across all vms -------------- //
+            // -------------- Set network speed across all vms -------------- //
 
             //main window speed variables
             DownloadSpeed = netProc.DownloadSpeed;
@@ -168,9 +168,8 @@ namespace OpenNetMeter.ViewModels
             dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
 
             // -------------- Update current session details -------------- //
-            if (netProc.MyProcesses != null && dudvm.MyProcesses != null)
+            if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dudvm.MyProcesses != null)
             {
-                netProc.IsBufferTime = true;
                 //Debug.WriteLine("Buffer var: Start");
                 using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
                 {
@@ -178,6 +177,9 @@ namespace OpenNetMeter.ViewModels
                         Debug.WriteLine("Error: Create table");
                     else
                     {
+                        netProc.IsBufferTime = true;
+                        //while the below loop is running, the data packet info will be recorded
+                        //to the buffer dictionary (netProc.MyProcessesBuffer)
                         foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
                         {
                             dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
@@ -205,8 +207,38 @@ namespace OpenNetMeter.ViewModels
                         }
                         //Thread.Sleep(800);
                         netProc.MyProcesses.Clear();
+                        netProc.IsBufferTime = false;
+                        //the data saved to the buffer dictionary is now extracted here.
+                        //The data packet info will now be recorded back into the normal dictionary (netProc.MyProcesses)
+                        foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcessesBuffer) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
+                        {
+                            dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
+                            if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
+                            {
+                                Debug.WriteLine($"Both zero {app.Key}");
+                            }
+                            dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
+                            dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
+
+                            dB.InsertUniqueRow_ProcessTable(app.Key);
+
+                            long dateID = dB.GetID_DateTable(DateTime.Today);
+                            //long dateID = dB.GetID_DateTable(DateTime.Today.AddDays(-3));
+                            long processID = dB.GetID_ProcessTable(app.Key);
+
+                            if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID,
+                                dudvm.MyProcesses[app.Key].CurrentDataRecv,
+                                dudvm.MyProcesses[app.Key].CurrentDataSend) < 1)
+                            {
+                                dB.UpdateRow_ProcessDateTable(processID, dateID,
+                                    app.Value!.CurrentDataRecv,
+                                    app.Value!.CurrentDataSend);
+                            }
+                        }
+
+                        netProc.MyProcessesBuffer.Clear();
                     }
-                    netProc.IsBufferTime = false;
+                    
                 }       
                 // Debug.WriteLine("Buffer var: Stop");
             }

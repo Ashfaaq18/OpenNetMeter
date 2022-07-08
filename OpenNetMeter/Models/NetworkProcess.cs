@@ -300,10 +300,15 @@ namespace OpenNetMeter.Models
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
+                Debug.WriteLine("WOah woah boi slow down there");
             }
             catch (OperationCanceledException ex)
             {
                 Debug.WriteLine($"cancel speed token invoked: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Capture network speed error: {ex.Message}");
             }
         }
 
@@ -487,15 +492,21 @@ namespace OpenNetMeter.Models
         {
             CurrentSessionDownloadData += (long)size;
 
-            //if (IsBufferTime)
-            //    Debug.WriteLine("Recv buffer");
-
             if (name == "")
                 name = "System";
 
-            MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
-            MyProcesses[name]!.CurrentDataRecv += (long)size;
-            MyProcesses[name]!.CurrentDataSend += 0;
+            if(IsBufferTime)
+            {
+                MyProcessesBuffer!.TryAdd(name, new MyProcess(name, 0, 0, null));
+                MyProcessesBuffer[name]!.CurrentDataRecv += (long)size;
+                MyProcessesBuffer[name]!.CurrentDataSend += 0;
+            }
+            else
+            {
+                MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
+                MyProcesses[name]!.CurrentDataRecv += (long)size;
+                MyProcesses[name]!.CurrentDataSend += 0;
+            }
 
             //if (size == 0)
             //    Debug.WriteLine($"but whyyy {name} | recv");
@@ -505,15 +516,21 @@ namespace OpenNetMeter.Models
         {
             CurrentSessionUploadData += (long)size;
 
-            //if (IsBufferTime)
-            //    Debug.WriteLine("send buffer");
-
             if (name == "")
                 name = "System";
 
-            MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
-            MyProcesses[name]!.CurrentDataRecv += 0;
-            MyProcesses[name]!.CurrentDataSend += (long)size;
+            if (IsBufferTime)
+            {
+                MyProcessesBuffer!.TryAdd(name, new MyProcess(name, 0, 0, null));
+                MyProcessesBuffer[name]!.CurrentDataRecv += 0;
+                MyProcessesBuffer[name]!.CurrentDataSend += (long)size;
+            }
+            else
+            {
+                MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
+                MyProcesses[name]!.CurrentDataRecv += 0;
+                MyProcesses[name]!.CurrentDataSend += (long)size;
+            }
 
             //if (size == 0)
             //    Debug.WriteLine($"but whyyy {name} | send");
