@@ -457,19 +457,51 @@
     <Style TargetType="{x:Type TextBlock}" x:Key="FooterTextStyle">
         <Setter Property="Foreground" Value="Black"/>
         <Setter Property="TextAlignment" Value="Right"/>
-        <Setter Property="Padding" Value="0,0,5,0"/>
+        <Setter Property="Padding" Value="8,2"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
                 <Setter Property="Foreground" Value="White"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
+
+    <Style x:Key="DGCHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="TextBlock.Padding" Value="8 2"/>
+        <Setter Property="Background" Value="#c0e3da" />
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="#999999"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#367061" />
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderBrush" Value="#999999"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DGCHeaderStyle1" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DGCHeaderStyle}">
+        <Style.Setters>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style.Setters>
+    </Style>
+
+    <Style x:Key="DGCHeaderStyle2" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DGCHeaderStyle}">
+        <Style.Setters>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style.Setters>
+    </Style>
     
     <Style TargetType="{x:Type DataGrid}" x:Key="DGHeaderStyle">
-        <Setter Property="ColumnHeaderStyle" Value="{DynamicResource DGCHeaderStyle}"/>
         <Setter Property="RowStyle" Value="{DynamicResource DGRowStyle}"/>
         <Setter Property="VerticalGridLinesBrush" Value="#999999"/>
         <Setter Property="HorizontalGridLinesBrush" Value="#999999"/>
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource DGCHeaderStyle}"/>
         <Setter Property="AlternationCount" Value="2"/>
         <Setter Property="RowHeaderWidth" Value="1"/>
         <Setter Property="BorderBrush" Value="#999999"/>
@@ -484,27 +516,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    <Style x:Key="DGCHeaderStyle" TargetType="DataGridColumnHeader">
 
-        <Setter Property="Height" Value="30"/>
-        <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="Padding" Value="5,2,5,2"/>
-        <Setter Property="Background" Value="#c0e3da" />
-        <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="BorderBrush" Value="#999999"/>
-        <Setter Property="BorderThickness" Value="0,0,1,1"/>
-        
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#367061" />
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="BorderBrush" Value="#999999"/>
-            </DataTrigger>
-        </Style.Triggers>
-        
-    </Style>
     <Style x:Key="DGRowStyle" TargetType="DataGridRow">
         <Setter Property="Height" Value="25"/>
         <Setter Property="Foreground" Value="Black"/>
@@ -535,10 +547,24 @@
 
         </Style.Triggers>
     </Style>
-    <Style x:Key="DGCellStyle1" TargetType="DataGridCell">
+
+    <Style x:Key="DGCellStyle" TargetType="DataGridCell">
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridCell}">
+                    <Border Padding="{TemplateBinding Padding}">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="DGCellStyle1" TargetType="DataGridCell" BasedOn="{StaticResource DGCellStyle}">
         <Setter Property="TextBlock.TextAlignment" Value="Left" />
     </Style>
-    <Style x:Key="DGCellStyle2" TargetType="DataGridCell">
+    <Style x:Key="DGCellStyle2" TargetType="DataGridCell" BasedOn="{StaticResource DGCellStyle}">
         <Setter Property="TextBlock.TextAlignment" Value="Right" />
     </Style>
     

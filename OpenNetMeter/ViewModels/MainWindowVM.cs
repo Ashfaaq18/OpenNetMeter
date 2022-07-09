@@ -177,58 +177,67 @@ namespace OpenNetMeter.ViewModels
                         Debug.WriteLine("Error: Create table");
                     else
                     {
+                        foreach (KeyValuePair<string, MyProcess_Big> app in dudvm.MyProcesses)
+                        {
+                            dudvm.MyProcesses[app.Key].CurrentDataRecv = 0;
+                            dudvm.MyProcesses[app.Key].CurrentDataSend = 0;
+                        }
+
                         netProc.IsBufferTime = true;
                         //while the below loop is running, the data packet info will be recorded
                         //to the buffer dictionary (netProc.MyProcessesBuffer)
-                        foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
+                        foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
                         {
-                            dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
+                            dudvm.MyProcesses.TryAdd(app.Key, new MyProcess_Big(app.Key, 0, 0, 0, 0));
                             if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
                             {
                                 Debug.WriteLine($"Both zero {app.Key}");
                             }
-                            dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
-                            dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
+                            dudvm.MyProcesses[app.Key].CurrentDataRecv = app.Value!.CurrentDataRecv;
+                            dudvm.MyProcesses[app.Key].CurrentDataSend = app.Value!.CurrentDataSend;
+                            dudvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
+                            dudvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
 
                             dB.InsertUniqueRow_ProcessTable(app.Key);
 
                             long dateID = dB.GetID_DateTable(DateTime.Today);
-                            //long dateID = dB.GetID_DateTable(DateTime.Today.AddDays(-3));
                             long processID = dB.GetID_ProcessTable(app.Key);
 
                             if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID, 
-                                dudvm.MyProcesses[app.Key].CurrentDataRecv,
-                                dudvm.MyProcesses[app.Key].CurrentDataSend) < 1)
+                                dudvm.MyProcesses[app.Key].TotalDataRecv,
+                                dudvm.MyProcesses[app.Key].TotalDataSend) < 1)
                             {
                                 dB.UpdateRow_ProcessDateTable(processID, dateID,
                                     app.Value!.CurrentDataRecv,
                                     app.Value!.CurrentDataSend);
                             }
                         }
-                        //Thread.Sleep(800);
+                        
                         netProc.MyProcesses.Clear();
                         netProc.IsBufferTime = false;
                         //the data saved to the buffer dictionary is now extracted here.
                         //The data packet info will now be recorded back into the normal dictionary (netProc.MyProcesses)
-                        foreach (KeyValuePair<string, MyProcess?> app in netProc.MyProcessesBuffer) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
+                        foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcessesBuffer) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
                         {
-                            dudvm.MyProcesses.TryAdd(app.Key, new MyProcess(app.Key, 0, 0, null));
+                            Debug.WriteLine("BUFFEEERRRRR!!!!!");
+                            dudvm.MyProcesses.TryAdd(app.Key, new MyProcess_Big(app.Key, 0, 0, 0, 0));
                             if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
                             {
                                 Debug.WriteLine($"Both zero {app.Key}");
                             }
                             dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
                             dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
+                            dudvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
+                            dudvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
 
                             dB.InsertUniqueRow_ProcessTable(app.Key);
 
                             long dateID = dB.GetID_DateTable(DateTime.Today);
-                            //long dateID = dB.GetID_DateTable(DateTime.Today.AddDays(-3));
                             long processID = dB.GetID_ProcessTable(app.Key);
 
                             if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID,
-                                dudvm.MyProcesses[app.Key].CurrentDataRecv,
-                                dudvm.MyProcesses[app.Key].CurrentDataSend) < 1)
+                                dudvm.MyProcesses[app.Key].TotalDataRecv,
+                                dudvm.MyProcesses[app.Key].TotalDataSend) < 1)
                             {
                                 dB.UpdateRow_ProcessDateTable(processID, dateID,
                                     app.Value!.CurrentDataRecv,
@@ -238,9 +247,7 @@ namespace OpenNetMeter.ViewModels
 
                         netProc.MyProcessesBuffer.Clear();
                     }
-                    
-                }       
-                // Debug.WriteLine("Buffer var: Stop");
+                }
             }
         }
 

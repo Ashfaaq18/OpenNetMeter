@@ -35,7 +35,7 @@ namespace OpenNetMeter.ViewModels
         }
 
         public ObservableCollection<string>? Profiles { get; set; }
-        public ObservableCollection<MyProcess> MyProcesses { get; set; }
+        public ObservableCollection<MyProcess_Small> MyProcesses { get; set; }
 
         private long totalDownloadData;
         public long TotalDownloadData 
@@ -80,7 +80,7 @@ namespace OpenNetMeter.ViewModels
             PropertyChanged += DataUsageHistoryVM_PropertyChanged;
 
             Profiles = new ObservableCollection<string>();
-            MyProcesses = new ObservableCollection<MyProcess>();
+            MyProcesses = new ObservableCollection<MyProcess_Small>();
             watcher = new FileSystemWatcher(ApplicationDB.GetFilePath(), "*.sqlite");
             watcher.Created += OnFile_Created;
             watcher.Deleted += OnFile_Deleted;
@@ -138,7 +138,7 @@ namespace OpenNetMeter.ViewModels
                         {
                             if(!Convert.IsDBNull(dataStats[i][0]) && !Convert.IsDBNull(dataStats[i][1]) && !Convert.IsDBNull(dataStats[i][2]))
                             {
-                                MyProcesses.Add(new MyProcess((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2], null));
+                                MyProcesses.Add(new MyProcess_Small((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2]));
 
                                 TotalDownloadData += (long)dataStats[i][1];
                                 TotalUploadData += (long)dataStats[i][2];

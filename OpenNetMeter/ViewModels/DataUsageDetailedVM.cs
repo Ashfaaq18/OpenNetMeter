@@ -5,11 +5,11 @@ namespace OpenNetMeter.ViewModels
 {
     public class DataUsageDetailedVM
     {
-        public ObservableConcurrentDictionary<string, MyProcess> MyProcesses { get; set; }
+        public ObservableConcurrentDictionary<string, MyProcess_Big> MyProcesses { get; set; }
 
         public DataUsageDetailedVM()
         {
-            MyProcesses = new ObservableConcurrentDictionary<string, MyProcess>();
+            MyProcesses = new ObservableConcurrentDictionary<string, MyProcess_Big>();
         }
     }
 }

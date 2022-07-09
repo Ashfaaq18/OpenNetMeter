@@ -14,9 +14,11 @@
     <Grid Style="{StaticResource BackgroundColor2}">
         <DataGrid Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" CellStyle="{StaticResource DGCellStyle1}"/>
-                <DataGridTextColumn Header="Current Data Received" Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
-                <DataGridTextColumn Header="Current Data Sent" Binding="{Binding Value.CurrentDataSend, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Value.Name}" HeaderStyle="{StaticResource DGCHeaderStyle1}" CellStyle="{StaticResource DGCellStyle1}"/>
+                <DataGridTextColumn Header="Current Data Recieved"  Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn Header="Current Data Sent" Binding="{Binding Value.CurrentDataSend, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn Header="Total Data Recieved" Binding="{Binding Value.TotalDataRecv, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn Header="Total Data Sent" Binding="{Binding Value.TotalDataSend, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -40,9 +40,9 @@
         </StackPanel>
         <DataGrid LayoutUpdated="AllAppsData_LayoutUpdated" Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn x:Name="DG_Name" Header="Name" Binding="{Binding Name}" CellStyle="{StaticResource DGCellStyle1}"/>
-                <DataGridTextColumn x:Name="DG_DataRecv" Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
-                <DataGridTextColumn x:Name="DG_DataSent" Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn x:Name="DG_Name" Header="Name" Binding="{Binding Name}" HeaderStyle="{StaticResource DGCHeaderStyle1}" CellStyle="{StaticResource DGCellStyle1}"/>
+                <DataGridTextColumn x:Name="DG_DataRecv" Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn x:Name="DG_DataSent" Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Style="{StaticResource FooterStyle}">

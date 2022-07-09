@@ -36,8 +36,8 @@ namespace OpenNetMeter.Models
 
         public string AdapterName { get; private set; }
 
-        public Dictionary<string, MyProcess?>? MyProcesses { get; private set; }
-        public Dictionary<string, MyProcess?>? MyProcessesBuffer { get; private set; }
+        public Dictionary<string, MyProcess_Small?>? MyProcesses { get; private set; }
+        public Dictionary<string, MyProcess_Small?>? MyProcessesBuffer { get; private set; }
         public bool IsBufferTime { get; set; }
 
         //---------- variables with property changers ------------//
@@ -77,8 +77,8 @@ namespace OpenNetMeter.Models
             localIPv4 = defaultIPv4;
             localIPv6 = defaultIPv6;
             AdapterName = "";
-            MyProcesses = new Dictionary<string, MyProcess?>();
-            MyProcessesBuffer = new Dictionary<string, MyProcess?>();
+            MyProcesses = new Dictionary<string, MyProcess_Small?>();
+            MyProcessesBuffer = new Dictionary<string, MyProcess_Small?>();
             IsBufferTime = false;
 
             kernelSession = null;
@@ -497,15 +497,13 @@ namespace OpenNetMeter.Models
 
             if(IsBufferTime)
             {
-                MyProcessesBuffer!.TryAdd(name, new MyProcess(name, 0, 0, null));
+                MyProcessesBuffer!.TryAdd(name, new MyProcess_Small(name, 0, 0));
                 MyProcessesBuffer[name]!.CurrentDataRecv += (long)size;
-                MyProcessesBuffer[name]!.CurrentDataSend += 0;
             }
             else
             {
-                MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
+                MyProcesses!.TryAdd(name, new MyProcess_Small(name, 0, 0));
                 MyProcesses[name]!.CurrentDataRecv += (long)size;
-                MyProcesses[name]!.CurrentDataSend += 0;
             }
 
             //if (size == 0)
@@ -521,14 +519,12 @@ namespace OpenNetMeter.Models
 
             if (IsBufferTime)
             {
-                MyProcessesBuffer!.TryAdd(name, new MyProcess(name, 0, 0, null));
-                MyProcessesBuffer[name]!.CurrentDataRecv += 0;
+                MyProcessesBuffer!.TryAdd(name, new MyProcess_Small(name, 0, 0));
                 MyProcessesBuffer[name]!.CurrentDataSend += (long)size;
             }
             else
             {
-                MyProcesses!.TryAdd(name, new MyProcess(name, 0, 0, null));
-                MyProcesses[name]!.CurrentDataRecv += 0;
+                MyProcesses!.TryAdd(name, new MyProcess_Small(name, 0, 0));
                 MyProcesses[name]!.CurrentDataSend += (long)size;
             }
 
