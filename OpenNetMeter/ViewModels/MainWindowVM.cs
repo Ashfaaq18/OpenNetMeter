@@ -73,11 +73,11 @@ namespace OpenNetMeter.ViewModels
             networkStatus = "";
 
             mwvm = mw_DataContext;
+            svm = new SettingsVM(cd_DataContext);
+            svm.PropertyChanged += Svm_PropertyChanged;
             dusvm = new DataUsageSummaryVM();
             duhvm = new DataUsageHistoryVM();
             dudvm = new DataUsageDetailedVM();
-            svm = new SettingsVM(cd_DataContext);
-            svm.PropertyChanged += Svm_PropertyChanged;
 
             netProc = new NetworkProcess();
             netProc.PropertyChanged += NetProc_PropertyChanged;
@@ -130,6 +130,9 @@ namespace OpenNetMeter.ViewModels
                         }
                         svm.DeleteAllFiles = false;
                     }
+                    break;
+                case "NetworkSpeedFormat":
+                    dusvm.Graph.ChangeYLabel();
                     break;
                 default:
                     break;

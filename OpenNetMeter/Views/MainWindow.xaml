@@ -21,7 +21,7 @@
     
     <Window.Resources>
         <v:BitmapToImageConverter x:Key="BitmapToImage"/>
-        <v:UnitConverterBits x:Key="converterBits"/>
+        <v:NetSpeedFormatConverter x:Key="netSpeedFormatConverter"/>
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
             <v:DataUsageSummaryV/>
@@ -166,13 +166,13 @@
 
                 <TextBlock Grid.Column="1" Text="Download Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}" />
                 <WrapPanel Grid.Column="2" VerticalAlignment="Center" >
-                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
+                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}" Style="{StaticResource FontColor1}"/>
                     <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
                 </WrapPanel>
 
                 <TextBlock Grid.Column="3" Text="Upload Speed : " FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right" Style="{StaticResource FontColor1}"/>
                 <WrapPanel Grid.Column="4" VerticalAlignment="Center">
-                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}" Style="{StaticResource FontColor1}"/>
+                    <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}" Style="{StaticResource FontColor1}"/>
                     <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="0" Text="ps" Style="{StaticResource FontColor1}"/>
                 </WrapPanel>
             </Grid>

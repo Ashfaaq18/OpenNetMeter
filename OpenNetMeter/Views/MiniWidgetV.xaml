@@ -21,7 +21,7 @@
     </WindowChrome.WindowChrome>
     <Window.Resources>
         <v:UnitConverterBytes x:Key="converterBytes"/>
-        <v:UnitConverterBits x:Key="converterBits"/>
+        <v:NetSpeedFormatConverter x:Key="netSpeedFormatConverter"/>
     </Window.Resources>
 
     <Border Style="{StaticResource BorderColor}">
@@ -39,22 +39,14 @@
                     <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
                 </ContextMenu>
             </Grid.ContextMenu>
-            <!--<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">D-V :</TextBlock>
-            <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
-        </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-            <TextBlock Padding="0" Style="{StaticResource FontColor1}">U-V :</TextBlock>
-            <TextBlock Padding="5,0,0,0"  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-        </StackPanel>-->
             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">D-S :</TextBlock>
-                <TextBlock Padding="5,0,0,0"  FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding DownloadSpeed, Converter={StaticResource converterBits}}" />
+                <TextBlock Padding="5,0,0,0"  FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}" />
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">U-S :</TextBlock>
-                <TextBlock Padding="5,0,0,0" FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource converterBits}}"/>
+                <TextBlock Padding="5,0,0,0" FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"/>
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
             </StackPanel>
         </Grid>

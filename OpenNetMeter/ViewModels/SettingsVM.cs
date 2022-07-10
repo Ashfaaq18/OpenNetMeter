@@ -124,6 +124,22 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private int networkSpeedFormat;
+        public int NetworkSpeedFormat
+        {
+            get { return networkSpeedFormat; }
+            set
+            {
+                if(networkSpeedFormat != value)
+                {
+                    networkSpeedFormat = value;
+                    Properties.Settings.Default.NetworkSpeedFormat = value;
+                    Properties.Settings.Default.Save();
+                    OnPropertyChanged("NetworkSpeedFormat");
+                }
+            }
+        }
+
         private bool miniWidgetTransparent;
 
         public bool MiniWidgetTransparent
@@ -173,11 +189,11 @@ namespace OpenNetMeter.ViewModels
             else
                 UnlockMinimizeOnStart = true;
 
-            //network traffic setting
             NetworkTrafficType = Properties.Settings.Default.NetworkType;
 
-            //DarkMode setting
             SetDarkMode = Properties.Settings.Default.DarkMode;
+
+            NetworkSpeedFormat = Properties.Settings.Default.NetworkSpeedFormat;
 
             ResetBtn = new BaseCommand(ResetData, true);
             cdvm = cdvm_ref;

@@ -154,5 +154,17 @@ namespace OpenNetMeter.Properties {
                 this["MiniWidgetTransparent"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int NetworkSpeedFormat {
+            get {
+                return ((int)(this["NetworkSpeedFormat"]));
+            }
+            set {
+                this["NetworkSpeedFormat"] = value;
+            }
+        }
     }
 }
