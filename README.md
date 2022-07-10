@@ -34,7 +34,7 @@ This program provides the following features,
 
 ### Detailed tab
 
-![image](https://user-images.githubusercontent.com/27722888/177024175-952117c6-804e-492d-b5ab-073c766d0bca.png)
+![image](https://user-images.githubusercontent.com/27722888/178145774-dc5bebc0-e4fc-49e3-8c85-d27ea6ee5a40.png)
 
 ### History tab
 
