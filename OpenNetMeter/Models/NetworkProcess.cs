@@ -288,8 +288,16 @@ namespace OpenNetMeter.Models
                 {
                     Stopwatch sw1 = Stopwatch.StartNew();
 
-                    UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
-                    DownloadSpeed = (CurrentSessionDownloadData - tempDownload) * 8;
+                    if(Properties.Settings.Default.NetworkSpeedFormat == 0)
+                    {
+                        UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
+                        DownloadSpeed = (CurrentSessionDownloadData - tempDownload) * 8;
+                    }
+                    else
+                    {
+                        UploadSpeed = (CurrentSessionUploadData - tempUpload);
+                        DownloadSpeed = (CurrentSessionDownloadData - tempDownload);
+                    }
 
                     tempUpload = CurrentSessionUploadData;
                     tempDownload = CurrentSessionDownloadData;
@@ -300,7 +308,6 @@ namespace OpenNetMeter.Models
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
-                Debug.WriteLine("WOah woah boi slow down there");
             }
             catch (OperationCanceledException ex)
             {

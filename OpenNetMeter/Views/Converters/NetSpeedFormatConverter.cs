@@ -12,7 +12,7 @@ namespace OpenNetMeter.Views
             if(Properties.Settings.Default.NetworkSpeedFormat == 0)
                 return DataSizeSuffix.InStr((long)value, 1, false);
             else
-                return DataSizeSuffix.InStr((long)value/8, 1, true);
+                return DataSizeSuffix.InStr((long)value, 1, true);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

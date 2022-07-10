@@ -133,6 +133,7 @@ namespace OpenNetMeter.ViewModels
                     break;
                 case "NetworkSpeedFormat":
                     dusvm.Graph.ChangeYLabel();
+                    dusvm.Graph.DrawClear();
                     break;
                 default:
                     break;
