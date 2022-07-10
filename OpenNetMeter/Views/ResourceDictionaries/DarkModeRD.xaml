@@ -470,7 +470,6 @@
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Padding" Value="8,2"/>
-        <Setter Property="TextBlock.Padding" Value="8 2"/>
         <Setter Property="Background" Value="#c0e3da" />
         <Setter Property="Foreground" Value="Black"/>
         <Setter Property="BorderBrush" Value="#999999"/>

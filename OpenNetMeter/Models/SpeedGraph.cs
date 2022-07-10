@@ -161,12 +161,15 @@ namespace OpenNetMeter.Models
             if (drawPointCount >= XaxisResolution)
             {
                 //shift xaxis label
-                for (int i = 0; i < Xlabels.Count / 2; i++)
+                App.Current.Dispatcher.Invoke(() =>
                 {
-                    string temp = Xlabels[i].Text;
-                    Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
-                    Xlabels[i + Xlabels.Count / 2].Text = temp;
-                }
+                    for (int i = 0; i < Xlabels.Count / 2; i++)
+                    {
+                        string temp = Xlabels[i].Text;
+                        Xlabels[i].Text = Xlabels[i + Xlabels.Count / 2].Text;
+                        Xlabels[i + Xlabels.Count / 2].Text = temp;
+                    }
+                });
 
                 drawPointCount = XaxisResolution / 2;
                 for (int i = 0; i < DownloadPoints.Count; i++)
@@ -274,6 +277,14 @@ namespace OpenNetMeter.Models
                 UploadPoints[i].From = new Point(0, 0);
                 UploadPoints[i].To = new Point(0, 0);
             }
+
+            App.Current.Dispatcher.Invoke(() => 
+            {
+                for (int i = 0; i < (Xlabels.Count - 1); i++)
+                {
+                    Xlabels[i].Text = (i * 10).ToString();
+                }
+            });
         }
 
         public double ConvToGraphCoords(double value, double height)
