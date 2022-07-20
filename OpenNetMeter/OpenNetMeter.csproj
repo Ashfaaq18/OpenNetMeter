@@ -6,7 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
-    <Version>0.12.1</Version>
+    <Version>0.12.1-rc.1</Version>
     <AssemblyName>OpenNetMeter</AssemblyName>
     <StartupObject>OpenNetMeter.App</StartupObject>
     <Win32Resource />
