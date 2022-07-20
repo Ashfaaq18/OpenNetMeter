@@ -86,14 +86,14 @@ namespace OpenNetMeter.Views
 
                 for (int i = 0; i < dusvm.Graph.DownloadLines.Count; i++) //scale the download line
                 {
-                    dusvm.Graph.DownloadLines[i].From = new Point(dusvm.Graph.Xstart + dusvm.Graph.DownloadPoints[i].From.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords((long)dusvm.Graph.DownloadPoints[i].From.Y, GraphHeight));
-                    dusvm.Graph.DownloadLines[i].To = new Point(dusvm.Graph.Xstart + dusvm.Graph.DownloadPoints[i].To.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords((long)dusvm.Graph.DownloadPoints[i].To.Y, GraphHeight));
+                    dusvm.Graph.DownloadLines[i].From = new Point(dusvm.Graph.Xstart + dusvm.Graph.DownloadPoints[i].From.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords(dusvm.Graph.DownloadPoints[i].From.Y, GraphHeight));
+                    dusvm.Graph.DownloadLines[i].To = new Point(dusvm.Graph.Xstart + dusvm.Graph.DownloadPoints[i].To.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords(dusvm.Graph.DownloadPoints[i].To.Y, GraphHeight));
 
                 }
                 for (int i = 0; i < dusvm.Graph.UploadLines.Count; i++) //scale the upload line
                 {
-                    dusvm.Graph.UploadLines[i].From = new Point(dusvm.Graph.Xstart + dusvm.Graph.UploadPoints[i].From.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords((long)dusvm.Graph.UploadPoints[i].From.Y, GraphHeight));
-                    dusvm.Graph.UploadLines[i].To = new Point(dusvm.Graph.Xstart + dusvm.Graph.UploadPoints[i].To.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords((long)dusvm.Graph.UploadPoints[i].To.Y, GraphHeight));
+                    dusvm.Graph.UploadLines[i].From = new Point(dusvm.Graph.Xstart + dusvm.Graph.UploadPoints[i].From.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords(dusvm.Graph.UploadPoints[i].From.Y, GraphHeight));
+                    dusvm.Graph.UploadLines[i].To = new Point(dusvm.Graph.Xstart + dusvm.Graph.UploadPoints[i].To.X * (GraphWidth / dusvm.Graph.XaxisResolution), dusvm.Graph.ConvToGraphCoords(dusvm.Graph.UploadPoints[i].To.Y, GraphHeight));
                 }
 
 

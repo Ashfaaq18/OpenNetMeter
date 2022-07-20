@@ -211,7 +211,7 @@ namespace OpenNetMeter.Models
                 if (sum[0].Count == 2)
                 {
                     if (!Convert.IsDBNull(sum[0][0]) && !Convert.IsDBNull(sum[0][1]))
-                        return ((long)(sum[0][0]), (long)(sum[0][1]));
+                        return (Convert.ToInt64(sum[0][0]), Convert.ToInt64(sum[0][1]));
                 }
             }
 
@@ -235,7 +235,7 @@ namespace OpenNetMeter.Models
                     {"@Day", time.Day.ToString() }
                 });
 
-            return (long)(test ?? -1);
+            return Convert.ToInt64(test ?? -1);
         }
         
         public long GetID_ProcessTable(string appName)
@@ -249,7 +249,7 @@ namespace OpenNetMeter.Models
                     {"@Name", appName}
                 });
 
-            return (long)(test ?? -1);
+            return Convert.ToInt64(test ?? -1);
         }
 
         public void Dispose()

@@ -138,10 +138,10 @@ namespace OpenNetMeter.ViewModels
                         {
                             if(!Convert.IsDBNull(dataStats[i][0]) && !Convert.IsDBNull(dataStats[i][1]) && !Convert.IsDBNull(dataStats[i][2]))
                             {
-                                MyProcesses.Add(new MyProcess_Small((string)dataStats[i][0], (long)dataStats[i][1], (long)dataStats[i][2]));
+                                MyProcesses.Add(new MyProcess_Small(Convert.ToString(dataStats[i][0])!, Convert.ToInt64(dataStats[i][1]), Convert.ToInt64(dataStats[i][2])));
 
-                                TotalDownloadData += (long)dataStats[i][1];
-                                TotalUploadData += (long)dataStats[i][2];
+                                TotalDownloadData += Convert.ToInt64(dataStats[i][1]);
+                                TotalUploadData += Convert.ToInt64(dataStats[i][2]);
                             }
                             //Debug.WriteLine($"processID: {dataStats[i][0]}, dataRecieved: {dataStats[i][1]}, dataSent: {dataStats[i][2]}");
                         }

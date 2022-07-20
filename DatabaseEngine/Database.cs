@@ -212,7 +212,7 @@ namespace DatabaseEngine
                         {
                             while (reader.Read())
                             {
-                                //Debug.Write($"{reader[0]} {reader.GetFieldType(0)}|");
+                                //Debug.Write($"GetSingleCellData : {reader[0]} {reader.GetFieldType(0)}|");
                                 return reader[0];
                             }
                         }
