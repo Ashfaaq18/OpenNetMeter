@@ -117,7 +117,7 @@ namespace OpenNetMeter.Models
             byte[] tempv4 = defaultIPv4;
             byte[] tempv6 = defaultIPv6;
 
-            // IPv4
+            // IPv6
             using (Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, 0))
             {
                 try
@@ -133,7 +133,7 @@ namespace OpenNetMeter.Models
                 }
             }
 
-            // IPv6
+            // IPv4
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
                 try
@@ -451,7 +451,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        private void RecvProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
+        private void RecvProcessIPV6(in IPAddress src, in IPAddress dest, in int size, in string name)
         {
             bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv6);
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv6);
@@ -466,7 +466,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        private void SendProcess(IPAddress src, IPAddress dest, int size, string name)
+        private void SendProcess(in IPAddress src, in IPAddress dest, in int size, in string name)
         {
             bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv4);
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv4);
@@ -480,7 +480,7 @@ namespace OpenNetMeter.Models
                 }
             }
         }
-        private void SendProcessIPV6(IPAddress src, IPAddress dest, int size, string name)
+        private void SendProcessIPV6(in IPAddress src, in IPAddress dest, in int size, in string name)
         {
             bool ipCompSrc = ByteArray.Compare(src.GetAddressBytes(), localIPv6);
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv6);
@@ -495,7 +495,7 @@ namespace OpenNetMeter.Models
             }
         }
 
-        private void Recv(string name, int size)
+        private void Recv(string name, in int size)
         {
             CurrentSessionDownloadData += (long)size;
 
@@ -504,20 +504,26 @@ namespace OpenNetMeter.Models
 
             if(IsBufferTime)
             {
-                MyProcessesBuffer!.TryAdd(name, new MyProcess_Small(name, 0, 0));
-                MyProcessesBuffer[name]!.CurrentDataRecv += (long)size;
+                lock(MyProcessesBuffer!)
+                {
+                    MyProcessesBuffer!.TryAdd(name, new MyProcess_Small(name, 0, 0));
+                    MyProcessesBuffer[name]!.CurrentDataRecv += (long)size;
+                }
             }
             else
             {
-                MyProcesses!.TryAdd(name, new MyProcess_Small(name, 0, 0));
-                MyProcesses[name]!.CurrentDataRecv += (long)size;
+                lock(MyProcesses!)
+                {
+                    MyProcesses!.TryAdd(name, new MyProcess_Small(name, 0, 0));
+                    MyProcesses[name]!.CurrentDataRecv += (long)size;
+                }
             }
 
             //if (size == 0)
             //    Debug.WriteLine($"but whyyy {name} | recv");
         }
 
-        private void Send(string name, int size)
+        private void Send(string name, in int size)
         {
             CurrentSessionUploadData += (long)size;
 
@@ -526,13 +532,20 @@ namespace OpenNetMeter.Models
 
             if (IsBufferTime)
             {
-                MyProcessesBuffer!.TryAdd(name, new MyProcess_Small(name, 0, 0));
-                MyProcessesBuffer[name]!.CurrentDataSend += (long)size;
+                lock (MyProcessesBuffer!) 
+                {
+                    MyProcessesBuffer!.TryAdd(name, new MyProcess_Small(name, 0, 0));
+                    MyProcessesBuffer[name]!.CurrentDataSend += (long)size;
+                }
+                    
             }
             else
             {
-                MyProcesses!.TryAdd(name, new MyProcess_Small(name, 0, 0));
-                MyProcesses[name]!.CurrentDataSend += (long)size;
+                lock (MyProcesses!) 
+                {
+                    MyProcesses!.TryAdd(name, new MyProcess_Small(name, 0, 0));
+                    MyProcesses[name]!.CurrentDataSend += (long)size;
+                }
             }
 
             //if (size == 0)
