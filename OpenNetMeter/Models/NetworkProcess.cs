@@ -239,17 +239,7 @@ namespace OpenNetMeter.Models
                     Debug.WriteLine("Error: Create table");
                 else
                 {
-                    //insert todays date
-                    dB.InsertUniqueRow_DateTable(DateTime.Today);
-
-                    //get invalid dateIDs
-                    //use these invalid dataIDs to remove the respective rows from processDate table
-                    //remove these IDs from date table
-                    dB.RemoveOldDate();
-                    //compare processDate table processID column and process table processID column
-                    //remove rows from process table if they are not present in processDate table
-                    dB.RemoveOldProcess();
-
+                    dB.UpdateDatesInDB();
                 }
             }
 

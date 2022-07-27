@@ -111,7 +111,7 @@ namespace OpenNetMeter.Models
                 });
         }
 
-        public int InsertUniqueRow_DateTable(DateTime date)
+        private int InsertUniqueRow_DateTable(DateTime date)
         {
             return dB.RunSQLiteNonQuery("INSERT OR IGNORE INTO " +
                 "Date(Year, Month, Day) " +
@@ -122,6 +122,41 @@ namespace OpenNetMeter.Models
                     {"@Month", date.Month.ToString() },
                     {"@Day", date.Day.ToString() }
                 });
+        }
+
+        private void RemoveOldDate()
+        {
+            DateTime time = DateTime.Now;
+            time = time.AddDays(-1 * DataStoragePeriodInDays);
+
+            dB.RunSQLiteNonQuery("DELETE FROM " +
+                "Date " +
+                "WHERE " +
+                "(Year * 10000 + Month * 100 + day) " +
+                "< " +
+                $"({time.Year * 10000 + time.Month * 100 + time.Day})");
+        }
+
+        private void RemoveOldProcess()
+        {
+            dB.RunSQLiteNonQuery("DELETE FROM " +
+                "Process WHERE ID IN " +
+                "(SELECT ID FROM Process WHERE ID NOT IN " +
+                "(SELECT DISTINCT ProcessID FROM ProcessDate))");
+        }
+
+        public void UpdateDatesInDB()
+        {
+            //insert todays date
+            InsertUniqueRow_DateTable(DateTime.Today);
+
+            //get invalid dateIDs
+            //use these invalid dataIDs to remove the respective rows from processDate table
+            //remove these IDs from date table
+            RemoveOldDate();
+            //compare processDate table processID column and process table processID column
+            //remove rows from process table if they are not present in processDate table
+            RemoveOldProcess();
         }
 
         public int InsertUniqueRow_ProcessDateTable(long processID, long dateID, long dataReceived, long dataSent)
@@ -153,27 +188,6 @@ namespace OpenNetMeter.Models
                     { "@ProcessID", processID.ToString()},
                     { "@DateID", dateID.ToString()},
                 });
-        }
-
-        public void RemoveOldDate()
-        {
-            DateTime time = DateTime.Now;
-            time = time.AddDays(-1 * DataStoragePeriodInDays);
-
-            dB.RunSQLiteNonQuery("DELETE FROM " +
-                "Date " +
-                "WHERE " +
-                "(Year * 10000 + Month * 100 + day) " +
-                "< " +
-                $"({time.Year * 10000 + time.Month * 100 + time.Day})");
-        }
-
-        public void RemoveOldProcess()
-        {
-            dB.RunSQLiteNonQuery("DELETE FROM " +
-                "Process WHERE ID IN " +
-                "(SELECT ID FROM Process WHERE ID NOT IN " +
-                "(SELECT DISTINCT ProcessID FROM ProcessDate))");
         }
 
         public List<List<object>> GetDataSum_ProcessDateTable(DateTime date1, DateTime date2)

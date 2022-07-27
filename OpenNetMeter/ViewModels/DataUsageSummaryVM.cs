@@ -5,9 +5,6 @@ namespace OpenNetMeter.ViewModels
 {
     public class DataUsageSummaryVM : INotifyPropertyChanged
     {
-        public long TodayDownloadData_Temp { get; set; }
-        public long TodayUploadData_Temp { get; set; }
-
         private long todayDownloadData;
         public long TodayDownloadData
         {
@@ -56,8 +53,6 @@ namespace OpenNetMeter.ViewModels
         {
             TodayDownloadData = 0;
             TodayUploadData = 0;
-            TodayDownloadData_Temp = 0;
-            TodayUploadData_Temp = 0;
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
 

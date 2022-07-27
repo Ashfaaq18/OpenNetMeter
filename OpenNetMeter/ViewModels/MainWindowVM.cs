@@ -6,6 +6,7 @@ using System.Windows.Input;
 using OpenNetMeter.Models;
 using System.Threading.Tasks;
 using System.Linq;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -140,6 +141,16 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private void UpdateSummaryTab()
+        {
+
+        }
+
+        private void UpdateDetailedTab()
+        {
+
+        }
+
         private void UpdateData()
         {
             date2 = DateTime.Now;
@@ -153,23 +164,12 @@ namespace OpenNetMeter.ViewModels
             mwvm.DownloadSpeed = DownloadSpeed;
             mwvm.UploadSpeed = UploadSpeed;
 
+            //summary tab graph points
+            dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
+
             //summary tab session usage variables
             dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
-
-            //summary tab todays usage variables
-            if((date2.Date - date1.Date).Days > 0)
-            {
-                dusvm.TodayDownloadData_Temp = 0;
-                dusvm.TodayUploadData_Temp = 0;
-                date1 = date2;
-            }
-
-            dusvm.TodayDownloadData = dusvm.TodayDownloadData_Temp + netProc.CurrentSessionDownloadData;
-            dusvm.TodayUploadData = dusvm.TodayUploadData_Temp + netProc.CurrentSessionUploadData;
-
-            //summary tab graph points
-            dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
 
             // -------------- Update current session details -------------- //
             if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dudvm.MyProcesses != null)
@@ -181,6 +181,15 @@ namespace OpenNetMeter.ViewModels
                         Debug.WriteLine("Error: Create table");
                     else
                     {
+                        if ((date2.Date - date1.Date).Days > 0)
+                        {
+                            dusvm.TodayDownloadData = 0;
+                            dusvm.TodayUploadData = 0;
+                            dB.UpdateDatesInDB();
+                            duhvm.UpdateDates();
+                            date1 = date2;
+                        }
+
                         foreach (KeyValuePair<string, MyProcess_Big> app in dudvm.MyProcesses)
                         {
                             dudvm.MyProcesses[app.Key].CurrentDataRecv = 0;
@@ -258,6 +267,10 @@ namespace OpenNetMeter.ViewModels
 
                             netProc.MyProcessesBuffer.Clear();
                         }
+
+                        (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
+                        dusvm.TodayDownloadData = todaySum.Item1;
+                        dusvm.TodayUploadData = todaySum.Item2;
                     }
                 }
             }
@@ -290,15 +303,6 @@ namespace OpenNetMeter.ViewModels
                     else
                     {
                         NetworkStatus = "Connected : " + netProc.IsNetworkOnline;
-                        if (netProc.AdapterName != null)
-                        {
-                            using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName, new string[] { "Read Only=True" }))
-                            {
-                                (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
-                                dusvm.TodayDownloadData_Temp = todaySum.Item1;
-                                dusvm.TodayUploadData_Temp = todaySum.Item2;
-                            }
-                        }
                     }
                     break;
                 default:

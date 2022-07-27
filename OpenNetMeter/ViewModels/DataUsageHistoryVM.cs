@@ -1,4 +1,5 @@
 ﻿using OpenNetMeter.Models;
+using OpenNetMeter.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -70,10 +71,7 @@ namespace OpenNetMeter.ViewModels
         private FileSystemWatcher watcher;
         public DataUsageHistoryVM()
         {
-            DateStart = DateTime.Today;
-            DateEnd = DateTime.Today;
-            DateMax = DateTime.Today;
-            DateMin = DateTime.Today.AddDays(-1 * ApplicationDB.DataStoragePeriodInDays);
+            UpdateDates();
             TotalDownloadData = 0;
             TotalUploadData = 0;
 
@@ -88,6 +86,14 @@ namespace OpenNetMeter.ViewModels
 
             //set button command
             FilterBtn = new BaseCommand(Filter, true);
+        }
+
+        public void UpdateDates()
+        {
+            DateStart = DateTime.Today;
+            DateEnd = DateTime.Today;
+            DateMax = DateTime.Today;
+            DateMin = DateTime.Today.AddDays(-1 * ApplicationDB.DataStoragePeriodInDays);
         }
 
         private void DataUsageHistoryVM_PropertyChanged(object? sender, PropertyChangedEventArgs e)

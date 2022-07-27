@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace OpenNetMeter.ViewModels
+namespace OpenNetMeter.Utilities
 {
     public class BaseCommand : ICommand
     {
