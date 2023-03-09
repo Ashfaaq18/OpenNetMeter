@@ -62,7 +62,9 @@ namespace OpenNetMeter.Models
         public int GridXCount;
         public int GridYCount;
 
-        public int XaxisResolution { get; set; } 
+        public int XaxisResolution { get; set; }
+
+        public const double YaxisCount = 3.0;
         public bool resumeDraw { get; set; }
         public bool firstDrawAfterResume { get; set; }
         public SpeedGraph(int XlineCount, int YlineCount)
@@ -329,18 +331,16 @@ namespace OpenNetMeter.Models
 
         public double ConvToGraphCoords(double value, double height)
         {
-            if (value > Math.Pow(1024, 2))
+            for(double i = 0; i< YaxisCount; i++)
             {
-                return (height) * ((1.0 / 3.0) - (value) / (1024.0 * 1024.0 * 1024.0 * 3.0));
+                if( 
+                    value > Math.Pow(1024, (YaxisCount-(i+1)) )
+                  )
+                {
+                    return (height) * ( ((i + 1.0) / YaxisCount) - (value) / (Math.Pow(1024.0, (YaxisCount - i)) * YaxisCount));
+                }
             }
-            else if (value > Math.Pow(1024, 1))
-            {
-                return (height) * ((2.0 / 3.0) - (value) / (1024.0 * 1024.0 * 3.0));
-            }
-            else
-            {
-                return (height) * ((3.0 / 3.0) - (value) / (1024.0 * 3.0));
-            }
+            return height;
         }
     }
 }
