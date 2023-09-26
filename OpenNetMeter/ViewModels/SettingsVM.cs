@@ -156,6 +156,22 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+
+        private int miniWidgetTransparentSlider;
+
+        public int MiniWidgetTransparentSlider
+        {
+            get { return miniWidgetTransparentSlider; }
+            set
+            {
+                miniWidgetTransparentSlider = value;
+                OnPropertyChanged("MiniWidgetTransparentSlider");
+                Debug.WriteLine($"MiniWidgetTransparentSlider: {value}");
+                //Properties.Settings.Default.miniWidgetTransparentSlider = value;
+                //Properties.Settings.Default.Save();
+            }
+        }
+
         public bool deleteAllFiles;
         public bool DeleteAllFiles
         {
