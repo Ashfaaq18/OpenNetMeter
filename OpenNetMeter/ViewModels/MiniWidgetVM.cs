@@ -71,6 +71,16 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        public string? backgroundColor;
+        public string? BackgroundColor
+        {
+            get { return backgroundColor; }
+            set
+            {
+                backgroundColor = value;
+                OnPropertyChanged("BackgroundColor");
+            }
+        }
 
         public MiniWidgetVM()
         {
@@ -78,7 +88,8 @@ namespace OpenNetMeter.ViewModels
             CurrentSessionUploadData = 0;
             DownloadSpeed = 0;
             UploadSpeed = 0;
-            
+            BackgroundColor = "#ff212121";
+
             Size size1 = UIMeasure.Shape(new TextBlock { Text = "D-S :", FontSize = 12, Padding = new Thickness(0) });
             Size size2 = UIMeasure.Shape(new TextBlock { Text = "1024.00Mbps", FontSize = 12, Padding = new Thickness(5,0,0,0) });
             int widthMargins = 5 + 5; //these are from the miniwidget xaml margins
