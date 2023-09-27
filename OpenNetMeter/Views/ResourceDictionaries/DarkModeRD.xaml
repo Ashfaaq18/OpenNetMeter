@@ -64,18 +64,6 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
-    <Style TargetType="Grid" x:Key="MiniWidgetBackgroundColor">
-        <Setter Property="Background" Value="#f1f1f1"></Setter>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#252525"></Setter>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = MiniWidgetTransparent}" Value="True">
-                <Setter Property="Background" Value="Transparent"></Setter>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
 
     <Style TargetType="Border" x:Key="BorderColor">
         <Setter Property="Control.BorderBrush" Value="#4F5050"></Setter>

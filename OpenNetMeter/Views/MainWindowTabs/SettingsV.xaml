@@ -38,7 +38,7 @@
 
                 <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
-                <CheckBox x:Name="DarkMode"  Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding SetDarkMode}"></CheckBox>
+                <CheckBox x:Name="DarkMode"  Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding DarkMode}"></CheckBox>
                 <TextBlock Grid.Row="1" Grid.Column="1" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Dark mode</TextBlock>
 
                 
@@ -56,32 +56,19 @@
                             </TextBlock.ToolTip>
                             ?
                         </TextBlock>
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0" Style="{StaticResource FontColor1}">Mini Widget Transparency :</TextBlock>
-                        <TextBlock Text="{Binding MiniWidgetTransparentSlider}"></TextBlock>
-                        <TextBlock >%</TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0" Style="{StaticResource FontColor1}">
+                            <Run Text="Mini Widget Transparency :"/>
+                            <Run Text="{Binding MiniWidgetTransparentSlider}"/>
+                            <Run Text="%"/>
+                        </TextBlock>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Style="{StaticResource FontColor1}">0%</TextBlock>
-                        <Slider  Width="200" Margin="5,0" Minimum="0" Maximum="100" Value ="{Binding MiniWidgetTransparentSlider}"></Slider>
+                        <Slider x:Name="miniWidgetTransparencySlider" Width="200" Margin="5,0" Minimum="0" Maximum="100" Value ="{Binding MiniWidgetTransparentSlider}"></Slider>
                         <TextBlock Style="{StaticResource FontColor1}"> 100%</TextBlock>
                     </StackPanel>
                 </StackPanel>
-                <!--CheckBox x:Name="miniWidget"  Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding MiniWidgetTransparent}"></CheckBox-->
-                <!--StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
-                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Transparent Mini Widget 
-                    <TextBlock ToolTipService.InitialShowDelay="100" ToolTipService.ShowDuration="10000" Style="{StaticResource FontColor4}" Margin="5,0">
-                            <TextBlock.ToolTip>
-                                <TextBlock>
-                                    To hide mini widget, right click it and select hide
-                                    <LineBreak/>
-                                    To show it again, right click the system tray and select show
-                                </TextBlock>
-                            </TextBlock.ToolTip>
-                            ?
-                        </TextBlock>
-                    </TextBlock>
-                </StackPanel-->
 
                 <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>

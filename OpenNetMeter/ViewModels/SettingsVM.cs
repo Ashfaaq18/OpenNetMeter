@@ -56,25 +56,6 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private bool setDarkMode;
-        public bool SetDarkMode
-        {
-            get { return setDarkMode; }
-
-            set
-            {
-                if (setDarkMode != value)
-                {
-                    setDarkMode = value;
-                    OnPropertyChanged("SetDarkMode");
-
-                    //set the app settings
-                    Properties.Settings.Default.DarkMode = value;
-                    Properties.Settings.Default.Save();
-                }
-            }
-        }
-
         private bool minimizeOnStart;
         public bool MinimizeOnStart 
         {
@@ -141,34 +122,41 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private bool miniWidgetTransparent;
-
-        public bool MiniWidgetTransparent
+        private bool darkMode;
+        public bool DarkMode
         {
-            get { return miniWidgetTransparent; }
+            get { return darkMode; }
+
             set
             {
-                miniWidgetTransparent = value;
-                OnPropertyChanged("MiniWidgetTransparent");
+                darkMode = value;
+                OnPropertyChanged("DarkMode");
 
-                Properties.Settings.Default.MiniWidgetTransparent = value;
+                //trigger the miniwidget's BackgroundColor property.
+                SetMiniWidgetBackgroundColor(value, MiniWidgetTransparentSlider);
+
+                //set the app settings
+                Properties.Settings.Default.DarkMode = value;
                 Properties.Settings.Default.Save();
             }
         }
 
-
         private int miniWidgetTransparentSlider;
-
         public int MiniWidgetTransparentSlider
         {
             get { return miniWidgetTransparentSlider; }
             set
             {
                 miniWidgetTransparentSlider = value;
+                
                 OnPropertyChanged("MiniWidgetTransparentSlider");
-                Debug.WriteLine($"MiniWidgetTransparentSlider: {value}");
-                //Properties.Settings.Default.miniWidgetTransparentSlider = value;
-                //Properties.Settings.Default.Save();
+                //Debug.WriteLine($"MiniWidgetTransparentSlider: {value}");
+                
+                //trigger the miniwidget's BackgroundColor property.
+                SetMiniWidgetBackgroundColor(DarkMode, value);
+
+                Properties.Settings.Default.MiniWidgetTransparentSlider = value;
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -188,10 +176,16 @@ namespace OpenNetMeter.ViewModels
         }
         public ICommand ResetBtn { get; set; }
 
-        private ConfirmationDialogVM cdvm;
+        private ConfirmationDialogVM? cdvm;
+        private MiniWidgetVM? mwvm;
 
-        public SettingsVM(ConfirmationDialogVM cdvm_ref)
+        public SettingsVM(MiniWidgetVM mw_ref, ConfirmationDialogVM cdvm_ref)
         {
+            mwvm = mw_ref;
+            cdvm = cdvm_ref;
+            cdvm.BtnCommand = new BaseCommand(ResetDataYesOrNo, true);
+            cdvm.DialogMessage = "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
+
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3);
 
@@ -199,7 +193,8 @@ namespace OpenNetMeter.ViewModels
             UnlockOptionStartWin = true;
             SetStartWithWin = Properties.Settings.Default.StartWithWin;
             MinimizeOnStart = Properties.Settings.Default.MinimizeOnStart;
-            MiniWidgetTransparent = Properties.Settings.Default.MiniWidgetTransparent;
+            DarkMode = Properties.Settings.Default.DarkMode;
+            MiniWidgetTransparentSlider = Properties.Settings.Default.MiniWidgetTransparentSlider;
 
             if (SetStartWithWin)
                 UnlockMinimizeOnStart = false;
@@ -208,19 +203,29 @@ namespace OpenNetMeter.ViewModels
 
             NetworkTrafficType = Properties.Settings.Default.NetworkType;
 
-            SetDarkMode = Properties.Settings.Default.DarkMode;
-
             NetworkSpeedFormat = Properties.Settings.Default.NetworkSpeedFormat;
 
             ResetBtn = new BaseCommand(ResetData, true);
-            cdvm = cdvm_ref;
-            cdvm.BtnCommand = new BaseCommand(ResetDataYesOrNo, true);
-            cdvm.DialogMessage = "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
+
             DeleteAllFiles = false;
         }
+
+        private void SetMiniWidgetBackgroundColor(bool darkMode, int transparency)
+        {
+            // 00XXXXXX -> 0%
+            // FFXXXXXX -> 100%
+            // 00 -> 0                  -> 0%,      fully transparent
+            // FF -> (2^8)-1 (256-1)    -> 100%,    fully opaque
+            // example, 77XXXXXX -> (64+32+16+4+2+1) = 119
+            //          (119/255) * 100% = 46.67% opaqueness
+
+            mwvm!.BackgroundColor = darkMode ? "#" + (((100 - transparency) * 255) / 100).ToString("x2") + "252525" : "#" + (((100 - transparency) * 255) / 100).ToString("x2") + "f1f1f1"; ;
+        }
+
         private void ResetData(object? obj)
         {
-            cdvm.IsVisible = System.Windows.Visibility.Visible;
+            if(cdvm != null)
+                cdvm.IsVisible = System.Windows.Visibility.Visible;
         }
 
         private void ResetDataYesOrNo(object? obj)
@@ -229,7 +234,8 @@ namespace OpenNetMeter.ViewModels
             {
                 if ((string)obj == "Yes")
                     DeleteAllFiles = true;
-                cdvm.IsVisible = System.Windows.Visibility.Hidden;
+                if (cdvm != null)
+                    cdvm.IsVisible = System.Windows.Visibility.Hidden;
             }
         }
 

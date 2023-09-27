@@ -25,7 +25,7 @@
     </Window.Resources>
 
     <Border Style="{StaticResource BorderColor}">
-        <Grid Style="{StaticResource MiniWidgetBackgroundColor}" >
+        <Grid Background="{Binding BackgroundColor}" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
