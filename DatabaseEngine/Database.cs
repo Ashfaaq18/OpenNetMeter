@@ -20,7 +20,7 @@ namespace DatabaseEngine
             }
             Debug.WriteLine(connectionString);
             connection = new SQLiteConnection(connectionString);
-            connection?.Open();
+            connection?.Open(); //open the file on disk
             transaction = connection?.BeginTransaction();
             command = new SQLiteCommand(connection);
         }
@@ -156,40 +156,6 @@ namespace DatabaseEngine
                 Debug.WriteLine($"SQLite read error: {ex.Message}");
             }
 
-            return temp;
-        }
-
-        public object? GetSingleCellData(string query)
-        {
-            object? temp = null;
-            using (SQLiteConnection connection = new SQLiteConnection(""))
-            {
-                connection.Open();
-                using (SQLiteCommand command = new SQLiteCommand(connection))
-                {
-                    try
-                    {
-                        command.CommandText = query;
-                        using (SQLiteDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-                                while (reader.Read())
-                                {
-                                    Debug.Write($"{reader[0]} {reader.GetFieldType(0)}|");
-                                    return reader[0];
-                                }
-                            }
-                            reader.Close();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"SQLite read error: {ex.Message}");
-                    }
-                }
-                connection.Close();
-            }
             return temp;
         }
 

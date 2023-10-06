@@ -196,10 +196,15 @@ namespace OpenNetMeter.ViewModels
                             dudvm.MyProcesses[app.Key].CurrentDataSend = 0;
                         }
 
-                        netProc.IsBufferTime = true;
-                        //while the below loop is running, the data packet info will be recorded
-                        //to the buffer dictionary (netProc.MyProcessesBuffer)
+                        // why use this 'IsBufferTime'? 
+                        // during its true state, the Recv() in NetworkProcess stores the incoming data to the netProc.MyProcessesBuffer dictionary
+                        // while its storing there, netProc.MyProcesses data is extracted to parse. Once done, this boolean is set to false
+                        // during the false state, the Recv() function stores data in the netProc.MyProcesses dictionary
+                        // during this, netProc.MyProcessesBuffer data is extracted to parse.
 
+                        netProc.IsBufferTime = true;
+
+                        //this dictionary is locked from being accessible by the other threads like the network data capture Recv()
                         lock (netProc.MyProcesses)
                         {
                             foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
@@ -233,8 +238,7 @@ namespace OpenNetMeter.ViewModels
                         }
                         
                         netProc.IsBufferTime = false;
-                        //the data saved to the buffer dictionary is now extracted here.
-                        //The data packet info will now be recorded back into the normal dictionary (netProc.MyProcesses)
+                        
                         lock(netProc.MyProcessesBuffer)
                         {
                             foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcessesBuffer) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
