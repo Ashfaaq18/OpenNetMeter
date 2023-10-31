@@ -27,17 +27,12 @@ namespace OpenNetMeter.Models
         private byte[] localIPv4;
         private byte[] localIPv6;
 
-        public Task? PacketTask; 
+        //variables to create seperate running threads for updating the network speed and db push
+        private AsyncTask asyncTask_networkSpeed;
+        private AsyncTask asyncTask_dbPush;
 
-        //token for network speed
-        private Task? networkSpeedTask;
-        private readonly PeriodicTimer networkSpeedtimer;
-        private CancellationTokenSource cts_networkSpeed;
-
-        //token for db push speed
-        private Task? dbPushTask;
-        private readonly PeriodicTimer dbPushtimer;
-        private CancellationTokenSource cts_dbPushSpeed;
+        //this is used to run the event tracing (kernelSession) in a seperate thread
+        public Task? PacketTask;
 
         private TraceEventSession? kernelSession;
 
@@ -79,6 +74,7 @@ namespace OpenNetMeter.Models
             get { return isNetworkOnline; }
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline"); }
         }
+
         public NetworkProcess()
         {
             //initialize variables
@@ -104,13 +100,8 @@ namespace OpenNetMeter.Models
             kernelSession = null;
             PacketTask = null;
 
-            networkSpeedtimer = new PeriodicTimer(TimeSpan.FromMilliseconds(OneSec)); // 1 second
-            networkSpeedTask = null;
-            cts_networkSpeed = new CancellationTokenSource();
-
-            dbPushtimer = new PeriodicTimer(TimeSpan.FromMilliseconds(60*OneSec));
-            dbPushTask = null;
-            cts_dbPushSpeed = new CancellationTokenSource();
+            asyncTask_networkSpeed = new AsyncTask(1);
+            asyncTask_dbPush = new AsyncTask(60);
 
             CurrentSessionUploadData = 0;
             CurrentSessionDownloadData = 0;
@@ -268,19 +259,32 @@ namespace OpenNetMeter.Models
             }
 
             CaptureNetworkPackets(); //start capturing packets
-            networkSpeedTask = CaptureNetworkSpeed(); //start logging the speed
-            dbPushTask = DBpush(); //start db push
+            asyncTask_networkSpeed.Task = CaptureNetworkSpeed(); //start logging the speed
+            asyncTask_dbPush.Task = DBpush(); //start db push
 
             IsNetworkOnline = AdapterName;
         }
 
         public void EndNetworkProcess()
         {
-            StopNetworkCapture();
-            StopNetworkSpeed();
-            StopDBpush();
+            if (kernelSession != null)
+            {
+                kernelSession.Dispose();
+                kernelSession = null;
+            }
 
-            MyProcesses?.Clear();
+            if (PacketTask != null)
+            {
+                PacketTask.Dispose();
+                PacketTask = null;
+            }
+            
+            asyncTask_networkSpeed.Dispose();
+            asyncTask_dbPush.Dispose();
+
+            if (MyProcesses != null)
+                MyProcesses.Clear();
+
             //reset speed counters
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
@@ -294,14 +298,15 @@ namespace OpenNetMeter.Models
 
         private async Task DBpush()
         {
-            cts_dbPushSpeed = new CancellationTokenSource();
+            asyncTask_dbPush.CancelToken = new CancellationTokenSource();
             try
             {
                 Debug.WriteLine("Operation Started : DB push");
-                while (await dbPushtimer.WaitForNextTickAsync(cts_dbPushSpeed.Token))
+                while (await asyncTask_dbPush.Timer.WaitForNextTickAsync(asyncTask_dbPush.CancelToken.Token))
                 {
+#if DEBUG
                     Stopwatch sw1 = Stopwatch.StartNew();
-
+#endif
                     if (PushToDBBuffer != null)
                     {
                         using (ApplicationDB dB = new ApplicationDB(AdapterName))
@@ -317,10 +322,10 @@ namespace OpenNetMeter.Models
                             }
                         }
                     }
-
+#if DEBUG
                     sw1.Stop();
                     Debug.WriteLine($"elapsed time (DBpush): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
-
+#endif
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
@@ -335,43 +340,23 @@ namespace OpenNetMeter.Models
             }
         }
 
-        private async void StopDBpush()
-        {
-            try
-            {
-                if (dbPushTask is null)
-                {
-                    return;
-                }
-
-                cts_dbPushSpeed.Cancel();
-                await dbPushTask;
-                dbPushTask = null;
-                cts_dbPushSpeed.Dispose();
-                Debug.WriteLine("Operation Cancelled : DB push");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Stop DB push error: {ex.Message}");
-            }
-        }
-
         //----------------------------------------------------------------------------------------//
 
         //---------------------------------- NETWORK SPEED ---------------------------------------//
 
         private async Task CaptureNetworkSpeed()
         {
-            cts_networkSpeed = new CancellationTokenSource();
+            asyncTask_networkSpeed.CancelToken = new CancellationTokenSource();
             try
             {
                 long tempDownload = 0;
                 long tempUpload = 0;
                 Debug.WriteLine("Operation Started : Network speed");
-                while (await networkSpeedtimer.WaitForNextTickAsync(cts_networkSpeed.Token))
+                while (await asyncTask_networkSpeed.Timer.WaitForNextTickAsync(asyncTask_networkSpeed.CancelToken.Token))
                 {
+#if DEBUG
                     Stopwatch sw1 = Stopwatch.StartNew();
-
+#endif
                     if(Properties.Settings.Default.NetworkSpeedFormat == 0)
                     {
                         UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
@@ -385,10 +370,10 @@ namespace OpenNetMeter.Models
 
                     tempUpload = CurrentSessionUploadData;
                     tempDownload = CurrentSessionDownloadData;
-
+#if DEBUG
                     sw1.Stop();
-                    //Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
-
+                    Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
+#endif
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
@@ -401,28 +386,6 @@ namespace OpenNetMeter.Models
             {
                 Debug.WriteLine($"Capture network speed error: {ex.Message}");
             }
-        }
-
-        private async void StopNetworkSpeed()
-        {
-            try
-            {
-                if (networkSpeedTask is null)
-                {
-                    return;
-                }
-
-                cts_networkSpeed.Cancel();
-                await networkSpeedTask;
-                networkSpeedTask = null;
-                cts_networkSpeed.Dispose();
-                Debug.WriteLine("Operation Cancelled : Network speed");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Stop network speed error: {ex.Message}");
-            }
-
         }
 
         //----------------------------------------------------------------------------------------//
@@ -460,23 +423,6 @@ namespace OpenNetMeter.Models
                     }
                 }
             });
-        }
-
-        private void StopNetworkCapture()
-        {
-            try
-            {
-                kernelSession?.Dispose();
-                kernelSession = null;
-                PacketTask?.Dispose();
-                PacketTask = null;
-                Debug.WriteLine("Operation Cancelled : Network capture");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Stop network capture error: {ex.Message}");
-            }
-
         }
 
         //-----------------------------------------------------------------------------------------//

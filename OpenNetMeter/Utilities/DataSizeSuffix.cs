@@ -2,10 +2,10 @@
 
 namespace OpenNetMeter.Utilities
 {
-    public class DataSizeSuffix
+    internal static class DataSizeSuffix
     {
         //Bytes = false will give the suffix in bits. Size passed to this should aready be multiplied by 8 for bits
-        public static string InStr(long value, int decimalPlaces = 1, bool bytes = true)
+        internal static string InStr(long value, int decimalPlaces = 1, bool bytes = true)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag;
@@ -30,7 +30,7 @@ namespace OpenNetMeter.Utilities
                 return decimal.Round(adjustedSize, 2).ToString() + InBits(mag);
         }
 
-        public static (double, int) InInt(long value, int decimalPlaces = 1)
+        internal static (double, int) InInt(long value, int decimalPlaces = 1)
         {
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag;

@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace OpenNetMeter.Utilities
 {
-    public class BaseCommand : ICommand
+    internal class BaseCommand : ICommand
     {
         private Action<object?> action;
         private bool canExecute;
