@@ -20,6 +20,8 @@ namespace OpenNetMeter.Models
     {
         //---------- private variables ------------//
 
+        private const int OneSec = 1000;
+
         private readonly byte[] defaultIPv4;
         private readonly byte[] defaultIPv6;
         private byte[] localIPv4;
@@ -28,31 +30,48 @@ namespace OpenNetMeter.Models
         public Task? PacketTask; 
 
         //token for network speed
-        private Task? speedTask;
-        private readonly PeriodicTimer timer;
-        private CancellationTokenSource cts_speed;
+        private Task? networkSpeedTask;
+        private readonly PeriodicTimer networkSpeedtimer;
+        private CancellationTokenSource cts_networkSpeed;
+
+        //token for db push speed
+        private Task? dbPushTask;
+        private readonly PeriodicTimer dbPushtimer;
+        private CancellationTokenSource cts_dbPushSpeed;
 
         private TraceEventSession? kernelSession;
 
         public string AdapterName { get; private set; }
 
+        //memory to store the process network details temporarily before updating the views.
         public Dictionary<string, MyProcess_Small?>? MyProcesses { get; private set; }
         public Dictionary<string, MyProcess_Small?>? MyProcessesBuffer { get; private set; }
+
+        //memory to store the process network details temporarily before pushing to the database
+        public Dictionary<string, MyProcess_Small?>? PushToDBBuffer { get; private set; }
+
+        /// <summary>
+        /// why use this 'IsBufferTime'? 
+        /// during its true state, the Recv() in NetworkProcess stores the incoming data to the netProc.MyProcessesBuffer dictionary.
+        /// while its storing there, netProc.MyProcesses data is extracted to parse. Once done, this boolean is set to false
+        /// during the false state, the Recv() function stores data in the netProc.MyProcesses dictionary
+        /// during this, netProc.MyProcessesBuffer data is extracted to parse. 
+        /// </summary>
         public bool IsBufferTime { get; set; }
 
-        //---------- variables with property changers ------------//
         public long CurrentSessionDownloadData;
 
         public long CurrentSessionUploadData;
 
+        public long UploadSpeed;
+
+        //---------- variables with property changers ------------//
         public long downloadSpeed;
         public long DownloadSpeed
         {
             get { return downloadSpeed; }
             set { downloadSpeed = value; OnPropertyChanged("DownloadSpeed"); }
         }
-
-        public long UploadSpeed;
 
         private string isNetworkOnline = "error";
         public string IsNetworkOnline
@@ -79,14 +98,19 @@ namespace OpenNetMeter.Models
             AdapterName = "";
             MyProcesses = new Dictionary<string, MyProcess_Small?>();
             MyProcessesBuffer = new Dictionary<string, MyProcess_Small?>();
+            PushToDBBuffer = new Dictionary<string, MyProcess_Small?>();
             IsBufferTime = false;
 
             kernelSession = null;
             PacketTask = null;
 
-            timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-            speedTask = null;
-            cts_speed = new CancellationTokenSource();
+            networkSpeedtimer = new PeriodicTimer(TimeSpan.FromMilliseconds(OneSec)); // 1 second
+            networkSpeedTask = null;
+            cts_networkSpeed = new CancellationTokenSource();
+
+            dbPushtimer = new PeriodicTimer(TimeSpan.FromMilliseconds(60*OneSec));
+            dbPushTask = null;
+            cts_dbPushSpeed = new CancellationTokenSource();
 
             CurrentSessionUploadData = 0;
             CurrentSessionDownloadData = 0;
@@ -244,7 +268,8 @@ namespace OpenNetMeter.Models
             }
 
             CaptureNetworkPackets(); //start capturing packets
-            speedTask = CaptureNetworkSpeed(); //start logging the speed
+            networkSpeedTask = CaptureNetworkSpeed(); //start logging the speed
+            dbPushTask = DBpush(); //start db push
 
             IsNetworkOnline = AdapterName;
         }
@@ -253,6 +278,7 @@ namespace OpenNetMeter.Models
         {
             StopNetworkCapture();
             StopNetworkSpeed();
+            StopDBpush();
 
             MyProcesses?.Clear();
             //reset speed counters
@@ -264,17 +290,85 @@ namespace OpenNetMeter.Models
             IsNetworkOnline = "Disconnected";
         }
 
-        //---------------------------------- NETWORK SPEED ------------------------------------//
+        //---------------------------------- Database push process ------------------------------------//
+
+        private async Task DBpush()
+        {
+            cts_dbPushSpeed = new CancellationTokenSource();
+            try
+            {
+                Debug.WriteLine("Operation Started : DB push");
+                while (await dbPushtimer.WaitForNextTickAsync(cts_dbPushSpeed.Token))
+                {
+                    Stopwatch sw1 = Stopwatch.StartNew();
+
+                    if (PushToDBBuffer != null)
+                    {
+                        using (ApplicationDB dB = new ApplicationDB(AdapterName))
+                        {
+                            lock (PushToDBBuffer)
+                            {
+                                foreach (KeyValuePair<string, MyProcess_Small?> app in PushToDBBuffer)
+                                {
+                                    dB.PushToDB(app.Key, app.Value!.CurrentDataRecv, app.Value!.CurrentDataSend);
+                                }
+
+                                PushToDBBuffer.Clear();
+                            }
+                        }
+                    }
+
+                    sw1.Stop();
+                    Debug.WriteLine($"elapsed time (DBpush): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
+
+                    //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
+                    //Debug.WriteLine($"networkProcess {DownloadSpeed}");
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                Debug.WriteLine($"db push token invoked: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"db push error: {ex.Message}");
+            }
+        }
+
+        private async void StopDBpush()
+        {
+            try
+            {
+                if (dbPushTask is null)
+                {
+                    return;
+                }
+
+                cts_dbPushSpeed.Cancel();
+                await dbPushTask;
+                dbPushTask = null;
+                cts_dbPushSpeed.Dispose();
+                Debug.WriteLine("Operation Cancelled : DB push");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Stop DB push error: {ex.Message}");
+            }
+        }
+
+        //----------------------------------------------------------------------------------------//
+
+        //---------------------------------- NETWORK SPEED ---------------------------------------//
 
         private async Task CaptureNetworkSpeed()
         {
-            cts_speed = new CancellationTokenSource();
+            cts_networkSpeed = new CancellationTokenSource();
             try
             {
                 long tempDownload = 0;
                 long tempUpload = 0;
                 Debug.WriteLine("Operation Started : Network speed");
-                while (await timer.WaitForNextTickAsync(cts_speed.Token))
+                while (await networkSpeedtimer.WaitForNextTickAsync(cts_networkSpeed.Token))
                 {
                     Stopwatch sw1 = Stopwatch.StartNew();
 
@@ -293,7 +387,7 @@ namespace OpenNetMeter.Models
                     tempDownload = CurrentSessionDownloadData;
 
                     sw1.Stop();
-                    Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
+                    //Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
 
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
@@ -313,15 +407,15 @@ namespace OpenNetMeter.Models
         {
             try
             {
-                if (speedTask is null)
+                if (networkSpeedTask is null)
                 {
                     return;
                 }
 
-                cts_speed.Cancel();
-                await speedTask;
-                speedTask = null;
-                cts_speed.Dispose();
+                cts_networkSpeed.Cancel();
+                await networkSpeedTask;
+                networkSpeedTask = null;
+                cts_networkSpeed.Dispose();
                 Debug.WriteLine("Operation Cancelled : Network speed");
             }
             catch (Exception ex)
@@ -331,22 +425,7 @@ namespace OpenNetMeter.Models
 
         }
 
-        private void StopNetworkCapture()
-        {
-            try
-            {
-                kernelSession?.Dispose();
-                kernelSession = null;
-                PacketTask?.Dispose();
-                PacketTask = null;
-                Debug.WriteLine("Operation Cancelled : Network capture");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Stop network capture error: {ex.Message}");
-            }
-            
-        }
+        //----------------------------------------------------------------------------------------//
 
         //---------------------------------- NETWORK PACKETS ------------------------------------//
 
@@ -382,6 +461,25 @@ namespace OpenNetMeter.Models
                 }
             });
         }
+
+        private void StopNetworkCapture()
+        {
+            try
+            {
+                kernelSession?.Dispose();
+                kernelSession = null;
+                PacketTask?.Dispose();
+                PacketTask = null;
+                Debug.WriteLine("Operation Cancelled : Network capture");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Stop network capture error: {ex.Message}");
+            }
+
+        }
+
+        //-----------------------------------------------------------------------------------------//
 
         //upload events
         private void Kernel_UdpIpSendIPV6(UpdIpV6TraceData obj)
@@ -485,6 +583,13 @@ namespace OpenNetMeter.Models
             }
         }
 
+        // 
+        // How this works,
+        // Recv() runs every second adding the process name and size of the packet to memory (MyProcesses Dictionary) temporarily.
+        // this data is accessed and shown in the GUI. While accessing this data, the recv() adds the incoming process details to another memory container (MyProcessBuffer Dictionary)
+        // When accessing the buffer memory to show in GUI, Recv() alternates and adds the process details to the initial memory container (MyProcesses)
+        // The function alternates between these 2 memory containers.
+        //
         private void Recv(string name, in int size)
         {
             CurrentSessionDownloadData += (long)size;
@@ -596,6 +701,25 @@ namespace OpenNetMeter.Models
         {
             if (IsNetworkOnline != "Disconnected")
                 EndNetworkProcess();
+
+            if(PushToDBBuffer != null)
+            {
+                if (PushToDBBuffer.Count > 0)
+                {
+                    using (ApplicationDB dB = new ApplicationDB(AdapterName))
+                    {
+                        lock (PushToDBBuffer)
+                        {
+                            foreach (KeyValuePair<string, MyProcess_Small?> app in PushToDBBuffer)
+                            {
+                                dB.PushToDB(app.Key, app.Value!.CurrentDataRecv, app.Value!.CurrentDataSend);
+                            }
+
+                            PushToDBBuffer.Clear();
+                        }
+                    }
+                }
+            }
         }
     }
 }

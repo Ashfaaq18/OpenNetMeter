@@ -163,7 +163,7 @@ namespace OpenNetMeter.ViewModels
             for(int i = 0; i<fileArray.Length; i++)
             {
                 Profiles?.Add(Path.GetFileNameWithoutExtension(fileArray[i]));
-                Debug.WriteLine(Path.GetFileNameWithoutExtension(fileArray[i]));
+                //Debug.WriteLine(Path.GetFileNameWithoutExtension(fileArray[i]));
             }
             if (Profiles?.Count > 0)
                 SelectedProfile = Profiles?[0];

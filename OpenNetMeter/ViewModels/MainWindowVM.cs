@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using OpenNetMeter.Models;
-using System.Threading.Tasks;
 using System.Linq;
 using OpenNetMeter.Utilities;
 
@@ -55,6 +54,9 @@ namespace OpenNetMeter.ViewModels
 
         private DateTime date1;
         private DateTime date2;
+
+        private long initTodayTotalDownloadData = 0;
+        private long initTodayTotalUploadData = 0;
 
         private enum TabPage
         {
@@ -110,6 +112,14 @@ namespace OpenNetMeter.ViewModels
 
             //assign basecommand
             SwitchTabCommand = new BaseCommand(SwitchTab, true);
+
+            //get todays data usage details from the database
+            using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
+            {
+                (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
+                initTodayTotalDownloadData = todaySum.Item1;
+                initTodayTotalUploadData = todaySum.Item2;
+            }
         }
 
         private void Svm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -141,29 +151,20 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private void UpdateSummaryTab()
+        private void UpdateMainWinSpeed()
         {
-
-        }
-
-        private void UpdateDetailedTab()
-        {
-
-        }
-
-        private void UpdateData()
-        {
-            date2 = DateTime.Now;
-            // -------------- Set network speed across all vms -------------- //
-
-            //main window speed variables
             DownloadSpeed = netProc.DownloadSpeed;
             UploadSpeed = netProc.UploadSpeed;
+        }
 
-            //mini widget speed variables
+        private void UpdateMiniWidgetSpeed()
+        {
             mwvm.DownloadSpeed = DownloadSpeed;
             mwvm.UploadSpeed = UploadSpeed;
+        }
 
+        private void UpdateSummaryTab()
+        {
             //summary tab graph points
             dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
 
@@ -171,16 +172,21 @@ namespace OpenNetMeter.ViewModels
             dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
 
-            // -------------- Update current session details -------------- //
-            if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dudvm.MyProcesses != null)
+            dusvm.TodayDownloadData = initTodayTotalDownloadData + netProc.CurrentSessionDownloadData;
+            dusvm.TodayUploadData = initTodayTotalUploadData + netProc.CurrentSessionUploadData;
+        }
+
+        private void UpdateDetailedTab()
+        {
+            if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dudvm.MyProcesses != null && netProc.PushToDBBuffer != null)
             {
-                //Debug.WriteLine("Buffer var: Start");
                 using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
                 {
                     if (dB.CreateTable() < 0)
                         Debug.WriteLine("Error: Create table");
                     else
                     {
+                        //when the application stays open during a day transition
                         if ((date2.Date - date1.Date).Days > 0)
                         {
                             dusvm.TodayDownloadData = 0;
@@ -195,12 +201,6 @@ namespace OpenNetMeter.ViewModels
                             dudvm.MyProcesses[app.Key].CurrentDataRecv = 0;
                             dudvm.MyProcesses[app.Key].CurrentDataSend = 0;
                         }
-
-                        // why use this 'IsBufferTime'? 
-                        // during its true state, the Recv() in NetworkProcess stores the incoming data to the netProc.MyProcessesBuffer dictionary
-                        // while its storing there, netProc.MyProcesses data is extracted to parse. Once done, this boolean is set to false
-                        // during the false state, the Recv() function stores data in the netProc.MyProcesses dictionary
-                        // during this, netProc.MyProcessesBuffer data is extracted to parse.
 
                         netProc.IsBufferTime = true;
 
@@ -219,27 +219,28 @@ namespace OpenNetMeter.ViewModels
                                 dudvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
                                 dudvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
 
-                                dB.InsertUniqueRow_ProcessTable(app.Key);
+                                /*
+                                Debug.WriteLine($"CurrentDataRecv:  {dudvm.MyProcesses[app.Key].CurrentDataRecv} , "    +
+                                                $"CurrentDataSend:  {dudvm.MyProcesses[app.Key].CurrentDataSend} , "    +
+                                                $"TotalDataRecv:    {dudvm.MyProcesses[app.Key].TotalDataRecv} , "      +
+                                                $"TotalDataSend:    {dudvm.MyProcesses[app.Key].TotalDataSend} , "      );
+                                */
 
-                                long dateID = dB.GetID_DateTable(DateTime.Today);
-                                long processID = dB.GetID_ProcessTable(app.Key);
-
-                                if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID,
-                                    dudvm.MyProcesses[app.Key].TotalDataRecv,
-                                    dudvm.MyProcesses[app.Key].TotalDataSend) < 1)
+                                lock (netProc.PushToDBBuffer)
                                 {
-                                    dB.UpdateRow_ProcessDateTable(processID, dateID,
-                                        app.Value!.CurrentDataRecv,
-                                        app.Value!.CurrentDataSend);
+                                    //push data to a buffer which will be pushed to the DB later
+                                    netProc.PushToDBBuffer!.TryAdd(app.Key, new MyProcess_Small(app.Key, 0, 0));
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv += dudvm.MyProcesses[app.Key].CurrentDataRecv;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataSend += dudvm.MyProcesses[app.Key].CurrentDataSend;
                                 }
                             }
 
                             netProc.MyProcesses.Clear();
                         }
-                        
+
                         netProc.IsBufferTime = false;
-                        
-                        lock(netProc.MyProcessesBuffer)
+
+                        lock (netProc.MyProcessesBuffer)
                         {
                             foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcessesBuffer) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
                             {
@@ -254,30 +255,33 @@ namespace OpenNetMeter.ViewModels
                                 dudvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
                                 dudvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
 
-                                dB.InsertUniqueRow_ProcessTable(app.Key);
-
-                                long dateID = dB.GetID_DateTable(DateTime.Today);
-                                long processID = dB.GetID_ProcessTable(app.Key);
-
-                                if (dB.InsertUniqueRow_ProcessDateTable(processID, dateID,
-                                    dudvm.MyProcesses[app.Key].TotalDataRecv,
-                                    dudvm.MyProcesses[app.Key].TotalDataSend) < 1)
+                                lock (netProc.PushToDBBuffer)
                                 {
-                                    dB.UpdateRow_ProcessDateTable(processID, dateID,
-                                        app.Value!.CurrentDataRecv,
-                                        app.Value!.CurrentDataSend);
+                                    //push data to a buffer which will be pushed to the DB later
+                                    netProc.PushToDBBuffer!.TryAdd(app.Key, new MyProcess_Small(app.Key, 0, 0));
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dudvm.MyProcesses[app.Key].TotalDataRecv;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dudvm.MyProcesses[app.Key].TotalDataSend;
                                 }
                             }
 
                             netProc.MyProcessesBuffer.Clear();
                         }
-
-                        (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
-                        dusvm.TodayDownloadData = todaySum.Item1;
-                        dusvm.TodayUploadData = todaySum.Item2;
                     }
                 }
             }
+        }
+
+        private void UpdateData()
+        {
+            date2 = DateTime.Now;
+
+            UpdateMainWinSpeed();
+
+            UpdateMiniWidgetSpeed();
+
+            UpdateSummaryTab();
+
+            UpdateDetailedTab();
         }
 
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -313,7 +317,7 @@ namespace OpenNetMeter.ViewModels
                     break;
             }
             sw.Stop();
-            Debug.WriteLine($"elapsed time (NetProc): {sw.ElapsedMilliseconds}");
+            // Debug.WriteLine($"elapsed time (NetProc): {sw.ElapsedMilliseconds}");
         }
 
         private void SwitchTab(object? obj)
@@ -369,6 +373,7 @@ namespace OpenNetMeter.ViewModels
         public void Dispose()
         {
             duhvm.Dispose();
+
             if (netProc != null)
             {
                 netProc.PropertyChanged -= NetProc_PropertyChanged;
