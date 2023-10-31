@@ -20,14 +20,6 @@ namespace OpenNetMeter.Models
             dB = new Database(GetFilePath(), dBFileName, extraParams);
         }
 
-        private string TrimString(string str)
-        {
-            str = string.Join("", str.Split(" ", StringSplitOptions.RemoveEmptyEntries));
-            str = string.Join("", str.Split("(", StringSplitOptions.RemoveEmptyEntries));
-            str = string.Join("", str.Split(")", StringSplitOptions.RemoveEmptyEntries));
-            return str;
-        }
-
         public static string GetFilePath()
         {
             string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
@@ -35,6 +27,20 @@ namespace OpenNetMeter.Models
             path = Path.Combine(path, appName ?? "OpenNetMeter");
             Directory.CreateDirectory(path);
             return path;
+        }
+
+        public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
+        {
+            InsertUniqueRow_ProcessTable(processName);
+
+            long dateID = GetID_DateTable(DateTime.Today);
+            long processID = GetID_ProcessTable(processName);
+
+            //if the current process is in the ProcessDate table, update that row. else, insert a new row with the accumulated data values
+            if (InsertUniqueRow_ProcessDateTable(processID, dateID, totalDataRecv, totalDataSend) < 1)
+            {
+                UpdateRow_ProcessDateTable(processID, dateID, totalDataRecv, totalDataSend);
+            }
         }
 
         //
