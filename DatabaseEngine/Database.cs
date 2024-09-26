@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
-using System.IO;
 
 namespace DatabaseEngine
 {
@@ -59,19 +58,16 @@ namespace DatabaseEngine
             int rowChangeCount = 0;
             try
             {
-                if (command != null)
+                if (command == null) return -2;
+
+                //Debug.WriteLine(query);
+                command.CommandText = query;
+                for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
-                    //Debug.WriteLine(query);
-                    command.CommandText = query;
-                    for (int i = 0; i < paramAndValue.GetLength(0); i++)
-                    {
-                        command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
-                    }
-                    command.Prepare();
-                    rowChangeCount = command.ExecuteNonQuery();
+                    command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                 }
-                else
-                    rowChangeCount = -2;
+                command.Prepare();
+                rowChangeCount = command.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
@@ -87,27 +83,28 @@ namespace DatabaseEngine
 
             try
             {
-                if (command != null)
+                if (command == null) return temp;
+
+                command.CommandText = query;
+                using SQLiteDataReader reader = command.ExecuteReader();
+                if (!reader.HasRows)
                 {
-                    command.CommandText = query;
-                    using (SQLiteDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.HasRows)
-                        {
-                            while (reader.Read())
-                            {
-                                temp.Add(new List<object>());
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    temp[temp.Count - 1].Add(reader[i]);
-                                    //Debug.Write($"{reader[i]} {reader.GetFieldType(i)}|");
-                                }
-                                //Debug.WriteLine("");
-                            }
-                        }
-                        reader.Close();
-                    }
+                    reader.Close();
+                    return temp;
                 }
+
+                while (reader.Read())
+                {
+                    temp.Add(new List<object>());
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        temp[temp.Count - 1].Add(reader[i]);
+                        Debug.Write($"DB stuff, GetMultipleCellData: {reader[i]} {reader.GetFieldType(i)}|");
+                    }
+                    //Debug.WriteLine("");
+                }
+
+                reader.Close();
             }
             catch (Exception ex)
             {
@@ -123,33 +120,33 @@ namespace DatabaseEngine
 
             try
             {
-                if (command != null)
+                if (command == null) return temp;
+
+                command.CommandText = query;
+                for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
-                    command.CommandText = query;
-                    for (int i = 0; i < paramAndValue.GetLength(0); i++)
-                    {
-                        command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
-                    }
-                    command.Prepare();
-                    using (SQLiteDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.HasRows)
-                        {
-                            while (reader.Read())
-                            {
-                                temp.Add(new List<object>());
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    temp[temp.Count - 1].Add(reader[i]);
-                                   // Debug.Write($"{reader[i]} {reader.GetFieldType(i)}|");
-                                }
-                                //Debug.WriteLine("");
-                            }
-                        }
-                        reader.Close();
-                    }
+                    command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                 }
-                    
+                command.Prepare();
+                using SQLiteDataReader reader = command.ExecuteReader();
+                if (!reader.HasRows)
+                {
+                    reader.Close();
+                    return temp;
+                }
+
+                while (reader.Read())
+                {
+                    temp.Add(new List<object>());
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        temp[temp.Count - 1].Add(reader[i]);
+                        Debug.Write($"DB stuff, GetMultipleCellData: {reader[i]} {reader.GetFieldType(i)}|");
+                    }
+                    Debug.WriteLine("");
+                }
+                reader.Close();
+
             }
             catch (Exception ex)
             {
@@ -164,27 +161,24 @@ namespace DatabaseEngine
             object? temp = null;
             try
             {
-                if(command != null)
+                if (command == null) return temp;
+
+                command.CommandText = query;
+                for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
-                    command.CommandText = query;
-                    for (int i = 0; i < paramAndValue.GetLength(0); i++)
+                    command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
+                }
+                command.Prepare();
+                using SQLiteDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
                     {
-                        command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
-                    }
-                    command.Prepare();
-                    using (SQLiteDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.HasRows)
-                        {
-                            while (reader.Read())
-                            {
-                                //Debug.Write($"GetSingleCellData : {reader[0]} {reader.GetFieldType(0)}|");
-                                return reader[0];
-                            }
-                        }
-                        reader.Close();
+                        Debug.Write($"DB stuff, GetSingleCellData : {reader[0]} {reader.GetFieldType(0)}|");
+                        return reader[0];
                     }
                 }
+                reader.Close();
             }
             catch (Exception ex)
             {
