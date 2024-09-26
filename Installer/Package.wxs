@@ -1,0 +1,34 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="OpenNetMeter" 
+		   Manufacturer="Ashfaaq18" 
+		   Version="1.0.0.0" 
+		   UpgradeCode="22b9d969-70c5-4092-b496-36ee53caa9e1">
+    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+
+	<!-- UI stuff-->
+	<UIRef Id="InstallerUI" />
+
+	<!-- components to install -->
+	<Feature Id="ProductFeature" Title="OpenNetMeter.Msi" Level="1">
+		<ComponentGroupRef Id="ProductComponents" />
+	</Feature>
+	  
+  </Package>
+
+	<!-- Files to install -->
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
+			<Component Id="ProductComponent">
+				<File Source="..\OpenNetMeter\bin\Debug\net8.0-windows\OpenNetMeter.exe"/>
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+
+	<!-- location to be installed which is referred above -->
+	<Fragment>
+		<StandardDirectory Id="ProgramFiles6432Folder">
+			<Directory Id="InstallFolder" Name="OpenNetMeter"/>
+		</StandardDirectory>
+	</Fragment>
+	
+</Wix>
