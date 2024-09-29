@@ -9,7 +9,7 @@
 	<UIRef Id="InstallerUI" />
 
 	<!-- components to install -->
-	<Feature Id="ProductFeature" Title="OpenNetMeter.Msi" Level="1">
+	<Feature Id="Main">
 		<ComponentGroupRef Id="ProductComponents" />
 	</Feature>
 	  
@@ -18,9 +18,20 @@
 	<!-- Files to install -->
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
-			<Component Id="ProductComponent">
-				<File Source="..\OpenNetMeter\bin\Debug\net8.0-windows\OpenNetMeter.exe"/>
-			</Component>
+			<Files Include="..\OpenNetMeter\bin\Debug\net8.0-windows\**">
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\*.pdb" />
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\de\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\es\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\fr\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\it\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\ja\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\pl\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\ru\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\sv\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\tr\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\zh-CN\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\zh-Hant\**"/>
+			</Files>
 		</ComponentGroup>
 	</Fragment>
 
