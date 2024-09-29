@@ -40,6 +40,11 @@
 				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\tr\**"/>
 				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\zh-CN\**"/>
 				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\zh-Hant\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\x86\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\arm64\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\runtimes\linux-x64\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\runtimes\osx-x64\**"/>
+				<Exclude Files="..\OpenNetMeter\bin\Debug\net8.0-windows\runtimes\win-x86\**"/>
 			</Files>
 		</ComponentGroup>
 	</Fragment>
