@@ -14,7 +14,7 @@ namespace OpenNetMeter.Views
         private Rect parentWindowRect;
         public AboutWindow(Rect parentWindowRect_param)
         {
-            this.Resources.Add("AppVersion", "Version: " + Assembly.GetExecutingAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
+            this.Resources.Add("AppVersion", "Version: " + Assembly.GetExecutingAssembly()?.GetName().Version);
             InitializeComponent();
             parentWindowRect = parentWindowRect_param;
         }
