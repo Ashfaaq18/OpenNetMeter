@@ -1,10 +1,19 @@
-﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+	 xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
   <Package Name="OpenNetMeter" 
 		   Manufacturer="Ashfaaq18" 
 		   Version="1.0.0.0" 
 		   UpgradeCode="22b9d969-70c5-4092-b496-36ee53caa9e1">
     <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
 
+	<MediaTemplate EmbedCab="yes"/>
+	  
+	<netfx:DotNetCompatibilityCheck Id="netCoreStatus"
+    Property="NETCORESTATUS" RollForward="latestMajor"
+    RuntimeType="core" Version="8.0.1" Platform="x64" />
+	<Launch Condition="Installed OR NETCORESTATUS=&quot;0&quot;"
+		Message="[ProductName] requires Microsoft .NET 8.0 Runtime." />
+	  
 	<!-- UI stuff-->
 	<UIRef Id="InstallerUI" />
 
