@@ -7,10 +7,13 @@
     <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
 
 	<MediaTemplate EmbedCab="yes"/>
-	  
-	<netfx:DotNetCompatibilityCheck Id="netCoreStatus"
-    Property="NETCORESTATUS" RollForward="latestMajor"
-    RuntimeType="core" Version="8.0.1" Platform="x64" />
+
+	<netfx:DotNetCompatibilityCheck Id="netCoreStatus64"
+	Property="NETCORESTATUS" RollForward="latestMajor"
+	RuntimeType="core" Version="8.0.1" Platform="x64" />
+	<netfx:DotNetCompatibilityCheck Id="netCoreStatus86"
+	Property="NETCORESTATUS" RollForward="latestMajor"
+	RuntimeType="core" Version="8.0.1" Platform="x86" />
 	<Launch Condition="Installed OR NETCORESTATUS=&quot;0&quot;"
 		Message="[ProductName] requires Microsoft .NET 8.0 Runtime." />
 	  
