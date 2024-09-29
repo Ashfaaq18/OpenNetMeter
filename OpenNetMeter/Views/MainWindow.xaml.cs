@@ -132,7 +132,7 @@ namespace OpenNetMeter.Views
             switch (e.Button)
             {
                 case Forms.MouseButtons.Right:
-                    if(trayIcon != null)
+                    if(trayIcon != null && trayIcon.ContextMenuStrip != null)
                     {
                         if (Properties.Settings.Default.DarkMode)
                             trayIcon.ContextMenuStrip.ForeColor = Color.White;
@@ -246,7 +246,7 @@ namespace OpenNetMeter.Views
         {
             if (!balloonShow && trayIcon != null)
             {
-                trayIcon.ShowBalloonTip(1000, null, "Minimized to system tray", Forms.ToolTipIcon.None);
+                trayIcon.ShowBalloonTip(1000, "", "Minimized to system tray", Forms.ToolTipIcon.None);
                 balloonShow = true;
             }
             if(aboutWin != null)
