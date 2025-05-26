@@ -16,6 +16,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseEngine", "DatabaseEngine\DatabaseEngine.csproj", "{49CF6C08-3735-449D-AB1E-33BF6EDEAE4E}"
 EndProject
 Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "OpenNetMeter-Installer", "Installer\OpenNetMeter-Installer.wixproj", "{99E49CF2-A3E6-42D9-B41C-06E2CFDC77AA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{711263C7-44E1-4694-8B30-E65FBD2ECBF2} = {711263C7-44E1-4694-8B30-E65FBD2ECBF2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

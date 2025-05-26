@@ -1,0 +1,8 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="DowngradeError" Value="A newer version of [ProductName] is already installed." />
+
+  <String Id="PrerequisitesDlg_Title" Value="[ProductName] Setup" />
+  <String Id="PrerequisitesDlgBitmap" Value="WixUI_Bmp_Banner" />
+  <String Id="PrerequisitesDlgTitle" Value="Prerequisites of [ProductName]" />
+  <String Id="PrerequisitesDlgDescription" Value="List and state of prerequisites. Install them manually or use the bootstrapper of [ProductName]" />
+</WixLocalization>
