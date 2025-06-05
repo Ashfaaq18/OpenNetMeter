@@ -4,13 +4,16 @@
 name: Build the agent
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       buildType:
         description: "Build type: Release (default) or debug"
         required: true
         default: "release"
-        type: string
+        type: choice
+        options:
+          - release
+          - debug
 
 jobs:
   build:
