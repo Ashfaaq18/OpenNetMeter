@@ -3,7 +3,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
 	 xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
 	<Package Language="1033"
-		 Name="$(var.ProductName)" Version="$(var.ProductVersion)" Manufacturer="$(var.Manufacturer)"
+		 Name="$(ProductName)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)"
 		 UpgradeCode="c8795db6-2426-4f40-a615-671f26fcaf3a" InstallerVersion="200">
 
 		<MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
@@ -29,14 +29,14 @@
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
 			<!-- Files to install -->
-			<Files Include="$(SolutionDir)$(var.ProductName)\bin\$(var.Configuration)\$(var.TargetFramework)\**" />
+			<Files Include="$(SolutionDir)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
 		</ComponentGroup>
 	</Fragment>
 
 	<!-- location to be installed which is referred above -->
 	<Fragment>
 		<StandardDirectory Id="ProgramFiles6432Folder">
-			<Directory Id="InstallFolder" Name="$(var.ProductName)"/>
+			<Directory Id="InstallFolder" Name="$(ProductName)"/>
 		</StandardDirectory>
 	</Fragment>
 
