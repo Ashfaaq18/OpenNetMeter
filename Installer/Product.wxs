@@ -1,5 +1,4 @@
 <!-- Import global variables -->
-<?include Variables.wxi ?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
 	 xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
@@ -18,10 +17,10 @@
 				Message="[ProductName] requires Microsoft .NET 8.0 Runtime." />
 		
 		<!-- UI stuff-->
-		<UIRef Id="WixUI_KargWareFeatureTree" />
+		<UIRef Id="WixUIFeatureTree" />
 
 		<!-- components to install -->
-		<Feature Id="ProductFeature" Title="WixToolset_Tutorials.Msi" Level="1">
+		<Feature Id="ProductFeature" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
 		
