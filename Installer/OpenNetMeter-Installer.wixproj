@@ -5,8 +5,6 @@
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-	  <ProductName>OpenNetMeter</ProductName>
-	  <Manufacturer>Ashfaaq18</Manufacturer>
     <!-- Optional: fallback -->
 	  <DefineConstants>
 		  $(DefineConstants);

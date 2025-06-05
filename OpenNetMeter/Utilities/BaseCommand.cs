@@ -18,7 +18,11 @@ namespace OpenNetMeter.Utilities
             return canExecute;
         }
 
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add { }    // to silence warning
+            remove { } // to silence warning
+        }
 
         public void Execute(object? parameter)
         {
