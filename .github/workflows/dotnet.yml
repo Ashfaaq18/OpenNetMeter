@@ -17,16 +17,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actionscheckout@v4
-    - name: Setup .NET
-      uses: actionssetup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
