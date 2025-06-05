@@ -14,7 +14,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.x'   # adjust if you target a different SDK
+          dotnet-version: '8'   # adjust if you target a different SDK
 
       - name: Restore dependencies
         run: dotnet restore ./OpenNetMeter.sln
