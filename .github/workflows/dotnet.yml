@@ -1,23 +1,22 @@
-# This workflow will build a .NET project
-# For more information see httpsdocs.github.comenactionsautomating-builds-and-testsbuilding-and-testing-net
-
-name: Build the agent
-
+name: OpenNetMeter Manual Build
 on:
   workflow_dispatch:
-    inputs:
-      buildType:
-        description: "Build type: Release (default) or debug"
-        required: true
-        default: "release"
-        type: choice
-        options:
-          - release
-          - debug
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'   # adjust if you target a different SDK
+
+      - name: Restore dependencies
+        run: dotnet restore ./OpenNetMeter.sln
+
+      - name: Build solution (Release)
+        run: dotnet build ./OpenNetMeter.sln --configuration Release --no-restore
