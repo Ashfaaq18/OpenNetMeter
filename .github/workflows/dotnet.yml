@@ -1,4 +1,4 @@
-name: OpenNetMeter Manual Build
+﻿name: OpenNetMeter Manual Build
 
 on:
   workflow_dispatch:
@@ -21,3 +21,27 @@ jobs:
 
       - name: Build solution (Release)
         run: dotnet build ./OpenNetMeter.sln --configuration Release --no-restore
+
+        # ── Create (or find) a DRAFT release ──────────────────────────────────
+      - name: Create or update draft release
+        id: draft_release
+        uses: actions/create-release@v1
+        with:
+          # Use a fixed tag so that repeated runs update the same draft
+          tag_name: opennetmeter-draft
+          release_name: "OpenNetMeter (Draft Release)"
+          draft: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Upload the MSI into that draft release ────────────────────────────
+      - name: Upload MSI to draft release
+        uses: actions/upload-release-asset@v2
+        with:
+          upload_url: ${{ steps.draft_release.outputs.upload_url }}
+          asset_path: OpenNetMeter/Installer/bin/x64/Release/en-us/OpenNetMeter-*.msi
+          asset_name: OpenNetMeter-${{ github.run_number }}.msi
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
