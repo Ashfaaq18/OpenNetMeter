@@ -24,15 +24,13 @@
 		<Feature Id="ProductFeature" Title="WixToolset_Tutorials.Msi" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
-
+		
 	</Package>
-
-	<!-- Files to install -->
+	
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
-			<Component Id="ProductComponent">
-				<File Source="$(SolutionDir)$(var.ProductName)\bin\$(var.Configuration)\$(var.TargetFramework)\OpenNetMeter.exe" />
-			</Component>
+			<!-- Files to install -->
+			<Files Include="$(SolutionDir)$(var.ProductName)\bin\$(var.Configuration)\$(var.TargetFramework)\**" />
 		</ComponentGroup>
 	</Fragment>
 
