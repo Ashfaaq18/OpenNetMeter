@@ -39,9 +39,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.draft_release.outputs.upload_url }}
-          # Use a glob (**) to find the .msi regardless of exact subfolder depth
           asset_path: |
-            **/Installer/bin/x64/Release/en-us/OpenNetMeter-*.msi
+            Installer/bin/x64/Release/en-us/OpenNetMeter-*.msi
           asset_name: OpenNetMeter-latest.msi
           asset_content_type: application/octet-stream
         env:
