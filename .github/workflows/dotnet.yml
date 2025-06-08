@@ -34,13 +34,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ─── Upload the .msi into that Draft Release (overwrite each run) ──────
+      - name: Find built MSI
+        id: find_msi
+        shell: cmd
+        run: |
+          for %%F in (Installer\bin\x64\Release\en-us\OpenNetMeter-*.msi) do (
+            echo "msi_path=%%F" >> %GITHUB_OUTPUT%
+          )
+
       - name: Upload MSI to draft release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.draft_release.outputs.upload_url }}
-          asset_path: |
-            Installer/bin/x64/Release/en-us/OpenNetMeter-**.msi
+          asset_path: ${{ steps.find_msi.outputs.msi_path }}
           asset_name: OpenNetMeter-latest.msi
           asset_content_type: application/octet-stream
         env:
