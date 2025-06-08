@@ -1,4 +1,4 @@
-﻿name: OpenNetMeter → Update Single Draft Release
+﻿name: Build OpenNetMeter msi and push to Single Draft Release
 
 on:
   workflow_dispatch:
@@ -22,7 +22,6 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build .\OpenNetMeter.sln --configuration Release --no-restore
 
-      # ─── Create (or update) a single Draft Release ─────────────────────────
       - name: Create or update draft release
         id: draft_release
         uses: actions/create-release@v1
@@ -36,11 +35,14 @@ jobs:
 
       - name: Find built MSI
         id: find_msi
-        shell: cmd
+        shell: pwsh
         run: |
-          for %%F in (Installer\bin\x64\Release\en-us\OpenNetMeter-*.msi) do (
-            echo "msi_path=%%F" >> %GITHUB_OUTPUT%
-          )
+          # Look for the MSI in the installer output folder
+          $msi = Get-ChildItem -Path "$PWD\Installer\bin\x64\Release\en-us" -Filter "OpenNetMeter-*.msi" | Select-Object -First 1
+          if (-not $msi) { throw "❌ No MSI found in Installer/bin/x64/Release/en-us" }
+          # Emit the path *relative* to the repo root (remove the working-dir prefix)
+          $rel = $msi.FullName.Substring($PWD.Length + 1) 
+          Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
 
       - name: Upload MSI to draft release
         uses: actions/upload-release-asset@v1
