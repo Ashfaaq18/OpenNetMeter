@@ -33,23 +33,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # … your Build & Create-Release steps above …
+
       - name: Find built MSI
         id: find_msi
         shell: pwsh
         run: |
-          # Look for the MSI in the installer output folder
-          $msi = Get-ChildItem -Path "$PWD\Installer\bin\x64\Release\en-us" -Filter "OpenNetMeter-*.msi" | Select-Object -First 1
-          if (-not $msi) { throw "❌ No MSI found in Installer/bin/x64/Release/en-us" }
-          # Emit the path *relative* to the repo root (remove the working-dir prefix)
-          $rel = $msi.FullName.Substring($PWD.Length + 1) 
-          Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
+          # Absolute folder where the MSI was output
+          $installerFolder = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
+          # Grab the first MSI matching your pattern
+          $msi = Get-ChildItem -Path $installerFolder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
+          if (-not $msi) { throw '❌ No MSI found in Installer/bin/x64/Release/en-us' }
+
+          # Build a relative path (no leading slash) from the repo root
+          $relative = "Installer\bin\x64\Release\en-us\$($msi.Name)"
+
+          # Emit for the next step
+          "msi_path=$relative" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Upload MSI to draft release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.draft_release.outputs.upload_url }}
-          asset_path: ${{ steps.find_msi.outputs.msi_path }}
-          asset_name: OpenNetMeter-latest.msi
+          upload_url:   ${{ steps.draft_release.outputs.upload_url }}
+          asset_path:   ${{ steps.find_msi.outputs.msi_path }}
+          asset_name:   OpenNetMeter-latest.msi
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
