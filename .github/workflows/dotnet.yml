@@ -40,7 +40,7 @@ jobs:
         with:
           upload_url: ${{ steps.draft_release.outputs.upload_url }}
           asset_path: |
-            Installer/bin/x64/Release/en-us/OpenNetMeter-*.msi
+            Installer/bin/x64/Release/en-us/*.msi
           asset_name: OpenNetMeter-latest.msi
           asset_content_type: application/octet-stream
         env:
