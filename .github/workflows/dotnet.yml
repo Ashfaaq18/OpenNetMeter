@@ -1,4 +1,4 @@
-﻿name: OpenNetMeter → Update Single Draft Release
+﻿name: Build OpenNetMeter msi and push to Single Draft Release
 
 on:
   workflow_dispatch:
@@ -22,27 +22,34 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build .\OpenNetMeter.sln --configuration Release --no-restore
 
+      - name: Create or update draft release
+        id: draft_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: opennetmeter-draft
+          release_name: "OpenNetMeter (Draft Release)"
+          draft: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Find built MSI
         id: find_msi
         shell: pwsh
         run: |
-          # Where the MSI lands
-          $installerFolder = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
-          $msi = Get-ChildItem $installerFolder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
-          if (-not $msi) { throw '❌ No MSI found!' }
-
-          # Strip off the workspace prefix and normalize to forward-slashes
-          $rel = $msi.FullName
-            .Substring($Env:GITHUB_WORKSPACE.Length + 1)
-            .Replace('\','/')
+          # Look for the MSI in the installer output folder
+          $msi = Get-ChildItem -Path "$PWD\Installer\bin\x64\Release\en-us" -Filter "OpenNetMeter-*.msi" | Select-Object -First 1
+          if (-not $msi) { throw "❌ No MSI found in Installer/bin/x64/Release/en-us" }
+          # Emit the path *relative* to the repo root (remove the working-dir prefix)
+          $rel = $msi.FullName.Substring($PWD.Length + 1) 
           Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
 
-      - name: Create or update draft release & upload MSI
-        uses: ncipollo/release-action@v1
+      - name: Upload MSI to draft release
+        uses: actions/upload-release-asset@v1
         with:
-          token:        ${{ secrets.GITHUB_TOKEN }}
-          tag:          opennetmeter-draft
-          name:         "OpenNetMeter (Draft Release)"
-          draft:        true
-          allowUpdates: true
-          files:        ${{ steps.find_msi.outputs.msi_path }}
+          upload_url: ${{ steps.draft_release.outputs.upload_url }}
+          asset_path: ${{ steps.find_msi.outputs.msi_path }}
+          asset_name: OpenNetMeter-latest.msi
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
