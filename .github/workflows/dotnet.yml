@@ -22,26 +22,27 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build .\OpenNetMeter.sln --configuration Release --no-restore
 
-      # ─── Find the exact MSI path ────────────────────────────────────
       - name: Find built MSI
         id: find_msi
         shell: pwsh
         run: |
-          $installer = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
-          $msi = Get-ChildItem -Path $installer -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
-          if (-not $msi) { throw '❌ No MSI found in Installer/bin/x64/Release/en-us' }
+          # Where the MSI lands
+          $installerFolder = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
+          $msi = Get-ChildItem $installerFolder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
+          if (-not $msi) { throw '❌ No MSI found!' }
 
-          # Emit a relative path (forward‐slashes) so the release-action can pick it up
-          $rel = "Installer/bin/x64/Release/en-us/$($msi.Name)"
+          # Strip off the workspace prefix and normalize to forward-slashes
+          $rel = $msi.FullName
+            .Substring($Env:GITHUB_WORKSPACE.Length + 1)
+            .Replace('\','/')
           Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
 
-      # ─── Create or update the one Draft Release & upload the MSI ────
-      - name: Publish draft release (create or update)
+      - name: Create or update draft release & upload MSI
         uses: ncipollo/release-action@v1
         with:
-          token:       ${{ secrets.GITHUB_TOKEN }}
-          tag:         opennetmeter-draft
-          name:        "OpenNetMeter (Draft Release)"
-          draft:       true
+          token:        ${{ secrets.GITHUB_TOKEN }}
+          tag:          opennetmeter-draft
+          name:         "OpenNetMeter (Draft Release)"
+          draft:        true
           allowUpdates: true
-          artifacts:   ${{ steps.find_msi.outputs.msi_path }}
+          files:        ${{ steps.find_msi.outputs.msi_path }}
