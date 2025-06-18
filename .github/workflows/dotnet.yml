@@ -34,8 +34,9 @@ jobs:
             -Filter 'OpenNetMeter-*.msi' `
             | Select-Object -First 1
           if (-not $msi) { throw '❌ No MSI found!' }
-          # Emit the *absolute* path:
-          Write-Host "msi_path=$($msi.FullName)" >> $Env:GITHUB_OUTPUT
+
+          # Properly set the output so it can be consumed later:
+          "msi_path=$($msi.FullName)" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Create or Update Draft Release & Upload MSI
         uses: ncipollo/release-action@v1
