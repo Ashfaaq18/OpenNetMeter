@@ -6,9 +6,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
-    <Version>0.13.0</Version>
-    <AssemblyName>OpenNetMeter</AssemblyName>
-    <StartupObject>OpenNetMeter.App</StartupObject>
+    <Version>$(ProductVersion)</Version>
+    <AssemblyName>$(ProductName)</AssemblyName>
     <Win32Resource />
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PlatformTarget>AnyCPU</PlatformTarget>

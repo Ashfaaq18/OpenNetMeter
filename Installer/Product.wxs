@@ -1,0 +1,43 @@
+<!-- Import global variables -->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+	 xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+	<Package Language="1033"
+		 Name="$(ProductName)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)"
+		 UpgradeCode="c8795db6-2426-4f40-a615-671f26fcaf3a" InstallerVersion="200">
+
+		<MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+
+		<MediaTemplate EmbedCab="yes"/>
+
+		<netfx:DotNetCompatibilityCheck Id="netCoreStatus64"
+		Property="NETCORESTATUS" RollForward="latestMajor"
+		RuntimeType="core" Version="8.0.1" Platform="x64" />
+			<Launch Condition="Installed OR NETCORESTATUS=&quot;0&quot;"
+				Message="[ProductName] requires Microsoft .NET 8.0 Runtime." />
+		
+		<!-- UI stuff-->
+		<UIRef Id="WixUIFeatureTree" />
+
+		<!-- components to install -->
+		<Feature Id="ProductFeature" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+		
+	</Package>
+	
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
+			<!-- Files to install -->
+			<Files Include="$(SolutionDir)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
+		</ComponentGroup>
+	</Fragment>
+
+	<!-- location to be installed which is referred above -->
+	<Fragment>
+		<StandardDirectory Id="ProgramFiles6432Folder">
+			<Directory Id="InstallFolder" Name="$(ProductName)"/>
+		</StandardDirectory>
+	</Fragment>
+
+</Wix>
