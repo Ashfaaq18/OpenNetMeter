@@ -39,9 +39,10 @@ jobs:
       - name: Create or Update Draft Release & Upload MSI
         uses: ncipollo/release-action@v1
         with:
-          token:        ${{ secrets.GITHUB_TOKEN }}
-          tag:          opennetmeter-draft
-          name:         OpenNetMeter (Draft Release)
-          draft:        true
-          allowUpdates: true
-          artifacts:    ${{ steps.find_msi.outputs.msi_path }}
+          token:                        ${{ secrets.GITHUB_TOKEN }}
+          tag:                          opennetmeter-draft
+          name:                         OpenNetMeter (Draft Release)
+          draft:                        true
+          allowUpdates:                 true
+          artifacts:                    ${{ steps.find_msi.outputs.msi_path }}
+          artifactErrorsFailBuild:      true
