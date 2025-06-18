@@ -29,19 +29,20 @@ jobs:
         id: find_msi
         shell: pwsh
         run: |
-          $folder = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
-          $msi = Get-ChildItem $folder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
+          $msi = Get-ChildItem `
+            "$Env:GITHUB_WORKSPACE\Installer\bin\x64\Release\en-us" `
+            -Filter 'OpenNetMeter-*.msi' `
+            | Select-Object -First 1
           if (-not $msi) { throw '❌ No MSI found!' }
-          # emit a forward-slash relative path and the filename
-          $rel = $msi.FullName.Substring($Env:GITHUB_WORKSPACE.Length+1).Replace('\','/')
-          Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
+          # Emit the *absolute* path:
+          Write-Host "msi_path=$($msi.FullName)" >> $Env:GITHUB_OUTPUT
 
       - name: Create or Update Draft Release & Upload MSI
         uses: ncipollo/release-action@v1
         with:
-          token:                        ${{ secrets.GITHUB_TOKEN }}
-          tag:                          opennetmeter-draft
-          name:                         OpenNetMeter (Draft Release)
-          draft:                        true
-          allowUpdates:                 true
-          artifacts:                    ${{ steps.find_msi.outputs.msi_path }}
+          token:        ${{ secrets.GITHUB_TOKEN }}
+          tag:          opennetmeter-draft
+          name:         OpenNetMeter (Draft Release)
+          draft:        true
+          allowUpdates: true
+          artifacts:    ${{ steps.find_msi.outputs.msi_path }}
