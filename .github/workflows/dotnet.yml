@@ -45,4 +45,4 @@ jobs:
           name:         OpenNetMeter (Draft Release)
           draft:        true
           allowUpdates: true
-          artifacts:    ${{ steps.find_msi.outputs.msi_path }}
+          artifacts:    C:\a\OpenNetMeter\OpenNetMeter\Installer\bin\x64\Release\en-us\OpenNetMeter-0.13.0.msi
