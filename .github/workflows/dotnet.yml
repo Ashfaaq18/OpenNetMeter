@@ -48,6 +48,4 @@ jobs:
           artifacts:    ${{ steps.find_msi.outputs.msi_path }}
 
       - name: Echo MSI path
-        env:
-          RELEASE_OUTPUT: ${{ steps.find_msi.outputs.msi_path }}
-        run: echo "$RELEASE_OUTPUT"
+        run: 'echo "Built MSI path was: ${{ steps.find_msi.outputs.msi_path }}"'
