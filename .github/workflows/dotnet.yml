@@ -3,6 +3,10 @@
 on:
   workflow_dispatch:
 
+# Give the release-action permission to create/update releases & assets
+permissions:
+  contents: write
+
 jobs:
   draft-msi:
     runs-on: windows-latest
@@ -26,12 +30,14 @@ jobs:
         shell: pwsh
         run: |
           $folder = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
-          $msi = Get-ChildItem $folder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
+          $msi    = Get-ChildItem $folder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
           if (-not $msi) { throw '❌ No MSI found!' }
-          # emit a forward-slash relative path and the filename
-          $rel = $msi.FullName.Substring($Env:GITHUB_WORKSPACE.Length+1).Replace('\','/')
+
+          # Emit a relative, forward-slash path for the release-action
+          $rel = $msi.FullName
+            .Substring($Env:GITHUB_WORKSPACE.Length + 1)
+            .Replace('\','/')
           Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
-          Write-Host "msi_name=$($msi.Name)" >> $Env:GITHUB_OUTPUT
 
       - name: Create or Update Draft Release & Upload MSI
         uses: ncipollo/release-action@v1
@@ -41,4 +47,4 @@ jobs:
           name:         OpenNetMeter (Draft Release)
           draft:        true
           allowUpdates: true
-          artifacts:    ${{ steps.find_msi.outputs.msi_path }}
+          files:        ${{ steps.find_msi.outputs.msi_path }}
