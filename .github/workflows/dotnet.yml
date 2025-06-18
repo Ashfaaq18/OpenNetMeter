@@ -44,5 +44,6 @@ jobs:
           name:                         OpenNetMeter (Draft Release)
           draft:                        true
           allowUpdates:                 true
-          artifacts:                    ${{ steps.find_msi.outputs.msi_path }}
           artifactErrorsFailBuild:      true
+          artifact:                     ${{ steps.find_msi.outputs.msi_path }}
+          artifactContentType:          application/octet-stream
