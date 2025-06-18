@@ -48,4 +48,8 @@ jobs:
           artifacts:    ${{ steps.find_msi.outputs.msi_path }}
 
       - name: Echo MSI path
-        run: 'echo "Built MSI path was: ${{ steps.find_msi.outputs.msi_path }}"'
+        shell: pwsh
+        env:
+          MSI_PATH: ${{ steps.find_msi.outputs.msi_path }}
+        run: |
+          Write-Host "Built MSI path was: $Env:MSI_PATH"
