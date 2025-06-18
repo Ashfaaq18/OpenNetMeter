@@ -2,7 +2,7 @@
 
 on:
   workflow_dispatch:
-
+ 
 # Give the release-action permission to create/update releases & assets
 permissions:
   contents: write
@@ -30,13 +30,10 @@ jobs:
         shell: pwsh
         run: |
           $folder = Join-Path $Env:GITHUB_WORKSPACE 'Installer\bin\x64\Release\en-us'
-          $msi    = Get-ChildItem $folder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
+          $msi = Get-ChildItem $folder -Filter 'OpenNetMeter-*.msi' | Select-Object -First 1
           if (-not $msi) { throw '❌ No MSI found!' }
-
-          # Emit a relative, forward-slash path for the release-action
-          $rel = $msi.FullName
-            .Substring($Env:GITHUB_WORKSPACE.Length + 1)
-            .Replace('\','/')
+          # emit a forward-slash relative path and the filename
+          $rel = $msi.FullName.Substring($Env:GITHUB_WORKSPACE.Length+1).Replace('\','/')
           Write-Host "msi_path=$rel" >> $Env:GITHUB_OUTPUT
 
       - name: Create or Update Draft Release & Upload MSI
