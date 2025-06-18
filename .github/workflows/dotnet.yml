@@ -44,4 +44,4 @@ jobs:
           name:         OpenNetMeter (Draft Release)
           draft:        true
           allowUpdates: true
-          files:        ${{ steps.find_msi.outputs.msi_path }}
+          artifacts:    ${{ steps.find_msi.outputs.msi_path }}
