@@ -15,11 +15,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ManagedNativeWifi" Version="2.6.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.15" />
     <PackageReference Include="ParallelExtensionsCore" Version="2.1.0" />
     <PackageReference Include="TaskScheduler" Version="2.11.0" />
   </ItemGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<UseWindowsSDKContracts>true</UseWindowsSDKContracts>
+	</PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseEngine\DatabaseEngine.csproj" />
