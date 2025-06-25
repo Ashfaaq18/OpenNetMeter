@@ -9,10 +9,10 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
 using System.Threading;
-using ManagedNativeWifi;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using OpenNetMeter.Utilities;
+using Windows.Networking.Connectivity;
 
 namespace OpenNetMeter.Models
 {
@@ -195,7 +195,7 @@ namespace OpenNetMeter.Models
                                     networkAvailable = true;
                                     AdapterName = n.Name;
                                     if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                        AdapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
+                                        AdapterName += "(" + NetworkInformation.GetInternetConnectionProfile()?.WlanConnectionProfileDetails?.GetConnectedSsid() + ")";
 
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                 }
@@ -209,7 +209,7 @@ namespace OpenNetMeter.Models
                                     networkAvailable = true;
                                     AdapterName = n.Name;
                                     if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                        AdapterName += "(" + NativeWifi.EnumerateConnectedNetworkSsids()?.FirstOrDefault()?.ToString() + ")";
+                                        AdapterName += "(" + NetworkInformation.GetInternetConnectionProfile()?.WlanConnectionProfileDetails?.GetConnectedSsid() + ")";
 
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                 }
