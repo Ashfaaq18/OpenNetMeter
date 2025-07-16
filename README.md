@@ -15,21 +15,16 @@ This program provides the following features,
 
 ## Installation
 
-1. Download and Install [.NET 8.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime) desktop apps version for the latest OpenNetMeter. 
-
-    - <sub>(For versions 0.9.0 and below, download the [.NET 5.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/5.0/runtime))</sub>
-    - <sub> (For versions above 0.9.0 up to and including 12.1.0, download the [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime))</sub>
-2. Download the msi from the latest release section of this repository and run the installer.
-   - <sub> for versions 12.1.0 and below, simply extract the zip file </sub>
+1. Download and Install [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) desktop apps version. (for versions 0.9.0 and below, download [.NET 5.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/5.0/runtime))
+2. Download the latest release from this repository and simply extract it.
 3. Run in Admin mode (this is necessary).
 4. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
 
 ## Uninstallation
 
 1. Untick the "Start program on windows startup" from the settings page (this is to remove the program from the startup records).
-   - <sub> for versions 0.8.1 to 0.5.1, Untick the "Show Network speed from task bar" from the settings page  (this is to remove the dll from the registry). </sub>
-2. Uninstall from the control panel just like any other windows application.
-   - <sub> For versions 12.1.0 and below, simply delete the folder. </sub>
+2. for versions 0.8.1 to 0.5.1, Untick the "Show Network speed from task bar" from the settings page  (this is to remove the dll from the registry).
+3. Simply delete the folder.
     
 ## Usage/Examples
 
