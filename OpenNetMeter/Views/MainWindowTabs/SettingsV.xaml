@@ -10,7 +10,7 @@
              d:DesignHeight="400" d:DesignWidth="650">
     <UserControl.Resources>
         <v:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
-        <properties:Settings x:Key="Settings"/>
+        <properties:AppSettings x:Key="Settings"/>
     </UserControl.Resources>
     <Grid Style="{StaticResource BackgroundColor2}">
         <Border Margin="16">

@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:res="clr-namespace:OpenNetMeter.Properties">
+                    xmlns:settings="clr-namespace:OpenNetMeter.Properties">
 
     <!--Control colors.-->
     <Color x:Key="WindowColor">#FFE8EDF9</Color><Color x:Key="WindowColor_DarkMode">#3b3d40</Color>
@@ -448,7 +448,7 @@
                                 <Style TargetType="Rectangle">
                                     <Setter Property="Fill" Value="LightGray"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                        <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                             <Setter Property="Fill" Value="DimGray"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -463,7 +463,7 @@
                                 <Style TargetType="Rectangle">
                                     <Setter Property="Fill" Value="#f7bda6"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                        <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                             <Setter Property="Fill" Value="#c99079"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -489,7 +489,7 @@
                                 <Style TargetType="ContentPresenter">
                                     <Setter Property="TextElement.Foreground" Value="#333333"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                        <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                             <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -640,7 +640,7 @@
                                     <Setter Property="TextElement.Foreground" Value="#333333"/>
                                     <Setter Property="TextElement.FontSize" Value="12"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                        <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                             <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -790,7 +790,7 @@
                         <Setter Property="TextElement.Foreground" Value="#333333"/>
                         <Setter Property="TextElement.FontSize" Value="12"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                            <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                 <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -820,7 +820,7 @@
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#333333"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                            <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                                 <Setter Property="TextElement.Foreground" Value="WhiteSmoke"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -1032,7 +1032,7 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+            <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                 <Setter Property="Background">
                     <Setter.Value>
                         <LinearGradientBrush EndPoint="0.5,1"
@@ -1075,7 +1075,7 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+            <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="Background" Value="#333333"/>
             </DataTrigger>
@@ -1107,7 +1107,7 @@
                             <Style TargetType="Border">
                                 <Setter Property="BorderBrush" Value="#333333"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Source={x:Static res:Settings.Default}, Path = DarkMode}" Value="True">
+                                    <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path = DarkMode}" Value="True">
                                         <Setter Property="BorderBrush" Value="#999999"/>
                                     </DataTrigger>
                                 </Style.Triggers>

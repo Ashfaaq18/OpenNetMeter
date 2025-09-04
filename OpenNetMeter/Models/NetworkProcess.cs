@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using OpenNetMeter.Utilities;
 using Windows.Networking.Connectivity;
+using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Models
 {
@@ -357,7 +358,7 @@ namespace OpenNetMeter.Models
 #if DEBUG
                     Stopwatch sw1 = Stopwatch.StartNew();
 #endif
-                    if(Properties.Settings.Default.NetworkSpeedFormat == 0)
+                    if(SettingsManager.Current.NetworkSpeedFormat == 0)
                     {
                         UploadSpeed = (CurrentSessionUploadData - tempUpload) * 8;
                         DownloadSpeed = (CurrentSessionDownloadData - tempDownload) * 8;
@@ -476,9 +477,9 @@ namespace OpenNetMeter.Models
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv4);
             if (ipCompSrc ^ ipCompDest)
             {
-                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
-                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
+                if (SettingsManager.Current.NetworkType == 2 ? true : //both
+                    SettingsManager.Current.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    SettingsManager.Current.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     Recv(name, size);
                 }
@@ -491,9 +492,9 @@ namespace OpenNetMeter.Models
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv6);
             if (ipCompSrc ^ ipCompDest)
             {
-                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
-                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
+                if (SettingsManager.Current.NetworkType == 2 ? true : //both
+                    SettingsManager.Current.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    SettingsManager.Current.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     Recv(name, size);
                 }
@@ -506,9 +507,9 @@ namespace OpenNetMeter.Models
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv4);
             if (ipCompSrc ^ ipCompDest)
             {
-                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
-                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
+                if (SettingsManager.Current.NetworkType == 2 ? true : //both
+                    SettingsManager.Current.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    SettingsManager.Current.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     Send(name, size);
                 }
@@ -520,9 +521,9 @@ namespace OpenNetMeter.Models
             bool ipCompDest = ByteArray.Compare(dest.GetAddressBytes(), localIPv6);
             if (ipCompSrc ^ ipCompDest)
             {
-                if (Properties.Settings.Default.NetworkType == 2 ? true : //both
-                    Properties.Settings.Default.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
-                    Properties.Settings.Default.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
+                if (SettingsManager.Current.NetworkType == 2 ? true : //both
+                    SettingsManager.Current.NetworkType == 1 ? (ipCompSrc ? !IsIPv4IPv6Private(dest) : !IsIPv4IPv6Private(src)) : //public
+                    SettingsManager.Current.NetworkType == 0 ? (ipCompSrc ?  IsIPv4IPv6Private(dest) :  IsIPv4IPv6Private(src)) : false) //private
                 {
                     Send(name, size);
                 }

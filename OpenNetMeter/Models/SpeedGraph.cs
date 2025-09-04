@@ -1,4 +1,5 @@
-﻿using OpenNetMeter.Utilities;
+﻿using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -136,7 +137,7 @@ namespace OpenNetMeter.Models
                     else
                         temp *= 512;
 
-                    if (Properties.Settings.Default.NetworkSpeedFormat == 0)
+                    if (SettingsManager.Current.NetworkSpeedFormat == 0)
                     {
                         Ylabels.Add(new TextBlock
                         {
@@ -318,7 +319,7 @@ namespace OpenNetMeter.Models
                         else
                             temp *= 512;
 
-                        if (Properties.Settings.Default.NetworkSpeedFormat == 0)
+                        if (SettingsManager.Current.NetworkSpeedFormat == 0)
                             Ylabels[i].Text = DataSizeSuffix.InStr(temp, 1, false);
                         else
                             Ylabels[i].Text = DataSizeSuffix.InStr(temp, 1, true);

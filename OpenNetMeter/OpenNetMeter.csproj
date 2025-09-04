@@ -15,8 +15,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+ <ItemGroup>
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.15" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ParallelExtensionsCore" Version="2.1.0" />
     <PackageReference Include="TaskScheduler" Version="2.11.0" />
   </ItemGroup>

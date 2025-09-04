@@ -6,6 +6,7 @@ using System.Windows.Input;
 using OpenNetMeter.Models;
 using System.Linq;
 using OpenNetMeter.Utilities;
+using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -89,7 +90,7 @@ namespace OpenNetMeter.ViewModels
             duhvm.GetAllDBFiles();
 
             //intial startup page
-            TabBtnToggle = Properties.Settings.Default.LaunchPage;
+            TabBtnToggle = SettingsManager.Current.LaunchPage;
             switch (TabBtnToggle)
             {
                 case ((int)TabPage.Summary):
@@ -330,8 +331,8 @@ namespace OpenNetMeter.ViewModels
                     {
                         SelectedViewModel = dusvm;
                         TabBtnToggle = ((int)TabPage.Summary);
-                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                        Properties.Settings.Default.Save();
+                        SettingsManager.Current.LaunchPage = TabBtnToggle;
+                        SettingsManager.Save();
                     }
                     break;
                 case "detailed":
@@ -339,8 +340,8 @@ namespace OpenNetMeter.ViewModels
                     {
                         SelectedViewModel = dudvm;
                         TabBtnToggle = ((int)TabPage.Detailed);
-                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                        Properties.Settings.Default.Save();
+                        SettingsManager.Current.LaunchPage = TabBtnToggle;
+                        SettingsManager.Save();
                     }
                     break;
                 case "history":
@@ -348,8 +349,8 @@ namespace OpenNetMeter.ViewModels
                     {
                         SelectedViewModel = duhvm;
                         TabBtnToggle = ((int)TabPage.History);
-                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                        Properties.Settings.Default.Save();
+                        SettingsManager.Current.LaunchPage = TabBtnToggle;
+                        SettingsManager.Save();
                     }
                     break;
                 case "settings":
@@ -357,8 +358,8 @@ namespace OpenNetMeter.ViewModels
                     {
                         SelectedViewModel = svm;
                         TabBtnToggle = ((int)TabPage.Settings);
-                        Properties.Settings.Default.LaunchPage = TabBtnToggle;
-                        Properties.Settings.Default.Save();
+                        SettingsManager.Current.LaunchPage = TabBtnToggle;
+                        SettingsManager.Save();
                     }
                     break;
                 default:

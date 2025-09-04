@@ -1,4 +1,5 @@
-﻿using OpenNetMeter.Utilities;
+﻿using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -25,8 +26,8 @@ namespace OpenNetMeter.ViewModels
                     OnPropertyChanged("SetStartWithWin");
 
                     //set the app settings
-                    Properties.Settings.Default.StartWithWin = value;
-                    Properties.Settings.Default.Save();
+                    SettingsManager.Current.StartWithWin = value;
+                    SettingsManager.Save();
 
                     UnlockOptionStartWin = false;
                     //register to task scheduler
@@ -65,8 +66,8 @@ namespace OpenNetMeter.ViewModels
                 if (minimizeOnStart != value)
                 {
                     minimizeOnStart = value;
-                    Properties.Settings.Default.MinimizeOnStart = value;
-                    Properties.Settings.Default.Save();
+                    SettingsManager.Current.MinimizeOnStart = value;
+                    SettingsManager.Save();
                 }
             }
         }
@@ -100,8 +101,8 @@ namespace OpenNetMeter.ViewModels
                     OnPropertyChanged("NetworkTrafficType");
 
                     //set the app settings
-                    Properties.Settings.Default.NetworkType = value;
-                    Properties.Settings.Default.Save();
+                    SettingsManager.Current.NetworkType = value;
+                    SettingsManager.Save();
                 }
             }
         }
@@ -115,8 +116,8 @@ namespace OpenNetMeter.ViewModels
                 if(networkSpeedFormat != value)
                 {
                     networkSpeedFormat = value;
-                    Properties.Settings.Default.NetworkSpeedFormat = value;
-                    Properties.Settings.Default.Save();
+                    SettingsManager.Current.NetworkSpeedFormat = value;
+                    SettingsManager.Save();
                     OnPropertyChanged("NetworkSpeedFormat");
                 }
             }
@@ -136,8 +137,8 @@ namespace OpenNetMeter.ViewModels
                 SetMiniWidgetBackgroundColor(value, MiniWidgetTransparentSlider);
 
                 //set the app settings
-                Properties.Settings.Default.DarkMode = value;
-                Properties.Settings.Default.Save();
+                SettingsManager.Current.DarkMode = value;
+                SettingsManager.Save();
             }
         }
 
@@ -155,8 +156,8 @@ namespace OpenNetMeter.ViewModels
                 //trigger the miniwidget's BackgroundColor property.
                 SetMiniWidgetBackgroundColor(DarkMode, value);
 
-                Properties.Settings.Default.MiniWidgetTransparentSlider = value;
-                Properties.Settings.Default.Save();
+                SettingsManager.Current.MiniWidgetTransparentSlider = value;
+                SettingsManager.Save();
             }
         }
 
@@ -191,19 +192,19 @@ namespace OpenNetMeter.ViewModels
 
             //start with windows setting
             UnlockOptionStartWin = true;
-            SetStartWithWin = Properties.Settings.Default.StartWithWin;
-            MinimizeOnStart = Properties.Settings.Default.MinimizeOnStart;
-            DarkMode = Properties.Settings.Default.DarkMode;
-            MiniWidgetTransparentSlider = Properties.Settings.Default.MiniWidgetTransparentSlider;
+            SetStartWithWin = SettingsManager.Current.StartWithWin;
+            MinimizeOnStart = SettingsManager.Current.MinimizeOnStart;
+            DarkMode = SettingsManager.Current.DarkMode;
+            MiniWidgetTransparentSlider = SettingsManager.Current.MiniWidgetTransparentSlider;
 
             if (SetStartWithWin)
                 UnlockMinimizeOnStart = false;
             else
                 UnlockMinimizeOnStart = true;
 
-            NetworkTrafficType = Properties.Settings.Default.NetworkType;
+            NetworkTrafficType = SettingsManager.Current.NetworkType;
 
-            NetworkSpeedFormat = Properties.Settings.Default.NetworkSpeedFormat;
+            NetworkSpeedFormat = SettingsManager.Current.NetworkSpeedFormat;
 
             ResetBtn = new BaseCommand(ResetData, true);
 
