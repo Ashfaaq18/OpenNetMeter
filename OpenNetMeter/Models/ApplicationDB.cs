@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using DatabaseEngine;
+using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Models
 {
@@ -22,10 +23,8 @@ namespace OpenNetMeter.Models
 
         public static string GetFilePath()
         {
-            string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            path = Path.Combine(path, appName ?? "OpenNetMeter");
-            Directory.CreateDirectory(path);
+            string path = SettingsManager.Current.Folder;
+            path = Path.Combine(path);
             return path;
         }
 
