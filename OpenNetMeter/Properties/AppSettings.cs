@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 
 namespace OpenNetMeter.Properties
 {
@@ -42,6 +44,9 @@ namespace OpenNetMeter.Properties
 
         private int miniWidgetTransparentSlider;
         public int MiniWidgetTransparentSlider { get => miniWidgetTransparentSlider; set { if (miniWidgetTransparentSlider != value) { miniWidgetTransparentSlider = value; OnPropertyChanged("MiniWidgetTransparentSlider"); } } }
+
+        private string folder =Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), Assembly.GetEntryAssembly()?.GetName().Name ?? "OpenNetMeter");
+        public string Folder { get => folder; set { if (folder != value) { folder = value; OnPropertyChanged("Folder"); } } }
 
 
         public event PropertyChangedEventHandler? PropertyChanged;

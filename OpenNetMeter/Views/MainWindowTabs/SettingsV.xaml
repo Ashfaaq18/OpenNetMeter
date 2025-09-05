@@ -70,6 +70,16 @@
                     </StackPanel>
                 </StackPanel>
 
+                <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
+                </Border>
+                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5" Height="50">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FontColor1}">Data Folder</TextBlock>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,5" >
+                        <TextBox Width="180" HorizontalAlignment="Left" VerticalAlignment="Center"  Margin="5,0" Text="{Binding Path=DataFolder, UpdateSourceTrigger=PropertyChanged}" IsEnabled="False" />
+                        <Button Content="Browse..." Margin="5,0" Padding="5,2" Command="{Binding Path=BrowseFolderCommand}" />                    
+                    </StackPanel>
+                </StackPanel>
+
                 <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
                 <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Vertical" Margin="5">
@@ -110,7 +120,6 @@
                         <RadioButton IsChecked="{Binding Path=NetworkSpeedFormat, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Bps (Bytes/sec)</RadioButton>
                     </StackPanel>
                 </StackPanel>
-
             </Grid>
         </Border>
     </Grid>

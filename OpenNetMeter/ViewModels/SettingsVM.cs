@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 using System.Windows.Input;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
@@ -58,7 +59,7 @@ namespace OpenNetMeter.ViewModels
         }
 
         private bool minimizeOnStart;
-        public bool MinimizeOnStart 
+        public bool MinimizeOnStart
         {
             get { return minimizeOnStart; }
             set
@@ -73,7 +74,7 @@ namespace OpenNetMeter.ViewModels
         }
 
         private bool unlockMinimizeOnStart;
-        public bool UnlockMinimizeOnStart 
+        public bool UnlockMinimizeOnStart
         {
             get { return unlockMinimizeOnStart; }
 
@@ -113,7 +114,7 @@ namespace OpenNetMeter.ViewModels
             get { return networkSpeedFormat; }
             set
             {
-                if(networkSpeedFormat != value)
+                if (networkSpeedFormat != value)
                 {
                     networkSpeedFormat = value;
                     SettingsManager.Current.NetworkSpeedFormat = value;
@@ -122,6 +123,24 @@ namespace OpenNetMeter.ViewModels
                 }
             }
         }
+        private string? dataFolder;
+        public string DataFolder
+        {
+            get { return dataFolder ?? " "; }
+            set
+            {
+                if (dataFolder != value)
+                {
+                    var oldvalue = dataFolder;
+                    dataFolder = value;
+                    SettingsManager.Current.Folder = value;
+                    SettingsManager.Save();
+                    OnPropertyChanged("DataFolder");
+                    Debug.WriteLine($"folder:{dataFolder}");
+                }
+            }
+        }
+
 
         private bool darkMode;
         public bool DarkMode
@@ -149,10 +168,10 @@ namespace OpenNetMeter.ViewModels
             set
             {
                 miniWidgetTransparentSlider = value;
-                
+
                 OnPropertyChanged("MiniWidgetTransparentSlider");
                 //Debug.WriteLine($"MiniWidgetTransparentSlider: {value}");
-                
+
                 //trigger the miniwidget's BackgroundColor property.
                 SetMiniWidgetBackgroundColor(DarkMode, value);
 
@@ -170,7 +189,7 @@ namespace OpenNetMeter.ViewModels
                 if (deleteAllFiles != value)
                 {
                     deleteAllFiles = value;
-                    if(value)
+                    if (value)
                         OnPropertyChanged("DeleteAllFiles");
                 }
             }
@@ -179,14 +198,15 @@ namespace OpenNetMeter.ViewModels
 
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
+        public ICommand? BrowseFolderCommand { get; }
 
         public SettingsVM(MiniWidgetVM mw_ref, ConfirmationDialogVM cdvm_ref)
         {
+
             mwvm = mw_ref;
             cdvm = cdvm_ref;
             cdvm.BtnCommand = new BaseCommand(ResetDataYesOrNo, true);
             cdvm.DialogMessage = "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
-
             taskFolder = "OpenNetMeter";
             taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3);
 
@@ -196,6 +216,10 @@ namespace OpenNetMeter.ViewModels
             MinimizeOnStart = SettingsManager.Current.MinimizeOnStart;
             DarkMode = SettingsManager.Current.DarkMode;
             MiniWidgetTransparentSlider = SettingsManager.Current.MiniWidgetTransparentSlider;
+            DataFolder = SettingsManager.Current.Folder;
+
+            BrowseFolderCommand = new BaseCommand(BrowseFolder, true);
+
 
             if (SetStartWithWin)
                 UnlockMinimizeOnStart = false;
@@ -225,13 +249,54 @@ namespace OpenNetMeter.ViewModels
 
         private void ResetData(object? obj)
         {
-            if(cdvm != null)
+            if (cdvm != null)
                 cdvm.IsVisible = System.Windows.Visibility.Visible;
+        }
+        private void BrowseFolder(object? obj)
+        {
+            var oldvalue = DataFolder;
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select a folder";
+                dialog.ShowNewFolderButton = true;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    DataFolder = dialog.SelectedPath;
+                }
+            }
+            moveAndDelete(oldvalue, dataFolder);
+
+        }
+        private void moveAndDelete(string? oldFolderPath, string? newPath)
+        {
+            if (oldFolderPath == null || !Directory.Exists(oldFolderPath))
+                oldFolderPath = AppDomain.CurrentDomain.BaseDirectory;
+            if (newPath == null || !Directory.Exists(newPath))
+                newPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            string[] files = Directory.GetFiles(oldFolderPath);
+
+            foreach (string filePath in files)
+            {
+                string fileName = Path.GetFileName(filePath);
+                string destFile = Path.Combine(newPath, fileName);
+
+                try
+                {
+                    // Move the file
+                    File.Move(filePath, destFile);
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"Error moving file {fileName}: {ex.Message}");
+                }
+            }
         }
 
         private void ResetDataYesOrNo(object? obj)
         {
-            if(obj != null)
+            if (obj != null)
             {
                 if ((string)obj == "Yes")
                     DeleteAllFiles = true;
@@ -250,7 +315,7 @@ namespace OpenNetMeter.ViewModels
                 TaskScheduler.TaskFolder sub = TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"];
                 if (!set)
                 {
-                    for(int i = 0; i < sub.Tasks.Count; i++)
+                    for (int i = 0; i < sub.Tasks.Count; i++)
                     {
                         sub.DeleteTask(sub.Tasks[i].Name);
                     }
@@ -310,14 +375,14 @@ namespace OpenNetMeter.ViewModels
                 //set action to run application
                 TaskScheduler.ExecAction action = new TaskScheduler.ExecAction();
                 action.Path = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
-                if(MinimizeOnStart)
+                if (MinimizeOnStart)
                     action.Arguments = "/StartMinimized";
                 td.Actions.Add(action);
 
                 // Register the task in the sub folder
                 TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"].RegisterTaskDefinition(taskName, td);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine("Error: " + ex.Message);
             }
