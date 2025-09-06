@@ -16,7 +16,9 @@ namespace OpenNetMeter.Properties
         static SettingsManager()
         {
             // Set the path to settings.json in the same directory as the .exe
-            _filePath = Path.Combine(AppContext.BaseDirectory, "settings.json");
+            string path = Path.Combine(AppContext.BaseDirectory, "user data");
+            Directory.CreateDirectory(path);
+            _filePath = Path.Combine(path, "settings.json");
             Load();
         }
 

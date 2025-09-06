@@ -249,6 +249,7 @@ namespace OpenNetMeter.Models
 
         public void StartNetworkProcess()
         {
+            // TODO: have just one db and append all adapters to it
             using (ApplicationDB dB = new ApplicationDB(AdapterName))
             {
                 if (dB.CreateTable() < 0)

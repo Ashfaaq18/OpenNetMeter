@@ -17,7 +17,6 @@ namespace DatabaseEngine
             {
                 connectionString += $";{extraParams[i]}";
             }
-            //Debug.WriteLine(connectionString);
             connection = new SQLiteConnection(connectionString);
             connection?.Open(); //open the file on disk
             transaction = connection?.BeginTransaction();

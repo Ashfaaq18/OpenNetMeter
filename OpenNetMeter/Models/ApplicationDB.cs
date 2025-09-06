@@ -22,9 +22,7 @@ namespace OpenNetMeter.Models
 
         public static string GetFilePath()
         {
-            string? appName = Assembly.GetEntryAssembly()?.GetName().Name;
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            path = Path.Combine(path, appName ?? "OpenNetMeter");
+            string path = Path.Combine(AppContext.BaseDirectory, "user data");
             Directory.CreateDirectory(path);
             return path;
         }
