@@ -250,7 +250,7 @@ namespace OpenNetMeter.Models
         public void StartNetworkProcess()
         {
             // TODO: have just one db and append all adapters to it
-            using (ApplicationDB dB = new ApplicationDB(AdapterName))
+            using (ApplicationDB dB = new ApplicationDB("OpenNetMeter.db"))
             {
                 if (dB.CreateTable() < 0)
                     Debug.WriteLine("Error: Create table");
@@ -311,13 +311,13 @@ namespace OpenNetMeter.Models
 #endif
                     if (PushToDBBuffer != null)
                     {
-                        using (ApplicationDB dB = new ApplicationDB(AdapterName))
+                        using (ApplicationDB dB = new ApplicationDB("OpenNetMeter.db"))
                         {
                             lock (PushToDBBuffer)
                             {
                                 foreach (KeyValuePair<string, MyProcess_Small?> app in PushToDBBuffer)
                                 {
-                                    dB.PushToDB(app.Key, app.Value!.CurrentDataRecv, app.Value!.CurrentDataSend);
+                                    dB.PushToDB(app.Key, app.Value!.CurrentDataRecv, app.Value!.CurrentDataSend, AdapterName);
                                 }
 
                                 PushToDBBuffer.Clear();
@@ -372,10 +372,10 @@ namespace OpenNetMeter.Models
 
                     tempUpload = CurrentSessionUploadData;
                     tempDownload = CurrentSessionDownloadData;
-#if DEBUG
-                    sw1.Stop();
-                    Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
-#endif
+//#if DEBUG
+//                    sw1.Stop();
+//                    Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
+//#endif
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");
                 }
@@ -654,13 +654,13 @@ namespace OpenNetMeter.Models
             {
                 if (PushToDBBuffer.Count > 0)
                 {
-                    using (ApplicationDB dB = new ApplicationDB(AdapterName))
+                    using (ApplicationDB dB = new ApplicationDB("OpenNetMeter.db"))
                     {
                         lock (PushToDBBuffer)
                         {
                             foreach (KeyValuePair<string, MyProcess_Small?> app in PushToDBBuffer)
                             {
-                                dB.PushToDB(app.Key, app.Value!.CurrentDataRecv, app.Value!.CurrentDataSend);
+                                dB.PushToDB(app.Key, app.Value!.CurrentDataRecv, app.Value!.CurrentDataSend, AdapterName);
                             }
 
                             PushToDBBuffer.Clear();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using DatabaseEngine;
 
@@ -18,6 +19,7 @@ namespace OpenNetMeter.Models
         public ApplicationDB(string dBFileName, string[]? extraParams = null)
         {
             dB = new Database(GetFilePath(), dBFileName, extraParams);
+
         }
 
         public static string GetFilePath()
@@ -27,17 +29,20 @@ namespace OpenNetMeter.Models
             return path;
         }
 
-        public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
+        public void PushToDB(string processName, long totalDataRecv, long totalDataSend, string adapterName)
         {
+            Debug.WriteLine($"Pushing to DB: {processName} | {totalDataRecv} | {totalDataSend} | {adapterName}");
             InsertUniqueRow_ProcessTable(processName);
+            InsertUniqueRow_AdapterTable(adapterName);
 
             long dateID = GetID_DateTable(DateTime.Today);
             long processID = GetID_ProcessTable(processName);
+            long adapterID = GetID_AdapterTable(adapterName);
 
             //if the current process is in the ProcessDate table, update that row. else, insert a new row with the accumulated data values
-            if (InsertUniqueRow_ProcessDateTable(processID, dateID, totalDataRecv, totalDataSend) < 1)
+            if (InsertUniqueRow_ProcessDateTable(processID, dateID, adapterID, totalDataRecv, totalDataSend) < 1)
             {
-                UpdateRow_ProcessDateTable(processID, dateID, totalDataRecv, totalDataSend);
+                UpdateRow_ProcessDateTable(processID, dateID, adapterID, totalDataRecv, totalDataSend);
             }
         }
 
@@ -45,24 +50,26 @@ namespace OpenNetMeter.Models
         //                                        THE ER DIAGRAM
         //                                      ------------------
         //
-        //  |-----------------------|       |-----------------------|       |-----------------------|    
-        //  |       Process         |       |      ProcessDate      |       |         Date          |       
-        //  |-----------------------|       |-----------------------|       |-----------------------|
-        //  |   PK  |   ID          |---|   |   PK  |   ID          |   |---|   PK  |   ID          |
-        //  |-------|---------------|   |   |-------|---------------|   |   |-------|---------------|
-        //  |       |   Name        |   |==+|   FK  |   ProcessID   |   |   |       |   Year        |
-        //  |-------|---------------|       |-------|---------------|   |   |-------|---------------|
-        //                                  |   FK  |   DateID      |+==|   |       |   Month       |
-        //                                  |-------|---------------|       |-------|---------------|
-        //                                  |       |   DataReceived|       |       |   Day         |
-        //                                  |-------|---------------|       |-------|---------------|
-        //                                  |       |   DataSent    |
-        //                                  |-------|---------------|
-        //                                  
+        //  |-----------------------|       |-----------------------|       |-----------------------|       |-----------------------|    
+        //  |       Adapter         |       |       Process         |       |      ProcessDate      |       |         Date          |       
+        //  |-----------------------|       |-----------------------|       |-----------------------|       |-----------------------|
+        //  |   PK  |   ID          |---|   |   PK  |   ID          |---|   |   PK  |   ID          |   |---|   PK  |   ID          |
+        //  |-------|---------------|   |   |-------|---------------|   |   |-------|---------------|   |   |-------|---------------|  
+        //  |       |   Name        |   |   |       |   Name        |   |==+|   FK  |   ProcessID   |   |   |       |   Year        |
+        //  |-------|---------------|   |   |-------|---------------|       |-------|---------------|   |   |-------|---------------|
+        //                              |                                   |   FK  |   DateID      |+==|   |       |   Month       |
+        //                              |                                   |-------|---------------|       |-------|---------------|       
+        //                              |==================================+|   FK  |   AdapterID   |       |       |   Day         |
+        //                                                                  |-------|---------------|       |-------|---------------|      
+        //                                                                  |       |   DataReceived|
+        //                                                                  |-------|---------------|
+        //                                                                  |       |   DataSent    |
+        //                                                                  |-------|---------------| 
         private int CreateProcessTable()
         {
             return dB.RunSQLiteNonQuery("CREATE TABLE IF NOT EXISTS " +
                 "Process" +
+
                 "(" +
                     "ID INTEGER PRIMARY KEY NOT NULL, " +
                     "Name TEXT NOT NULL UNIQUE" +
@@ -82,6 +89,16 @@ namespace OpenNetMeter.Models
                 ")");
         }
 
+        private int CreateAdapterTable()
+        {
+            return dB.RunSQLiteNonQuery("CREATE TABLE IF NOT EXISTS " +
+                "Adapter" +
+                "(" +
+                    "ID INTEGER PRIMARY KEY NOT NULL, " +
+                    "Name TEXT NOT NULL UNIQUE" +
+                ")");
+        }
+
         private int CreateProcessDateTable()
         {
             return dB.RunSQLiteNonQuery("CREATE TABLE IF NOT EXISTS " +
@@ -90,18 +107,20 @@ namespace OpenNetMeter.Models
                     "ID INTEGER PRIMARY KEY NOT NULL, " +
                     "ProcessID INTEGER NOT NULL, " +
                     "DateID INTEGER NOT NULL, " +
+                    "AdapterID INTEGER NOT NULL, " +
                     "DataReceived INTEGER NOT NULL, " +
                     "DataSent INTEGER NOT NULL, " +
                     "FOREIGN KEY(ProcessID) REFERENCES Process(ID) ON DELETE CASCADE, " +
                     "FOREIGN KEY(DateID) REFERENCES Date(ID) ON DELETE CASCADE, " +
-                    "UNIQUE (ProcessID, DateID) ON CONFLICT IGNORE" +
+                    "FOREIGN KEY(AdapterID) REFERENCES Adapter(ID) ON DELETE CASCADE, " +
+                    "UNIQUE (ProcessID, DateID, AdapterID) ON CONFLICT IGNORE" +
                 ")");
         }
 
         public int CreateTable()
         {
-            //if any one of the below function is negative, this function will return negative
-            return CreateProcessTable() >> 31 | CreateDateTable() >> 31 | CreateProcessDateTable() >> 31;
+            // Add Adapter table creation
+            return CreateProcessTable() >> 31 | CreateDateTable() >> 31 | CreateAdapterTable() >> 31 | CreateProcessDateTable() >> 31;
         }
 
         public int InsertUniqueRow_ProcessTable(string appName)
@@ -163,52 +182,69 @@ namespace OpenNetMeter.Models
             RemoveOldProcess();
         }
 
-        public int InsertUniqueRow_ProcessDateTable(long processID, long dateID, long dataReceived, long dataSent)
+        public int InsertUniqueRow_ProcessDateTable(long processID, long dateID, long adapterID, long dataReceived, long dataSent)
         {
             return dB.RunSQLiteNonQuery("INSERT OR IGNORE INTO " +
-                "ProcessDate(ProcessID, DateID, DataReceived, DataSent) " +
-                "VALUES(@ProcessID, @DateID, @DataReceived, @DataSent)",
+                "ProcessDate(ProcessID, DateID, AdapterID, DataReceived, DataSent) " +
+                "VALUES(@ProcessID, @DateID, @AdapterID, @DataReceived, @DataSent)",
                 new string[,]
                 {
                     {"@ProcessID", processID.ToString() },
                     {"@DateID", dateID.ToString() },
+                    {"@AdapterID", adapterID.ToString() },
                     {"@DataReceived", dataReceived.ToString() },
                     {"@DataSent", dataSent.ToString() }
                 });
         }
 
-        public int UpdateRow_ProcessDateTable(long processID, long dateID, long dataReceived, long dataSent)
+        public int UpdateRow_ProcessDateTable(long processID, long dateID, long adapterID, long dataReceived, long dataSent)
         {
             return dB.RunSQLiteNonQuery("UPDATE " +
                 "ProcessDate " +
                 "SET " +
                 $"DataReceived = DataReceived + @DataReceived, " +
                 $"DataSent = DataSent + @DataSent " +
-                "WHERE ProcessID = @ProcessID AND DateID = @DateID", 
+                "WHERE ProcessID = @ProcessID AND DateID = @DateID AND AdapterID = @AdapterID", 
                 new string[,]
                 {
                     { "@DataReceived", dataReceived.ToString()},
                     { "@DataSent", dataSent.ToString()},
                     { "@ProcessID", processID.ToString()},
                     { "@DateID", dateID.ToString()},
+                    { "@AdapterID", adapterID.ToString()},
                 });
         }
 
-        public List<List<object>> GetDataSum_ProcessDateTable(DateTime date1, DateTime date2)
+        public List<List<object>> GetDataSum_ProcessDateTable(DateTime date1, DateTime date2, string? adapterName)
         {
-            List<List<object>> dateIDs = dB.GetMultipleCellData("SELECT p1.Name, SUM(pd1.DataReceived), SUM(pd1.DataSent) " +
+            string query =
+                "SELECT p1.Name, SUM(pd1.DataReceived), SUM(pd1.DataSent) " +
                 "FROM ProcessDate pd1 " +
                 "JOIN Process p1 ON p1.ID = pd1.ProcessID " +
+                "JOIN Adapter a1 ON a1.ID = pd1.AdapterID " +
                 "WHERE DateID IN " +
                 "(SELECT ID FROM Date WHERE " +
                 "(Year * 10000 + Month * 100 + Day) " +
-                "BETWEEN " +
-                $"({date1.Year * 10000 + date1.Month * 100 + date1.Day}) " +
-                "AND " +
-                $"({date2.Year * 10000 + date2.Month * 100 + date2.Day})) " +
-                "GROUP BY ProcessID");
+                "BETWEEN (@StartDate) AND (@EndDate)) " +
+                (adapterName != null ? "AND a1.Name = @AdapterName " : "") +
+                "GROUP BY ProcessID";
 
-            return dateIDs;
+            var paramList = new List<(string, string)>
+            {
+                ("@StartDate", (date1.Year * 10000 + date1.Month * 100 + date1.Day).ToString()),
+                ("@EndDate", (date2.Year * 10000 + date2.Month * 100 + date2.Day).ToString())
+            };
+            if (adapterName != null)
+                paramList.Add(("@AdapterName", adapterName));
+
+            string[,] paramArray = new string[paramList.Count, 2];
+            for (int i = 0; i < paramList.Count; i++)
+            {
+                paramArray[i, 0] = paramList[i].Item1;
+                paramArray[i, 1] = paramList[i].Item2;
+            }
+
+            return dB.GetMultipleCellData(query, paramArray);
         }
 
         public (long, long) GetTodayDataSum_ProcessDateTable()
@@ -270,10 +306,40 @@ namespace OpenNetMeter.Models
             return Convert.ToInt64(test ?? -1);
         }
 
+        public int InsertUniqueRow_AdapterTable(string adapterName)
+        {
+            return dB.RunSQLiteNonQuery("INSERT OR IGNORE INTO " +
+                "Adapter(Name) " +
+                "VALUES(@Name)",
+                new string[,]
+                {
+                    {"@Name", adapterName }
+                });
+        }
+
+        public long GetID_AdapterTable(string adapterName)
+        {
+            object? test = dB.GetSingleCellData("SELECT ID From " +
+                "Adapter " +
+                "WHERE " +
+                $"Name = @Name ",
+                new string[,]
+                {
+                    {"@Name", adapterName}
+                });
+
+            return Convert.ToInt64(test ?? -1);
+        }
+
         public void Dispose()
         {
             dB?.Dispose();
         }
 
+        public List<string> GetAllAdapters()
+        {
+            var result = dB.GetMultipleCellData("SELECT Name FROM Adapter");
+            return result.Select(row => row[0]?.ToString() ?? "").Where(name => !string.IsNullOrEmpty(name)).ToList();
+        }
     }
 }

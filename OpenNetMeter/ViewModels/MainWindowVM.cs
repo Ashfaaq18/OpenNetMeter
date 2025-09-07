@@ -87,7 +87,7 @@ namespace OpenNetMeter.ViewModels
             netProc.PropertyChanged += NetProc_PropertyChanged;
             netProc.Initialize(); //have to call this after subscribing to property changer
 
-            duhvm.GetAllDBFiles();
+            duhvm.GetAllAdapters();
 
             //intial startup page
             TabBtnToggle = SettingsManager.Current.LaunchPage;
@@ -115,7 +115,7 @@ namespace OpenNetMeter.ViewModels
             SwitchTabCommand = new BaseCommand(SwitchTab, true);
 
             //get todays data usage details from the database
-            using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
+            using (ApplicationDB dB = new ApplicationDB("OpenNetMeter.db"))
             {
                 (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
                 initTodayTotalDownloadData = todaySum.Item1;
@@ -181,7 +181,7 @@ namespace OpenNetMeter.ViewModels
         {
             if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dudvm.MyProcesses != null && netProc.PushToDBBuffer != null)
             {
-                using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
+                using (ApplicationDB dB = new ApplicationDB("OpenNetMeter.db"))
                 {
                     if (dB.CreateTable() < 0)
                         Debug.WriteLine("Error: Create table");
@@ -373,8 +373,6 @@ namespace OpenNetMeter.ViewModels
 
         public void Dispose()
         {
-            duhvm.Dispose();
-
             if (netProc != null)
             {
                 netProc.PropertyChanged -= NetProc_PropertyChanged;

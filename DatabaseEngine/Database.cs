@@ -59,7 +59,7 @@ namespace DatabaseEngine
             {
                 if (command == null) return -2;
 
-                //Debug.WriteLine(query);
+                Debug.WriteLine(query + " ash " + paramAndValue);
                 command.CommandText = query;
                 for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
@@ -84,6 +84,7 @@ namespace DatabaseEngine
             {
                 if (command == null) return temp;
 
+                Debug.WriteLine(query);
                 command.CommandText = query;
                 using SQLiteDataReader reader = command.ExecuteReader();
                 if (!reader.HasRows)
@@ -98,7 +99,7 @@ namespace DatabaseEngine
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
                         temp[temp.Count - 1].Add(reader[i]);
-                        Debug.Write($"DB stuff, GetMultipleCellData: {reader[i]} {reader.GetFieldType(i)}|");
+                        Debug.WriteLine($"DB stuff, GetMultipleCellData1: {reader[i]} {reader.GetFieldType(i)}|");
                     }
                     //Debug.WriteLine("");
                 }
@@ -140,7 +141,7 @@ namespace DatabaseEngine
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
                         temp[temp.Count - 1].Add(reader[i]);
-                        Debug.Write($"DB stuff, GetMultipleCellData: {reader[i]} {reader.GetFieldType(i)}|");
+                        Debug.WriteLine($"DB stuff, GetMultipleCellData2: {reader[i]} {reader.GetFieldType(i)}|");
                     }
                     Debug.WriteLine("");
                 }
@@ -173,7 +174,7 @@ namespace DatabaseEngine
                 {
                     while (reader.Read())
                     {
-                        Debug.Write($"DB stuff, GetSingleCellData : {reader[0]} {reader.GetFieldType(0)}|");
+                        Debug.WriteLine($"DB stuff, GetSingleCellData : {reader[0]} {reader.GetFieldType(0)}|");
                         return reader[0];
                     }
                 }
