@@ -79,13 +79,17 @@ namespace OpenNetMeter.ViewModels
 
             Profiles = new ObservableCollection<string>();
             MyProcesses = new ObservableCollection<MyProcess_Small>();
-            watcher = new FileSystemWatcher(ApplicationDB.GetFilePath(), "*.sqlite");
+            watcher = new FileSystemWatcher(ApplicationDB.GetFilePath(), ApplicationDB.UnifiedDBFileName + ".sqlite");
             watcher.Created += OnFile_Created;
             watcher.Deleted += OnFile_Deleted;
+            watcher.Changed += OnFile_Changed;
             watcher.EnableRaisingEvents = true;
 
             //set button command
             FilterBtn = new BaseCommand(Filter, true);
+
+            // initial load
+            GetAllDBFiles();
         }
 
         public void UpdateDates()
@@ -126,6 +130,14 @@ namespace OpenNetMeter.ViewModels
             });
         }
 
+        private void OnFile_Changed(object sender, FileSystemEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                GetAllDBFiles();
+            });
+        }
+
         private void Filter(object? obj)
         {
             MyProcesses.Clear();
@@ -158,30 +170,43 @@ namespace OpenNetMeter.ViewModels
 
         public void GetAllDBFiles()
         {
-            string[] fileArray = Directory.GetFiles(ApplicationDB.GetFilePath(), "*.sqlite");
-            Profiles?.Clear();
-            for(int i = 0; i<fileArray.Length; i++)
+            // Ensure collection updates occur on the UI thread
+            if (!App.Current.Dispatcher.CheckAccess())
             {
-                Profiles?.Add(Path.GetFileNameWithoutExtension(fileArray[i]));
-                //Debug.WriteLine(Path.GetFileNameWithoutExtension(fileArray[i]));
+                App.Current.Dispatcher.Invoke(() => GetAllDBFiles());
+                return;
             }
+
+            Profiles?.Clear();
+
+            // Ensure DB exists and read adapters from it
+            using (ApplicationDB dB = new ApplicationDB(string.Empty))
+            {
+                dB.CreateTable();
+                var adapters = dB.GetAllAdapters();
+                foreach (var a in adapters)
+                {
+                    Profiles?.Add(a);
+                }
+            }
+
             if (Profiles?.Count > 0)
                 SelectedProfile = Profiles?[0];
         }
 
         public void DeleteAllDBFiles()
         {
-            DirectoryInfo? dir = new DirectoryInfo(ApplicationDB.GetFilePath());
-            foreach (FileInfo? file in dir.GetFiles("*.sqlite"))
+            try
             {
-                try
-                {
-                    file.Delete();
-                }
-                catch (IOException ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
+                string path = ApplicationDB.GetUnifiedDBFullPath();
+                if (File.Exists(path))
+                    File.Delete(path);
+                Profiles?.Clear();
+                SelectedProfile = null;
+            }
+            catch (IOException ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
         }
 

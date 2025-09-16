@@ -87,6 +87,7 @@ namespace OpenNetMeter.ViewModels
             netProc.PropertyChanged += NetProc_PropertyChanged;
             netProc.Initialize(); //have to call this after subscribing to property changer
 
+            // Populate adapters list from the unified DB
             duhvm.GetAllDBFiles();
 
             //intial startup page
@@ -295,10 +296,10 @@ namespace OpenNetMeter.ViewModels
                     UpdateData();
                     break;
                 case "IsNetworkOnline":
-                    if(netProc.IsNetworkOnline == "Disconnected")
+                    if (netProc.IsNetworkOnline == "Disconnected")
                     {
                         NetworkStatus = "Disconnected";
-                        if(dudvm.MyProcesses.Count() > 0)
+                        if (dudvm.MyProcesses.Count() > 0)
                         {
                             foreach (var row in dudvm.MyProcesses.ToList())
                             {
@@ -312,6 +313,14 @@ namespace OpenNetMeter.ViewModels
                     else
                     {
                         NetworkStatus = "Connected : " + netProc.IsNetworkOnline;
+                        // Ensure current adapter exists in DB and refresh profiles
+                        using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
+                        {
+                            dB.CreateTable();
+                            dB.InsertUniqueRow_AdapterTable(netProc.AdapterName);
+                        }
+                        Debug.WriteLine($"ash debug!! Switched to adapter: {netProc.AdapterName}");
+                        duhvm.GetAllDBFiles();
                     }
                     break;
                 default:

@@ -256,6 +256,9 @@ namespace OpenNetMeter.Models
                     Debug.WriteLine("Error: Create table");
                 else
                 {
+                    Debug.WriteLine($"Table created or already exists, adapter table: {AdapterName}");
+                    // ensure current adapter exists in the unified DB
+                    dB.InsertUniqueRow_AdapterTable(AdapterName);
                     dB.UpdateDatesInDB();
                 }
             }
@@ -374,7 +377,7 @@ namespace OpenNetMeter.Models
                     tempDownload = CurrentSessionDownloadData;
 #if DEBUG
                     sw1.Stop();
-                    Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
+                   // Debug.WriteLine($"elapsed time (CaptureNetworkSpeed): {sw1.ElapsedMilliseconds} | time {DateTime.Now.ToString("O")}");
 #endif
                     //Debug.WriteLine($"current thread (CaptureNetworkSpeed): {Thread.CurrentThread.ManagedThreadId}");
                     //Debug.WriteLine($"networkProcess {DownloadSpeed}");

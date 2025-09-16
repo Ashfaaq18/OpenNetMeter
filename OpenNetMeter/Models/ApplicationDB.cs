@@ -10,6 +10,8 @@ namespace OpenNetMeter.Models
     internal class ApplicationDB : IDisposable
     {
         private Database dB;
+        private readonly string adapterName;
+        public const string UnifiedDBFileName = "OpenNetMeter";
         public const int DataStoragePeriodInDays = 60;
         /// <summary>
         /// creates a database file if it does not exist
@@ -17,7 +19,8 @@ namespace OpenNetMeter.Models
         /// <param name="dbName"></param>
         public ApplicationDB(string dBFileName, string[]? extraParams = null)
         {
-            dB = new Database(GetFilePath(), dBFileName, extraParams);
+            adapterName = dBFileName;
+            dB = new Database(GetFilePath(), UnifiedDBFileName, extraParams);
         }
 
         public static string GetFilePath()
@@ -27,17 +30,24 @@ namespace OpenNetMeter.Models
             return path;
         }
 
+        public static string GetUnifiedDBFullPath()
+        {
+            return Path.Combine(GetFilePath(), UnifiedDBFileName + ".sqlite");
+        }
+
         public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
         {
             InsertUniqueRow_ProcessTable(processName);
+            InsertUniqueRow_AdapterTable(adapterName);
 
             long dateID = GetID_DateTable(DateTime.Today);
             long processID = GetID_ProcessTable(processName);
+            long adapterID = GetID_AdapterTable(adapterName);
 
             //if the current process is in the ProcessDate table, update that row. else, insert a new row with the accumulated data values
-            if (InsertUniqueRow_ProcessDateTable(processID, dateID, totalDataRecv, totalDataSend) < 1)
+            if (InsertUniqueRow_ProcessDateTable(processID, dateID, adapterID, totalDataRecv, totalDataSend) < 1)
             {
-                UpdateRow_ProcessDateTable(processID, dateID, totalDataRecv, totalDataSend);
+                UpdateRow_ProcessDateTable(processID, dateID, adapterID, totalDataRecv, totalDataSend);
             }
         }
 
@@ -90,18 +100,30 @@ namespace OpenNetMeter.Models
                     "ID INTEGER PRIMARY KEY NOT NULL, " +
                     "ProcessID INTEGER NOT NULL, " +
                     "DateID INTEGER NOT NULL, " +
+                    "AdapterID INTEGER NOT NULL, " +
                     "DataReceived INTEGER NOT NULL, " +
                     "DataSent INTEGER NOT NULL, " +
                     "FOREIGN KEY(ProcessID) REFERENCES Process(ID) ON DELETE CASCADE, " +
                     "FOREIGN KEY(DateID) REFERENCES Date(ID) ON DELETE CASCADE, " +
-                    "UNIQUE (ProcessID, DateID) ON CONFLICT IGNORE" +
+                    "FOREIGN KEY(AdapterID) REFERENCES Adapter(ID) ON DELETE CASCADE, " +
+                    "UNIQUE (ProcessID, DateID, AdapterID) ON CONFLICT IGNORE" +
+                ")");
+        }
+
+        private int CreateAdapterTable()
+        {
+            return dB.RunSQLiteNonQuery("CREATE TABLE IF NOT EXISTS " +
+                "Adapter" +
+                "(" +
+                    "ID INTEGER PRIMARY KEY NOT NULL, " +
+                    "Name TEXT NOT NULL UNIQUE" +
                 ")");
         }
 
         public int CreateTable()
         {
             //if any one of the below function is negative, this function will return negative
-            return CreateProcessTable() >> 31 | CreateDateTable() >> 31 | CreateProcessDateTable() >> 31;
+            return CreateAdapterTable() >> 31 | CreateProcessTable() >> 31 | CreateDateTable() >> 31 | CreateProcessDateTable() >> 31;
         }
 
         public int InsertUniqueRow_ProcessTable(string appName)
@@ -112,6 +134,17 @@ namespace OpenNetMeter.Models
                 new string[,]
                 {
                     {"@Name", appName }
+                });
+        }
+
+        public int InsertUniqueRow_AdapterTable(string adapter)
+        {
+            return dB.RunSQLiteNonQuery("INSERT OR IGNORE INTO " +
+                "Adapter(Name) " +
+                "VALUES(@Name)",
+                new string[,]
+                {
+                    {"@Name", adapter }
                 });
         }
 
@@ -163,34 +196,36 @@ namespace OpenNetMeter.Models
             RemoveOldProcess();
         }
 
-        public int InsertUniqueRow_ProcessDateTable(long processID, long dateID, long dataReceived, long dataSent)
+        public int InsertUniqueRow_ProcessDateTable(long processID, long dateID, long adapterID, long dataReceived, long dataSent)
         {
             return dB.RunSQLiteNonQuery("INSERT OR IGNORE INTO " +
-                "ProcessDate(ProcessID, DateID, DataReceived, DataSent) " +
-                "VALUES(@ProcessID, @DateID, @DataReceived, @DataSent)",
+                "ProcessDate(ProcessID, DateID, AdapterID, DataReceived, DataSent) " +
+                "VALUES(@ProcessID, @DateID, @AdapterID, @DataReceived, @DataSent)",
                 new string[,]
                 {
                     {"@ProcessID", processID.ToString() },
                     {"@DateID", dateID.ToString() },
+                    {"@AdapterID", adapterID.ToString() },
                     {"@DataReceived", dataReceived.ToString() },
                     {"@DataSent", dataSent.ToString() }
                 });
         }
 
-        public int UpdateRow_ProcessDateTable(long processID, long dateID, long dataReceived, long dataSent)
+        public int UpdateRow_ProcessDateTable(long processID, long dateID, long adapterID, long dataReceived, long dataSent)
         {
             return dB.RunSQLiteNonQuery("UPDATE " +
                 "ProcessDate " +
                 "SET " +
                 $"DataReceived = DataReceived + @DataReceived, " +
                 $"DataSent = DataSent + @DataSent " +
-                "WHERE ProcessID = @ProcessID AND DateID = @DateID", 
+                "WHERE ProcessID = @ProcessID AND DateID = @DateID AND AdapterID = @AdapterID", 
                 new string[,]
                 {
                     { "@DataReceived", dataReceived.ToString()},
                     { "@DataSent", dataSent.ToString()},
                     { "@ProcessID", processID.ToString()},
                     { "@DateID", dateID.ToString()},
+                    { "@AdapterID", adapterID.ToString()},
                 });
         }
 
@@ -206,7 +241,12 @@ namespace OpenNetMeter.Models
                 $"({date1.Year * 10000 + date1.Month * 100 + date1.Day}) " +
                 "AND " +
                 $"({date2.Year * 10000 + date2.Month * 100 + date2.Day})) " +
-                "GROUP BY ProcessID");
+                "AND AdapterID = @AdapterID " +
+                "GROUP BY ProcessID",
+                new string[,]
+                {
+                    {"@AdapterID", GetID_AdapterTable(adapterName).ToString() }
+                });
 
             return dateIDs;
         }
@@ -216,12 +256,14 @@ namespace OpenNetMeter.Models
             List<List<object>> sum = dB.GetMultipleCellData("SELECT SUM(DataReceived), SUM(DataSent) FROM ProcessDate " +
                 "WHERE DateID IN " +
                 "(SELECT ID FROM Date " +
-                "WHERE (Year * 10000 + Month * 100 + day) = (@Year * 10000 + @Month * 100 + @Day))",
+                "WHERE (Year * 10000 + Month * 100 + day) = (@Year * 10000 + @Month * 100 + @Day)) " +
+                "AND AdapterID = @AdapterID",
                 new string[,]
                 {
                     { "@Year", DateTime.Today.Year.ToString()},
                     { "@Month", DateTime.Today.Month.ToString()},
-                    { "@Day", DateTime.Today.Day.ToString()}
+                    { "@Day", DateTime.Today.Day.ToString()},
+                    { "@AdapterID", GetID_AdapterTable(adapterName).ToString() }
                 });
 
             if(sum.Count == 1)
@@ -268,6 +310,32 @@ namespace OpenNetMeter.Models
                 });
 
             return Convert.ToInt64(test ?? -1);
+        }
+
+        public long GetID_AdapterTable(string adapter)
+        {
+            object? test = dB.GetSingleCellData("SELECT ID From " +
+                "Adapter " +
+                "WHERE " +
+                $"Name = @Name ",
+                new string[,]
+                {
+                    {"@Name", adapter}
+                });
+
+            return Convert.ToInt64(test ?? -1);
+        }
+
+        public List<string> GetAllAdapters()
+        {
+            List<string> adapters = new List<string>();
+            List<List<object>> rows = dB.GetMultipleCellData("SELECT Name FROM Adapter ORDER BY Name");
+            foreach (var row in rows)
+            {
+                if (row.Count > 0 && !Convert.IsDBNull(row[0]))
+                    adapters.Add(Convert.ToString(row[0])!);
+            }
+            return adapters;
         }
 
         public void Dispose()
