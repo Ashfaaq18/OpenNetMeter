@@ -37,6 +37,7 @@ namespace OpenNetMeter.Models
 
         public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
         {
+            Debug.WriteLine($"Pushing to DB: {processName} {totalDataRecv} {totalDataSend}");
             InsertUniqueRow_ProcessTable(processName);
             InsertUniqueRow_AdapterTable(adapterName);
 
@@ -309,6 +310,7 @@ namespace OpenNetMeter.Models
                     {"@Name", appName}
                 });
 
+            Debug.WriteLine("Process ID: " + Convert.ToInt64(test ?? -1));
             return Convert.ToInt64(test ?? -1);
         }
 
@@ -323,7 +325,9 @@ namespace OpenNetMeter.Models
                     {"@Name", adapter}
                 });
 
-            return Convert.ToInt64(test ?? -1);
+            long temp = Convert.ToInt64(test ?? -1);
+            Debug.WriteLine("Adapter ID: " + temp);
+            return temp;
         }
 
         public List<string> GetAllAdapters()

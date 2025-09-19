@@ -382,7 +382,6 @@ namespace OpenNetMeter.ViewModels
 
         public void Dispose()
         {
-            duhvm.Dispose();
 
             if (netProc != null)
             {

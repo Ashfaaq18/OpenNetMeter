@@ -6,15 +6,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace OpenNetMeter.ViewModels
 {
     
-    public class DataUsageHistoryVM : IDisposable, INotifyPropertyChanged
+    public class DataUsageHistoryVM : INotifyPropertyChanged
     {
         public DateTime DateMax { get; private set; }
         public DateTime DateMin { get; private set; }
@@ -67,8 +64,6 @@ namespace OpenNetMeter.ViewModels
         }
 
         public ICommand FilterBtn { get; set; }
-
-        private FileSystemWatcher watcher;
         public DataUsageHistoryVM()
         {
             UpdateDates();
@@ -78,12 +73,7 @@ namespace OpenNetMeter.ViewModels
             PropertyChanged += DataUsageHistoryVM_PropertyChanged;
 
             Profiles = new ObservableCollection<string>();
-            MyProcesses = new ObservableCollection<MyProcess_Small>();
-            watcher = new FileSystemWatcher(ApplicationDB.GetFilePath(), ApplicationDB.UnifiedDBFileName + ".sqlite");
-            watcher.Created += OnFile_Created;
-            watcher.Deleted += OnFile_Deleted;
-            watcher.Changed += OnFile_Changed;
-            watcher.EnableRaisingEvents = true;
+            MyProcesses = new ObservableCollection<MyProcess_Small>();;
 
             //set button command
             FilterBtn = new BaseCommand(Filter, true);
@@ -114,36 +104,11 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private void OnFile_Created(object sender, FileSystemEventArgs e)
-        {
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                GetAllDBFiles();
-            });
-        }
-
-        private void OnFile_Deleted(object sender, FileSystemEventArgs e)
-        {
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                GetAllDBFiles();
-            });
-        }
-
-        private void OnFile_Changed(object sender, FileSystemEventArgs e)
-        {
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                GetAllDBFiles();
-            });
-        }
-
         private void Filter(object? obj)
         {
             MyProcesses.Clear();
             TotalDownloadData = 0;
             TotalUploadData = 0;
-            //show confirmation dialog
             Debug.WriteLine($"Filter {DateStart.ToString("d")} | {DateEnd.ToString("d")}");
             if(SelectedProfile != null)
             {
@@ -213,9 +178,5 @@ namespace OpenNetMeter.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
 
-        public void Dispose()
-        {
-            watcher.Dispose();
-        }
     }
 }

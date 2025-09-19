@@ -102,7 +102,7 @@ namespace OpenNetMeter.Models
             PacketTask = null;
 
             asyncTask_networkSpeed = new AsyncTask(1);
-            asyncTask_dbPush = new AsyncTask(60);
+            asyncTask_dbPush = new AsyncTask(5);
 
             CurrentSessionUploadData = 0;
             CurrentSessionDownloadData = 0;
