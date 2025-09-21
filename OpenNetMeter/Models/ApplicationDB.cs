@@ -20,19 +20,12 @@ namespace OpenNetMeter.Models
         public ApplicationDB(string dBFileName, string[]? extraParams = null)
         {
             adapterName = dBFileName;
-            dB = new Database(GetFilePath(), UnifiedDBFileName, extraParams);
-        }
-
-        public static string GetFilePath()
-        {
-            string path = Path.Combine(AppContext.BaseDirectory, "user data");
-            Directory.CreateDirectory(path);
-            return path;
+            dB = new Database(Properties.Global.GetFilePath(), UnifiedDBFileName, extraParams);
         }
 
         public static string GetUnifiedDBFullPath()
         {
-            return Path.Combine(GetFilePath(), UnifiedDBFileName + ".sqlite");
+            return Path.Combine(Properties.Global.GetFilePath(), UnifiedDBFileName + ".sqlite");
         }
 
         public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
