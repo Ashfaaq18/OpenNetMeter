@@ -10,7 +10,7 @@ namespace DatabaseEngine
         {
             var filePath = Path.Combine(path, dbFileName + ".sqlite");
             ConnectionString = @"Data Source=" + Path.Combine(path, dbFileName + ".sqlite;" + " foreign keys=true");
-            if (!System.IO.File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
                 SQLiteConnection.CreateFile(filePath);
             }

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Attach",
+            "name": ".NET_CoreAttach",
             "type": "coreclr",
             "request": "attach"
         }
