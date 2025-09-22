@@ -9,6 +9,8 @@
 
 		<MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
 
+		<Property Id="DESKTOP_SHORTCUT" Value="1"/>
+		
 		<MediaTemplate EmbedCab="yes"/>
 
 		<netfx:DotNetCompatibilityCheck Id="netCoreStatus64"
@@ -24,6 +26,7 @@
 		<Feature Id="ProductFeature" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 			<ComponentGroupRef Id="CleanupComponents" />
+			<ComponentGroupRef Id="ShortcutComponents" />
 		</Feature>
 		
 	</Package>
@@ -57,4 +60,24 @@
 		</ComponentGroup>
 	</Fragment>
 
+	<Fragment>
+		<!-- Declare the standard desktop folder so MSI knows where to place the shortcut -->
+		<StandardDirectory Id="DesktopFolder" />
+
+		<ComponentGroup Id="ShortcutComponents" Directory="DesktopFolder">
+			<Component Id="CmpDesktopShortcut" Guid="*" Condition="DESKTOP_SHORTCUT=&quot;1&quot;">
+				<Shortcut Id="AppDesktopShortcut"
+						  Name="$(ProductName)"
+						  Target="[InstallFolder]$(ProductName).exe"
+						  WorkingDirectory="InstallFolder" />
+
+				<!-- Key path so this component is well-formed -->
+				<RegistryValue Root="HKCU"
+							   Key="Software\$(Manufacturer)\$(ProductName)"
+							   Name="DesktopShortcutInstalled"
+							   Type="integer" Value="1" KeyPath="yes" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+	
 </Wix>
