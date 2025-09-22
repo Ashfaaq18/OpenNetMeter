@@ -29,18 +29,16 @@
 	</Package>
 	
 	<Fragment>
+		<StandardDirectory Id="ProgramFiles6432Folder">
+			<Directory Id="InstallFolder" Name="$(ProductName)"/>
+		</StandardDirectory>
+		
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
 			<!-- Files to install -->
 			<Files Include="$(SolutionDir)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
 		</ComponentGroup>
 	</Fragment>
 
-	<!-- location to be installed which is referred above -->
-	<Fragment>
-		<StandardDirectory Id="ProgramFiles6432Folder">
-			<Directory Id="InstallFolder" Name="$(ProductName)"/>
-		</StandardDirectory>
-	</Fragment>
 
 	<Fragment>
 		<StandardDirectory Id="LocalAppDataFolder">
@@ -48,9 +46,9 @@
 		</StandardDirectory>
 
 		<ComponentGroup Id="CleanupComponents" Directory="ProductLocalDataFolder">
-			<Component Id="CleanupAppData" Guid="*">
+			<Component Id="CleanupAppData" Guid="*" Condition="NOT UPGRADINGPRODUCTCODE">
 				<RegistryValue Root="HKCU" Key="Software\$(Manufacturer)\$(ProductName)\Cleanup" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
-
+				<!-- runtime created files to remove -->
 				<RemoveFile Id="RemoveSettingsJson" Name="settings.json" On="uninstall" />
 				<RemoveFile Id="RemoveDatabase" Name="OpenNetMeter.sqlite" On="uninstall" />
 
