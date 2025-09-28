@@ -38,7 +38,7 @@
 		
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
 			<!-- Files to install -->
-			<Files Include="$(SolutionDir)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
+			<Files Include="$(SourceRoot)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
 		</ComponentGroup>
 	</Fragment>
 

@@ -1,18 +1,21 @@
-﻿<Project Sdk="WixToolset.Sdk/5.0.1">
+<Project Sdk="WixToolset.Sdk/5.0.1">
   <ItemGroup>
     <PackageReference Include="WixToolset.Netfx.wixext" Version="5.0.1" />
     <PackageReference Include="WixToolset.UI.wixext" Version="5.0.1" />
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SourceRoot>$(MSBuildThisFileDirectory)..\</SourceRoot>
     <!-- Optional: fallback -->
-	  <DefineConstants>
-		  $(DefineConstants);
-		  TargetFramework=$(TargetFramework);
-		  Manufacturer=$(Manufacturer);
-		  ProductName=$(ProductName);
-		  ProductVersion=$(ProductVersion);
-	  </DefineConstants>
-	  <OutputName>$(ProductName)-$(ProductVersion)</OutputName>
+    <DefineConstants>
+      $(DefineConstants);
+      SourceRoot=$(SourceRoot);
+      TargetFramework=$(TargetFramework);
+      Manufacturer=$(Manufacturer);
+      ProductName=$(ProductName);
+      ProductVersion=$(ProductVersion);
+    </DefineConstants>
+    <OutputName>$(ProductName)-$(ProductVersion)</OutputName>
   </PropertyGroup>  
 </Project>
+
