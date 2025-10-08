@@ -10,7 +10,19 @@
 		<MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
 
 		<Property Id="DESKTOP_SHORTCUT" Value="1"/>
-		
+		<!-- User option: launch app after install -->
+		<Property Id="LAUNCH_AFTER_INSTALL" Value="1" />
+
+		<CustomAction Id="RunAfterInstall"
+					  Execute="immediate"
+					  Impersonate="yes"
+					  Return="asyncNoWait"
+					  Directory="InstallFolder"
+					  ExeCommand="[InstallFolder]$(ProductName).exe"/>
+		<InstallExecuteSequence>
+			<Custom Action="RunAfterInstall" After="InstallFinalize" Condition="NOT Installed AND LAUNCH_AFTER_INSTALL=&quot;1&quot;" />
+		</InstallExecuteSequence>
+
 		<MediaTemplate EmbedCab="yes"/>
 
 		<netfx:DotNetCompatibilityCheck Id="netCoreStatus64"
