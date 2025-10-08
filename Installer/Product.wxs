@@ -7,7 +7,7 @@
 		 Name="$(ProductName)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)"
 		 UpgradeCode="c8795db6-2426-4f40-a615-671f26fcaf3a" InstallerVersion="200">
 
-		<MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="!(loc.DowngradeError)" />
 
 		<Property Id="DESKTOP_SHORTCUT" Value="1"/>
 		<!-- User option: launch app after install -->
