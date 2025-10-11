@@ -90,5 +90,21 @@
 			</Component>
 		</ComponentGroup>
 	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="EventLogComponents" Directory="InstallFolder">
+			<Component Id="CreateEventSource64BitFullNet4" Guid="*" Condition="NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64">
+				<!-- Create an Event Source -->
+				<util:EventSource 
+					Name="$(ProductName)" 
+					Log="Application"
+					EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR64]EventLogMessages.dll"
+					SupportsInformationals="yes"
+					SupportsWarnings="yes"
+					SupportsErrors="yes"
+					KeyPath="yes" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
 	
 </Wix>
