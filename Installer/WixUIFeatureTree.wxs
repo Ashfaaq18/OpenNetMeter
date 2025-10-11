@@ -19,6 +19,7 @@
 			<DialogRef Id="ResumeDlg" />
 			<DialogRef Id="UserExit" />
 
+			<Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication" Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX=&quot;1&quot; and NOT Installed" Order="998"/>
 			<Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999" />
 
 			<Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="OptionsDlg" />
@@ -41,11 +42,6 @@
 							X="20" Y="60" Width="330" Height="17"
 							Property="DESKTOP_SHORTCUT" CheckBoxValue="1"
 							Text="Create a Desktop shortcut" />
-
-				<Control Id="LaunchAfterInstallCheck" Type="CheckBox"
-							X="20" Y="80" Width="330" Height="17"
-							Property="LAUNCH_AFTER_INSTALL" CheckBoxValue="1"
-							Text="Launch the application after installation" />
 
 				<!-- Nav buttons -->
 				<Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="Back">
