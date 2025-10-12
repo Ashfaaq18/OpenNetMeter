@@ -145,7 +145,7 @@ namespace OpenNetMeter.Models
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine(ex.Message);
+                    EventLogger.Error(ex.Message);
                 }
             }
 
@@ -161,7 +161,7 @@ namespace OpenNetMeter.Models
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine(ex.Message);
+                    EventLogger.Error(ex.Message);
                 }
             }
 
@@ -341,7 +341,7 @@ namespace OpenNetMeter.Models
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"db push error: {ex.Message}");
+                EventLogger.Error($"db push error: {ex.Message}");
             }
         }
 
@@ -389,7 +389,7 @@ namespace OpenNetMeter.Models
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Capture network speed error: {ex.Message}");
+                EventLogger.Error($"Capture network speed error: {ex.Message}");
             }
         }
 
@@ -424,7 +424,7 @@ namespace OpenNetMeter.Models
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine(ex.Message);
+                        EventLogger.Error(ex.Message);
                     }
                 }
             });

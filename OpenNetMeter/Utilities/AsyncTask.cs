@@ -41,7 +41,7 @@ namespace OpenNetMeter.Utilities
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"error: {ex.Message}");
+                EventLogger.Error(ex.Message);
             }
         }
 

@@ -171,7 +171,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch (IOException ex)
             {
-                Debug.WriteLine(ex.Message);
+                EventLogger.Error(ex.Message);
             }
         }
 

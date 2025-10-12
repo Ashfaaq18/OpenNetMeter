@@ -261,7 +261,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                EventLogger.Error(ex.Message);
             }
             finally
             {
@@ -274,7 +274,7 @@ namespace OpenNetMeter.ViewModels
                     }
                     catch (Exception ex1)
                     {
-                        Debug.WriteLine("Error: " + ex1.Message);
+                        EventLogger.Error("Error: " + ex1.Message);
                     }
                 }
             }
@@ -319,7 +319,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch(Exception ex)
             {
-                Debug.WriteLine("Error: " + ex.Message);
+                EventLogger.Error("Error: " + ex.Message);
             }
         }
 

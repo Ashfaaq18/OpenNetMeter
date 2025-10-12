@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Properties
 {
@@ -38,7 +39,7 @@ namespace OpenNetMeter.Properties
             catch (Exception ex)
             {
                 // Log an error if the json file is corrupt, for example.
-                Debug.WriteLine($"Error loading settings: {ex.Message}");
+                EventLogger.Error($"Error loading settings: {ex.Message}");
             }
         }
 
