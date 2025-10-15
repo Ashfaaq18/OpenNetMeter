@@ -176,6 +176,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
         public ICommand ResetBtn { get; set; }
+        public ICommand UpdateCheckBtn { get; set; }
 
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
@@ -207,6 +208,7 @@ namespace OpenNetMeter.ViewModels
             NetworkSpeedFormat = SettingsManager.Current.NetworkSpeedFormat;
 
             ResetBtn = new BaseCommand(ResetData, true);
+            UpdateCheckBtn = new BaseCommand(UpdateCheck, true);
 
             DeleteAllFiles = false;
         }
@@ -227,6 +229,11 @@ namespace OpenNetMeter.ViewModels
         {
             if(cdvm != null)
                 cdvm.IsVisible = System.Windows.Visibility.Visible;
+        }
+
+        private void UpdateCheck(object? obj)
+        {
+            Debug.WriteLine("update check pressed");
         }
 
         private void ResetDataYesOrNo(object? obj)
