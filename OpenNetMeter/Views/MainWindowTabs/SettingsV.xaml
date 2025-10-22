@@ -73,10 +73,30 @@
                 <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
                 <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
-                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FontColor1}">last check for updates: never</TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FontColor1}" Text="{Binding UpdateStatusMessage}"></TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,5" >
-                        <Button Height="24" Width="100" Margin="16,0" Command="{Binding UpdateCheckBtn}" Style="{StaticResource ButtonColor}">
+                        <Button Height="24" Width="120" Margin="16,0" Command="{Binding UpdateCheckBtn}" Style="{StaticResource ButtonColor}">
                             <TextBlock FontFamily="Segoe UI" Text="Check for updates" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                    <Setter Property="BorderBrush" Value="#888888"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Height="24" Width="120" Margin="16,0" Command="{Binding DownloadUpdateBtn}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource ButtonColor}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsUpdateAvailable}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock FontFamily="Segoe UI" Text="Download" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                             <Button.Resources>
                                 <Style TargetType="{x:Type Border}">
                                     <Setter Property="CornerRadius" Value="4"/>

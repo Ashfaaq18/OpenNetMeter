@@ -1,10 +1,12 @@
-﻿using OpenNetMeter.Properties;
+using OpenNetMeter.Properties;
 using OpenNetMeter.Utilities;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
@@ -177,6 +179,40 @@ namespace OpenNetMeter.ViewModels
         }
         public ICommand ResetBtn { get; set; }
         public ICommand UpdateCheckBtn { get; set; }
+        public ICommand DownloadUpdateBtn { get; set; }
+
+        private bool _isUpdateAvailable;
+        public bool IsUpdateAvailable
+        {
+            get { return _isUpdateAvailable; }
+            set
+            {
+                _isUpdateAvailable = value;
+                OnPropertyChanged("IsUpdateAvailable");
+            }
+        }
+
+        private string _updateStatusMessage;
+        public string UpdateStatusMessage
+        {
+            get { return _updateStatusMessage; }
+            set
+            {
+                _updateStatusMessage = value;
+                OnPropertyChanged("UpdateStatusMessage");
+            }
+        }
+
+        private bool _isCheckingForUpdates;
+        public bool IsCheckingForUpdates
+        {
+            get { return _isCheckingForUpdates; }
+            set
+            {
+                _isCheckingForUpdates = value;
+                OnPropertyChanged("IsCheckingForUpdates");
+            }
+        }
 
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
@@ -209,7 +245,10 @@ namespace OpenNetMeter.ViewModels
 
             ResetBtn = new BaseCommand(ResetData, true);
             UpdateCheckBtn = new BaseCommand(UpdateCheck, true);
-
+            DownloadUpdateBtn = new BaseCommand(DownloadUpdate, true);
+            IsUpdateAvailable = false;
+            UpdateStatusMessage = "Click here to check for new updates";
+            IsCheckingForUpdates = false;
             DeleteAllFiles = false;
         }
 
@@ -231,9 +270,53 @@ namespace OpenNetMeter.ViewModels
                 cdvm.IsVisible = System.Windows.Visibility.Visible;
         }
 
-        private void UpdateCheck(object? obj)
+        private async void UpdateCheck(object? obj)
         {
-            Debug.WriteLine("update check pressed");
+            UpdateStatusMessage = "Checking for updates...";
+            IsUpdateAvailable = false;
+            try
+            {
+                await Task.Delay(2000);
+
+                string latestVersion = await UpdateChecker.CheckForUpdates();
+                if (!string.IsNullOrEmpty(latestVersion))
+                {
+                    Version v_latest = new Version(latestVersion.Substring(1)); //remove the 'v' from the version string
+                    Version v_current = Assembly.GetExecutingAssembly().GetName().Version;
+                    if (v_latest > v_current)
+                    {
+                        UpdateStatusMessage = $"A new version {latestVersion} is available!";
+                        IsUpdateAvailable = true;
+                    }
+                    else
+                    {
+                        UpdateStatusMessage = "You have the latest version.";
+                    }
+                }
+                else
+                {
+                    UpdateStatusMessage = "Error checking for updates.";
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusMessage = "Error checking for updates.";
+                EventLogger.Error(ex.Message);
+            }
+            finally
+            {
+                IsCheckingForUpdates = false;
+            }
+        }
+
+        private void DownloadUpdate(object? obj)
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "https://github.com/Ashfaaq18/OpenNetMeter/releases",
+                UseShellExecute = true
+            };
+            Process.Start(psi);
         }
 
         private void ResetDataYesOrNo(object? obj)
