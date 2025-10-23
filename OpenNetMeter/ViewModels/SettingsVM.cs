@@ -272,6 +272,7 @@ namespace OpenNetMeter.ViewModels
 
         private async void UpdateCheck(object? obj)
         {
+            IsCheckingForUpdates = true;
             UpdateStatusMessage = "Checking for updates...";
             IsUpdateAvailable = false;
             try
@@ -282,8 +283,8 @@ namespace OpenNetMeter.ViewModels
                 if (!string.IsNullOrEmpty(latestVersion))
                 {
                     Version v_latest = new Version(latestVersion.Substring(1)); //remove the 'v' from the version string
-                    Version v_current = Assembly.GetExecutingAssembly().GetName().Version;
-                    if (v_latest > v_current)
+                    Version? v_current = Assembly.GetExecutingAssembly()?.GetName()?.Version;
+                    if (v_current != null && v_latest > v_current)
                     {
                         UpdateStatusMessage = $"A new version {latestVersion} is available!";
                         IsUpdateAvailable = true;

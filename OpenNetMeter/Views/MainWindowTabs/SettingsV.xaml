@@ -73,9 +73,47 @@
                 <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
                 <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" VerticalAlignment="Center" Margin="5">
+
                     <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FontColor1}" Text="{Binding UpdateStatusMessage}"></TextBlock>
+
+                    <ProgressBar Height="8" Width="200" Margin="0,8"
+                 IsIndeterminate="True"
+                 HorizontalAlignment="Center">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCheckingForUpdates}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
+
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,5" >
-                        <Button Height="24" Width="120" Margin="16,0" Command="{Binding UpdateCheckBtn}" Style="{StaticResource ButtonColor}">
+
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCheckingForUpdates}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <Button Height="24" Width="120" Margin="16,0" Command="{Binding UpdateCheckBtn}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource ButtonColor}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCheckingForUpdates}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <TextBlock FontFamily="Segoe UI" Text="Check for updates" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                             <Button.Resources>
                                 <Style TargetType="{x:Type Border}">
@@ -85,6 +123,7 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
+
                         <Button Height="24" Width="120" Margin="16,0" Command="{Binding DownloadUpdateBtn}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource ButtonColor}">
@@ -107,6 +146,7 @@
                         </Button>
                     </StackPanel>
                 </StackPanel>
+
 
                 <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="2" Style="{StaticResource BorderStyle1}">
                 </Border>
