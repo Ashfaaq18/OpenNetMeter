@@ -1,10 +1,12 @@
-﻿using OpenNetMeter.Properties;
+using OpenNetMeter.Properties;
 using OpenNetMeter.Utilities;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
@@ -176,6 +178,43 @@ namespace OpenNetMeter.ViewModels
             }
         }
         public ICommand ResetBtn { get; set; }
+        public ICommand UpdateCheckBtn { get; set; }
+        public ICommand DownloadUpdateBtn { get; set; }
+
+        private bool _isUpdateAvailable;
+        public bool IsUpdateAvailable
+        {
+            get { return _isUpdateAvailable; }
+            set
+            {
+                _isUpdateAvailable = value;
+                OnPropertyChanged("IsUpdateAvailable");
+            }
+        }
+
+        private string _updateStatusMessage;
+        public string UpdateStatusMessage
+        {
+            get { return _updateStatusMessage; }
+            set
+            {
+                _updateStatusMessage = value;
+                OnPropertyChanged("UpdateStatusMessage");
+            }
+        }
+
+        private bool _isCheckingForUpdates;
+        public bool IsCheckingForUpdates
+        {
+            get { return _isCheckingForUpdates; }
+            set
+            {
+                _isCheckingForUpdates = value;
+                OnPropertyChanged("IsCheckingForUpdates");
+            }
+        }
+
+        private string DownloadUrl;
 
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
@@ -207,7 +246,12 @@ namespace OpenNetMeter.ViewModels
             NetworkSpeedFormat = SettingsManager.Current.NetworkSpeedFormat;
 
             ResetBtn = new BaseCommand(ResetData, true);
-
+            UpdateCheckBtn = new BaseCommand(UpdateCheck, true);
+            DownloadUpdateBtn = new BaseCommand(DownloadUpdate, true);
+            DownloadUrl = string.Empty;
+            IsUpdateAvailable = false;
+            UpdateStatusMessage = "Click here to check for new updates";
+            IsCheckingForUpdates = false;
             DeleteAllFiles = false;
         }
 
@@ -227,6 +271,77 @@ namespace OpenNetMeter.ViewModels
         {
             if(cdvm != null)
                 cdvm.IsVisible = System.Windows.Visibility.Visible;
+        }
+
+        private async void UpdateCheck(object? obj)
+        {
+            IsCheckingForUpdates = true;
+            UpdateStatusMessage = "Checking for updates...";
+            string tempMsgStatus = string.Empty; 
+            IsUpdateAvailable = false;
+
+            const int minDisplayTimeMs = 2000; // 2 seconds, this is to show a progress bar for the update check, for better ux
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                (Version? latestVersion, string? downloadUrl) = await UpdateChecker.CheckForUpdates();
+                if (latestVersion != null && downloadUrl != null)
+                {
+                    Version? currentVersion = Assembly.GetExecutingAssembly()?.GetName()?.Version;
+                    Debug.WriteLine($"download url: {downloadUrl}, current version: {currentVersion}, latest version: {latestVersion}");
+                    if (currentVersion != null && latestVersion > currentVersion)
+                    {
+                        DownloadUrl = downloadUrl;
+                        tempMsgStatus = $"A new version {latestVersion} is available!";
+                        IsUpdateAvailable = true;
+                    }
+                    else
+                    {
+                        tempMsgStatus = "You have the latest version.";
+                    }
+                }
+                else
+                {
+                    tempMsgStatus = "Error checking for updates.";
+                }
+            }
+            catch (Exception ex)
+            {
+                tempMsgStatus = "Error checking for updates.";
+                EventLogger.Error(ex.Message);
+            }
+            finally
+            {
+                stopwatch.Stop();
+
+                int elapsedMs = (int)stopwatch.ElapsedMilliseconds;
+                int remainingTime = minDisplayTimeMs - elapsedMs;
+                if (remainingTime > 0)
+                {
+                    await Task.Delay(remainingTime);
+                }
+
+                IsCheckingForUpdates = false;
+                UpdateStatusMessage = tempMsgStatus;
+            }
+        }
+
+        private void DownloadUpdate(object? obj)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = DownloadUrl,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                EventLogger.Error(ex.Message);
+            }
         }
 
         private void ResetDataYesOrNo(object? obj)
