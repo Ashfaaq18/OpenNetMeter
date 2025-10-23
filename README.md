@@ -15,16 +15,15 @@ This program provides the following features,
 
 ## Installation
 
-1. Download and Install [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) desktop apps version. (for versions 0.9.0 and below, download [.NET 5.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/5.0/runtime))
-2. Download the latest release from this repository and simply extract it.
-3. Run in Admin mode (this is necessary).
+1. Download and Install [.NET 8.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) desktop apps version for the latest release.
+2. Download the latest release .msi from this repository and run it (no more .zip format).
+3. This application requires admin privileges.
 4. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
 
 ## Uninstallation
 
-1. Untick the "Start program on windows startup" from the settings page (this is to remove the program from the startup records).
-2. for versions 0.8.1 to 0.5.1, Untick the "Show Network speed from task bar" from the settings page  (this is to remove the dll from the registry).
-3. Simply delete the folder.
+1. simply uninstall from the control panel.
+2. for versions before, 0.12.1 and below, Simply delete the folder.
     
 ## Usage/Examples
 
