@@ -15,7 +15,7 @@ This program provides the following features,
 
 ## Installation
 
-1. Download and Install [.NET 8.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime) desktop apps version for the latest release.
+1. Download and Install [.NET 8.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime) desktop apps version for the latest release.
 2. Download the latest release .msi from this repository and run it (no more .zip format).
 3. This application requires admin privileges.
 4. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
