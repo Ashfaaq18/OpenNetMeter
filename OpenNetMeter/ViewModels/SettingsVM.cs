@@ -192,7 +192,7 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
-        private string _updateStatusMessage;
+        private string _updateStatusMessage = string.Empty;
         public string UpdateStatusMessage
         {
             get { return _updateStatusMessage; }
@@ -227,7 +227,7 @@ namespace OpenNetMeter.ViewModels
             cdvm.DialogMessage = "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
 
             taskFolder = "OpenNetMeter";
-            taskName = "OpenNetMeter" + "-" + Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3);
+            taskName = "OpenNetMeterLogon";
 
             //start with windows setting
             UnlockOptionStartWin = true;

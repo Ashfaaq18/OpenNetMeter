@@ -22,6 +22,20 @@
               DllEntry="WixShellExec"
               Impersonate="yes" />
 
+		<CustomAction Id="DeleteOpenNetMeterTask"
+					  Directory="System64Folder"
+					  Execute="deferred"
+					  Impersonate="no"
+					  Return="ignore"
+					  ExeCommand='cmd.exe /c "schtasks /Delete /TN "\OpenNetMeter\OpenNetMeterLogon" /F &amp; schtasks /Delete /TN "\OpenNetMeter" /F"' />
+
+		<InstallExecuteSequence>
+			<!-- Uninstall only, not during major upgrade removal -->
+			<Custom Action="DeleteOpenNetMeterTask"
+					Before="RemoveFiles"
+					Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+		</InstallExecuteSequence>
+
 		<MediaTemplate EmbedCab="yes"/>
 
 		<netfx:DotNetCompatibilityCheck Id="netCoreStatus64"
