@@ -188,7 +188,7 @@
                         <RadioButton IsChecked="{Binding Path=NetworkSpeedFormat, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" Margin="5,0" Padding="0" Style="{StaticResource FontColor1}">Bps (Bytes/sec)</RadioButton>
                     </StackPanel>
                 </StackPanel>
-                
+
             </Grid>
         </Border>
     </Grid>

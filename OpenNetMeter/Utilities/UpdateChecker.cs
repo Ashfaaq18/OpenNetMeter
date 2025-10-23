@@ -1,6 +1,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace OpenNetMeter.Utilities
         private const string owner = "Ashfaaq18";
         private const string repo = "OpenNetMeter";
 
-        public static async Task<string> CheckForUpdates()
+        public static async Task<(Version? latestVersion, string? downloadUrl)> CheckForUpdates()
         {
             using (var client = new HttpClient())
             {
@@ -25,10 +26,16 @@ namespace OpenNetMeter.Utilities
                     string prettyJson = JsonHelper.PrettyPrint(jsonObject);
                     Debug.WriteLine(prettyJson);
                     var latestVersion = jsonObject["tag_name"]?.ToString();
-                    return latestVersion ?? string.Empty;
+                    if (latestVersion == null) { return (null, null); }
+
+                    var assets = jsonObject["assets"] as JArray;
+                    var firstAsset = assets?.FirstOrDefault();
+                    var downloadUrl = firstAsset?["browser_download_url"]?.ToString();
+
+                    return (new Version(latestVersion.Substring(1)), downloadUrl);
                 }
             }
-            return string.Empty;
+            return (null, null);
         }
     }
 }

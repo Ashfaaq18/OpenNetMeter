@@ -214,6 +214,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private string DownloadUrl;
+
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
 
@@ -246,6 +248,7 @@ namespace OpenNetMeter.ViewModels
             ResetBtn = new BaseCommand(ResetData, true);
             UpdateCheckBtn = new BaseCommand(UpdateCheck, true);
             DownloadUpdateBtn = new BaseCommand(DownloadUpdate, true);
+            DownloadUrl = string.Empty;
             IsUpdateAvailable = false;
             UpdateStatusMessage = "Click here to check for new updates";
             IsCheckingForUpdates = false;
@@ -274,50 +277,71 @@ namespace OpenNetMeter.ViewModels
         {
             IsCheckingForUpdates = true;
             UpdateStatusMessage = "Checking for updates...";
+            string tempMsgStatus = string.Empty; 
             IsUpdateAvailable = false;
+
+            const int minDisplayTimeMs = 2000; // 2 seconds, this is to show a progress bar for the update check, for better ux
+            var stopwatch = Stopwatch.StartNew();
+
             try
             {
-                await Task.Delay(2000);
-
-                string latestVersion = await UpdateChecker.CheckForUpdates();
-                if (!string.IsNullOrEmpty(latestVersion))
+                (Version? latestVersion, string? downloadUrl) = await UpdateChecker.CheckForUpdates();
+                if (latestVersion != null && downloadUrl != null)
                 {
-                    Version v_latest = new Version(latestVersion.Substring(1)); //remove the 'v' from the version string
-                    Version? v_current = Assembly.GetExecutingAssembly()?.GetName()?.Version;
-                    if (v_current != null && v_latest > v_current)
+                    Version? currentVersion = Assembly.GetExecutingAssembly()?.GetName()?.Version;
+                    Debug.WriteLine($"download url: {downloadUrl}, current version: {currentVersion}, latest version: {latestVersion}");
+                    if (currentVersion != null && latestVersion > currentVersion)
                     {
-                        UpdateStatusMessage = $"A new version {latestVersion} is available!";
+                        DownloadUrl = downloadUrl;
+                        tempMsgStatus = $"A new version {latestVersion} is available!";
                         IsUpdateAvailable = true;
                     }
                     else
                     {
-                        UpdateStatusMessage = "You have the latest version.";
+                        tempMsgStatus = "You have the latest version.";
                     }
                 }
                 else
                 {
-                    UpdateStatusMessage = "Error checking for updates.";
+                    tempMsgStatus = "Error checking for updates.";
                 }
             }
             catch (Exception ex)
             {
-                UpdateStatusMessage = "Error checking for updates.";
+                tempMsgStatus = "Error checking for updates.";
                 EventLogger.Error(ex.Message);
             }
             finally
             {
+                stopwatch.Stop();
+
+                int elapsedMs = (int)stopwatch.ElapsedMilliseconds;
+                int remainingTime = minDisplayTimeMs - elapsedMs;
+                if (remainingTime > 0)
+                {
+                    await Task.Delay(remainingTime);
+                }
+
                 IsCheckingForUpdates = false;
+                UpdateStatusMessage = tempMsgStatus;
             }
         }
 
         private void DownloadUpdate(object? obj)
         {
-            var psi = new ProcessStartInfo
+            try
             {
-                FileName = "https://github.com/Ashfaaq18/OpenNetMeter/releases",
-                UseShellExecute = true
-            };
-            Process.Start(psi);
+                var psi = new ProcessStartInfo
+                {
+                    FileName = DownloadUrl,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                EventLogger.Error(ex.Message);
+            }
         }
 
         private void ResetDataYesOrNo(object? obj)
