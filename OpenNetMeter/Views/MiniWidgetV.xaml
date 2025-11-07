@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
         xmlns:v="clr-namespace:OpenNetMeter.Views"
+        xmlns:res="clr-namespace:OpenNetMeter.Properties"
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -54,28 +55,65 @@
                           Grid.Column="1"
                           Grid.RowSpan="2"
                           Width="32"
-                          Height="24"
+                          Height="30"
                           Margin="0,4,4,4"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
                           IsChecked="{Binding IsPinned, Mode=TwoWay}"
-                          BorderBrush="{Binding RelativeSource={RelativeSource Self}, Path=Foreground}"
-                          ToolTip="Toggle pin">
+                          ToolTip="Pin">
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton" BasedOn="{StaticResource FontColor1}">
                         <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Self}, Path=Foreground}"/>
                         <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="FontSize" Value="10"/>
-                        <Setter Property="Padding" Value="4,0"/>
-                        <Setter Property="Content" Value="Pin"/>
+                        <Setter Property="Padding" Value="0"/>
                         <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="ToolTip" Value="Pin"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="PinBorder"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="3"
+                                            Padding="6">
+                                        <Image x:Name="PinStateImage"
+                                               Width="14"
+                                               Height="14"
+                                               Stretch="Uniform">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="Source" Value="/OpenNetMeter;component/Resources/pin/pin.png"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType=ToggleButton}}" Value="True">
+                                                            <Setter Property="Source" Value="/OpenNetMeter;component/Resources/pin/unpin.png"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
+                                                            <Setter Property="Source" Value="/OpenNetMeter;component/Resources/pin/pin-dark.png"/>
+                                                        </DataTrigger>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType=ToggleButton}}" Value="True"/>
+                                                                <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Source" Value="/OpenNetMeter;component/Resources/pin/unpin-dark.png"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                         <Style.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Content" Value="Pinned"/>
-                                <Setter Property="Background" Value="#20000000"/>
-                            </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="#30000000"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="#40000000"/>
+                                <Setter Property="ToolTip" Value="Unpin"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
