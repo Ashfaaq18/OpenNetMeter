@@ -28,8 +28,8 @@
     <Border Style="{StaticResource BorderColor}">
         <Grid Background="{Binding BackgroundColor}" >
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -41,26 +41,16 @@
                     <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
                 </ContextMenu>
             </Grid.ContextMenu>
-            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">D-S :</TextBlock>
-                <TextBlock Padding="5,0,0,0"  FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}" />
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
-            </StackPanel>
-            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">U-S :</TextBlock>
-                <TextBlock Padding="5,0,0,0" FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"/>
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
-            </StackPanel>
             <ToggleButton Grid.Row="0"
-                          Grid.Column="1"
-                          Grid.RowSpan="2"
-                          Width="32"
-                          Height="30"
-                          Margin="0,4,4,4"
-                          HorizontalAlignment="Right"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding IsPinned, Mode=TwoWay}"
-                          ToolTip="Pin">
+                  Grid.Column="0"
+                  Grid.RowSpan="2"
+                  Width="28"
+                  Height="30"
+                  Margin="2"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding IsPinned, Mode=TwoWay}"
+                  ToolTip="Pin">
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton" BasedOn="{StaticResource FontColor1}">
                         <Setter Property="Background" Value="Transparent"/>
@@ -73,15 +63,15 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border x:Name="PinBorder"
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="3"
-                                            Padding="6">
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3"
+                                    Padding="6">
                                         <Image x:Name="PinStateImage"
-                                               Width="14"
-                                               Height="14"
-                                               Stretch="Uniform">
+                                       Width="14"
+                                       Height="14"
+                                       Stretch="Uniform">
                                             <Image.Style>
                                                 <Style TargetType="Image">
                                                     <Setter Property="Source" Value="/OpenNetMeter;component/Resources/pin/pin.png"/>
@@ -119,6 +109,17 @@
                     </Style>
                 </ToggleButton.Style>
             </ToggleButton>
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2">
+                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">D-S :</TextBlock>
+                <TextBlock Padding="5,0,0,0"  FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}" />
+                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2">
+                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">U-S :</TextBlock>
+                <TextBlock Padding="5,0,0,0" FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"/>
+                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
+            </StackPanel>
+        
         </Grid>
     </Border>
     
