@@ -37,6 +37,9 @@ namespace OpenNetMeter.Properties
         private bool miniWidgetVisibility;
         public bool MiniWidgetVisibility { get => miniWidgetVisibility; set { if (miniWidgetVisibility != value) { miniWidgetVisibility = value; OnPropertyChanged("MiniWidgetVisibility"); } } }
 
+        private bool miniWidgetPinned;
+        public bool MiniWidgetPinned { get => miniWidgetPinned; set { if (miniWidgetPinned != value) { miniWidgetPinned = value; OnPropertyChanged("MiniWidgetPinned"); } } }
+
         private int networkSpeedFormat;
         public int NetworkSpeedFormat { get => networkSpeedFormat; set { if (networkSpeedFormat != value) { networkSpeedFormat = value; OnPropertyChanged("NetworkSpeedFormat"); } } }
 

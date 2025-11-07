@@ -1,4 +1,5 @@
-﻿using OpenNetMeter.Utilities;
+using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -82,6 +83,23 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private bool isPinned;
+        public bool IsPinned
+        {
+            get { return isPinned; }
+            set
+            {
+                if (isPinned == value)
+                {
+                    return;
+                }
+
+                isPinned = value;
+                SettingsManager.Current.MiniWidgetPinned = value;
+                SettingsManager.Save();
+                OnPropertyChanged("IsPinned");
+            }
+        }
         public MiniWidgetVM()
         {
             CurrentSessionDownloadData = 0;
@@ -93,9 +111,13 @@ namespace OpenNetMeter.ViewModels
             Size size1 = UIMeasure.Shape(new TextBlock { Text = "D-S :", FontSize = 12, Padding = new Thickness(0) });
             Size size2 = UIMeasure.Shape(new TextBlock { Text = "1024.00Mbps", FontSize = 12, Padding = new Thickness(5,0,0,0) });
             int widthMargins = 5 + 5; //these are from the miniwidget xaml margins
-            Width = size1.Width + size2.Width + widthMargins;
+            double pinButtonWidth = 30; //reserve space for the pin toggle button
+            Width = size1.Width + size2.Width + widthMargins + pinButtonWidth;
             int heightMargins = 2 + 2; //these are from the miniwidget xaml margins
             Height = size1.Height * 2 + heightMargins * 2;
+
+            isPinned = SettingsManager.Current.MiniWidgetPinned;
+            OnPropertyChanged("IsPinned");
         }
 
         //------property changers---------------//
@@ -105,3 +127,6 @@ namespace OpenNetMeter.ViewModels
         private void OnPropertyChanged(string propName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
 }
+
+
+

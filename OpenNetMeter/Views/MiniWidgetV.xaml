@@ -28,6 +28,7 @@
         <Grid Background="{Binding BackgroundColor}" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -39,16 +40,47 @@
                     <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
                 </ContextMenu>
             </Grid.ContextMenu>
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">D-S :</TextBlock>
                 <TextBlock Padding="5,0,0,0"  FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}" />
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
             </StackPanel>
-            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,2">
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">U-S :</TextBlock>
                 <TextBlock Padding="5,0,0,0" FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"/>
                 <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
             </StackPanel>
+            <ToggleButton Grid.Row="0"
+                          Grid.Column="1"
+                          Grid.RowSpan="2"
+                          Width="32"
+                          Height="24"
+                          Margin="0,4,4,4"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding IsPinned, Mode=TwoWay}"
+                          BorderBrush="{Binding RelativeSource={RelativeSource Self}, Path=Foreground}"
+                          ToolTip="Toggle pin">
+                <ToggleButton.Style>
+                    <Style TargetType="ToggleButton" BasedOn="{StaticResource FontColor1}">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="FontSize" Value="10"/>
+                        <Setter Property="Padding" Value="4,0"/>
+                        <Setter Property="Content" Value="Pin"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Content" Value="Pinned"/>
+                                <Setter Property="Background" Value="#20000000"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#30000000"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ToggleButton.Style>
+            </ToggleButton>
         </Grid>
     </Border>
     
