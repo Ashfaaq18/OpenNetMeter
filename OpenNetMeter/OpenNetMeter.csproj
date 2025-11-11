@@ -54,4 +54,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Resources\pin\pin.png" />
+    <Resource Include="Resources\pin\pin-dark.png" />
+    <Resource Include="Resources\pin\unpin.png" />
+    <Resource Include="Resources\pin\unpin-dark.png" />
+  </ItemGroup>
+
 </Project>
