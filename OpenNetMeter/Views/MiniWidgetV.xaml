@@ -49,8 +49,7 @@
                   Margin="2"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
-                  IsChecked="{Binding IsPinned, Mode=TwoWay}"
-                  ToolTip="Pin">
+                  IsChecked="{Binding IsPinned, Mode=TwoWay}">
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton" BasedOn="{StaticResource FontColor1}">
                         <Setter Property="Background" Value="Transparent"/>
@@ -58,7 +57,7 @@
                         <Setter Property="BorderThickness" Value="1"/>
                         <Setter Property="Padding" Value="0"/>
                         <Setter Property="Cursor" Value="Hand"/>
-                        <Setter Property="ToolTip" Value="Pin"/>
+                        <Setter Property="ToolTipService.ToolTip" Value="Pin"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ToggleButton">
@@ -103,7 +102,7 @@
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter Property="Background" Value="#40000000"/>
-                                <Setter Property="ToolTip" Value="Unpin"/>
+                                <Setter Property="ToolTipService.ToolTip" Value="Unpin"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
