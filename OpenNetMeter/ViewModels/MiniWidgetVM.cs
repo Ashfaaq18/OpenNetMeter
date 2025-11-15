@@ -108,11 +108,11 @@ namespace OpenNetMeter.ViewModels
             UploadSpeed = 0;
             BackgroundColor = "#ff212121";
 
-            Size size1 = UIMeasure.Shape(new TextBlock { Text = "D-S :", FontSize = 12, Padding = new Thickness(0) });
-            Size size2 = UIMeasure.Shape(new TextBlock { Text = "1024.00Mbps", FontSize = 12, Padding = new Thickness(5,0,0,0) });
+            int downloadIconSize = 20;
+            Size size1 = UIMeasure.Shape(new TextBlock { Text = "Total:", FontSize = 12, Padding = new Thickness(0) });
+            Size size2 = UIMeasure.Shape(new TextBlock { Text = "1024.00Mb", FontSize = 12, Padding = new Thickness(5,0,0,0) });
             int widthMargins = 5 + 5; //these are from the miniwidget xaml margins
-            double pinButtonWidth = 30; //reserve space for the pin toggle button
-            Width = size1.Width + size2.Width + widthMargins + pinButtonWidth;
+            Width = (size1.Width + size2.Width + widthMargins + downloadIconSize) * 2;
             int heightMargins = 2 + 2; //these are from the miniwidget xaml margins
             Height = size1.Height * 2 + heightMargins * 2;
 

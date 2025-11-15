@@ -159,10 +159,12 @@ namespace OpenNetMeter.ViewModels
             UploadSpeed = netProc.UploadSpeed;
         }
 
-        private void UpdateMiniWidgetSpeed()
+        private void UpdateMiniWidgetValues()
         {
             mwvm.DownloadSpeed = DownloadSpeed;
+            mwvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             mwvm.UploadSpeed = UploadSpeed;
+            mwvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
         }
 
         private void UpdateSummaryTab()
@@ -279,7 +281,7 @@ namespace OpenNetMeter.ViewModels
 
             UpdateMainWinSpeed();
 
-            UpdateMiniWidgetSpeed();
+            UpdateMiniWidgetValues();
 
             UpdateSummaryTab();
 
