@@ -26,14 +26,14 @@
     </Window.Resources>
 
     <Border Style="{StaticResource BorderColor}">
-        <Grid Background="{Binding BackgroundColor}" >
+        <Grid Background="{Binding BackgroundColor}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ContextMenu>
                 <ContextMenu Style="{StaticResource miniWidgetContextMenuColor}">
@@ -41,6 +41,8 @@
                     <MenuItem Header="Hide" Click="MenuItem_Hide_Click"/>
                 </ContextMenu>
             </Grid.ContextMenu>
+
+            <!-- Pin Button -->
             <ToggleButton Grid.Row="0"
                   Grid.Column="0"
                   Grid.RowSpan="2"
@@ -108,18 +110,100 @@
                     </Style>
                 </ToggleButton.Style>
             </ToggleButton>
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2">
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">D-S :</TextBlock>
-                <TextBlock Padding="5,0,0,0"  FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}" />
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
+
+            <!-- Download Section -->
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" 
+                       Margin="2,2">
+                <!-- Download Icon Background -->
+                <Border Width="20" Height="24" 
+                       Background="#1A22C55E" 
+                       CornerRadius="4"
+                       Margin="0,0,6,0"
+                       VerticalAlignment="Center">
+                    <TextBlock Text="↓" 
+                              FontSize="16" 
+                              FontWeight="Bold"
+                              Foreground="LightSeaGreen"
+                              HorizontalAlignment="Center" 
+                              VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Download Speed and Total -->
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <!-- Download Speed -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="↓" FontSize="11" 
+                                  Foreground="LightSeaGreen" 
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"
+                                  Style="{StaticResource FontColor1}"/>
+                        <TextBlock FontSize="11" 
+                                  Style="{StaticResource FontColor1}" 
+                                  Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}"
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Download Total -->
+                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                        <TextBlock Text="Total:" FontSize="11" 
+                                  Foreground="LightSeaGreen"
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"/>
+                        <TextBlock FontSize="11" 
+                                  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"
+                                  Style="{StaticResource FontColor1}" 
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
-            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,2">
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">U-S :</TextBlock>
-                <TextBlock Padding="5,0,0,0" FontSize="12" Style="{StaticResource FontColor1}" Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"/>
-                <TextBlock Padding="0" FontSize="12" Style="{StaticResource FontColor1}">ps</TextBlock>
+
+            <!-- Upload Section -->
+            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" 
+                       Margin="2,2">
+                <!-- Upload Icon Background -->
+                <Border Width="20" Height="24" 
+                       Background="#1AF97316" 
+                       CornerRadius="4"
+                       Margin="0,0,6,0"
+                       VerticalAlignment="Center">
+                    <TextBlock Text="↑" 
+                              FontSize="16" 
+                              FontWeight="Bold"
+                              Foreground="LightSalmon"
+                              HorizontalAlignment="Center" 
+                              VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Upload Speed and Total -->
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <!-- Upload Speed -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="↑" FontSize="11" 
+                                  Foreground="LightSalmon" 
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"
+                                  Style="{StaticResource FontColor1}"/>
+                        <TextBlock FontSize="11" 
+                                  Style="{StaticResource FontColor1}" 
+                                  Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Upload Total -->
+                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                        <TextBlock Text="Total:" FontSize="11" 
+                                  Foreground="LightSalmon"
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"/>
+                        <TextBlock FontSize="11"
+                                  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"
+                                  Style="{StaticResource FontColor1}" 
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
-        
         </Grid>
     </Border>
-    
 </Window>
