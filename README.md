@@ -49,10 +49,3 @@ This program provides the following features,
 
 ![MiniWidget_demo1](https://user-images.githubusercontent.com/27722888/168587020-10bb15cc-7176-4d46-a4e9-8fdaf380bbe5.gif)
 
-### System tray & TaskBarSpeed (Discontinued since v0.9.0)
-
-These are replaced by the mini widget
-
-![TrayPopup_GIF1](https://user-images.githubusercontent.com/27722888/151661088-71349a72-f687-48be-ad33-805f7bf6771d.gif)
-
-![DeskBand_GIF1](https://user-images.githubusercontent.com/27722888/153745070-669027d8-56eb-4982-b009-1be23e5b5d51.gif)
