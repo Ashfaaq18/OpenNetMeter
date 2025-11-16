@@ -1090,8 +1090,6 @@
           Value="True" />
         <Setter Property="SelectedDateFormat"
           Value="Short" />
-        <Setter Property="Padding"
-          Value="2" />
         <Setter Property="BorderThickness"
           Value="1" />
         <Setter Property="HorizontalContentAlignment"
@@ -1101,8 +1099,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DatePicker}">
-                    <Border BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="BorderBrush" Value="#333333"/>
@@ -1136,8 +1133,7 @@
                             <Button x:Name="PART_Button"
                                     Grid.Column="1"
                                     Focusable="False"
-                                    HorizontalAlignment="Left"
-                                    Margin="3,0,3,0"
+                                    Margin="2"
                                     Grid.Row="0"
                                     Style="{StaticResource DropDownButtonStyle}"
                                     VerticalAlignment="Top" />
@@ -1147,7 +1143,7 @@
                                Focusable="{TemplateBinding Focusable}"
                                HorizontalContentAlignment="Stretch"
                                Grid.Row="0"
-                               VerticalContentAlignment="Stretch">
+                               VerticalContentAlignment="Center">
                             </DatePickerTextBox>
                             <Grid x:Name="PART_DisabledVisual"
                                   Grid.ColumnSpan="2"

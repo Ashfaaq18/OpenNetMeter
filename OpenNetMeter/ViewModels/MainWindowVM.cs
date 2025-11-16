@@ -56,8 +56,8 @@ namespace OpenNetMeter.ViewModels
         private DateTime date1;
         private DateTime date2;
 
-        private long initTodayTotalDownloadData = 0;
-        private long initTodayTotalUploadData = 0;
+        private long initSinceDateTotalDownloadData = 0;
+        private long initSinceDateTotalUploadData = 0;
 
         private enum TabPage
         {
@@ -86,6 +86,7 @@ namespace OpenNetMeter.ViewModels
             netProc = new NetworkProcess();
             netProc.PropertyChanged += NetProc_PropertyChanged;
             netProc.Initialize(); //have to call this after subscribing to property changer
+            dusvm.PropertyChanged += Dusvm_PropertyChanged;
 
             // Populate adapters list from the unified DB
             duhvm.GetAllDBFiles();
@@ -115,13 +116,8 @@ namespace OpenNetMeter.ViewModels
             //assign basecommand
             SwitchTabCommand = new BaseCommand(SwitchTab, true);
 
-            //get todays data usage details from the database
-            using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
-            {
-                (long, long) todaySum = dB.GetTodayDataSum_ProcessDateTable();
-                initTodayTotalDownloadData = todaySum.Item1;
-                initTodayTotalUploadData = todaySum.Item2;
-            }
+            //get initial data usage details from the database
+            RefreshSummaryBaseline();
         }
 
         private void Svm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -167,6 +163,17 @@ namespace OpenNetMeter.ViewModels
             mwvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
         }
 
+        private void RefreshSummaryBaseline()
+        {
+            using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
+            {
+                (long, long) totals = dB.GetDataSumBetweenDates(dusvm.SinceDate, DateTime.Today);
+                initSinceDateTotalDownloadData = totals.Item1;
+                initSinceDateTotalUploadData = totals.Item2;
+            }
+
+            UpdateSummaryTab();
+        }
         private void UpdateSummaryTab()
         {
             //summary tab graph points
@@ -176,8 +183,8 @@ namespace OpenNetMeter.ViewModels
             dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
 
-            dusvm.TodayDownloadData = initTodayTotalDownloadData + netProc.CurrentSessionDownloadData;
-            dusvm.TodayUploadData = initTodayTotalUploadData + netProc.CurrentSessionUploadData;
+            dusvm.TodayDownloadData = initSinceDateTotalDownloadData + netProc.CurrentSessionDownloadData;
+            dusvm.TodayUploadData = initSinceDateTotalUploadData + netProc.CurrentSessionUploadData;
         }
 
         private void UpdateDetailedTab()
@@ -197,6 +204,8 @@ namespace OpenNetMeter.ViewModels
                             dusvm.TodayUploadData = 0;
                             dB.UpdateDatesInDB();
                             duhvm.UpdateDates();
+                            dusvm.RefreshDateBounds();
+                            RefreshSummaryBaseline();
                             date1 = date2;
                         }
 
@@ -332,6 +341,13 @@ namespace OpenNetMeter.ViewModels
             // Debug.WriteLine($"elapsed time (NetProc): {sw.ElapsedMilliseconds}");
         }
 
+        private void Dusvm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(DataUsageSummaryVM.SinceDate))
+            {
+                RefreshSummaryBaseline();
+            }
+        }
         private void SwitchTab(object? obj)
         {
             string? tab = obj as string;
@@ -385,6 +401,8 @@ namespace OpenNetMeter.ViewModels
         public void Dispose()
         {
 
+            dusvm.PropertyChanged -= Dusvm_PropertyChanged;
+
             if (netProc != null)
             {
                 netProc.PropertyChanged -= NetProc_PropertyChanged;
@@ -393,3 +411,13 @@ namespace OpenNetMeter.ViewModels
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
