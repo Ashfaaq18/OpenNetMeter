@@ -68,12 +68,11 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.ColumnSpan="4" Margin="20 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding SinceDate, StringFormat='Data usage since {0:MMM dd, yyyy}'}" TextWrapping="Wrap" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
-                        <DatePicker Grid.Column="1" HorizontalAlignment="Left" Margin="12,10,0,0" VerticalAlignment="Center" Style="{StaticResource datePicker}" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding SinceDate}"/>
+                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" >
+                            <TextBlock Text="Data usage from" TextWrapping="WrapWithOverflow" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
+                            <DatePicker Grid.Column="1" FontSize="12" MaxWidth="100" HorizontalAlignment="Left" Margin="4,10,4,0" VerticalAlignment="Center" Style="{StaticResource datePicker}" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding SinceDate}"/>
+                            <TextBlock Text="to now" TextWrapping="WrapWithOverflow" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
+                        </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1" >
                         <Grid.ColumnDefinitions>

@@ -1091,9 +1091,7 @@
         <Setter Property="SelectedDateFormat"
           Value="Short" />
         <Setter Property="BorderThickness"
-          Value="1" />
-        <Setter Property="HorizontalContentAlignment"
-          Value="Stretch" />
+          Value="1" />  
         <Setter Property="CalendarStyle"
           Value="{StaticResource myCalendar}" />
         <Setter Property="Template">
