@@ -58,6 +58,8 @@ namespace OpenNetMeter.ViewModels
 
         private long initSinceDateTotalDownloadData = 0;
         private long initSinceDateTotalUploadData = 0;
+        private long sinceDateSessionDownloadBaseline = 0;
+        private long sinceDateSessionUploadBaseline = 0;
 
         private enum TabPage
         {
@@ -172,6 +174,9 @@ namespace OpenNetMeter.ViewModels
                 initSinceDateTotalUploadData = totals.Item2;
             }
 
+            sinceDateSessionDownloadBaseline = netProc.CurrentSessionDownloadData;
+            sinceDateSessionUploadBaseline = netProc.CurrentSessionUploadData;
+
             UpdateSummaryTab();
         }
         private void UpdateSummaryTab()
@@ -183,8 +188,16 @@ namespace OpenNetMeter.ViewModels
             dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
             dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
 
-            dusvm.TodayDownloadData = initSinceDateTotalDownloadData + netProc.CurrentSessionDownloadData;
-            dusvm.TodayUploadData = initSinceDateTotalUploadData + netProc.CurrentSessionUploadData;
+            long sessionDownloadDelta = netProc.CurrentSessionDownloadData - sinceDateSessionDownloadBaseline;
+            long sessionUploadDelta = netProc.CurrentSessionUploadData - sinceDateSessionUploadBaseline;
+
+            if (sessionDownloadDelta < 0)
+                sessionDownloadDelta = 0;
+            if (sessionUploadDelta < 0)
+                sessionUploadDelta = 0;
+
+            dusvm.TodayDownloadData = initSinceDateTotalDownloadData + sessionDownloadDelta;
+            dusvm.TodayUploadData = initSinceDateTotalUploadData + sessionUploadDelta;
         }
 
         private void UpdateDetailedTab()
@@ -411,13 +424,3 @@ namespace OpenNetMeter.ViewModels
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
