@@ -70,7 +70,7 @@
                     <Grid Grid.ColumnSpan="4" Margin="20 0">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" >
                             <TextBlock Text="Data usage from" TextWrapping="WrapWithOverflow" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
-                            <DatePicker Grid.Column="1" FontSize="12" MaxWidth="100" HorizontalAlignment="Left" Margin="4,10,4,0" VerticalAlignment="Center" Style="{StaticResource datePicker}" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding SinceDate}"/>
+                            <DatePicker Grid.Column="1" FontSize="12" MaxWidth="100" HorizontalAlignment="Left" Margin="4,10,4,0" VerticalAlignment="Center" Style="{StaticResource ModernDatePicker}" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding SinceDate}"/>
                             <TextBlock Text="to now" TextWrapping="WrapWithOverflow" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
                         </StackPanel>
                     </Grid>
