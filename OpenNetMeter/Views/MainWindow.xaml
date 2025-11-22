@@ -11,7 +11,7 @@
         ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         UseLayoutRounding="True"
-        MinHeight="500" Height="500" MinWidth="600" Width="600"
+        MinHeight="480" Height="480" MinWidth="640" Width="640"
         SizeChanged="MyWindow_SizeChanged"
         Window.LocationChanged ="MyWindow_LocationChanged">
     

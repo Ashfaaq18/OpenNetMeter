@@ -245,6 +245,48 @@ namespace OpenNetMeter.Models
             return dateIDs;
         }
 
+        public (long, long) GetDataSumBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            DateTime fromDate = startDate.Date;
+            DateTime toDate = endDate.Date;
+
+            if (toDate < fromDate)
+            {
+                DateTime temp = fromDate;
+                fromDate = toDate;
+                toDate = temp;
+            }
+
+            List<List<object>> sum = dB.GetMultipleCellData("SELECT SUM(DataReceived), SUM(DataSent) FROM ProcessDate " +
+                "WHERE DateID IN " +
+                "(SELECT ID FROM Date " +
+                "WHERE (Year * 10000 + Month * 100 + Day) " +
+                "BETWEEN " +
+                $"({fromDate.Year * 10000 + fromDate.Month * 100 + fromDate.Day}) " +
+                "AND " +
+                $"({toDate.Year * 10000 + toDate.Month * 100 + toDate.Day})) " +
+                "AND AdapterID = @AdapterID",
+                new string[,]
+                {
+                    {"@AdapterID", GetID_AdapterTable(adapterName).ToString() }
+                });
+
+            long download = 0;
+            long upload = 0;
+
+            if (sum.Count == 1)
+            {
+                if (sum[0].Count == 2)
+                {
+                    if (!Convert.IsDBNull(sum[0][0]))
+                        download = Convert.ToInt64(sum[0][0]);
+                    if (!Convert.IsDBNull(sum[0][1]))
+                        upload = Convert.ToInt64(sum[0][1]);
+                }
+            }
+
+            return (download, upload);
+        }
         public (long, long) GetTodayDataSum_ProcessDateTable()
         {
             List<List<object>> sum = dB.GetMultipleCellData("SELECT SUM(DataReceived), SUM(DataSent) FROM ProcessDate " +
@@ -342,3 +384,4 @@ namespace OpenNetMeter.Models
 
     }
 }
+
