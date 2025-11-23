@@ -58,9 +58,10 @@
 
     <!-- Modern Calendar Day Button Style -->
     <Style TargetType="CalendarDayButton" x:Key="ModernCalendarDayButtonStyle">
-        <Setter Property="MinWidth" Value="28"/>
-        <Setter Property="MinHeight" Value="28"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="MinWidth" Value="18"/>
+        <Setter Property="MinHeight" Value="18"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
@@ -172,7 +173,7 @@
                         <!-- Day Number -->
                         <TextBlock x:Name="NormalText"
                                   Text="{TemplateBinding Content}"
-                                  FontSize="13"
+                                  FontSize="11"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center">
                             <TextBlock.Style>
@@ -423,7 +424,7 @@
                             <!-- Calendar Grid -->
                             <Grid x:Name="PART_MonthView"
                                  Grid.Row="1"
-                                 Margin="6"
+                                 Margin="2"
                                  Visibility="Visible">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
