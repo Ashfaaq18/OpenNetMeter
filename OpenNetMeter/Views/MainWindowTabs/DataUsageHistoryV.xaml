@@ -13,7 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition/>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Label VerticalAlignment="Center" Style="{StaticResource FontColor1}">Usage of</Label>
@@ -38,23 +38,39 @@
             </Button> 
            
         </StackPanel>
-        <DataGrid LayoutUpdated="AllAppsData_LayoutUpdated" Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource DGHeaderStyle}">
+        <DataGrid Grid.Row="1" x:Name="AllAppsData" FrozenColumnCount="1" IsReadOnly="True" AutoGenerateColumns="False" ItemsSource="{Binding MyProcesses}" BorderThickness="1" Style="{DynamicResource ModernDGHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn x:Name="DG_Name" Header="Name" Binding="{Binding Name}" HeaderStyle="{StaticResource DGCHeaderStyle1}" CellStyle="{StaticResource DGCellStyle1}"/>
-                <DataGridTextColumn x:Name="DG_DataRecv" Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
-                <DataGridTextColumn x:Name="DG_DataSent" Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource DGCHeaderStyle2}" CellStyle="{StaticResource DGCellStyle2}"/>
+                <DataGridTextColumn x:Name="DG_Name" Header="Name" Binding="{Binding Name}" HeaderStyle="{StaticResource ModernDGCHeaderStyle1}" CellStyle="{StaticResource ModernDGCellStyle1}"/>
+                <DataGridTextColumn x:Name="DG_DataRecv" Header="Data Received" Binding="{Binding CurrentDataRecv, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource ModernDGCHeaderStyle2}" CellStyle="{StaticResource ModernDGCellStyle2}"/>
+                <DataGridTextColumn x:Name="DG_DataSent" Header="Data Sent" Binding="{Binding CurrentDataSend, Converter={StaticResource converterBytes}}" HeaderStyle="{StaticResource ModernDGCHeaderStyle2}" CellStyle="{StaticResource ModernDGCellStyle2}"/>
             </DataGrid.Columns>
         </DataGrid>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" Style="{StaticResource FooterStyle}">
-            <Border Style="{StaticResource FooterTextBorder}">
-                <TextBlock x:Name="Total" Style="{StaticResource FooterTextStyle}" >Total</TextBlock>
+        <!-- Footer aligned to DataGrid columns -->
+        <Grid Grid.Row="2"
+      x:Name="TotalsFooter"
+      Width="{Binding ElementName=AllAppsData, Path=ActualWidth}"
+      Style="{StaticResource ModernFooterGridStyle}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding ElementName=AllAppsData, Path=Columns[0].ActualWidth}"/>
+                <ColumnDefinition Width="{Binding ElementName=AllAppsData, Path=Columns[1].ActualWidth}"/>
+                <ColumnDefinition Width="{Binding ElementName=AllAppsData, Path=Columns[2].ActualWidth}"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource ModernFooterTextBorder}">
+                <TextBlock Text="Total"
+                   Style="{StaticResource ModernFooterTextStyle}"/>
             </Border>
-            <Border Style="{StaticResource FooterTextBorder}">
-                <TextBlock x:Name="TotalDataRecv" Style="{StaticResource FooterTextStyle}" Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes}}"></TextBlock>
+
+            <Border Grid.Column="1" Style="{StaticResource ModernFooterTextBorder}">
+                <TextBlock Text="{Binding TotalDownloadData, Converter={StaticResource converterBytes}}"
+                   Style="{StaticResource ModernFooterTextStyle}"/>
             </Border>
-            <Border Style="{StaticResource FooterTextBorder}">
-                <TextBlock x:Name="TotalDataSent" Style="{StaticResource FooterTextStyle}" Text="{Binding TotalUploadData, Converter={StaticResource converterBytes}}"></TextBlock>
+
+            <Border Grid.Column="2" Style="{StaticResource ModernFooterTextBorder}">
+                <TextBlock Text="{Binding TotalUploadData, Converter={StaticResource converterBytes}}"
+                   Style="{StaticResource ModernFooterTextStyle}"/>
             </Border>
-        </StackPanel>
+        </Grid>
+
     </Grid>
 </UserControl>

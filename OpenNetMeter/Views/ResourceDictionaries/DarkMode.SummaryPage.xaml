@@ -1,0 +1,90 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:res="clr-namespace:OpenNetMeter.Properties">
+
+    <!-- Summary page styles -->
+    
+    <Style TargetType="Border" x:Key="BorderStyle1">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#303030"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect BlurRadius="20" Color="#0d0d0d" Opacity="0.4" Direction="280" ShadowDepth="0" />
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="ItemsControl" x:Key="GraphLabels">
+        <Setter Property="TextBlock.Foreground" Value="Black"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="TextBlock.Foreground" Value="White"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Line" x:Key="GraphXYLines">
+        <Setter Property="Stroke" Value="LightGray"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Stroke" Value="DarkGray"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Line" x:Key="GraphBorder">
+        <Setter Property="Stroke" Value="Black"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Stroke" Value="LightGray"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Grid x:Key="Download_Icon"  x:Shared="False">
+        <Line
+                                X1="0" Y1="0"
+                                X2="0" Y2="20"
+                                Stroke="LightSeaGreen"
+                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="20"
+                                X2="6" Y2="10"
+                                Stroke="LightSeaGreen"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="20"
+                                X2="-6" Y2="10"
+                                Stroke="LightSeaGreen"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+    </Grid>
+    <Grid x:Key="Upload_Icon"  x:Shared="False">
+        <Line
+                                X1="0" Y1="0"
+                                X2="0" Y2="20"
+                                Stroke="LightSalmon"
+                                StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="-8"
+                                X2="6" Y2="5"
+                                Stroke="LightSalmon"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+        <Line
+                                X1="0" Y1="-8"
+                                X2="-6" Y2="5"
+                                Stroke="LightSalmon"
+                                StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
+    </Grid>
+
+</ResourceDictionary>
+
