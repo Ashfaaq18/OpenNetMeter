@@ -184,13 +184,13 @@
                 <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5">
                     <TextBlock HorizontalAlignment="Center" Style="{StaticResource FontColor1}">Network speed format</TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"  Margin="0,5" >
-                        <ComboBox Width="120" SelectedValuePath="Tag" SelectedValue="{Binding NetworkSpeedMagnitude}">
+                        <ComboBox Width="80" SelectedValuePath="Tag" SelectedValue="{Binding NetworkSpeedMagnitude}" Margin="0,0,10,0" Style="{StaticResource ComboBoxFlatStyle}">
                             <ComboBoxItem Tag="0" Content="Auto"/>
                             <ComboBoxItem Tag="1" Content="Kilo"/>
                             <ComboBoxItem Tag="2" Content="Mega"/>
                             <ComboBoxItem Tag="3" Content="Giga"/>
                         </ComboBox>
-                        <ComboBox Width="140" SelectedValuePath="Tag" SelectedValue="{Binding NetworkSpeedFormat}" Margin="0,0,10,0">
+                        <ComboBox Width="120" SelectedValuePath="Tag" SelectedValue="{Binding NetworkSpeedFormat}" Style="{StaticResource ComboBoxFlatStyle}">
                             <ComboBoxItem Tag="0" Content="bps (bits/sec)"/>
                             <ComboBoxItem Tag="1" Content="Bps (bytes/sec)"/>
                         </ComboBox>
