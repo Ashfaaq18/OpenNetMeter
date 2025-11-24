@@ -181,7 +181,7 @@
 
     <!-- Modern DataGrid Cell Style -->
     <Style x:Key="ModernDGCellStyle" TargetType="DataGridCell">
-        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Padding" Value="12,4"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
