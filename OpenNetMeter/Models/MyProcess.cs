@@ -12,11 +12,14 @@ namespace OpenNetMeter.Models
 
         public long CurrentDataSend { get; set; }
 
-        public MyProcess_Small(string nameP, long currentDataRecvP, long currentDataSendP)
+        public ImageSource? Icon { get; set; }
+
+        public MyProcess_Small(string nameP, long currentDataRecvP, long currentDataSendP, ImageSource? icon = null)
         {
             Name = nameP;
             CurrentDataRecv = currentDataRecvP;
             CurrentDataSend = currentDataSendP;
+            Icon = icon;
         }
     }
 
@@ -86,16 +89,31 @@ namespace OpenNetMeter.Models
             }
         }
 
+        private ImageSource? icon;
+        public ImageSource? Icon
+        {
+            get { return icon; }
+            set
+            {
+                if (icon != value)
+                {
+                    icon = value;
+                    OnPropertyChanged(nameof(Icon));
+                }
+            }
+        }
+
         //public ImageSource? Icon { get; set; }
 
         //public string Image { get; set; }
-        public MyProcess_Big(string nameP, long currentDataRecvP, long currentDataSendP, long totalDataRecvP, long totalDataSendP)
+        public MyProcess_Big(string nameP, long currentDataRecvP, long currentDataSendP, long totalDataRecvP, long totalDataSendP, ImageSource? iconP = null)
         {
             Name = nameP;
             CurrentDataRecv = currentDataRecvP;
             CurrentDataSend = currentDataSendP;
             TotalDataRecv = totalDataRecvP;
             TotalDataSend = totalDataSendP;
+            Icon = iconP;
             //Icon = null;
             //Image = "";
             //if(icon != null)

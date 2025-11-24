@@ -235,7 +235,7 @@ namespace OpenNetMeter.ViewModels
                         {
                             foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcesses) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
                             {
-                                dudvm.MyProcesses.TryAdd(app.Key, new MyProcess_Big(app.Key, 0, 0, 0, 0));
+                                EnsureProcessEntry(app.Key);
                                 if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
                                 {
                                     Debug.WriteLine($"Both zero {app.Key}");
@@ -271,7 +271,7 @@ namespace OpenNetMeter.ViewModels
                             foreach (KeyValuePair<string, MyProcess_Small?> app in netProc.MyProcessesBuffer) //the contents of this loops remain only for a sec (related to NetworkProcess.cs=>CaptureNetworkSpeed())
                             {
                                 Debug.WriteLine("BUFFEEERRRRR!!!!!");
-                                dudvm.MyProcesses.TryAdd(app.Key, new MyProcess_Big(app.Key, 0, 0, 0, 0));
+                                EnsureProcessEntry(app.Key);
                                 if (app.Value!.CurrentDataRecv == 0 && app.Value!.CurrentDataSend == 0)
                                 {
                                     Debug.WriteLine($"Both zero {app.Key}");
@@ -293,6 +293,19 @@ namespace OpenNetMeter.ViewModels
                             netProc.MyProcessesBuffer.Clear();
                         }
                     }
+                }
+            }
+        }
+
+        private void EnsureProcessEntry(string processName)
+        {
+            var icon = ProcessIconCache.GetIcon(processName);
+
+            if (!dudvm.MyProcesses.TryAdd(processName, new MyProcess_Big(processName, 0, 0, 0, 0, icon)))
+            {
+                if (dudvm.MyProcesses[processName].Icon == null)
+                {
+                    dudvm.MyProcesses[processName].Icon = icon;
                 }
             }
         }
