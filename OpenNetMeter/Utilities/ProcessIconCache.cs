@@ -6,7 +6,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
-using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Utilities
 {
@@ -54,11 +53,13 @@ namespace OpenNetMeter.Utilities
                     }
                 }
             }
-            catch (Win32Exception)
+            catch (Win32Exception winError)
             {
+                EventLogger.Error(winError.Message);
             }
-            catch (SystemException)
+            catch (SystemException sysExError)
             {
+                EventLogger.Error(sysExError.Message);
             }
 
             return DefaultIcon;
@@ -68,7 +69,8 @@ namespace OpenNetMeter.Utilities
         {
             try
             {
-                ImageSource image = IconToImgSource.ToImageSource(Resources.AppIcon);
+                using Icon icon = (Icon)SystemIcons.Application.Clone();
+                ImageSource image = IconToImgSource.ToImageSource(icon);
                 if (image.CanFreeze)
                     image.Freeze();
                 return image;
