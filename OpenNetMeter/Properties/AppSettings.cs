@@ -43,6 +43,9 @@ namespace OpenNetMeter.Properties
         private int networkSpeedFormat;
         public int NetworkSpeedFormat { get => networkSpeedFormat; set { if (networkSpeedFormat != value) { networkSpeedFormat = value; OnPropertyChanged("NetworkSpeedFormat"); } } }
 
+        private int networkSpeedMagnitude;
+        public int NetworkSpeedMagnitude { get => networkSpeedMagnitude; set { if (networkSpeedMagnitude != value) { networkSpeedMagnitude = value; OnPropertyChanged("NetworkSpeedMagnitude"); } } }
+
         private int miniWidgetTransparentSlider;
         public int MiniWidgetTransparentSlider { get => miniWidgetTransparentSlider; set { if (miniWidgetTransparentSlider != value) { miniWidgetTransparentSlider = value; OnPropertyChanged("MiniWidgetTransparentSlider"); } } }
 

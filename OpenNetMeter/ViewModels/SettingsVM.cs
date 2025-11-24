@@ -125,6 +125,22 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private int networkSpeedMagnitude;
+        public int NetworkSpeedMagnitude
+        {
+            get { return networkSpeedMagnitude; }
+            set
+            {
+                if (networkSpeedMagnitude != value)
+                {
+                    networkSpeedMagnitude = value;
+                    SettingsManager.Current.NetworkSpeedMagnitude = value;
+                    SettingsManager.Save();
+                    OnPropertyChanged("NetworkSpeedMagnitude");
+                }
+            }
+        }
+
         private bool darkMode;
         public bool DarkMode
         {
@@ -244,6 +260,7 @@ namespace OpenNetMeter.ViewModels
             NetworkTrafficType = SettingsManager.Current.NetworkType;
 
             NetworkSpeedFormat = SettingsManager.Current.NetworkSpeedFormat;
+            NetworkSpeedMagnitude = SettingsManager.Current.NetworkSpeedMagnitude;
 
             ResetBtn = new BaseCommand(ResetData, true);
             UpdateCheckBtn = new BaseCommand(UpdateCheck, true);
