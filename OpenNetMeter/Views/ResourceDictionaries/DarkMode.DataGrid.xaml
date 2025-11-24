@@ -6,7 +6,7 @@
     <Style x:Key="ModernDGCHeaderStyle" TargetType="DataGridColumnHeader">
         <Setter Property="Height" Value="36"/>
         <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Padding" Value="12,8"/>
@@ -96,7 +96,7 @@
 
     <!-- Modern DataGrid Row Style -->
     <Style x:Key="ModernDGRowStyle" TargetType="DataGridRow">
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Height" Value="32"/>
         <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#1a1a1a"/>
         <Setter Property="BorderThickness" Value="0"/>
