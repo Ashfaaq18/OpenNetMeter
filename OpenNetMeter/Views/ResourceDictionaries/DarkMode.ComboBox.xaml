@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
-    <SolidColorBrush x:Key="BorderBrush" Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#FF888888"/>
     <SolidColorBrush x:Key="BackgroundBrush" Color="White"/>
-    <SolidColorBrush x:Key="TextBrush" Color="#374151"/>
+    <SolidColorBrush x:Key="TextBrush" Color="Black"/>
     <SolidColorBrush x:Key="HoverBrush" Color="#F3F4F6"/>
     <SolidColorBrush x:Key="SelectedBrush" Color="#E5E7EB"/>
     <ControlTemplate TargetType="ToggleButton" x:Key="ComboBoxToggleButtonTemplate">
