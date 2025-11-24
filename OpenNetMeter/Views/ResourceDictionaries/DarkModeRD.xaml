@@ -9,6 +9,7 @@
         <ResourceDictionary Source="DarkMode.DataGrid.xaml"/>
         <ResourceDictionary Source="DarkMode.ComboBox.xaml"/>
         <ResourceDictionary Source="DarkMode.ContextMenu.xaml"/>
+        <ResourceDictionary Source="CustomDatePicker.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>
