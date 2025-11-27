@@ -22,6 +22,8 @@ Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "OpenNetMeter-Installer", "I
 		{711263C7-44E1-4694-8B30-E65FBD2ECBF2} = {711263C7-44E1-4694-8B30-E65FBD2ECBF2}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenNetMeter.Tests", "OpenNetMeter.Tests\OpenNetMeter.Tests.csproj", "{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,22 @@ Global
 		{99E49CF2-A3E6-42D9-B41C-06E2CFDC77AA}.Release|x64.Build.0 = Release|x64
 		{99E49CF2-A3E6-42D9-B41C-06E2CFDC77AA}.Release|x86.ActiveCfg = Release|x86
 		{99E49CF2-A3E6-42D9-B41C-06E2CFDC77AA}.Release|x86.Build.0 = Release|x86
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|x64.Build.0 = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Debug|x86.Build.0 = Debug|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|ARM64.Build.0 = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|x64.ActiveCfg = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|x64.Build.0 = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|x86.ActiveCfg = Release|Any CPU
+		{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

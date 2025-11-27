@@ -17,7 +17,7 @@ using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Models
 {
-    public class NetworkProcess : IDisposable
+    public partial class NetworkProcess : IDisposable
     {
         //---------- private variables ------------//
 
