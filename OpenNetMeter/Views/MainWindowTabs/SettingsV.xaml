@@ -72,14 +72,7 @@
             <Setter Property="Height" Value="48"/>
             <Setter Property="BorderBrush" Value="#E5E7EB"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#E6FFFA" Offset="0"/>
-                        <GradientStop Color="#E0F2FE" Offset="1"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="Background" Value="#c0e3da"/>
         </Style>
 
         <!-- Title Text Style -->
@@ -138,6 +131,30 @@
             <Setter Property="Background" Value="#EF4444"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#EF4444"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EF8888"/>
+                                <Setter Property="BorderBrush" Value="#EF8888"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#EFAAAA"/>
+                                <Setter Property="BorderBrush" Value="#EFAAAA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -300,7 +317,8 @@
                                 <StackPanel Orientation="Horizontal">
                                     <ComboBox Width="180" Margin="0,0,16,0"
                                             SelectedValuePath="Tag" 
-                                            SelectedValue="{Binding NetworkSpeedMagnitude}">
+                                            SelectedValue="{Binding NetworkSpeedMagnitude}"
+                                            Style="{StaticResource ComboBoxFlatStyle}">
                                         <ComboBoxItem Tag="0" Content="Auto"/>
                                         <ComboBoxItem Tag="1" Content="Kilo"/>
                                         <ComboBoxItem Tag="2" Content="Mega"/>
@@ -308,7 +326,8 @@
                                     </ComboBox>
                                     <ComboBox Width="180"
                                             SelectedValuePath="Tag" 
-                                            SelectedValue="{Binding NetworkSpeedFormat}">
+                                            SelectedValue="{Binding NetworkSpeedFormat}"
+                                            Style="{StaticResource ComboBoxFlatStyle}">
                                         <ComboBoxItem Tag="0" Content="bps (bits/sec)"/>
                                         <ComboBoxItem Tag="1" Content="Bps (bytes/sec)"/>
                                     </ComboBox>
@@ -358,10 +377,8 @@
                             <TextBlock Text="Updates" Style="{StaticResource TitleText}" 
                                      Margin="24,0,0,0"/>
                         </Border>
-                        
+
                         <StackPanel Grid.Row="1" Margin="24,20">
-                            <TextBlock Text="Check for new updates" Style="{StaticResource PrimaryText}" 
-                                     Margin="0,0,0,4"/>
                             <TextBlock Text="Ensure you have the latest features and improvements" 
                                      Style="{StaticResource SecondaryText}" Margin="0,0,0,16"/>
                             
