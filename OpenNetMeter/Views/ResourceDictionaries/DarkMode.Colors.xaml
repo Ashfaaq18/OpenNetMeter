@@ -11,6 +11,41 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Title Text Style -->
+    <Style x:Key="TitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#1F2937"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Foreground" Value="White"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Primary Text Style -->
+    <Style x:Key="PrimaryText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="#1F2937"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Foreground" Value="White"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Secondary Text Style -->
+    <Style x:Key="SecondaryText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="#6B7280"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Foreground" Value="#6B7280"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="FontColor1">
         <Setter Property="Control.Foreground" Value="Black"></Setter>
         <Style.Triggers>
@@ -70,7 +105,7 @@
         <Setter Property="Background" Value="#c0e3da"></Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#9fd4c7"></Setter>
+                <Setter Property="Background" Value="#367061"></Setter>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -78,8 +113,6 @@
     <Style x:Key="CardStyle" TargetType="Border">
         <Setter Property="Background" Value="#f1f1f1"/>
         <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="BorderBrush" Value="#E5E7EB"/>
-        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect ShadowDepth="2" BlurRadius="4" Opacity="0.08" Direction="270"/>
@@ -87,7 +120,7 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#252525"></Setter>
+                <Setter Property="Background" Value="#2A2A2A"></Setter>
             </DataTrigger>
         </Style.Triggers>
     </Style>

@@ -54,26 +54,6 @@
             </Setter>
         </Style>
 
-        <!-- Title Text Style -->
-        <Style x:Key="TitleText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#1F2937"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-
-        <!-- Primary Text Style -->
-        <Style x:Key="PrimaryText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#1F2937"/>
-        </Style>
-
-        <!-- Secondary Text Style -->
-        <Style x:Key="SecondaryText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#6B7280"/>
-        </Style>
-
         <!-- Modern Button Style -->
         <Style x:Key="ModernButton" TargetType="Button">
             <Setter Property="Background" Value="White"/>
