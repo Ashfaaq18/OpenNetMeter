@@ -65,6 +65,33 @@
         </Style.Triggers>
     </Style>
 
+    <Style TargetType="Border" x:Key="CardHeaderStyle">
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="Background" Value="#c0e3da"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#9fd4c7"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
+    <Style x:Key="CardStyle" TargetType="Border">
+        <Setter Property="Background" Value="#f1f1f1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="BorderBrush" Value="#E5E7EB"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect ShadowDepth="2" BlurRadius="4" Opacity="0.08" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#252525"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
     <Style TargetType="Border" x:Key="BorderColor">
         <Setter Property="Control.BorderBrush" Value="#4F5050"></Setter>
         <Setter Property="Control.BorderThickness" Value="1"></Setter>
