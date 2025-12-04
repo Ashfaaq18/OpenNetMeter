@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using OpenNetMeter.Utilities;
 using Windows.Networking.Connectivity;
 using OpenNetMeter.Properties;
+using System.Diagnostics.Eventing.Reader;
+using System.Text.RegularExpressions;
 
 namespace OpenNetMeter.Models
 {
@@ -167,6 +169,30 @@ namespace OpenNetMeter.Models
 
             return (tempv4, tempv6);
         }
+        public static string? GetConnectedSsid(string adapterGuid)
+        {
+            try
+            {
+                var query = new EventLogQuery(
+                    "Microsoft-Windows-WLAN-AutoConfig/Operational",
+                    PathType.LogName,
+                    $"*[System[EventID=8001]]")
+                {
+                    ReverseDirection = true
+                };
+
+                using var reader = new EventLogReader(query);
+                if (reader.ReadEvent() is EventRecord evt)
+                {
+                    var message = evt.FormatDescription();
+                    var match = Regex.Match(message, @"^SSID:\s*(.+)$", RegexOptions.Multiline);
+                    if (match.Success)
+                        return match.Groups[1].Value.Trim();
+                }
+            }
+            catch { }
+            return null;
+        }
 
         private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs? e)
         {
@@ -196,7 +222,7 @@ namespace OpenNetMeter.Models
                                     networkAvailable = true;
                                     AdapterName = n.Name;
                                     if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                        AdapterName += "(" + NetworkInformation.GetInternetConnectionProfile()?.WlanConnectionProfileDetails?.GetConnectedSsid() + ")";
+                                        AdapterName += "(" + GetConnectedSsid(n.Id) + ")";
 
                                     Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
                                 }
@@ -352,7 +378,7 @@ namespace OpenNetMeter.Models
                     else
                         packetTask.ContinueWith(t => t.Dispose(), TaskScheduler.Default);
 
-                PacketTask = null;
+                    PacketTask = null;
                 }
             }
 
