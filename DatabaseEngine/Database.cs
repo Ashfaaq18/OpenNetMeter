@@ -98,7 +98,6 @@ namespace DatabaseEngine
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
                         temp[temp.Count - 1].Add(reader[i]);
-                        Debug.WriteLine($"DB stuff, GetMultipleCellData: {reader[i]} {reader.GetFieldType(i)}|");
                     }
                 }
 
@@ -139,7 +138,6 @@ namespace DatabaseEngine
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
                         temp[temp.Count - 1].Add(reader[i]);
-                        Debug.WriteLine($"DB stuff, GetMultipleCellData: {reader[i]} {reader.GetFieldType(i)}|");
                     }
                 }
                 reader.Close();
@@ -171,7 +169,6 @@ namespace DatabaseEngine
                 {
                     while (reader.Read())
                     {
-                        Debug.WriteLine($"DB stuff, GetSingleCellData : {reader[0]} {reader.GetFieldType(0)}|");
                         return reader[0];
                     }
                 }

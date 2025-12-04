@@ -356,7 +356,6 @@ namespace OpenNetMeter.ViewModels
                             dB.CreateTable();
                             dB.InsertUniqueRow_AdapterTable(netProc.AdapterName);
                         }
-                        Debug.WriteLine($"ash debug!! Switched to adapter: {netProc.AdapterName}");
                         duhvm.GetAllDBFiles();
                     }
                     break;
