@@ -334,10 +334,26 @@ namespace OpenNetMeter.Models
                 kernelSession = null;
             }
 
-            if (PacketTask != null)
+            var packetTask = PacketTask;
+            if (packetTask != null)
             {
-                PacketTask.Dispose();
+                try
+                {
+                    packetTask.Wait(TimeSpan.FromMilliseconds(OneSec));
+                }
+                catch (AggregateException ex)
+                {
+                    EventLogger.Error($"Packet capture stop error: {ex.InnerException?.Message ?? ex.Message}");
+                }
+                finally
+                {
+                    if (packetTask.IsCompleted)
+                        packetTask.Dispose();
+                    else
+                        packetTask.ContinueWith(t => t.Dispose(), TaskScheduler.Default);
+
                 PacketTask = null;
+                }
             }
 
             StopPeriodicWork(ref networkSpeedWork, "Network speed");
