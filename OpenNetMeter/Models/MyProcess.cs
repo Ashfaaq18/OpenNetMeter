@@ -102,10 +102,7 @@ namespace OpenNetMeter.Models
                 }
             }
         }
-
-        //public ImageSource? Icon { get; set; }
-
-        //public string Image { get; set; }
+        
         public MyProcess_Big(string nameP, long currentDataRecvP, long currentDataSendP, long totalDataRecvP, long totalDataSendP, ImageSource? iconP = null)
         {
             Name = nameP;
@@ -114,14 +111,6 @@ namespace OpenNetMeter.Models
             TotalDataRecv = totalDataRecvP;
             TotalDataSend = totalDataSendP;
             Icon = iconP;
-            //Icon = null;
-            //Image = "";
-            //if(icon != null)
-            //{
-            //    ImageSource im = IconToImgSource.ToImageSource(icon);
-            //    Icon = im;
-            //    im.Freeze();
-            //}
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
