@@ -193,7 +193,10 @@ namespace OpenNetMeter.Models
                         return match.Groups[1].Value.Trim();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                EventLogger.Error(ex.Message);
+            }
             return null;
         }
 
