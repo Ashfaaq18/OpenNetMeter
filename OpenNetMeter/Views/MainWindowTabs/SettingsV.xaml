@@ -225,7 +225,8 @@
                             
                             <Slider Margin="0,12,0,8" 
                                     Minimum="0" Maximum="100" 
-                                    Value="{Binding MiniWidgetTransparentSlider}"/>
+                                    Value="{Binding MiniWidgetTransparentSlider}"
+                                    Style="{StaticResource ModernSlider}"/>
                             
                             <Grid>
                                 <TextBlock HorizontalAlignment="Left" Text="0%" Style="{StaticResource SecondaryText}"/>
@@ -258,11 +259,11 @@
                                          Margin="0,0,0,12"/>
                                 <StackPanel>
                                     <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=0}" 
-                                               Content="Private" Margin="0,0,0,8" Style="{StaticResource {x:Type RadioButton}}"/>
+                                               Content="Private" Margin="0,0,0,8" Style="{StaticResource ModernRadioButton}"/>
                                     <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" 
-                                               Content="Public" Margin="0,0,0,8"/>
+                                               Content="Public" Margin="0,0,0,8" Style="{StaticResource ModernRadioButton}"/>
                                     <RadioButton IsChecked="{Binding Path=NetworkTrafficType, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}" 
-                                               Content="Both"/>
+                                               Content="Both" Style="{StaticResource ModernRadioButton}" />
                                 </StackPanel>
                             </StackPanel>
 

@@ -135,5 +135,202 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Modern Radio Button Style -->
+    <Style x:Key="ModernRadioButton" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="#374151"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid Margin="{TemplateBinding Margin}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Custom Radio Circle -->
+                        <Grid Grid.Column="0" Width="20" Height="20" VerticalAlignment="Center">
+                            <!-- Outer Circle -->
+                            <Ellipse x:Name="OuterCircle" 
+                                        Width="20" Height="20"
+                                        Stroke="#D1D5DB"
+                                        StrokeThickness="2"
+                                        Fill="White">
+                                <Ellipse.Effect>
+                                    <DropShadowEffect ShadowDepth="0" BlurRadius="2" Opacity="0.1"/>
+                                </Ellipse.Effect>
+                            </Ellipse>
+
+                            <!-- Inner Dot -->
+                            <Ellipse x:Name="InnerDot" 
+                                        Width="10" Height="10"
+                                        Fill="#00A6A0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Opacity="0">
+                                <Ellipse.RenderTransform>
+                                    <ScaleTransform x:Name="DotScale" ScaleX="0" ScaleY="0" CenterX="5" CenterY="5"/>
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </Grid>
+
+                        <!-- Content -->
+                        <ContentPresenter Grid.Column="1" 
+                                            Margin="10,0,0,0"
+                                            VerticalAlignment="Center"
+                                            RecognizesAccessKey="True"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <!-- Hover State -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="OuterCircle" Property="Stroke" Value="#00A6A0"/>
+                            <Setter TargetName="OuterCircle" Property="Fill" Value="#F0FDFA"/>
+                        </Trigger>
+
+                        <!-- Checked State -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="InnerDot"
+                                                           Storyboard.TargetProperty="Opacity"
+                                                           To="1" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="1" Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="1" Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="InnerDot"
+                                                           Storyboard.TargetProperty="Opacity"
+                                                           To="0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="DotScale"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                            <Setter TargetName="OuterCircle" Property="Stroke" Value="#00A6A0"/>
+                            <Setter TargetName="OuterCircle" Property="StrokeThickness" Value="2"/>
+                        </Trigger>
+
+                        <!-- Pressed State -->
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="OuterCircle" Property="Fill" Value="#E6FFFA"/>
+                        </Trigger>
+
+                        <!-- Disabled State -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Foreground" Value="White"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ModernSlider" TargetType="Slider">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Track Grid.Row="1" x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton>
+                                    <RepeatButton.Style>
+                                        <Style TargetType="RepeatButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="RepeatButton">
+                                                        <Border Height="4" Background="#00A6A0" CornerRadius="2"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </RepeatButton.Style>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton>
+                                    <RepeatButton.Style>
+                                        <Style TargetType="RepeatButton">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="RepeatButton">
+                                                        <Border Height="4" Background="#E5E7EB" CornerRadius="2"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </RepeatButton.Style>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="Thumb">
+                                    <Thumb.Style>
+                                        <Style TargetType="Thumb">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Ellipse x:Name="ThumbCircle" Width="20" Height="20" Fill="White" 
+                                                                   Stroke="#00A6A0" StrokeThickness="2">
+                                                            <Ellipse.Effect>
+                                                                <DropShadowEffect ShadowDepth="0" BlurRadius="4" Opacity="0.2"/>
+                                                            </Ellipse.Effect>
+                                                        </Ellipse>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="ThumbCircle" Property="Width" Value="22"/>
+                                                                <Setter TargetName="ThumbCircle" Property="Height" Value="22"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsDragging" Value="True">
+                                                                <Setter TargetName="ThumbCircle" Property="Fill" Value="#E6FFFA"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Thumb.Style>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
 </ResourceDictionary>
 
