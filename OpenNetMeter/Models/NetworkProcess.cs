@@ -78,6 +78,9 @@ namespace OpenNetMeter.Models
             set { isNetworkOnline = value; OnPropertyChanged("IsNetworkOnline"); }
         }
 
+        private CancellationTokenSource? networkChangeDebounce;
+        private readonly object networkChangeLock = new object();
+        private const int DebounceDelayMs = 300;
         public NetworkProcess()
         {
             //initialize variables
@@ -123,7 +126,7 @@ namespace OpenNetMeter.Models
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
 
             //check for online network addresses
-            NetworkChange_NetworkAddressChanged(null, null);
+            HandleNetworkChange();
         }
 
         /// <summary>
@@ -194,18 +197,77 @@ namespace OpenNetMeter.Models
             return null;
         }
 
+        private bool IsCurrentAdapterStillUp()
+        {
+            if (ByteArray.Compare(localIPv4, defaultIPv4) && ByteArray.Compare(localIPv6, defaultIPv6))
+                return false; // No IP stored, not connected
+
+            var adapters = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (var n in adapters)
+            {
+                if (n.OperationalStatus == OperationalStatus.Up &&
+                    n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                {
+                    var props = n.GetIPProperties();
+                    if (props.GatewayAddresses.FirstOrDefault() != null)
+                    {
+                        foreach (var ip in props.UnicastAddresses)
+                        {
+                            var ipBytes = ip.Address.GetAddressBytes();
+                            if (ByteArray.Compare(ipBytes, localIPv4) || ByteArray.Compare(ipBytes, localIPv6))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs? e)
         {
+            lock (networkChangeLock)
+            {
+                // Cancel any pending debounce
+                networkChangeDebounce?.Cancel();
+                networkChangeDebounce?.Dispose();
+                networkChangeDebounce = new CancellationTokenSource();
+            }
+
+            var cts = networkChangeDebounce;
+
+            Task.Delay(DebounceDelayMs, cts.Token).ContinueWith(t =>
+            {
+                if (!t.IsCanceled)
+                {
+                    HandleNetworkChange();
+                }
+            }, TaskScheduler.Default);
+        }
+
+        private void HandleNetworkChange()
+        {
+            // If already connected, first verify current adapter is actually down before processing
+            // This prevents false disconnects when GetLocalIP() socket trick fails transiently
+            if (IsNetworkOnline != "Disconnected" && IsCurrentAdapterStillUp())
+            {
+                Debug.WriteLine("Ash: Current adapter still up, ignoring transient event");
+                return;
+            }
+
             (byte[], byte[]) tempIP = (defaultIPv4, defaultIPv6);
             bool networkAvailable = false;
+            string newAdapterName = "";
+
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             foreach (NetworkInterface n in adapters)
             {
                 if (n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 {
-                    if (n.OperationalStatus == OperationalStatus.Up) //if there is a connection
+                    if (n.OperationalStatus == OperationalStatus.Up)
                     {
-                        tempIP = GetLocalIP(); //get assigned ip
+                        tempIP = GetLocalIP();
 
                         IPInterfaceProperties adapterProperties = n.GetIPProperties();
                         if (adapterProperties.GatewayAddresses.FirstOrDefault() != null)
@@ -214,31 +276,31 @@ namespace OpenNetMeter.Models
                             {
                                 if (ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item1))
                                 {
-                                    if (ByteArray.Compare(localIPv4, tempIP.Item1)) // prevent firing multiple times during 1 connection change
+                                    if (ByteArray.Compare(localIPv4, tempIP.Item1))
                                         break;
                                     else
                                         localIPv4 = tempIP.Item1;
 
                                     networkAvailable = true;
-                                    AdapterName = n.Name;
+                                    newAdapterName = n.Name;
                                     if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                        AdapterName += "(" + GetConnectedSsid(n.Id) + ")";
+                                        newAdapterName += "(" + GetConnectedSsid(n.Id) + ")";
 
-                                    Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
+                                    Debug.WriteLine(n.Name + " is up , IP: " + ip.Address.ToString());
                                 }
-                                else if(ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item2))
+                                else if (ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item2))
                                 {
-                                    if (ByteArray.Compare(localIPv6, tempIP.Item2)) // prevent firing multiple times during 1 connection change
+                                    if (ByteArray.Compare(localIPv6, tempIP.Item2))
                                         break;
                                     else
                                         localIPv6 = tempIP.Item2;
 
                                     networkAvailable = true;
-                                    AdapterName = n.Name;
+                                    newAdapterName = n.Name;
                                     if (n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                                        AdapterName += "(" + NetworkInformation.GetInternetConnectionProfile()?.WlanConnectionProfileDetails?.GetConnectedSsid() + ")";
+                                        newAdapterName += "(" + GetConnectedSsid(n.Id) + ")";
 
-                                    Debug.WriteLine(n.Name + " is up " + ", IP: " + ip.Address.ToString());
+                                    Debug.WriteLine(n.Name + " is up , IP: " + ip.Address.ToString());
                                 }
                             }
                         }
@@ -248,28 +310,36 @@ namespace OpenNetMeter.Models
 
             if (networkAvailable)
             {
+                AdapterName = newAdapterName;
+
                 if (IsNetworkOnline == "Disconnected")
-                    StartNetworkProcess();
-                else if(IsNetworkOnline != AdapterName)
                 {
+                    Debug.WriteLine("Ash: Connection established");
+                    StartNetworkProcess();
+                    return;
+                }
+                else if (IsNetworkOnline != AdapterName)
+                {
+                    Debug.WriteLine("Ash: Network adapter changed");
                     EndNetworkProcess();
                     StartNetworkProcess();
+                    return;
+                }
+                else
+                {
+                    return; // Same adapter, already connected
                 }
             }
-            else
-            {
-                if(IsNetworkOnline != "Disconnected")
-                    EndNetworkProcess();
-            }
 
-            //the ByteArrayCompare is used to detect virtual ethernet adapters escaping from a null,
-            //adapterProperties.GatewayAddresses.FirstOrDefault() in the above foreach loop
-            if (!NetworkInterface.GetIsNetworkAvailable() || ByteArray.Compare(tempIP.Item1, defaultIPv4))
+            // Only disconnect if we confirmed adapter is down (checked at top of method)
+            // or if we were never connected
+            if (IsNetworkOnline != "Disconnected")
             {
-                localIPv4 = new byte[] { 0, 0, 0, 0 };
-                Debug.WriteLine("No connection");
-                if (isNetworkOnline != "Disconnected")
-                    EndNetworkProcess();
+                Debug.WriteLine("Ash: No connection - adapter down");
+                Debug.WriteLine("Ash: Connection lost");
+                localIPv4 = defaultIPv4;
+                localIPv6 = defaultIPv6;
+                EndNetworkProcess();
             }
         }
 
@@ -294,7 +364,6 @@ namespace OpenNetMeter.Models
             long tempDownload = 0;
             long tempUpload = 0;
             networkSpeedWork = new PeriodicWork("Network speed", TimeSpan.FromSeconds(1));
-            Debug.WriteLine("Operation Started : Network speed");
             networkSpeedWork.Start(ct =>
             {
 #if DEBUG
@@ -668,6 +737,13 @@ namespace OpenNetMeter.Models
 
         public void Dispose()
         {
+            lock (networkChangeLock)
+            {
+                networkChangeDebounce?.Cancel();
+                networkChangeDebounce?.Dispose();
+                networkChangeDebounce = null;
+            }
+
             if (IsNetworkOnline != "Disconnected")
                 EndNetworkProcess();
 
