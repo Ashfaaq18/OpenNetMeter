@@ -214,7 +214,7 @@ namespace OpenNetMeter.Models
                             {
                                 if (ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item1))
                                 {
-                                    if (localIPv4 == tempIP.Item1) //this is to prevent this event from firing multiple times during 1 connection change
+                                    if (ByteArray.Compare(localIPv4, tempIP.Item1)) // prevent firing multiple times during 1 connection change
                                         break;
                                     else
                                         localIPv4 = tempIP.Item1;
@@ -228,7 +228,7 @@ namespace OpenNetMeter.Models
                                 }
                                 else if(ByteArray.Compare(ip.Address.GetAddressBytes(), tempIP.Item2))
                                 {
-                                    if (localIPv6 == tempIP.Item2) //this is to prevent this event from firing multiple times during 1 connection change
+                                    if (ByteArray.Compare(localIPv6, tempIP.Item2)) // prevent firing multiple times during 1 connection change
                                         break;
                                     else
                                         localIPv6 = tempIP.Item2;
