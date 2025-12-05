@@ -13,12 +13,12 @@ namespace OpenNetMeter.Models
 
         internal void TestInvokeRecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            ProcessPacket(src, dest, size, name, isRecv: true);
+            RecvProcess(src, dest, size, name);
         }
 
         internal void TestInvokeSendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
-            ProcessPacket(src, dest, size, name, isRecv: false);
+            SendProcess(src, dest, size, name);
         }
     }
 }

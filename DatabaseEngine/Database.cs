@@ -8,226 +8,187 @@ namespace DatabaseEngine
     public class Database : IDisposable
     {
         private SQLiteConnection? connection;
-        private bool disposed = false;
-
-        /// <summary>
-        /// Creates and opens a database connection.
-        /// </summary>
-        /// <param name="path">Directory path for the database file</param>
-        /// <param name="dbFileName">Database file name (without extension)</param>
-        /// <param name="extraParams">Additional connection string parameters</param>
+        private SQLiteCommand? command;
+        private SQLiteTransaction? transaction;
         public Database(string path, string dbFileName, string[]? extraParams = null)
         {
             string connectionString = new Connection(path, dbFileName).ConnectionString;
-
-            // Append any extra parameters to connection string
-            if (extraParams != null)
+            for (int i = 0; i < extraParams?.Length; i++)
             {
-                foreach (var param in extraParams)
-                {
-                    connectionString += $";{param}";
-                }
+                connectionString += $";{extraParams[i]}";
             }
-
             connection = new SQLiteConnection(connectionString);
-            connection.Open();
+            connection?.Open(); //open the file on disk
+            transaction = connection?.BeginTransaction();
+            command = new SQLiteCommand(connection);
         }
 
         /// <summary>
-        /// Configures the database for optimal concurrent access.
-        /// Call once after opening the connection.
+        /// pass sqlite query as a string
         /// </summary>
-        public void ConfigureForConcurrency()
-        {
-            // WAL mode allows concurrent reads during writes
-            RunSQLiteNonQuery("PRAGMA journal_mode=WAL;");
-
-            // Wait up to 5 seconds if database is locked instead of failing immediately
-            RunSQLiteNonQuery("PRAGMA busy_timeout=5000;");
-
-            // Good balance of durability and performance with WAL
-            RunSQLiteNonQuery("PRAGMA synchronous=NORMAL;");
-        }
-
-        /// <summary>
-        /// Executes a non-query SQL command (INSERT, UPDATE, DELETE, CREATE, etc.)
-        /// </summary>
-        /// <param name="query">SQL query string</param>
-        /// <returns>Number of rows affected, or negative value on error</returns>
+        /// <param name="query"></param>
+        /// <returns></returns>
         public int RunSQLiteNonQuery(string query)
         {
-            if (connection == null) return -2;
+            int rowChangeCount = 0;
 
             try
             {
-                using var command = new SQLiteCommand(query, connection);
-                return command.ExecuteNonQuery();
+                if (command != null)
+                {
+                    //Debug.WriteLine(query);
+                    command.CommandText = query;
+                    rowChangeCount = command.ExecuteNonQuery();
+                }
+                else
+                    rowChangeCount = -2;
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 Debug.WriteLine($"SQLite Error: {ex.Message}");
-                return -1;
+                rowChangeCount = -1;
             }
+
+            return rowChangeCount;
         }
 
-        /// <summary>
-        /// Executes a non-query SQL command with parameters.
-        /// </summary>
-        /// <param name="query">SQL query string with parameter placeholders</param>
-        /// <param name="paramAndValue">2D array of parameter names and values</param>
-        /// <returns>Number of rows affected, or negative value on error</returns>
         public int RunSQLiteNonQuery(string query, string[,] paramAndValue)
         {
-            if (connection == null) return -2;
-
+            int rowChangeCount = 0;
             try
             {
-                using var command = new SQLiteCommand(query, connection);
+                if (command == null) return -2;
 
+                //Debug.WriteLine(query);
+                command.CommandText = query;
                 for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
                     command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                 }
-
                 command.Prepare();
-                return command.ExecuteNonQuery();
+                rowChangeCount = command.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"SQLite Error: {ex.Message}");
-                return -1;
+                rowChangeCount = -1;
             }
+            return rowChangeCount;
         }
 
-        /// <summary>
-        /// Executes multiple non-query commands within a single transaction.
-        /// More efficient for batch operations.
-        /// </summary>
-        /// <param name="action">Action that performs the database operations</param>
-        /// <returns>True if transaction committed successfully</returns>
-        public bool RunInTransaction(Action<Database> action)
-        {
-            if (connection == null) return false;
-
-            using var transaction = connection.BeginTransaction();
-            try
-            {
-                action(this);
-                transaction.Commit();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SQLite Transaction Error: {ex.Message}");
-                transaction.Rollback();
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Executes a query and returns all rows/columns as a list of lists.
-        /// </summary>
         public List<List<object>> GetMultipleCellData(string query)
         {
-            var result = new List<List<object>>();
-
-            if (connection == null) return result;
+            List<List<object>> temp = new List<List<object>>();
 
             try
             {
-                using var command = new SQLiteCommand(query, connection);
-                using var reader = command.ExecuteReader();
+                if (command == null) return temp;
+
+                command.CommandText = query;
+                using SQLiteDataReader reader = command.ExecuteReader();
+                if (!reader.HasRows)
+                {
+                    reader.Close();
+                    return temp;
+                }
 
                 while (reader.Read())
                 {
-                    var row = new List<object>();
+                    temp.Add(new List<object>());
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
-                        row.Add(reader[i]);
+                        temp[temp.Count - 1].Add(reader[i]);
                     }
-                    result.Add(row);
                 }
+
+                reader.Close();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"SQLite read error: {ex.Message}");
-            }
+            }     
 
-            return result;
+            return temp;
         }
-
-        /// <summary>
-        /// Executes a parameterized query and returns all rows/columns as a list of lists.
-        /// </summary>
+        
         public List<List<object>> GetMultipleCellData(string query, string[,] paramAndValue)
         {
-            var result = new List<List<object>>();
-
-            if (connection == null) return result;
+            List<List<object>> temp = new List<List<object>>();
 
             try
             {
-                using var command = new SQLiteCommand(query, connection);
+                if (command == null) return temp;
 
+                command.CommandText = query;
                 for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
                     command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                 }
-
                 command.Prepare();
+                using SQLiteDataReader reader = command.ExecuteReader();
+                if (!reader.HasRows)
+                {
+                    reader.Close();
+                    return temp;
+                }
 
-                using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    var row = new List<object>();
+                    temp.Add(new List<object>());
                     for (int i = 0; i < reader.FieldCount; i++)
                     {
-                        row.Add(reader[i]);
+                        temp[temp.Count - 1].Add(reader[i]);
                     }
-                    result.Add(row);
                 }
+                reader.Close();
+
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"SQLite read error: {ex.Message}");
             }
 
-            return result;
+            return temp;
         }
 
-        /// <summary>
-        /// Executes a parameterized query and returns the first cell of the first row.
-        /// </summary>
         public object? GetSingleCellData(string query, string[,] paramAndValue)
         {
-            if (connection == null) return null;
-
+            object? temp = null;
             try
             {
-                using var command = new SQLiteCommand(query, connection);
+                if (command == null) return temp;
 
+                command.CommandText = query;
                 for (int i = 0; i < paramAndValue.GetLength(0); i++)
                 {
                     command.Parameters.AddWithValue(paramAndValue[i, 0], paramAndValue[i, 1]);
                 }
-
                 command.Prepare();
-                return command.ExecuteScalar();
+                using SQLiteDataReader reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        return reader[0];
+                    }
+                }
+                reader.Close();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"SQLite read error: {ex.Message}");
-                return null;
             }
+            return temp;
         }
 
         public void Dispose()
         {
-            if (disposed) return;
-            disposed = true;
+            command?.Dispose();
+
+            transaction?.Commit();
+            transaction?.Dispose();
 
             connection?.Dispose();
-            connection = null;
         }
     }
 }
