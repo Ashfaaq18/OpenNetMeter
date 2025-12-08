@@ -216,9 +216,6 @@
 
     <!-- Modern DataGrid Container Style -->
     <Style TargetType="DataGrid" x:Key="ModernDGHeaderStyle">
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="RowStyle" Value="{StaticResource ModernDGRowStyle}"/>
         <Setter Property="ColumnHeaderStyle" Value="{StaticResource ModernDGCHeaderStyle}"/>
         <Setter Property="GridLinesVisibility" Value="None"/>
@@ -234,12 +231,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DataGrid">
-                    <Border Background="{TemplateBinding Background}"
-                           BorderBrush="{TemplateBinding BorderBrush}"
-                           BorderThickness="{TemplateBinding BorderThickness}"
-                           CornerRadius="0"
-                           Padding="0"
-                           SnapsToDevicePixels="True">
+                    <Border>
                         <ScrollViewer x:Name="DG_ScrollViewer" Focusable="False">
                             <ScrollViewer.Template>
                                 <ControlTemplate TargetType="ScrollViewer">

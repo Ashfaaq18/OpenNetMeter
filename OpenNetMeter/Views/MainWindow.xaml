@@ -11,7 +11,7 @@
         ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         UseLayoutRounding="True"
-        MinHeight="480" Height="480" MinWidth="640" Width="640"
+        MinHeight="600" Height="600" MinWidth="800" Width="800"
         SizeChanged="MyWindow_SizeChanged"
         Window.LocationChanged ="MyWindow_LocationChanged">
     
@@ -48,7 +48,7 @@
 
     </Window.Resources>
     <Border Style="{StaticResource BorderColor}">
-        <Grid>
+        <Grid Style="{StaticResource BackgroundColor2}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>

@@ -55,7 +55,9 @@ namespace OpenNetMeter.Views
         }
 
 
-        private Size GraphSize => new Size(GraphGrid.ActualWidth - 16 - maxYtextSize.Width, GraphGrid.ActualHeight - maxYtextSize.Height);
+        private Size GraphSize => new Size(
+            Math.Max(0, GraphGrid.ActualWidth - 16 - maxYtextSize.Width),
+            Math.Max(0, GraphGrid.ActualHeight - maxYtextSize.Height));
 
         public Size ShapeMeasure(TextBlock tb)
         {

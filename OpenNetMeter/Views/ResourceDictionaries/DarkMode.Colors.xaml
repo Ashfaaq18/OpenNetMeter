@@ -2,6 +2,22 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
+    <!-- Modern Card Style -->
+    <Style x:Key="ModernCard" TargetType="Border">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="#2A2A2A"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
     <Style TargetType="Line" x:Key="LineColor">
         <Setter Property="Stroke" Value="Black"></Setter>
         <Style.Triggers>
@@ -46,6 +62,15 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="DarkModeBackgroundColor">
+        <Setter Property="Control.Background" Value="Black"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Control.Background" Value="White"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
     <Style x:Key="FontColor1">
         <Setter Property="Control.Foreground" Value="Black"></Setter>
         <Style.Triggers>
@@ -109,22 +134,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
-    <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="#f1f1f1"/>
-        <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect ShadowDepth="2" BlurRadius="4" Opacity="0.08" Direction="270"/>
-            </Setter.Value>
-        </Setter>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#2A2A2A"></Setter>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-    
+
     <Style TargetType="Border" x:Key="BorderColor">
         <Setter Property="Control.BorderBrush" Value="#4F5050"></Setter>
         <Setter Property="Control.BorderThickness" Value="1"></Setter>

@@ -26,6 +26,7 @@
 
     <Style TargetType="ItemsControl" x:Key="GraphLabels">
         <Setter Property="TextBlock.Foreground" Value="Black"/>
+        <Setter Property="TextBlock.FontSize" Value="20"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
                 <Setter Property="TextBlock.Foreground" Value="White"/>
