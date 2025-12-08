@@ -28,12 +28,6 @@
 
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type vm:DataUsageDetailedVM}">
-
-            <v:DataUsageDetailedV/>
-
-        </DataTemplate>
-
         <DataTemplate DataType="{x:Type vm:DataUsageHistoryVM}">
 
             <v:DataUsageHistoryV/>
@@ -73,7 +67,6 @@
                         <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button Height="35" BorderThickness="0,0,0,5" Margin="0,0,5,0" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSummaryTab}" Command="{Binding SwitchTabCommand}" CommandParameter="summary">
@@ -82,19 +75,13 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowDetailedTab}" Command="{Binding SwitchTabCommand}" CommandParameter="detailed">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Grid.Column="2" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowHistoryTab}" Command="{Binding SwitchTabCommand}" CommandParameter="history">
+                    <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowHistoryTab}" Command="{Binding SwitchTabCommand}" CommandParameter="history">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontFamily="Segoe UI" Text="History" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="3" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding SwitchTabCommand}" CommandParameter="settings">
+                    <Button Grid.Column="2" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding SwitchTabCommand}" CommandParameter="settings">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                         </StackPanel>

@@ -13,7 +13,6 @@ namespace OpenNetMeter.ViewModels
     public class MainWindowVM : INotifyPropertyChanged, IDisposable
     {
         private readonly DataUsageSummaryVM dusvm;
-        private readonly DataUsageDetailedVM dudvm;
         private readonly DataUsageHistoryVM duhvm;
         private readonly MiniWidgetVM mwvm;
         private readonly SettingsVM svm;
@@ -64,7 +63,6 @@ namespace OpenNetMeter.ViewModels
         private enum TabPage
         {
             Summary,
-            Detailed,
             History,
             Settings
         }
@@ -83,7 +81,6 @@ namespace OpenNetMeter.ViewModels
             svm.PropertyChanged += Svm_PropertyChanged;
             dusvm = new DataUsageSummaryVM();
             duhvm = new DataUsageHistoryVM();
-            dudvm = new DataUsageDetailedVM();
 
             netProc = new NetworkProcess();
             netProc.PropertyChanged += NetProc_PropertyChanged;
@@ -99,9 +96,6 @@ namespace OpenNetMeter.ViewModels
             {
                 case ((int)TabPage.Summary):
                     SelectedViewModel = dusvm;
-                    break;
-                case ((int)TabPage.Detailed):
-                    SelectedViewModel = dudvm;
                     break;
                 case ((int)TabPage.History):
                     SelectedViewModel = duhvm;
@@ -198,9 +192,11 @@ namespace OpenNetMeter.ViewModels
 
             dusvm.TodayDownloadData = initSinceDateTotalDownloadData + sessionDownloadDelta;
             dusvm.TodayUploadData = initSinceDateTotalUploadData + sessionUploadDelta;
+
+            UpdateMyProcessTable();
         }
 
-        private void UpdateDetailedTab()
+        private void UpdateMyProcessTable()
         {
             if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dusvm.MyProcesses != null && netProc.PushToDBBuffer != null)
             {
@@ -319,8 +315,6 @@ namespace OpenNetMeter.ViewModels
             UpdateMiniWidgetValues();
 
             UpdateSummaryTab();
-
-            UpdateDetailedTab();
         }
 
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -383,15 +377,6 @@ namespace OpenNetMeter.ViewModels
                     {
                         SelectedViewModel = dusvm;
                         TabBtnToggle = ((int)TabPage.Summary);
-                        SettingsManager.Current.LaunchPage = TabBtnToggle;
-                        SettingsManager.Save();
-                    }
-                    break;
-                case "detailed":
-                    if (TabBtnToggle != ((int)TabPage.Detailed))
-                    {
-                        SelectedViewModel = dudvm;
-                        TabBtnToggle = ((int)TabPage.Detailed);
                         SettingsManager.Current.LaunchPage = TabBtnToggle;
                         SettingsManager.Save();
                     }
