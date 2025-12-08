@@ -227,6 +227,7 @@
         <Setter Property="SelectionUnit" Value="FullRow"/>
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -322,3 +323,5 @@
     </Style>
 
 </ResourceDictionary>
+
+
