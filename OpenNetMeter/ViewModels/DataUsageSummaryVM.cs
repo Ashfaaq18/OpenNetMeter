@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenNetMeter.Models;
 using System.ComponentModel;
+using System.Collections.Concurrent;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -99,6 +100,8 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        public ObservableConcurrentDictionary<string, MyProcess_Big> MyProcesses { get; set; }
+
         public SpeedGraph Graph { get; set; }
 
         public DataUsageSummaryVM()
@@ -107,6 +110,8 @@ namespace OpenNetMeter.ViewModels
             TodayUploadData = 0;
             CurrentSessionDownloadData = 0;
             CurrentSessionUploadData = 0;
+
+            MyProcesses = new ObservableConcurrentDictionary<string, MyProcess_Big>();
 
             Graph = new SpeedGraph(7, 7);
             Graph.Init();
