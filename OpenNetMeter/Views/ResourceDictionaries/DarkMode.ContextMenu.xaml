@@ -7,11 +7,11 @@
     <Style TargetType="ContextMenu" x:Key="miniWidgetContextMenuColor">
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="Foreground" Value="#202020"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushSurfaceDarkTab}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ContextMenu}">
-                    <Border Background="#f0f0f0" BorderBrush="DarkGray" BorderThickness="1">
+                    <Border Background="{StaticResource BrushSurfaceLightContext}" BorderBrush="{StaticResource BrushDarkGray}" BorderThickness="1">
                         <StackPanel ClipToBounds="True" Orientation="Vertical" IsItemsHost="True"/>
                     </Border>
                 </ControlTemplate>
@@ -19,11 +19,11 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Foreground" Value="#f0f0f0"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ContextMenu}">
-                            <Border Background="#202020" BorderBrush="DarkGray" BorderThickness="1">
+                            <Border Background="{StaticResource BrushSurfaceDarkTab}" BorderBrush="{StaticResource BrushDarkGray}" BorderThickness="1">
                                 <StackPanel ClipToBounds="True" Orientation="Vertical" IsItemsHost="True"/>
                             </Border>
                         </ControlTemplate>

@@ -3,6 +3,7 @@
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
     <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ThemeColors.xaml"/>
         <ResourceDictionary Source="DarkMode.Colors.xaml"/>
         <ResourceDictionary Source="DarkMode.MainWindowTabs.xaml"/>
         <ResourceDictionary Source="DarkMode.SummaryPage.xaml"/>

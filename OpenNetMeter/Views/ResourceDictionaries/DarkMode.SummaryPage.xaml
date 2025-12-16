@@ -5,19 +5,19 @@
     <!-- Summary page styles -->
     
     <Style TargetType="Border" x:Key="BorderStyle1">
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect BlurRadius="20" Color="#dddddd" Opacity="0.4" Direction="280" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="20" Color="{StaticResource ColorShadowLight}" Opacity="0.4" Direction="280" ShadowDepth="0" />
             </Setter.Value>
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#303030"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceSummaryDark}"/>
                 <Setter Property="Effect">
                     <Setter.Value>
-                        <DropShadowEffect BlurRadius="20" Color="#0d0d0d" Opacity="0.4" Direction="280" ShadowDepth="0" />
+                        <DropShadowEffect BlurRadius="20" Color="{StaticResource ColorShadowDark}" Opacity="0.4" Direction="280" ShadowDepth="0" />
                     </Setter.Value>
                 </Setter>
             </DataTrigger>
@@ -25,29 +25,29 @@
     </Style>
 
     <Style TargetType="ItemsControl" x:Key="GraphLabels">
-        <Setter Property="TextBlock.Foreground" Value="Black"/>
+        <Setter Property="TextBlock.Foreground" Value="{StaticResource BrushBlack}"/>
         <Setter Property="TextBlock.FontSize" Value="20"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="TextBlock.Foreground" Value="White"/>
+                <Setter Property="TextBlock.Foreground" Value="{StaticResource BrushWhite}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="Line" x:Key="GraphXYLines">
-        <Setter Property="Stroke" Value="LightGray"/>
+        <Setter Property="Stroke" Value="{StaticResource BrushLightGray}"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Stroke" Value="DarkGray"/>
+                <Setter Property="Stroke" Value="{StaticResource BrushDarkGray}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="Line" x:Key="GraphBorder">
-        <Setter Property="Stroke" Value="Black"/>
+        <Setter Property="Stroke" Value="{StaticResource BrushBlack}"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Stroke" Value="LightGray"/>
+                <Setter Property="Stroke" Value="{StaticResource BrushLightGray}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -56,34 +56,34 @@
         <Line
                                 X1="0" Y1="0"
                                 X2="0" Y2="20"
-                                Stroke="LightSeaGreen"
+                                Stroke="{StaticResource BrushDownloadAccent}"
                                 StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
         <Line
                                 X1="0" Y1="20"
                                 X2="6" Y2="10"
-                                Stroke="LightSeaGreen"
+                                Stroke="{StaticResource BrushDownloadAccent}"
                                 StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
         <Line
                                 X1="0" Y1="20"
                                 X2="-6" Y2="10"
-                                Stroke="LightSeaGreen"
+                                Stroke="{StaticResource BrushDownloadAccent}"
                                 StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
     </Grid>
     <Grid x:Key="Upload_Icon"  x:Shared="False">
         <Line
                                 X1="0" Y1="0"
                                 X2="0" Y2="20"
-                                Stroke="LightSalmon"
+                                Stroke="{StaticResource BrushUploadAccent}"
                                 StrokeThickness="2" Margin="0,0,10,0" VerticalAlignment="Center" />
         <Line
                                 X1="0" Y1="-8"
                                 X2="6" Y2="5"
-                                Stroke="LightSalmon"
+                                Stroke="{StaticResource BrushUploadAccent}"
                                 StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
         <Line
                                 X1="0" Y1="-8"
                                 X2="-6" Y2="5"
-                                Stroke="LightSalmon"
+                                Stroke="{StaticResource BrushUploadAccent}"
                                 StrokeThickness="2" Margin="0,0,0,0" VerticalAlignment="Center" />
     </Grid>
 

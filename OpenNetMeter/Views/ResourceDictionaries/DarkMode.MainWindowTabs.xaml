@@ -3,7 +3,7 @@
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
     <Style TargetType="Button" x:Key="ButtonColor">
-        <Setter Property="Background" Value="White"></Setter>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"></Setter>
         <!-- set button highlight template color -->
         <Setter Property="Template">
             <Setter.Value>
@@ -16,11 +16,11 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#151515"></Setter>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDark}"></Setter>
             </DataTrigger>
             <!-- set button highlight light mode color -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#ffcab5 "/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeach}"/>
             </Trigger>
 
             <!-- set button highlight dark mode color -->
@@ -29,7 +29,7 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#c97c5d"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachDark}"/>
             </MultiDataTrigger>
         </Style.Triggers>
     </Style>
@@ -37,8 +37,8 @@
     <Style TargetType="Button" x:Key="MainWindowSummaryTab">
 
         <!-- set unselected button light mode color -->
-        <Setter Property="Background" Value="#f1f1f1"/>
-        <Setter Property="BorderBrush" Value="#f1f1f1"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLightAlt}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
 
         <!-- set button highlight template color -->
         <Setter Property="Template">
@@ -55,14 +55,14 @@
 
             <!-- set unselected button dark mode color -->
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#202020"/>
-                <Setter Property="BorderBrush" Value="#202020"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDarkTab}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceDarkTab}"/>
             </DataTrigger>
 
             <!-- set button highlight light mode color -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#ffcab5 "/>
-                <Setter Property="BorderBrush" Value="#ffcab5"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeach}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPeach}"/>
             </Trigger>
 
             <!-- set button highlight dark mode color -->
@@ -71,13 +71,13 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#c97c5d"/>
-                <Setter Property="BorderBrush" Value="#c97c5d"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachDark}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPeachDark}"/>
             </MultiDataTrigger>
 
             <!-- set selected button border light mode color -->
             <DataTrigger Binding="{Binding TabBtnToggle}" Value="0">
-                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushBlack}"/>
             </DataTrigger>
 
             <!-- set selected button border dark mode color -->
@@ -86,7 +86,7 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding TabBtnToggle}" Value="0"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="BorderBrush" Value="#f1f1f1"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
             </MultiDataTrigger>
 
         </Style.Triggers>
@@ -95,8 +95,8 @@
     <Style TargetType="Button" x:Key="MainWindowHistoryTab">
 
         <!-- set unselected button light mode color -->
-        <Setter Property="Background" Value="#f1f1f1"/>
-        <Setter Property="BorderBrush" Value="#f1f1f1"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLightAlt}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
 
         <!-- set button highlight template color -->
         <Setter Property="Template">
@@ -112,14 +112,14 @@
 
             <!-- set unselected button dark mode color -->
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#202020"/>
-                <Setter Property="BorderBrush" Value="#202020"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDarkTab}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceDarkTab}"/>
             </DataTrigger>
 
             <!-- set button highlight light mode color -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#ffcab5 "/>
-                <Setter Property="BorderBrush" Value="#ffcab5"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeach}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPeach}"/>
             </Trigger>
 
             <!-- set button highlight dark mode color -->
@@ -128,13 +128,13 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#c97c5d"/>
-                <Setter Property="BorderBrush" Value="#c97c5d"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachDark}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPeachDark}"/>
             </MultiDataTrigger>
 
             <!-- set selected button border light mode color -->
             <DataTrigger Binding="{Binding TabBtnToggle}" Value="1">
-                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushBlack}"/>
             </DataTrigger>
 
             <!-- set selected button border dark mode color -->
@@ -143,7 +143,7 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding TabBtnToggle}" Value="2"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="BorderBrush" Value="#f1f1f1"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
             </MultiDataTrigger>
 
         </Style.Triggers>
@@ -152,8 +152,8 @@
     <Style TargetType="Button" x:Key="MainWindowSettingsTab">
         
         <!-- set unselected button light mode color -->
-        <Setter Property="Background" Value="#f1f1f1"/>
-        <Setter Property="BorderBrush" Value="#f1f1f1"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLightAlt}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
         
         <!-- set button highlight template color -->
         <Setter Property="Template">
@@ -169,14 +169,14 @@
 
             <!-- set unselected button dark mode color -->
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
-                <Setter Property="Background" Value="#202020"/>
-                <Setter Property="BorderBrush" Value="#202020"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDarkTab}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceDarkTab}"/>
             </DataTrigger>
 
             <!-- set button highlight light mode color -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#ffcab5 "/>
-                <Setter Property="BorderBrush" Value="#ffcab5"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeach}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPeach}"/>
             </Trigger>
 
             <!-- set button highlight dark mode color -->
@@ -185,13 +185,13 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsMouseOver}" Value="true" />
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#c97c5d"/>
-                <Setter Property="BorderBrush" Value="#c97c5d"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachDark}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPeachDark}"/>
             </MultiDataTrigger>
 
             <!-- set selected button border light mode color -->
             <DataTrigger Binding="{Binding TabBtnToggle}" Value="2">
-                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushBlack}"/>
             </DataTrigger>
 
             <!-- set selected button border dark mode color -->
@@ -200,7 +200,7 @@
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
                     <Condition Binding="{Binding TabBtnToggle}" Value="3"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="BorderBrush" Value="#f1f1f1"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
             </MultiDataTrigger>
 
         </Style.Triggers>

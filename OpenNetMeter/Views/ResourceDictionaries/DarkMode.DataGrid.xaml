@@ -10,9 +10,9 @@
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Padding" Value="12,8"/>
-        <Setter Property="Background" Value="#c0e3da"/>
-        <Setter Property="Foreground" Value="#1a1a1a"/>
-        <Setter Property="BorderBrush" Value="#9fd4c7"/>
+        <Setter Property="Background" Value="{StaticResource BrushAccentGreenSoft}"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushHeaderText}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushAccentGreenBorderLight}"/>
         <Setter Property="BorderThickness" Value="0,0,1,0"/>
 
         <Setter Property="Template">
@@ -55,7 +55,7 @@
                                     <ControlTemplate.Triggers>
                                         <!-- show line on hover -->
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="GripLine" Property="Background" Value="#7fb6a8"/>
+                                            <Setter TargetName="GripLine" Property="Background" Value="{StaticResource BrushAccentGreenBorderHover}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -69,19 +69,19 @@
         <!-- your existing triggers for hover / dark mode -->
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#afe6d9"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentGreenSoftHover}"/>
             </Trigger>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="Background" Value="#367061"/>
-                <Setter Property="Foreground" Value="#f0f0f0"/>
-                <Setter Property="BorderBrush" Value="#2a5248"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentGreenDark}"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentGreenBorderDark}"/>
             </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True"/>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#458270"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentGreenHoverDark}"/>
             </MultiDataTrigger>
         </Style.Triggers>
     </Style>
@@ -97,8 +97,8 @@
     <!-- Modern DataGrid Row Style -->
     <Style x:Key="ModernDGRowStyle" TargetType="DataGridRow">
         <Setter Property="Height" Value="32"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="Foreground" Value="#1a1a1a"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushHeaderText}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -130,10 +130,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="DGR_Border" Property="Background" Value="#ffcab5"/>
+                            <Setter TargetName="DGR_Border" Property="Background" Value="{StaticResource BrushAccentPeach}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="DGR_Border" Property="Background" Value="#f7bda6"/>
+                            <Setter TargetName="DGR_Border" Property="Background" Value="{StaticResource BrushAccentPeachSelected}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -141,40 +141,40 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                <Setter Property="Background" Value="White"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
             </Trigger>
             <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                <Setter Property="Background" Value="#f8f8f8"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceLightAlt2}"/>
             </Trigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=AlternationIndex}" Value="0"/>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#2a2a2a"/>
-                <Setter Property="Foreground" Value="#f0f0f0"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDark3}"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
             </MultiDataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=AlternationIndex}" Value="1"/>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#3a3a3a"/>
-                <Setter Property="Foreground" Value="#f0f0f0"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDark4}"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
             </MultiDataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True"/>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#c97c5d"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachDark}"/>
             </MultiDataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True"/>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True"/>
                 </MultiDataTrigger.Conditions>
-                <Setter Property="Background" Value="#c99079"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachSelectedDark}"/>
             </MultiDataTrigger>
         </Style.Triggers>
     </Style>
@@ -280,35 +280,35 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="Background" Value="#1f1f1f"/>
+                <Setter Property="Background" Value="{StaticResource BrushSurfaceDark2}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <!-- Modern Footer Style -->
     <Style TargetType="Grid" x:Key="ModernFooterGridStyle">
-        <Setter Property="Background" Value="#c0e3da"/>
+        <Setter Property="Background" Value="{StaticResource BrushAccentGreenSoft}"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="Background" Value="#367061"/>
+                <Setter Property="Background" Value="{StaticResource BrushAccentGreenDark}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="Border" x:Key="ModernFooterTextBorder">
-        <Setter Property="BorderBrush" Value="#9fd4c7"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushAccentGreenBorderLight}"/>
         <Setter Property="BorderThickness" Value="0,0,1,0"/>
         <Setter Property="Padding" Value="8,4"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="BorderBrush" Value="#2a5248"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentGreenBorderDark}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="TextBlock" x:Key="ModernFooterTextStyle">
-        <Setter Property="Foreground" Value="#1a1a1a"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushHeaderText}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="TextAlignment" Value="Right"/>
@@ -317,7 +317,7 @@
         <Setter Property="TextTrimming" Value="None"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="Foreground" Value="#f0f0f0"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

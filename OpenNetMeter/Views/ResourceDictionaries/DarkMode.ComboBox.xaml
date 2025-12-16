@@ -2,11 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:res="clr-namespace:OpenNetMeter.Properties">
 
-    <SolidColorBrush x:Key="BorderBrush" Color="#FF888888"/>
-    <SolidColorBrush x:Key="BackgroundBrush" Color="White"/>
-    <SolidColorBrush x:Key="TextBrush" Color="Black"/>
-    <SolidColorBrush x:Key="HoverBrush" Color="#F3F4F6"/>
-    <SolidColorBrush x:Key="SelectedBrush" Color="#E5E7EB"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource ColorBorderEmphasis}"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource ColorSurfaceLight}"/>
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource ColorBlack}"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource ColorNeutralHover}"/>
+    <SolidColorBrush x:Key="SelectedBrush" Color="{StaticResource ColorAccentTealMuted}"/>
     <ControlTemplate TargetType="ToggleButton" x:Key="ComboBoxToggleButtonTemplate">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -23,19 +23,19 @@
 
             <Path Name="Arrow" Grid.Column="1" 
                   Data="M 0 0 L 4 4 L 8 0" 
-                  Stroke="#6B7280" StrokeThickness="1.5"
+                  Stroke="{StaticResource BrushSecondaryText}" StrokeThickness="1.5"
                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
 
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="#333333"/>
-                <Setter TargetName="Border" Property="BorderBrush" Value="#555555"/>
-                <Setter TargetName="Arrow" Property="Stroke" Value="WhiteSmoke"/>
+                <Setter TargetName="Border" Property="Background" Value="{StaticResource BrushBorderStrong}"/>
+                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BrushBorderSoft}"/>
+                <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource BrushWhiteSmoke}"/>
             </DataTrigger>
 
             <Trigger Property="UIElement.IsMouseOver" Value="True">
-                <Setter TargetName="Border" Property="BorderBrush" Value="#9CA3AF"/>
+                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BrushBorderAlt}"/>
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -50,14 +50,14 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#ffcab5"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource BrushAccentPeach}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#f7bda6"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource BrushAccentPeachSelected}"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                         <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Foreground" Value="{StaticResource BrushPrimaryTextDark}"/>
                         </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -112,7 +112,7 @@
                                         CornerRadius="6"
                                         Margin="2">
                                     <Border.Effect>
-                                        <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="10" ShadowDepth="3" Direction="270"/>
+                                        <DropShadowEffect Color="{StaticResource ColorShadowDefault}" Opacity="0.1" BlurRadius="10" ShadowDepth="3" Direction="270"/>
                                     </Border.Effect>
                                 </Border>
 
@@ -125,9 +125,9 @@
 
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter TargetName="DropDownBorder" Property="Background" Value="#333333"/>
-                            <Setter TargetName="DropDownBorder" Property="BorderBrush" Value="#555555"/>
+                            <Setter Property="Foreground" Value="{StaticResource BrushPrimaryTextDark}"/>
+                            <Setter TargetName="DropDownBorder" Property="Background" Value="{StaticResource BrushBorderStrong}"/>
+                            <Setter TargetName="DropDownBorder" Property="BorderBrush" Value="{StaticResource BrushBorderSoft}"/>
                         </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
