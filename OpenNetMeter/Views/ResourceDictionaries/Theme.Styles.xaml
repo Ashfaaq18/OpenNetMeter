@@ -139,7 +139,7 @@
     </Style>
 
     <Style TargetType="Border" x:Key="CardHeaderStyle">
-        <Setter Property="Height" Value="48"/>
+        <Setter Property="Height" Value="40"/>
         <Setter Property="Background" Value="{StaticResource BrushAccentGreenSoft}"></Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
@@ -154,6 +154,28 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
                 <Setter Property="Control.BorderBrush" Value="{StaticResource BrushBorderNeutralDark}"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DataRowAccentDownload" TargetType="Border">
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Background" Value="{StaticResource BrushDownloadAccent}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="{StaticResource BrushAccentGreenDark}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DataRowAccentUpload" TargetType="Border">
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Background" Value="{StaticResource BrushUploadAccent}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Background" Value="{StaticResource BrushUploadDarkAccent}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

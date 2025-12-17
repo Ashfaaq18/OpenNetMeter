@@ -145,7 +145,7 @@
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
-                    <Condition Binding="{Binding TabBtnToggle}" Value="2"/>
+                    <Condition Binding="{Binding TabBtnToggle}" Value="1"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
             </MultiDataTrigger>
@@ -202,7 +202,7 @@
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True"/>
-                    <Condition Binding="{Binding TabBtnToggle}" Value="3"/>
+                    <Condition Binding="{Binding TabBtnToggle}" Value="2"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="BorderBrush" Value="{StaticResource BrushSurfaceLightAlt}"/>
             </MultiDataTrigger>

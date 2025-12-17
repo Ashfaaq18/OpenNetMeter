@@ -10,10 +10,10 @@
     <Style x:Key="ModernDGCHeaderStyle" TargetType="DataGridColumnHeader">
         <Setter Property="Height" Value="36"/>
         <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="FontWeight" Value="Normal"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Padding" Value="12,4"/>
         <Setter Property="Background" Value="{StaticResource BrushAccentGreenSoft}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushHeaderText}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BrushAccentGreenBorderLight}"/>
@@ -108,10 +108,10 @@
             <Setter.Value>
                 <ControlTemplate TargetType="DataGridRow">
                     <Border x:Name="DGR_Border"
-                           Background="{TemplateBinding Background}"
-                           BorderBrush="{TemplateBinding BorderBrush}"
-                           BorderThickness="{TemplateBinding BorderThickness}"
-                           SnapsToDevicePixels="True">
+                       Background="{TemplateBinding Background}"
+                       BorderBrush="{TemplateBinding BorderBrush}"
+                       BorderThickness="{TemplateBinding BorderThickness}"
+                       SnapsToDevicePixels="True">
                         <SelectiveScrollingGrid>
                             <SelectiveScrollingGrid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -122,34 +122,60 @@
                                 <RowDefinition Height="Auto"/>
                             </SelectiveScrollingGrid.RowDefinitions>
                             <DataGridCellsPresenter Grid.Column="1"
-                                                   ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                               ItemsPanel="{TemplateBinding ItemsPanel}"
+                                               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                             <DataGridDetailsPresenter Grid.Column="1" Grid.Row="1"
-                                                     SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
-                                                     Visibility="{TemplateBinding DetailsVisibility}"/>
+                                                 SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                 Visibility="{TemplateBinding DetailsVisibility}"/>
                             <DataGridRowHeader Grid.RowSpan="2"
-                                             SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
-                                             Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                         SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                         Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
                         </SelectiveScrollingGrid>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="DGR_Border" Property="Background" Value="{StaticResource BrushAccentPeach}"/>
-                        </Trigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="DGR_Border" Property="Background" Value="{StaticResource BrushAccentPeachSelected}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
+                    <!-- Removed ControlTemplate.Triggers - now handled in Style.Triggers -->
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+            <!-- Light mode - Alternation 0 -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=AlternationIndex}" Value="0"/>
+                    <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="False"/>
+                </MultiDataTrigger.Conditions>
                 <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
-            </Trigger>
-            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderText}"/>
+            </MultiDataTrigger>
+
+            <!-- Light mode - Alternation 1 -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=AlternationIndex}" Value="1"/>
+                    <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="False"/>
+                </MultiDataTrigger.Conditions>
                 <Setter Property="Background" Value="{StaticResource BrushSurfaceLightAlt2}"/>
-            </Trigger>
+                <Setter Property="Foreground" Value="{StaticResource BrushHeaderText}"/>
+            </MultiDataTrigger>
+
+            <!-- Light mode - MouseOver -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True"/>
+                    <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeach}"/>
+            </MultiDataTrigger>
+
+            <!-- Light mode - Selected -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True"/>
+                    <Condition Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{StaticResource BrushAccentPeachSelected}"/>
+            </MultiDataTrigger>
+
+            <!-- Dark mode - Alternation 0 -->
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=AlternationIndex}" Value="0"/>
@@ -158,6 +184,8 @@
                 <Setter Property="Background" Value="{StaticResource BrushSurfaceDark3}"/>
                 <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
             </MultiDataTrigger>
+
+            <!-- Dark mode - Alternation 1 -->
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=AlternationIndex}" Value="1"/>
@@ -166,6 +194,8 @@
                 <Setter Property="Background" Value="{StaticResource BrushSurfaceDark4}"/>
                 <Setter Property="Foreground" Value="{StaticResource BrushHeaderTextDark}"/>
             </MultiDataTrigger>
+
+            <!-- Dark mode - MouseOver -->
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True"/>
@@ -173,6 +203,8 @@
                 </MultiDataTrigger.Conditions>
                 <Setter Property="Background" Value="{StaticResource BrushAccentPeachDark}"/>
             </MultiDataTrigger>
+
+            <!-- Dark mode - Selected -->
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True"/>
@@ -182,7 +214,7 @@
             </MultiDataTrigger>
         </Style.Triggers>
     </Style>
-
+    
     <!-- Modern DataGrid Cell Style -->
     <Style x:Key="ModernDGCellStyle" TargetType="DataGridCell">
         <Setter Property="Padding" Value="12,4"/>

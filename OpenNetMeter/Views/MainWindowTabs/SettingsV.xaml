@@ -123,7 +123,7 @@
             <StackPanel Margin="24" MaxWidth="800">
                 
                 <!-- General Settings Card -->
-                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,24">
+                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,16">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -195,7 +195,7 @@
                 </Border>
 
                 <!-- Mini Widget Card -->
-                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,24">
+                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,16">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -237,7 +237,7 @@
                 </Border>
 
                 <!-- Network Monitoring Card -->
-                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,24">
+                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,16">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -298,7 +298,7 @@
                 </Border>
 
                 <!-- Data Management Card -->
-                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,24">
+                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,16">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
