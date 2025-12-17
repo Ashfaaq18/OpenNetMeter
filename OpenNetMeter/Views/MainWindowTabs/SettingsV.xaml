@@ -22,11 +22,11 @@
                             <Border x:Name="SwitchBorder" 
                                     Width="44" Height="24" 
                                     CornerRadius="12"
-                                    Background="#E5E7EB">
+                                    Background="{StaticResource BrushSurfaceDivider}">
                                 <Grid>
                                     <Ellipse x:Name="SwitchThumb" 
                                              Width="20" Height="20" 
-                                             Fill="White"
+                                             Fill="{StaticResource BrushWhite}"
                                              HorizontalAlignment="Left"
                                              Margin="2,0,0,0">
                                         <Ellipse.Effect>
@@ -41,7 +41,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="SwitchBorder" Property="Background" Value="#00A6A0"/>
+                                <Setter TargetName="SwitchBorder" Property="Background" Value="{StaticResource BrushAccentTeal}"/>
                                 <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
                                 <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,2,0"/>
                             </Trigger>
@@ -56,9 +56,9 @@
 
         <!-- Modern Button Style -->
         <Style x:Key="ModernButton" TargetType="Button">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushMutedRadioText}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLight}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="Template">
@@ -74,10 +74,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F9FAFB"/>
+                                <Setter Property="Background" Value="{StaticResource BrushSurfaceHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#F3F4F6"/>
+                                <Setter Property="Background" Value="{StaticResource BrushNeutralHover}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -87,9 +87,9 @@
 
         <!-- Destructive Button Style -->
         <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
-            <Setter Property="Background" Value="#EF4444"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#EF4444"/>
+            <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushWhite}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushDanger}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -103,12 +103,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#EF8888"/>
-                                <Setter Property="BorderBrush" Value="#EF8888"/>
+                                <Setter Property="Background" Value="{StaticResource BrushDangerHover}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource BrushDangerHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#EFAAAA"/>
-                                <Setter Property="BorderBrush" Value="#EFAAAA"/>
+                                <Setter Property="Background" Value="{StaticResource BrushDangerPressed}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource BrushDangerPressed}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -268,7 +268,7 @@
                             </StackPanel>
 
                             <!-- Separator -->
-                            <Border Height="1" Background="#E5E7EB" Margin="0,4,0,20"/>
+                            <Border Height="1" Background="{StaticResource BrushSurfaceDivider}" Margin="0,4,0,20"/>
 
                             <!-- Network Speed Format -->
                             <StackPanel>

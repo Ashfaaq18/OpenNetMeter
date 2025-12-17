@@ -30,6 +30,8 @@
     <Color x:Key="ColorSurfaceLightAlt">#f1f1f1</Color>
     <Color x:Key="ColorSurfaceLightAlt2">#f8f8f8</Color>
     <Color x:Key="ColorSurfaceLightContext">#f0f0f0</Color>
+    <Color x:Key="ColorSurfaceLightHover">#F9FAFB</Color>
+    <Color x:Key="ColorSurfaceDivider">#E5E7EB</Color>
     <Color x:Key="ColorSurfaceDark">#151515</Color>
     <Color x:Key="ColorSurfaceDarkAlt">#252525</Color>
     <Color x:Key="ColorSurfaceDark2">#1f1f1f</Color>
@@ -63,6 +65,12 @@
     <Color x:Key="ColorAccentGreenAlt4">#3b695c</Color>
     <Color x:Key="ColorAccentOrange">#FFA37E</Color>
 
+    <!-- Semantic -->
+    <Color x:Key="ColorDanger">#EF4444</Color>
+    <Color x:Key="ColorDangerHover">#EF8888</Color>
+    <Color x:Key="ColorDangerPressed">#EFAAAA</Color>
+    <Color x:Key="ColorDangerStrong">#E81123</Color>
+
     <!-- Borders / outlines -->
     <Color x:Key="ColorBorderNeutral">#4F5050</Color>
     <Color x:Key="ColorBorderNeutralDark">#616161</Color>
@@ -82,6 +90,15 @@
     <Color x:Key="ColorHeaderDeep">#111827</Color>
     <Color x:Key="ColorDownloadAccent">LightSeaGreen</Color>
     <Color x:Key="ColorUploadAccent">LightSalmon</Color>
+    <Color x:Key="ColorDownloadBadgeOverlay">#1A22C55E</Color>
+    <Color x:Key="ColorUploadBadgeOverlay">#1AF97316</Color>
+    <Color x:Key="ColorWindowOverlay">#01000000</Color>
+    <Color x:Key="ColorPinHover">#30000000</Color>
+    <Color x:Key="ColorPinActive">#40000000</Color>
+    <Color x:Key="ColorChartPrimaryStart">#5DD3CD</Color>
+    <Color x:Key="ColorChartPrimaryEnd">#20B2AA</Color>
+    <Color x:Key="ColorChartAccentStart">#FFB899</Color>
+    <Color x:Key="ColorChartAccentEnd">#FFA07A</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="BrushWhite" Color="{StaticResource ColorWhite}"/>
@@ -110,6 +127,8 @@
     <SolidColorBrush x:Key="BrushSurfaceLightAlt" Color="{StaticResource ColorSurfaceLightAlt}"/>
     <SolidColorBrush x:Key="BrushSurfaceLightAlt2" Color="{StaticResource ColorSurfaceLightAlt2}"/>
     <SolidColorBrush x:Key="BrushSurfaceLightContext" Color="{StaticResource ColorSurfaceLightContext}"/>
+    <SolidColorBrush x:Key="BrushSurfaceHover" Color="{StaticResource ColorSurfaceLightHover}"/>
+    <SolidColorBrush x:Key="BrushSurfaceDivider" Color="{StaticResource ColorSurfaceDivider}"/>
     <SolidColorBrush x:Key="BrushSurfaceDark" Color="{StaticResource ColorSurfaceDark}"/>
     <SolidColorBrush x:Key="BrushSurfaceDarkAlt" Color="{StaticResource ColorSurfaceDarkAlt}"/>
     <SolidColorBrush x:Key="BrushSurfaceDark2" Color="{StaticResource ColorSurfaceDark2}"/>
@@ -142,6 +161,11 @@
     <SolidColorBrush x:Key="BrushAccentGreenAlt4" Color="{StaticResource ColorAccentGreenAlt4}"/>
     <SolidColorBrush x:Key="BrushAccentOrange" Color="{StaticResource ColorAccentOrange}"/>
 
+    <SolidColorBrush x:Key="BrushDanger" Color="{StaticResource ColorDanger}"/>
+    <SolidColorBrush x:Key="BrushDangerHover" Color="{StaticResource ColorDangerHover}"/>
+    <SolidColorBrush x:Key="BrushDangerPressed" Color="{StaticResource ColorDangerPressed}"/>
+    <SolidColorBrush x:Key="BrushDangerStrong" Color="{StaticResource ColorDangerStrong}"/>
+
     <SolidColorBrush x:Key="BrushBorderNeutral" Color="{StaticResource ColorBorderNeutral}"/>
     <SolidColorBrush x:Key="BrushBorderNeutralDark" Color="{StaticResource ColorBorderNeutralDark}"/>
     <SolidColorBrush x:Key="BrushBorderLight" Color="{StaticResource ColorBorderLight}"/>
@@ -158,4 +182,19 @@
     <SolidColorBrush x:Key="BrushHeaderDeep" Color="{StaticResource ColorHeaderDeep}"/>
     <SolidColorBrush x:Key="BrushDownloadAccent" Color="{StaticResource ColorDownloadAccent}"/>
     <SolidColorBrush x:Key="BrushUploadAccent" Color="{StaticResource ColorUploadAccent}"/>
+    <SolidColorBrush x:Key="BrushDownloadBadgeOverlay" Color="{StaticResource ColorDownloadBadgeOverlay}"/>
+    <SolidColorBrush x:Key="BrushUploadBadgeOverlay" Color="{StaticResource ColorUploadBadgeOverlay}"/>
+    <SolidColorBrush x:Key="BrushWindowOverlay" Color="{StaticResource ColorWindowOverlay}"/>
+    <SolidColorBrush x:Key="BrushPinHover" Color="{StaticResource ColorPinHover}"/>
+    <SolidColorBrush x:Key="BrushPinActive" Color="{StaticResource ColorPinActive}"/>
+
+    <!-- Gradients -->
+    <LinearGradientBrush x:Key="BrushChartPrimaryGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource ColorChartPrimaryStart}" Offset="0"/>
+        <GradientStop Color="{StaticResource ColorChartPrimaryEnd}" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="BrushChartAccentGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource ColorChartAccentStart}" Offset="0"/>
+        <GradientStop Color="{StaticResource ColorChartAccentEnd}" Offset="1"/>
+    </LinearGradientBrush>
 </ResourceDictionary>
