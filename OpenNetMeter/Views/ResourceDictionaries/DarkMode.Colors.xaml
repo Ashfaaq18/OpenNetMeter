@@ -70,7 +70,16 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
+    <Style x:Key="Fill1" TargetType="Path">
+        <Setter Property="Fill" Value="Black"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path=DarkMode}" Value="True">
+                <Setter Property="Fill" Value="White"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="FontColor1">
         <Setter Property="Control.Foreground" Value="{StaticResource BrushBlack}"></Setter>
         <Style.Triggers>

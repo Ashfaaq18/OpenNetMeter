@@ -16,7 +16,7 @@
         <Style x:Key="DataRowDownload" TargetType="Border">
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="Background" Value="LightSeaGreen"/>
+            <Setter Property="Background" Value="{StaticResource BrushAccentGreenDark}"/>
         </Style>
 
         <Style x:Key="DataRowUpload" TargetType="Border">
@@ -28,7 +28,7 @@
         <Style x:Key="DataRowAccentDownload" TargetType="Border">
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="Background" Value="LightSalmon"/>
+            <Setter Property="Background" Value="{StaticResource BrushAccentGreenDark}"/>
         </Style>
 
         <Style x:Key="DataRowAccentUpload" TargetType="Border">
@@ -192,20 +192,14 @@
                 </Grid.RowDefinitions>
 
                 <!-- Table Header -->
-                <Border Grid.Row="0" Padding="12,10" CornerRadius="12,12,0,0">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                            <GradientStop Color="#20B2AA" Offset="0"/>
-                            <GradientStop Color="#1A9A94" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Grid>
+                <Border Grid.Row="0" Padding="12,4" CornerRadius="12,12,0,0" Style="{StaticResource CardHeaderStyle}" BorderBrush="Black" BorderThickness="0,0,0,0.5">
+                    <Grid >
                         <StackPanel Orientation="Horizontal">
                             <Path Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" 
-                                  Fill="White" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
-                            <TextBlock Text="Active Processes" Foreground="White" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                  Style="{StaticResource Fill1}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                            <TextBlock Text="Active Processes" Style="{StaticResource FontColor1}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
                         </StackPanel>
-                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" FontSize="10" Opacity="0.85">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource FontColor1}" FontSize="10" Opacity="0.85">
                             <Run Text="{Binding MyProcesses.Count, Mode=OneWay, FallbackValue=0}"/>
                             <Run Text="processes"/>
                         </TextBlock>
