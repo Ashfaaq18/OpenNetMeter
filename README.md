@@ -29,17 +29,17 @@ This program provides the following features,
 
 ### Summary tab
 
-<img width="1991" height="1074" alt="uiwithlabels drawio" src="https://github.com/user-attachments/assets/f5d3e9dd-c64a-4ba4-979c-4e00786c27f6" />
+<img src="https://github.com/user-attachments/assets/f5d3e9dd-c64a-4ba4-979c-4e00786c27f6" alt="OpenNetMeter summary tab with labels" width="960" />
 
 ### History tab
 
-<img width="1973" height="1052" alt="uiwithlabelsHistory drawio" src="https://github.com/user-attachments/assets/5495baa4-4e03-4ba2-b5c2-5cb6c98be9f4" />
+<img src="https://github.com/user-attachments/assets/5495baa4-4e03-4ba2-b5c2-5cb6c98be9f4" alt="OpenNetMeter history tab with labels" width="960" />
 
 ### Darkmode
 
-<img width="1967" height="1058" alt="uiwithlabelsdarkmode drawio(1)" src="https://github.com/user-attachments/assets/4345217a-aac1-4543-afcf-f7f6b53cdb12" />
+<img src="https://github.com/user-attachments/assets/4345217a-aac1-4543-afcf-f7f6b53cdb12" alt="OpenNetMeter dark mode view" width="960" />
 
 ### Network speed mini widget
-![OpenNetMeterMiniWidget-0 14 0-ezgif com-optimize](https://github.com/user-attachments/assets/91e587a6-cdec-4b1a-8af7-9500d0dbf8b3)
+<img src="https://github.com/user-attachments/assets/91e587a6-cdec-4b1a-8af7-9500d0dbf8b3" alt="OpenNetMeter mini widget demo" width="420" />
 
 
