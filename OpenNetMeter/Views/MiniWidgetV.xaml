@@ -1,4 +1,4 @@
-﻿<Window x:Class="OpenNetMeter.Views.MiniWidgetV"
+<Window x:Class="OpenNetMeter.Views.MiniWidgetV"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -15,7 +15,7 @@
         LocationChanged="Window_LocationChanged"
         Width="{Binding Width, Mode=TwoWay}"
         Height="{Binding Height, Mode=TwoWay}"
-        Background="#01000000"
+        Background="{StaticResource BrushWindowOverlay}"
         ShowInTaskbar="False">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />
@@ -28,9 +28,9 @@
     <Border Style="{StaticResource BorderColor}">
         <Grid Background="{Binding BackgroundColor}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -42,22 +42,114 @@
                 </ContextMenu>
             </Grid.ContextMenu>
 
+            <!-- Download Section -->
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" 
+                       Margin="2,2">
+                <!-- Download Icon Background -->
+                <Border Width="20" Height="24" 
+                       Background="{StaticResource BrushDownloadBadgeOverlay}" 
+                       CornerRadius="4"
+                       Margin="0,0,6,0"
+                       VerticalAlignment="Center">
+                    <TextBlock Text="?" 
+                              FontSize="16" 
+                              FontWeight="Bold"
+                              Foreground="{StaticResource BrushDownloadAccent}"
+                              HorizontalAlignment="Center" 
+                              VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Download Speed and Total -->
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <!-- Download Speed -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="?" FontSize="11" 
+                                  Foreground="{StaticResource BrushDownloadAccent}" 
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"
+                                  Style="{StaticResource FontColor1}"/>
+                        <TextBlock FontSize="11" 
+                                  Style="{StaticResource FontColor1}" 
+                                  Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}"
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Download Total -->
+                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                        <TextBlock Text="Total:" FontSize="11" 
+                                  Foreground="{StaticResource BrushDownloadAccent}"
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"/>
+                        <TextBlock FontSize="11" 
+                                  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"
+                                  Style="{StaticResource FontColor1}" 
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Upload Section -->
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" 
+                       HorizontalAlignment="Left" VerticalAlignment="Center" 
+                       Margin="2,2">
+                <!-- Upload Icon Background -->
+                <Border Width="20" Height="24" 
+                       Background="{StaticResource BrushUploadBadgeOverlay}" 
+                       CornerRadius="4"
+                       Margin="0,0,6,0"
+                       VerticalAlignment="Center">
+                    <TextBlock Text="?" 
+                              FontSize="16" 
+                              FontWeight="Bold"
+                              Foreground="{StaticResource BrushUploadAccent}"
+                              HorizontalAlignment="Center" 
+                              VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Upload Speed and Total -->
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <!-- Upload Speed -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="?" FontSize="11" 
+                                  Foreground="{StaticResource BrushUploadAccent}" 
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"
+                                  Style="{StaticResource FontColor1}"/>
+                        <TextBlock FontSize="11" 
+                                  Style="{StaticResource FontColor1}" 
+                                  Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Upload Total -->
+                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                        <TextBlock Text="Total:" FontSize="11" 
+                                  Foreground="{StaticResource BrushUploadAccent}"
+                                  Margin="0,0,3,0"
+                                  VerticalAlignment="Center"/>
+                        <TextBlock FontSize="11"
+                                  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"
+                                  Style="{StaticResource FontColor1}" 
+                                  VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+            
             <!-- Pin Button -->
             <ToggleButton Grid.Row="0"
-                  Grid.Column="0"
-                  Grid.RowSpan="2"
-                  Width="28"
-                  Height="30"
-                  Margin="2"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Center"
-                  IsChecked="{Binding IsPinned, Mode=TwoWay}">
+                  Grid.Column="2"
+                  Width="18"
+                  Height="18"
+                  IsChecked="{Binding IsPinned, Mode=TwoWay}"
+                          Margin="2"
+                          VerticalAlignment="Top"
+                  >
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton" BasedOn="{StaticResource FontColor1}">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderBrush" Value="{Binding RelativeSource={RelativeSource Self}, Path=Foreground}"/>
                         <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="Padding" Value="0"/>
                         <Setter Property="Cursor" Value="Hand"/>
                         <Setter Property="ToolTipService.ToolTip" Value="Pin"/>
                         <Setter Property="Template">
@@ -67,12 +159,11 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="3"
-                                    Padding="6">
+                                    CornerRadius="2"
+                                    Padding="1">
                                         <Image x:Name="PinStateImage"
-                                       Width="14"
-                                       Height="14"
-                                       Stretch="Uniform">
+                                       Width="12"
+                                       Height="12">
                                             <Image.Style>
                                                 <Style TargetType="Image">
                                                     <Setter Property="Source" Value="/OpenNetMeter;component/Resources/pin/pin.png"/>
@@ -100,10 +191,10 @@
                         </Setter>
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#30000000"/>
+                                <Setter Property="Background" Value="{StaticResource BrushPinHover}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Background" Value="#40000000"/>
+                                <Setter Property="Background" Value="{StaticResource BrushPinActive}"/>
                                 <Setter Property="ToolTipService.ToolTip" Value="Unpin"/>
                             </Trigger>
                         </Style.Triggers>
@@ -111,99 +202,8 @@
                 </ToggleButton.Style>
             </ToggleButton>
 
-            <!-- Download Section -->
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" 
-                       Margin="2,2">
-                <!-- Download Icon Background -->
-                <Border Width="20" Height="24" 
-                       Background="#1A22C55E" 
-                       CornerRadius="4"
-                       Margin="0,0,6,0"
-                       VerticalAlignment="Center">
-                    <TextBlock Text="↓" 
-                              FontSize="16" 
-                              FontWeight="Bold"
-                              Foreground="LightSeaGreen"
-                              HorizontalAlignment="Center" 
-                              VerticalAlignment="Center"/>
-                </Border>
 
-                <!-- Download Speed and Total -->
-                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <!-- Download Speed -->
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="↓" FontSize="11" 
-                                  Foreground="LightSeaGreen" 
-                                  Margin="0,0,3,0"
-                                  VerticalAlignment="Center"
-                                  Style="{StaticResource FontColor1}"/>
-                        <TextBlock FontSize="11" 
-                                  Style="{StaticResource FontColor1}" 
-                                  Text="{Binding DownloadSpeed, Converter={StaticResource netSpeedFormatConverter}}"
-                                  VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Download Total -->
-                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
-                        <TextBlock Text="Total:" FontSize="11" 
-                                  Foreground="LightSeaGreen"
-                                  Margin="0,0,3,0"
-                                  VerticalAlignment="Center"/>
-                        <TextBlock FontSize="11" 
-                                  Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}"
-                                  Style="{StaticResource FontColor1}" 
-                                  VerticalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
-
-            <!-- Upload Section -->
-            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" 
-                       HorizontalAlignment="Left" VerticalAlignment="Center" 
-                       Margin="2,2">
-                <!-- Upload Icon Background -->
-                <Border Width="20" Height="24" 
-                       Background="#1AF97316" 
-                       CornerRadius="4"
-                       Margin="0,0,6,0"
-                       VerticalAlignment="Center">
-                    <TextBlock Text="↑" 
-                              FontSize="16" 
-                              FontWeight="Bold"
-                              Foreground="LightSalmon"
-                              HorizontalAlignment="Center" 
-                              VerticalAlignment="Center"/>
-                </Border>
-
-                <!-- Upload Speed and Total -->
-                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <!-- Upload Speed -->
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="↑" FontSize="11" 
-                                  Foreground="LightSalmon" 
-                                  Margin="0,0,3,0"
-                                  VerticalAlignment="Center"
-                                  Style="{StaticResource FontColor1}"/>
-                        <TextBlock FontSize="11" 
-                                  Style="{StaticResource FontColor1}" 
-                                  Text="{Binding UploadSpeed, Converter={StaticResource netSpeedFormatConverter}}"
-                                  VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Upload Total -->
-                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
-                        <TextBlock Text="Total:" FontSize="11" 
-                                  Foreground="LightSalmon"
-                                  Margin="0,0,3,0"
-                                  VerticalAlignment="Center"/>
-                        <TextBlock FontSize="11"
-                                  Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}"
-                                  Style="{StaticResource FontColor1}" 
-                                  VerticalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
         </Grid>
     </Border>
 </Window>
+

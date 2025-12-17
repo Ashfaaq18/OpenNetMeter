@@ -13,7 +13,6 @@ namespace OpenNetMeter.ViewModels
     public class MainWindowVM : INotifyPropertyChanged, IDisposable
     {
         private readonly DataUsageSummaryVM dusvm;
-        private readonly DataUsageDetailedVM dudvm;
         private readonly DataUsageHistoryVM duhvm;
         private readonly MiniWidgetVM mwvm;
         private readonly SettingsVM svm;
@@ -64,7 +63,6 @@ namespace OpenNetMeter.ViewModels
         private enum TabPage
         {
             Summary,
-            Detailed,
             History,
             Settings
         }
@@ -83,7 +81,6 @@ namespace OpenNetMeter.ViewModels
             svm.PropertyChanged += Svm_PropertyChanged;
             dusvm = new DataUsageSummaryVM();
             duhvm = new DataUsageHistoryVM();
-            dudvm = new DataUsageDetailedVM();
 
             netProc = new NetworkProcess();
             netProc.PropertyChanged += NetProc_PropertyChanged;
@@ -99,9 +96,6 @@ namespace OpenNetMeter.ViewModels
             {
                 case ((int)TabPage.Summary):
                     SelectedViewModel = dusvm;
-                    break;
-                case ((int)TabPage.Detailed):
-                    SelectedViewModel = dudvm;
                     break;
                 case ((int)TabPage.History):
                     SelectedViewModel = duhvm;
@@ -198,11 +192,13 @@ namespace OpenNetMeter.ViewModels
 
             dusvm.TodayDownloadData = initSinceDateTotalDownloadData + sessionDownloadDelta;
             dusvm.TodayUploadData = initSinceDateTotalUploadData + sessionUploadDelta;
+
+            UpdateMyProcessTable();
         }
 
-        private void UpdateDetailedTab()
+        private void UpdateMyProcessTable()
         {
-            if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dudvm.MyProcesses != null && netProc.PushToDBBuffer != null)
+            if (netProc.MyProcesses != null && netProc.MyProcessesBuffer != null && dusvm.MyProcesses != null && netProc.PushToDBBuffer != null)
             {
                 using (ApplicationDB dB = new ApplicationDB(netProc.AdapterName))
                 {
@@ -222,10 +218,10 @@ namespace OpenNetMeter.ViewModels
                             date1 = date2;
                         }
 
-                        foreach (KeyValuePair<string, MyProcess_Big> app in dudvm.MyProcesses)
+                        foreach (KeyValuePair<string, MyProcess_Big> app in dusvm.MyProcesses)
                         {
-                            dudvm.MyProcesses[app.Key].CurrentDataRecv = 0;
-                            dudvm.MyProcesses[app.Key].CurrentDataSend = 0;
+                            dusvm.MyProcesses[app.Key].CurrentDataRecv = 0;
+                            dusvm.MyProcesses[app.Key].CurrentDataSend = 0;
                         }
 
                         netProc.IsBufferTime = true;
@@ -240,24 +236,24 @@ namespace OpenNetMeter.ViewModels
                                 {
                                     Debug.WriteLine($"Both zero {app.Key}");
                                 }
-                                dudvm.MyProcesses[app.Key].CurrentDataRecv = app.Value!.CurrentDataRecv;
-                                dudvm.MyProcesses[app.Key].CurrentDataSend = app.Value!.CurrentDataSend;
-                                dudvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
-                                dudvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
+                                dusvm.MyProcesses[app.Key].CurrentDataRecv = app.Value!.CurrentDataRecv;
+                                dusvm.MyProcesses[app.Key].CurrentDataSend = app.Value!.CurrentDataSend;
+                                dusvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
+                                dusvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
 
                                 /*
-                                Debug.WriteLine($"CurrentDataRecv:  {dudvm.MyProcesses[app.Key].CurrentDataRecv} , "    +
-                                                $"CurrentDataSend:  {dudvm.MyProcesses[app.Key].CurrentDataSend} , "    +
-                                                $"TotalDataRecv:    {dudvm.MyProcesses[app.Key].TotalDataRecv} , "      +
-                                                $"TotalDataSend:    {dudvm.MyProcesses[app.Key].TotalDataSend} , "      );
+                                Debug.WriteLine($"CurrentDataRecv:  {dusvm.MyProcesses[app.Key].CurrentDataRecv} , "    +
+                                                $"CurrentDataSend:  {dusvm.MyProcesses[app.Key].CurrentDataSend} , "    +
+                                                $"TotalDataRecv:    {dusvm.MyProcesses[app.Key].TotalDataRecv} , "      +
+                                                $"TotalDataSend:    {dusvm.MyProcesses[app.Key].TotalDataSend} , "      );
                                 */
 
                                 lock (netProc.PushToDBBuffer)
                                 {
                                     //push data to a buffer which will be pushed to the DB later
                                     netProc.PushToDBBuffer!.TryAdd(app.Key, new MyProcess_Small(app.Key, 0, 0));
-                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv += dudvm.MyProcesses[app.Key].CurrentDataRecv;
-                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataSend += dudvm.MyProcesses[app.Key].CurrentDataSend;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv += dusvm.MyProcesses[app.Key].CurrentDataRecv;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataSend += dusvm.MyProcesses[app.Key].CurrentDataSend;
                                 }
                             }
 
@@ -276,17 +272,17 @@ namespace OpenNetMeter.ViewModels
                                 {
                                     Debug.WriteLine($"Both zero {app.Key}");
                                 }
-                                dudvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
-                                dudvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
-                                dudvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
-                                dudvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
+                                dusvm.MyProcesses[app.Key].CurrentDataRecv += app.Value!.CurrentDataRecv;
+                                dusvm.MyProcesses[app.Key].CurrentDataSend += app.Value!.CurrentDataSend;
+                                dusvm.MyProcesses[app.Key].TotalDataRecv += app.Value!.CurrentDataRecv;
+                                dusvm.MyProcesses[app.Key].TotalDataSend += app.Value!.CurrentDataSend;
 
                                 lock (netProc.PushToDBBuffer)
                                 {
                                     //push data to a buffer which will be pushed to the DB later
                                     netProc.PushToDBBuffer!.TryAdd(app.Key, new MyProcess_Small(app.Key, 0, 0));
-                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dudvm.MyProcesses[app.Key].TotalDataRecv;
-                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dudvm.MyProcesses[app.Key].TotalDataSend;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dusvm.MyProcesses[app.Key].TotalDataRecv;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dusvm.MyProcesses[app.Key].TotalDataSend;
                                 }
                             }
 
@@ -301,11 +297,11 @@ namespace OpenNetMeter.ViewModels
         {
             var icon = ProcessIconCache.GetIcon(processName);
 
-            if (!dudvm.MyProcesses.TryAdd(processName, new MyProcess_Big(processName, 0, 0, 0, 0, icon)))
+            if (!dusvm.MyProcesses.TryAdd(processName, new MyProcess_Big(processName, 0, 0, 0, 0, icon)))
             {
-                if (dudvm.MyProcesses[processName].Icon == null)
+                if (dusvm.MyProcesses[processName].Icon == null)
                 {
-                    dudvm.MyProcesses[processName].Icon = icon;
+                    dusvm.MyProcesses[processName].Icon = icon;
                 }
             }
         }
@@ -319,8 +315,6 @@ namespace OpenNetMeter.ViewModels
             UpdateMiniWidgetValues();
 
             UpdateSummaryTab();
-
-            UpdateDetailedTab();
         }
 
         private void NetProc_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -336,11 +330,11 @@ namespace OpenNetMeter.ViewModels
                     if (netProc.IsNetworkOnline == "Disconnected")
                     {
                         NetworkStatus = "Disconnected";
-                        if (dudvm.MyProcesses.Count() > 0)
+                        if (dusvm.MyProcesses.Count() > 0)
                         {
-                            foreach (var row in dudvm.MyProcesses.ToList())
+                            foreach (var row in dusvm.MyProcesses.ToList())
                             {
-                                dudvm.MyProcesses.Remove(row.Key);
+                                dusvm.MyProcesses.Remove(row.Key);
                             }
                         }
                         dusvm.Graph.DrawClear();
@@ -383,15 +377,6 @@ namespace OpenNetMeter.ViewModels
                     {
                         SelectedViewModel = dusvm;
                         TabBtnToggle = ((int)TabPage.Summary);
-                        SettingsManager.Current.LaunchPage = TabBtnToggle;
-                        SettingsManager.Save();
-                    }
-                    break;
-                case "detailed":
-                    if (TabBtnToggle != ((int)TabPage.Detailed))
-                    {
-                        SelectedViewModel = dudvm;
-                        TabBtnToggle = ((int)TabPage.Detailed);
                         SettingsManager.Current.LaunchPage = TabBtnToggle;
                         SettingsManager.Save();
                     }

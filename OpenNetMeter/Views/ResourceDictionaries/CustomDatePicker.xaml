@@ -1,12 +1,16 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:settings="clr-namespace:OpenNetMeter.Properties">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Theme.Colors.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 
     <!-- Modern DatePicker Button Style -->
     <Style x:Key="ModernDropDownButtonStyle" TargetType="Button">
         <!-- light mode defaults -->
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#333333"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderStrong}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="8,4"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -30,12 +34,12 @@
                             VerticalAlignment="Center">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#333333"/>
+                                        <Setter Property="Foreground" Value="{StaticResource BrushBorderStrong}"/>
                                         <Style.Triggers>
                                             <!-- Dark mode text color -->
                                             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}"
                                                      Value="True">
-                                                <Setter Property="Foreground" Value="WhiteSmoke"/>
+                                                <Setter Property="Foreground" Value="{StaticResource BrushWhiteSmoke}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -56,8 +60,8 @@
                         <!-- Dark mode background + border -->
                         <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}"
                                  Value="True">
-                            <Setter Property="Background" Value="#333333"/>
-                            <Setter Property="BorderBrush" Value="#999999"/>
+                            <Setter Property="Background" Value="{StaticResource BrushBorderStrong}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLighter}"/>
                         </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -84,7 +88,7 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="HoverBackground"
                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                       To="#FFA37E"
+                                                       To="{StaticResource ColorAccentOrange}"
                                                        Duration="0:0:0.1"/>
                                     </Storyboard>
                                 </VisualState>
@@ -92,7 +96,7 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="HoverBackground"
                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                       To="#E5E7EB"
+                                                       To="{StaticResource ColorAccentTealMuted}"
                                                        Duration="0"/>
                                     </Storyboard>
                                 </VisualState>
@@ -113,12 +117,12 @@
                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                        Duration="0">
                                             <ColorAnimation.To>
-                                                <Color>#f7bda6</Color>
+                                                <Color>{StaticResource ColorAccentPeachSelected}</Color>
                                             </ColorAnimation.To>
                                         </ColorAnimation>
                                         <ColorAnimation Storyboard.TargetName="NormalText"
                                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
-                                                       To="#1F2937"
+                                                       To="{StaticResource ColorPrimaryText}"
                                                        Duration="0"/>
                                     </Storyboard>
                                 </VisualState>
@@ -129,7 +133,7 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="NormalText"
                                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
-                                                       To="#D1D5DB"
+                                                       To="{StaticResource ColorBorderLight}"
                                                        Duration="0"/>
                                         <DoubleAnimation Storyboard.TargetName="NormalText"
                                                         Storyboard.TargetProperty="Opacity"
@@ -146,12 +150,12 @@
                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                        Duration="0">
                                             <ColorAnimation.To>
-                                                <Color>LightGray</Color>
+                                                <Color>{StaticResource ColorLightGray}</Color>
                                             </ColorAnimation.To>
                                         </ColorAnimation>
                                         <ColorAnimation Storyboard.TargetName="NormalText"
                                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
-                                                       To="#111827"
+                                                       To="{StaticResource ColorHeaderDeep}"
                                                        Duration="0"/>
                                     </Storyboard>
                                 </VisualState>
@@ -187,10 +191,10 @@
                                   VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#333333"/>
+                                    <Setter Property="Foreground" Value="{StaticResource BrushBorderStrong}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                                            <Setter Property="Foreground" Value="WhiteSmoke"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BrushWhiteSmoke}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -216,7 +220,7 @@
               Data="M14,8 L6,14 M6,14 L14,20">
                 <Path.Style>
                     <Style TargetType="Path">
-                        <Setter Property="Stroke" Value="#333333"/>
+                        <Setter Property="Stroke" Value="{StaticResource BrushBorderStrong}"/>
                         <Setter Property="StrokeThickness" Value="2.4"/>
                         <Setter Property="StrokeLineJoin" Value="Round"/>
                         <Setter Property="StrokeStartLineCap" Value="Round"/>
@@ -224,7 +228,7 @@
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}"
                                      Value="True">
-                                <Setter Property="Stroke" Value="WhiteSmoke"/>
+                                <Setter Property="Stroke" Value="{StaticResource BrushWhiteSmoke}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -233,11 +237,11 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="NavBorder" Property="Background" Value="#FFA37E"/>
+                <Setter TargetName="NavBorder" Property="Background" Value="{StaticResource BrushAccentOrange}"/>
                 <Setter TargetName="NavBorder" Property="Opacity" Value="0.3"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="NavBorder" Property="Background" Value="#FFA37E"/>
+                <Setter TargetName="NavBorder" Property="Background" Value="{StaticResource BrushAccentOrange}"/>
                 <Setter TargetName="NavBorder" Property="Opacity" Value="0.5"/>
             </Trigger>
         </ControlTemplate.Triggers>
@@ -257,7 +261,7 @@
               Data="M6,8 L14,14 M14,14 L6,20">
                 <Path.Style>
                     <Style TargetType="Path">
-                        <Setter Property="Stroke" Value="#333333"/>
+                        <Setter Property="Stroke" Value="{StaticResource BrushBorderStrong}"/>
                         <Setter Property="StrokeThickness" Value="2.4"/>
                         <Setter Property="StrokeLineJoin" Value="Round"/>
                         <Setter Property="StrokeStartLineCap" Value="Round"/>
@@ -265,7 +269,7 @@
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}"
                                      Value="True">
-                                <Setter Property="Stroke" Value="WhiteSmoke"/>
+                                <Setter Property="Stroke" Value="{StaticResource BrushWhiteSmoke}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -274,11 +278,11 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="NavBorder" Property="Background" Value="#FFA37E"/>
+                <Setter TargetName="NavBorder" Property="Background" Value="{StaticResource BrushAccentOrange}"/>
                 <Setter TargetName="NavBorder" Property="Opacity" Value="0.3"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="NavBorder" Property="Background" Value="#FFA37E"/>
+                <Setter TargetName="NavBorder" Property="Background" Value="{StaticResource BrushAccentOrange}"/>
                 <Setter TargetName="NavBorder" Property="Opacity" Value="0.5"/>
             </Trigger>
         </ControlTemplate.Triggers>
@@ -296,10 +300,10 @@
                       Margin="8,0">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="#333333"/>
+                        <Setter Property="Foreground" Value="{StaticResource BrushBorderStrong}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                                <Setter Property="Foreground" Value="WhiteSmoke"/>
+                                <Setter Property="Foreground" Value="{StaticResource BrushWhiteSmoke}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -309,7 +313,7 @@
                 <Style TargetType="Border">
                     <Style.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FFFFFF20"/>
+                            <Setter Property="Background" Value="{StaticResource BrushTransparentWhite}"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -333,10 +337,10 @@
                                       Margin="0,8,0,4">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="#666666"/>
+                                        <Setter Property="Foreground" Value="{StaticResource BrushMutedText}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                                                <Setter Property="Foreground" Value="#AAAAAA"/>
+                                                <Setter Property="Foreground" Value="{StaticResource BrushMutedTextAlt}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -348,14 +352,14 @@
                     <Border Padding="0">
                         <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="Background" Value="White"/>
-                                <Setter Property="BorderBrush" Value="#333333"/>
+                                <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource BrushBorderStrong}"/>
                                 <Setter Property="BorderThickness" Value="1"/>
                                 <Setter Property="CornerRadius" Value="8"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                                        <Setter Property="Background" Value="#333333"/>
-                                        <Setter Property="BorderBrush" Value="#999999"/>
+                                        <Setter Property="Background" Value="{StaticResource BrushBorderStrong}"/>
+                                        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLighter}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -375,8 +379,8 @@
                                         <Setter Property="Background">
                                             <Setter.Value>
                                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                    <GradientStop Color="#b6e3d7" Offset="0"/>
-                                                    <GradientStop Color="#a9d9cc" Offset="1"/>
+                                                    <GradientStop Color="{StaticResource ColorAccentGreenAlt2}" Offset="0"/>
+                                                    <GradientStop Color="{StaticResource ColorAccentGreenAlt1}" Offset="1"/>
                                                 </LinearGradientBrush>
                                             </Setter.Value>
                                         </Setter>
@@ -385,8 +389,8 @@
                                                 <Setter Property="Background">
                                                     <Setter.Value>
                                                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                            <GradientStop Color="#6da395" Offset="0"/>
-                                                            <GradientStop Color="#3b695c" Offset="1"/>
+                                                            <GradientStop Color="{StaticResource ColorAccentGreenAlt3}" Offset="0"/>
+                                                            <GradientStop Color="{StaticResource ColorAccentGreenAlt4}" Offset="1"/>
                                                         </LinearGradientBrush>
                                                     </Setter.Value>
                                                 </Setter>
@@ -493,8 +497,8 @@
     <Style TargetType="{x:Type Calendar}" x:Key="ModernCalendar">
         <Setter Property="CalendarDayButtonStyle" Value="{StaticResource ModernCalendarDayButtonStyle}"/>
         <Setter Property="CalendarItemStyle" Value="{StaticResource ModernCalendarItemStyle}"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#333333"/>
+        <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderStrong}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -506,7 +510,7 @@
                             <DropShadowEffect BlurRadius="20"
                                             ShadowDepth="4"
                                             Opacity="0.15"
-                                            Color="Black"/>
+                                            Color="{StaticResource ColorShadowDefault}"/>
                         </Border.Effect>
                         <CalendarItem x:Name="PART_CalendarItem"
                                      BorderBrush="{TemplateBinding BorderBrush}"
@@ -519,8 +523,8 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="Background" Value="#333333"/>
-                <Setter Property="BorderBrush" Value="#999999"/>
+                <Setter Property="Background" Value="{StaticResource BrushBorderStrong}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLighter}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -543,10 +547,10 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="True">
-                <Setter Property="Foreground" Value="WhiteSmoke"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushWhiteSmoke}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Source={x:Static settings:SettingsManager.Current}, Path=DarkMode}" Value="False">
-                <Setter Property="Foreground" Value="#333333"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushBorderStrong}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

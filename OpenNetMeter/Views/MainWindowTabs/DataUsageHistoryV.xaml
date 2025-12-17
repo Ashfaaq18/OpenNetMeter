@@ -31,7 +31,7 @@
                 <Button.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="4"/>
-                        <Setter Property="BorderBrush" Value="#888888"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderEmphasis}"/>
                         <Setter Property="BorderThickness" Value="1"/>
                     </Style>
                 </Button.Resources>

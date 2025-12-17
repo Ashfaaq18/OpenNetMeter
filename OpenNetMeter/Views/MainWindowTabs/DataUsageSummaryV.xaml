@@ -7,205 +7,322 @@
              xmlns:v="clr-namespace:OpenNetMeter.Views"
              mc:Ignorable="d" 
              UseLayoutRounding="True"
-             d:DesignHeight="400" d:DesignWidth="650">
-    <!-- UseLayoutRounding="True" <fixes blurry text/> -->
+             d:DesignHeight="600" d:DesignWidth="800">
+
     <UserControl.Resources>
         <v:UnitConverterBytes x:Key="converterBytes"/>
     </UserControl.Resources>
 
-    <Grid>
-        <Grid Style="{StaticResource BackgroundColor2}">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180"/>
+            <ColumnDefinition Width="12"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Column: Data Usage Cards + Activity Header (L-shape top) -->
+        <Grid Grid.Row="0" Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="16"/>
-                <RowDefinition Height="140"/>
-                <RowDefinition Height="16"/>
-                <RowDefinition/>
-                <RowDefinition Height="16"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="24"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition/>
-                <ColumnDefinition  Width="24"/>
-            </Grid.ColumnDefinitions>
+            <!-- Current Session Card -->
+            <Border Grid.Row="0" Style="{StaticResource ModernCard}" Padding="10">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Style="{StaticResource DataRowAccentDownload}">
+                            <Path Data="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" 
+                                  Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform"/>
+                        </Border>
+                        <TextBlock Text="Current Session" FontSize="11" FontWeight="SemiBold" Style="{StaticResource FontColor1}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </StackPanel>
 
-            <Border Style="{StaticResource BorderStyle1}" Grid.Row="1" Grid.Column="1">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1.4*"/>
-                        <RowDefinition Height="2*"/>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource DataRowAccentDownload}" Margin="0,0,0,4">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="DL" Foreground="{StaticResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes}}" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
 
-                    <TextBlock Grid.ColumnSpan="4"  Text="Current session data usage" VerticalAlignment="Center" FontSize="14" Margin="20 0" Padding="0,10,0,0" Style="{StaticResource FontColor2}"/>
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StaticResource ResourceKey="Download_Icon" />
-                            <TextBlock  FontSize="20" x:Name="downloadData" Text="{Binding CurrentSessionDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StaticResource ResourceKey="Upload_Icon" />
-                            <TextBlock  Grid.Column="1"  FontSize="20" x:Name="uploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
-                        </StackPanel>
-                    </Grid>
-                </Grid>
-
+                    <Border Style="{StaticResource DataRowAccentUpload}">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z" Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="UL" Foreground="{StaticResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding CurrentSessionUploadData, Converter={StaticResource converterBytes}}" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
             </Border>
 
-            <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource BorderStyle1}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1.4*"/>
-                        <RowDefinition Height="2*"/>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.ColumnSpan="4" Margin="20 0">
-                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" >
-                            <TextBlock Text="Data usage from" TextWrapping="WrapWithOverflow" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
-                            <DatePicker Grid.Column="1" FontSize="12" MaxWidth="100" HorizontalAlignment="Left" Margin="4,10,4,0" VerticalAlignment="Center" Style="{StaticResource ModernDatePicker}" DisplayDateStart="{Binding DateMin, Mode=OneWay}" DisplayDateEnd="{Binding DateMax, Mode=OneWay}" SelectedDate="{Binding SinceDate}"/>
-                            <TextBlock Text="to now" TextWrapping="WrapWithOverflow" Padding="0,10,0,0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource FontColor2}"/>
+            <!-- Data Usage From Card -->
+            <Border Grid.Row="2" Style="{StaticResource ModernCard}" Padding="10">
+                <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource DataRowAccentUpload}">
+                                <Path Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z" 
+                                      Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="Usage From" FontSize="11" FontWeight="SemiBold" Style="{StaticResource FontColor1}" VerticalAlignment="Center" Margin="6,0,0,0"/>
                         </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="1" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StaticResource ResourceKey="Download_Icon" />
-                            <TextBlock  FontSize="20" x:Name="TodayDownloadData" Text="{Binding TodayDownloadData, Converter={StaticResource converterBytes} }" Style="{StaticResource FontColor1}"/>
-                        </StackPanel>
 
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StaticResource ResourceKey="Upload_Icon" />
-                            <TextBlock  Grid.Column="1"  FontSize="20" x:Name="TodayUploadData" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding TodayUploadData, Converter={StaticResource converterBytes}}" Style="{StaticResource FontColor1}"/>
-                        </StackPanel>
-                    </Grid>
-                </Grid>
+                    <DatePicker HorizontalAlignment="Stretch" Margin="0,0,0,8"
+                                Style="{StaticResource ModernDatePicker}"
+                                DisplayDateStart="{Binding DateMin, Mode=OneWay}" 
+                                DisplayDateEnd="{Binding DateMax, Mode=OneWay}" 
+                                SelectedDate="{Binding SinceDate}"/>
+
+                    <Border Style="{StaticResource DataRowAccentDownload}" Margin="0,0,0,4">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="DL" Foreground="{StaticResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding TodayDownloadData, Converter={StaticResource converterBytes}}" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DataRowAccentUpload}">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z" Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                                <TextBlock Text="UL" Foreground="{StaticResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding TodayUploadData, Converter={StaticResource converterBytes}}" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
             </Border>
 
-
-            <Border Grid.Row="3"  Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource BorderStyle1}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
-                        <RowDefinition />
-                        <RowDefinition Height="15"/>
-                    </Grid.RowDefinitions>
-                    <Grid>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15,0">
-                            <TextBlock Text="Download" FontSize="11" VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor1}"/>
-                            <Label Content="" Background="LightSeaGreen" Width="50" Height="4"/>
-                            <TextBlock Text="Upload" FontSize="11"  VerticalAlignment="Center" Padding="5,0" Style="{StaticResource FontColor1}"/>
-                            <Label Content="" Background="LightSalmon" Width="50" Height="4"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid Grid.Row="1" x:Name="GraphGrid" SizeChanged="Graph_SizeChanged">
-
-                        <ItemsControl ItemsSource="{Binding Graph.XLines}" >
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Line x:Name="GridXlines" X1="{Binding From.X}" Y1="{Binding From.Y}"
-                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphXYLines}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <ItemsControl ItemsSource="{Binding Graph.YLines}" >
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Line x:Name="GridYlines" X1="{Binding From.X}" Y1="{Binding From.Y}"
-                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphXYLines}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <ItemsControl ItemsSource="{Binding Graph.Borders}" >
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Line x:Name="GridBorder" X1="{Binding From.X}" Y1="{Binding From.Y}"
-                                            X2="{Binding To.X}" Y2="{Binding To.Y}"  StrokeThickness="1" Style="{StaticResource GraphBorder}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <ItemsControl ItemsSource="{Binding Graph.UploadLines}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Line x:Name="UploadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
-                                            X2="{Binding To.X}" Y2="{Binding To.Y}"
-                                            Stroke="LightSalmon" StrokeThickness="3" StrokeEndLineCap="Round" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <ItemsControl ItemsSource="{Binding Graph.DownloadLines}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Line x:Name="DownloadPath" X1="{Binding From.X}" Y1="{Binding From.Y}"
-                                            X2="{Binding To.X}" Y2="{Binding To.Y}"
-                                            Stroke="LightSeaGreen" StrokeThickness="3" StrokeEndLineCap="Round" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <ItemsControl ItemsSource="{Binding Graph.Xlabels}" Style="{StaticResource GraphLabels}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-
-                        <ItemsControl ItemsSource="{Binding Graph.Ylabels}" Style="{StaticResource GraphLabels}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                        
-                    </Grid>
-                </Grid>
+            <!-- Activity Header Card (L-shape vertical part) - no bottom margin, connects to graph -->
+            <Border Grid.Row="4" Style="{StaticResource ModernCard}" Padding="10" CornerRadius="12,12,0,0" VerticalAlignment="Bottom">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2" Direction="270"/>
+                </Border.Effect>
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Style="{StaticResource DataRowAccentDownload}">
+                            <Path Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" Fill="{StaticResource BrushWhite}" Width="12" Height="12" Stretch="Uniform"/>
+                        </Border>
+                        <TextBlock Text="Activity" FontSize="11" FontWeight="SemiBold" Style="{StaticResource FontColor1}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource BrushDownloadAccent}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Download" Style="{StaticResource FontColor2}" FontSize="10" Margin="4,0,12,0" VerticalAlignment="Center"/>
+                        <Ellipse Width="8" Height="8" Fill="{StaticResource BrushUploadAccent}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Upload" Style="{StaticResource FontColor2}" FontSize="10" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
             </Border>
         </Grid>
 
+        <!-- Right Column: Active Processes Table -->
+        <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource ModernCard}" Margin="0,0,0,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Table Header -->
+                <Border Grid.Row="0" Padding="12,4" CornerRadius="12,12,0,0" Style="{StaticResource CardHeaderStyle}" BorderBrush="Gray" BorderThickness="0,0,0,0.4">
+                    <Grid >
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" 
+                                  Style="{StaticResource Fill1}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                            <TextBlock Text="Active Processes" Style="{StaticResource FontColor1}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource FontColor1}" FontSize="10" Opacity="0.85">
+                            <Run Text="{Binding MyProcesses.Count, Mode=OneWay, FallbackValue=0}"/>
+                            <Run Text="processes"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <!-- DataGrid -->
+                <DataGrid Grid.Row="1" 
+                          x:Name="AllAppsData1"
+                          ItemsSource="{Binding MyProcesses}"
+                          Style="{DynamicResource ModernDGHeaderStyle}">
+
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Name" Width="*" MinWidth="120" HeaderStyle="{StaticResource ModernDGCHeaderStyle1}" CellStyle="{StaticResource ModernDGCellStyle1}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4">
+                                        <Image Source="{Binding Value.Icon}" Width="16" Height="16" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        <TextBlock Text="{Binding Value.Name}" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="↓ Current" 
+                                            Binding="{Binding Value.CurrentDataRecv, Converter={StaticResource converterBytes}}" 
+                                            Width="80"
+                                            HeaderStyle="{StaticResource ModernDGCHeaderStyle2}" 
+                                            CellStyle="{StaticResource ModernDGCellStyle2}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="Foreground" Value="{StaticResource BrushDownloadAccent}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="8,4"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="↑ Current" 
+                                            Binding="{Binding Value.CurrentDataSend, Converter={StaticResource converterBytes}}" 
+                                            Width="80"
+                                            HeaderStyle="{StaticResource ModernDGCHeaderStyle2}" 
+                                            CellStyle="{StaticResource ModernDGCellStyle2}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="Foreground" Value="{StaticResource BrushUploadAccent}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="8,4"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="↓ Total" 
+                                            Binding="{Binding Value.TotalDataRecv, Converter={StaticResource converterBytes}}" 
+                                            Width="80"
+                                            HeaderStyle="{StaticResource ModernDGCHeaderStyle2}" 
+                                            CellStyle="{StaticResource ModernDGCellStyle2}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="8,4"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="↑ Total" 
+                                            Binding="{Binding Value.TotalDataSend, Converter={StaticResource converterBytes}}" 
+                                            Width="80"
+                                            HeaderStyle="{StaticResource ModernDGCHeaderStyle2}" 
+                                            CellStyle="{StaticResource ModernDGCellStyle2}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Margin" Value="8,4"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- Bottom Row: Graph (L-shape horizontal part) -->
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource ModernCard}" Padding="10" CornerRadius="0,12,12,12">
+            <Grid x:Name="GraphGrid" SizeChanged="Graph_SizeChanged">
+                <ItemsControl ItemsSource="{Binding Graph.XLines}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Line X1="{Binding From.X}" Y1="{Binding From.Y}" X2="{Binding To.X}" Y2="{Binding To.Y}" 
+                                  StrokeThickness="1" Stroke="{StaticResource BrushSurfaceDivider}" StrokeDashArray="4 4"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Graph.YLines}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Line X1="{Binding From.X}" Y1="{Binding From.Y}" X2="{Binding To.X}" Y2="{Binding To.Y}" 
+                                  StrokeThickness="1" Stroke="{StaticResource BrushSurfaceDivider}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Graph.Borders}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Line X1="{Binding From.X}" Y1="{Binding From.Y}" X2="{Binding To.X}" Y2="{Binding To.Y}" 
+                                  StrokeThickness="1" Stroke="{StaticResource BrushBorderLight}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Graph.UploadLines}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Line X1="{Binding From.X}" Y1="{Binding From.Y}" X2="{Binding To.X}" Y2="{Binding To.Y}"
+                                  Stroke="{StaticResource BrushUploadAccent}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Graph.DownloadLines}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Line X1="{Binding From.X}" Y1="{Binding From.Y}" X2="{Binding To.X}" Y2="{Binding To.Y}"
+                                  Stroke="{StaticResource BrushDownloadAccent}" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Graph.Xlabels}" Style="{StaticResource GraphLabels}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Graph.Ylabels}" Style="{StaticResource GraphLabels}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
-
-
-

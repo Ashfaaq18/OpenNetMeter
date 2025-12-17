@@ -11,7 +11,7 @@
         ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         UseLayoutRounding="True"
-        MinHeight="480" Height="480" MinWidth="640" Width="640"
+        MinHeight="600" Height="600" MinWidth="800" Width="800"
         SizeChanged="MyWindow_SizeChanged"
         Window.LocationChanged ="MyWindow_LocationChanged">
     
@@ -25,12 +25,6 @@
         <DataTemplate DataType="{x:Type vm:DataUsageSummaryVM}">
 
             <v:DataUsageSummaryV/>
-
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vm:DataUsageDetailedVM}">
-
-            <v:DataUsageDetailedV/>
 
         </DataTemplate>
 
@@ -48,7 +42,7 @@
 
     </Window.Resources>
     <Border Style="{StaticResource BorderColor}">
-        <Grid>
+        <Grid Style="{StaticResource BackgroundColor2}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>
@@ -73,7 +67,6 @@
                         <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button Height="35" BorderThickness="0,0,0,5" Margin="0,0,5,0" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSummaryTab}" Command="{Binding SwitchTabCommand}" CommandParameter="summary">
@@ -82,19 +75,13 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowDetailedTab}" Command="{Binding SwitchTabCommand}" CommandParameter="detailed">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="Segoe UI" Text="Detailed" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Grid.Column="2" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowHistoryTab}" Command="{Binding SwitchTabCommand}" CommandParameter="history">
+                    <Button Grid.Column="1" BorderThickness="0,0,0,5" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowHistoryTab}" Command="{Binding SwitchTabCommand}" CommandParameter="history">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontFamily="Segoe UI" Text="History" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="3" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding SwitchTabCommand}" CommandParameter="settings">
+                    <Button Grid.Column="2" Margin="0,0,5,0" Height="35" VerticalAlignment="Bottom" Style="{StaticResource MainWindowSettingsTab}" Command="{Binding SwitchTabCommand}" CommandParameter="settings">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontFamily="Segoe UI" Text="Settings" VerticalAlignment="Center" Style="{StaticResource FontColor1}"/>
                         </StackPanel>
@@ -128,7 +115,7 @@
                                                 <Style TargetType="{x:Type Border}">
                                                     <Style.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#e81123"/>
+                                                            <Setter Property="Background" Value="{StaticResource BrushDangerStrong}"/>
                                                         </Trigger>
                                                     </Style.Triggers>
                                                 </Style>
