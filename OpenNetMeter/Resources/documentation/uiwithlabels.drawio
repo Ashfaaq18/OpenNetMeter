@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0" version="29.2.7">
   <diagram name="Page-1" id="SNaX5bbVOygYSqvNDy-Q">
-    <mxGraphModel dx="1904" dy="1316" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2991" dy="2069" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -26,28 +26,31 @@
           <mxGeometry height="45" width="45" x="839" y="1288" as="geometry" />
         </mxCell>
         <mxCell id="M1nLyYyVJvQV9DUoC4Aa-17" connectable="0" parent="1" style="group" value="" vertex="1">
-          <mxGeometry height="560" width="560" x="1540" y="290" as="geometry" />
+          <mxGeometry height="800" width="560" x="1520" y="280" as="geometry" />
         </mxCell>
         <mxCell id="M1nLyYyVJvQV9DUoC4Aa-9" parent="M1nLyYyVJvQV9DUoC4Aa-17" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=0;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontSize=24;" value="" vertex="1">
-          <mxGeometry height="400" width="560" as="geometry" />
+          <mxGeometry height="571.4285714285714" width="560" as="geometry" />
         </mxCell>
-        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-10" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.topButton;rSize=5;fontColor=#000000;fontSize=24;" value="1.&amp;nbsp;" vertex="1">
-          <mxGeometry height="80" width="560" as="geometry" />
+        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-10" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.topButton;rSize=5;fontColor=#000000;fontSize=24;" value="Definitions:" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" as="geometry" />
         </mxCell>
-        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-11" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rSize=5;fontColor=#000000;fontSize=24;" value="2. Dapibus ac facilisis in" vertex="1">
-          <mxGeometry height="80" width="560" y="80" as="geometry" />
+        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-11" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rSize=5;fontColor=#000000;fontSize=24;" value="1. Current Data Usage (resets when the network connection changes/disconnects)" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" y="114.28571428571429" as="geometry" />
         </mxCell>
-        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-12" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rSize=5;fontColor=#000000;fontSize=24;" value="3. Morbi leo risus" vertex="1">
-          <mxGeometry height="80" width="560" y="160" as="geometry" />
+        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-12" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rSize=5;fontColor=#000000;fontSize=24;" value="2. Total data usage since the custom set date by the user till present" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" y="228.57142857142858" as="geometry" />
         </mxCell>
-        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-13" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rSize=5;fontColor=#000000;fontSize=24;" value="4. Porta ac consectetur ac" vertex="1">
-          <mxGeometry height="80" width="560" y="240" as="geometry" />
+        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-13" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;rSize=5;fontColor=#000000;fontSize=24;" value="3. All processes which are using data in the current session. (the total summation of these add up to the Current Session)" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" y="342.8571428571429" as="geometry" />
         </mxCell>
-        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-14" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.bottomButton;rSize=5;fontColor=#000000;fontSize=24;" value="5. Vestibulum at eros" vertex="1">
-          <mxGeometry height="80" width="560" y="320" as="geometry" />
+        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-14" parent="M1nLyYyVJvQV9DUoC4Aa-9" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.bottomButton;rSize=5;fontColor=#000000;fontSize=24;" value="4. Network activity graph" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" y="457.14285714285717" as="geometry" />
         </mxCell>
-        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-15" parent="M1nLyYyVJvQV9DUoC4Aa-17" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.bottomButton;rSize=5;fontColor=#000000;fontSize=24;" value="6. Vestibulum at eros" vertex="1">
-          <mxGeometry height="80" width="560" y="400" as="geometry" />
+        <mxCell id="M1nLyYyVJvQV9DUoC4Aa-15" parent="M1nLyYyVJvQV9DUoC4Aa-17" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.bottomButton;rSize=5;fontColor=#000000;fontSize=24;" value="5. Current connection&amp;nbsp;" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" y="571.4285714285714" as="geometry" />
+        </mxCell>
+        <mxCell id="k6Ol4YxIzHHz6Ke4Diok-1" parent="M1nLyYyVJvQV9DUoC4Aa-17" style="text;strokeColor=#DFDFDF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;shape=mxgraph.bootstrap.bottomButton;rSize=5;fontColor=#000000;fontSize=24;" value="6. Current connection network usage speed" vertex="1">
+          <mxGeometry height="114.28571428571429" width="560" y="671.4285714285714" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
