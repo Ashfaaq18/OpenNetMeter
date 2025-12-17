@@ -29,23 +29,17 @@ This program provides the following features,
 
 ### Summary tab
 
-![image](https://user-images.githubusercontent.com/27722888/177024162-66ada1ab-05a8-4cea-9903-68eb0abad834.png)
-
-### Detailed tab
-
-![image](https://user-images.githubusercontent.com/27722888/178145774-dc5bebc0-e4fc-49e3-8c85-d27ea6ee5a40.png)
+<img width="1991" height="1074" alt="uiwithlabels drawio" src="https://github.com/user-attachments/assets/f5d3e9dd-c64a-4ba4-979c-4e00786c27f6" />
 
 ### History tab
 
-*can retrieve data recorded by this application up to the past 60 days
-
-![image](https://user-images.githubusercontent.com/27722888/177024251-003625cf-412e-49a8-aff5-e556ea15e80d.png)
+<img width="1973" height="1052" alt="uiwithlabelsHistory drawio" src="https://github.com/user-attachments/assets/5495baa4-4e03-4ba2-b5c2-5cb6c98be9f4" />
 
 ### Darkmode
 
-![image](https://user-images.githubusercontent.com/27722888/177024169-137f804d-a3f6-4cb3-8c9a-6e068357fe2c.png)
+<img width="1967" height="1058" alt="uiwithlabelsdarkmode drawio(1)" src="https://github.com/user-attachments/assets/4345217a-aac1-4543-afcf-f7f6b53cdb12" />
 
 ### Network speed mini widget
+![OpenNetMeterMiniWidget-0 14 0-ezgif com-optimize](https://github.com/user-attachments/assets/91e587a6-cdec-4b1a-8af7-9500d0dbf8b3)
 
-![MiniWidget_demo1](https://user-images.githubusercontent.com/27722888/168587020-10bb15cc-7176-4d46-a4e9-8fdaf380bbe5.gif)
 
