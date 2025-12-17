@@ -1,0 +1,1 @@
+This directory is meant for any documentation for OpenNetMeter
