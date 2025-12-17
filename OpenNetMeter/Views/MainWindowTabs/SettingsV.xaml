@@ -12,28 +12,29 @@
     <UserControl.Resources>
         <v:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
         <properties:AppSettings x:Key="Settings"/>
-        
+
         <!-- Modern Toggle Switch Template -->
         <Style x:Key="ModernToggleSwitch" TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <Grid>
                             <Border x:Name="SwitchBorder" 
-                                    Width="44" Height="24" 
-                                    CornerRadius="12"
-                                    Background="{StaticResource BrushSurfaceDivider}">
+                            Width="44" Height="24" 
+                            CornerRadius="12"
+                            Background="{StaticResource BrushSurfaceDivider}">
                                 <Grid>
                                     <Ellipse x:Name="SwitchThumb" 
-                                             Width="20" Height="20" 
-                                             Fill="{StaticResource BrushWhite}"
-                                             HorizontalAlignment="Left"
-                                             Margin="2,0,0,0">
+                                     Width="20" Height="20" 
+                                     Fill="{StaticResource BrushWhite}"
+                                     HorizontalAlignment="Left"
+                                     Margin="2,0,0,0">
                                         <Ellipse.Effect>
                                             <DropShadowEffect ShadowDepth="1" 
-                                                            BlurRadius="2" 
-                                                            Opacity="0.2" 
-                                                            Direction="270"/>
+                                                    BlurRadius="2" 
+                                                    Opacity="0.2" 
+                                                    Direction="270"/>
                                         </Ellipse.Effect>
                                     </Ellipse>
                                 </Grid>
@@ -47,15 +48,16 @@
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="SwitchBorder" Property="Opacity" Value="0.5"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-
         <!-- Modern Button Style -->
         <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Background" Value="{StaticResource BrushSurfaceLight}"/>
             <Setter Property="Foreground" Value="{StaticResource BrushMutedRadioText}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLight}"/>
@@ -87,6 +89,7 @@
 
         <!-- Destructive Button Style -->
         <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
             <Setter Property="Foreground" Value="{StaticResource BrushWhite}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BrushDanger}"/>

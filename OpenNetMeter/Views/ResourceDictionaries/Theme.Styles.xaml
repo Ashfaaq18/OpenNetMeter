@@ -188,7 +188,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Grid Margin="{TemplateBinding Margin}">
+                    <Grid Margin="{TemplateBinding Margin}"
+                          Cursor="{TemplateBinding Cursor}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
@@ -300,6 +301,7 @@
     </Style>
 
     <Style x:Key="ModernSlider" TargetType="Slider">
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
@@ -345,6 +347,7 @@
                                 <Thumb x:Name="Thumb">
                                     <Thumb.Style>
                                         <Style TargetType="Thumb">
+                                            <Setter Property="Cursor" Value="Hand"/>
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="Thumb">
