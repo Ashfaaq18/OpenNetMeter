@@ -115,11 +115,8 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="SelectedBackground"
                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                       Duration="0">
-                                            <ColorAnimation.To>
-                                                <Color>{StaticResource ColorAccentPeachSelected}</Color>
-                                            </ColorAnimation.To>
-                                        </ColorAnimation>
+                                                       To="{StaticResource ColorAccentPeachSelected}"
+                                                       Duration="0"/>
                                         <ColorAnimation Storyboard.TargetName="NormalText"
                                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
                                                        To="{StaticResource ColorPrimaryText}"
@@ -148,11 +145,8 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="TodayBackground"
                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                       Duration="0">
-                                            <ColorAnimation.To>
-                                                <Color>{StaticResource ColorLightGray}</Color>
-                                            </ColorAnimation.To>
-                                        </ColorAnimation>
+                                                       To="{StaticResource ColorLightGray}"
+                                                       Duration="0"/>
                                         <ColorAnimation Storyboard.TargetName="NormalText"
                                                        Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
                                                        To="{StaticResource ColorHeaderDeep}"
