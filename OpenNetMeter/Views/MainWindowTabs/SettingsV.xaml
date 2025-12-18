@@ -235,6 +235,23 @@
                                 <TextBlock HorizontalAlignment="Left" Text="0%" Style="{StaticResource SecondaryText}"/>
                                 <TextBlock HorizontalAlignment="Right" Text="100%" Style="{StaticResource SecondaryText}"/>
                             </Grid>
+
+                            <Border Height="1" Background="{StaticResource BrushSurfaceDivider}" Margin="0,20,0,20"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Show mini widget" Style="{StaticResource PrimaryText}"/>
+                                    <TextBlock Text="Toggle the mini widget visibility" Style="{StaticResource SecondaryText}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <CheckBox Grid.Column="1"
+                                          Style="{StaticResource ModernToggleSwitch}"
+                                          IsChecked="{Binding MiniWidgetVisibility}"
+                                          VerticalAlignment="Center"/>
+                            </Grid>
                         </StackPanel>
                     </Grid>
                 </Border>

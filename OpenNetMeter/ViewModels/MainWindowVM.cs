@@ -15,10 +15,9 @@ namespace OpenNetMeter.ViewModels
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageHistoryVM duhvm;
         private readonly MiniWidgetVM mwvm;
-        private readonly SettingsVM svm;
+        public SettingsVM svm;
         private readonly NetworkProcess netProc;
         public ICommand SwitchTabCommand { get; set; }
-
         private int tabBtnToggle;
         public int TabBtnToggle
         {

@@ -11,7 +11,6 @@ using System.Windows.Threading;
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.ComponentModel;
-using System.Windows.Interop;
 using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Views
@@ -64,6 +63,7 @@ namespace OpenNetMeter.Views
                 miniWidget = new MiniWidgetV(this);
                 mainWin = new MainWindowVM((MiniWidgetVM)miniWidget.DataContext, (ConfirmationDialogVM)confDialog.DataContext);
                 DataContext = mainWin;
+                mainWin.svm.RequestSetMiniWidgetVisibility += SetMiniWidgetVisibility;
                 
                 //initialize window position and size
                 AllWinPosAndSizeInit();
@@ -115,11 +115,35 @@ namespace OpenNetMeter.Views
 
         private void MiniWidget_Show_Click(object? sender, EventArgs e)
         {
-            WindowInteropHelper miniWidgetHwnd = new WindowInteropHelper(miniWidget);
-            if (miniWidgetHwnd.Handle != IntPtr.Zero && miniWidget != null)
-            {
-                miniWidget.ShowMiniWidget();
-            } 
+            ShowMiniWidget();
+        }
+
+        public void ShowMiniWidget()
+        {
+            if (miniWidget == null)
+                return;
+
+            miniWidget.ShowMiniWidget();
+            if (mainWin != null)
+                mainWin.svm.MiniWidgetVisibility = true;
+        }
+
+        public void HideMiniWidget()
+        {
+            if (miniWidget == null)
+                return;
+
+            miniWidget.HideMiniWidget();
+            if (mainWin != null)
+                mainWin.svm.MiniWidgetVisibility = false;
+        }
+
+        private void SetMiniWidgetVisibility(bool isVisible)
+        {
+            if (isVisible)
+                ShowMiniWidget();
+            else
+                HideMiniWidget();
         }
 
         // this is for when the user clicks the window exit button through the alt+tab program switcher
