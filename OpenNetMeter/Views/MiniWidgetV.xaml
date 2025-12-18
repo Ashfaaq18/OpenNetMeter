@@ -48,14 +48,14 @@
                        Margin="2,2">
                 <!-- Download Icon Background -->
                 <Border Width="20" Height="24" 
-                       Background="{StaticResource BrushDownloadBadgeOverlay}" 
+                       Background="{StaticResource BrushDownloadBadgeOverlay}"
                        CornerRadius="4"
                        Margin="0,0,6,0"
                        VerticalAlignment="Center">
                     <TextBlock Text="↓" 
                               FontSize="16" 
                               FontWeight="Bold"
-                              Foreground="{StaticResource BrushDownloadAccent}"
+                              Style="{StaticResource DownloadForeground}"
                               HorizontalAlignment="Center" 
                               VerticalAlignment="Center"/>
                 </Border>
@@ -70,8 +70,9 @@
 
                     <!-- Download Total -->
                     <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
-                        <TextBlock Text="Total:" FontSize="11" 
-                                  Foreground="{StaticResource BrushDownloadAccent}"
+                        <TextBlock Text="Total:"
+                                   FontSize="11"
+                                  Style="{StaticResource DownloadForeground}"
                                   Margin="0,0,3,0"
                                   VerticalAlignment="Center"/>
                         <TextBlock FontSize="11" 
@@ -88,14 +89,14 @@
                        Margin="2,2">
                 <!-- Upload Icon Background -->
                 <Border Width="20" Height="24" 
-                       Background="{StaticResource BrushUploadBadgeOverlay}" 
+                       Background="{StaticResource BrushUploadBadgeOverlay}"
                        CornerRadius="4"
                        Margin="0,0,6,0"
                        VerticalAlignment="Center">
                     <TextBlock Text="↑" 
                               FontSize="16" 
                               FontWeight="Bold"
-                              Foreground="{StaticResource BrushUploadAccent}"
+                              Style="{StaticResource UploadForeground}"
                               HorizontalAlignment="Center" 
                               VerticalAlignment="Center"/>
                 </Border>
@@ -110,8 +111,9 @@
                     
                     <!-- Upload Total -->
                     <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
-                        <TextBlock Text="Total:" FontSize="11" 
-                                  Foreground="{StaticResource BrushUploadAccent}"
+                        <TextBlock Text="Total:" 
+                                   FontSize="11"
+                                  Style="{StaticResource UploadForeground}"
                                   Margin="0,0,3,0"
                                   VerticalAlignment="Center"/>
                         <TextBlock FontSize="11"

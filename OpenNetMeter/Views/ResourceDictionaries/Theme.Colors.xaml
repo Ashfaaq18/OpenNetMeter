@@ -91,8 +91,8 @@
     <Color x:Key="ColorDownloadAccent">LightSeaGreen</Color>
     <Color x:Key="ColorUploadAccent">LightSalmon</Color>
     <Color x:Key="ColorUploadDarkAccent">#D98868</Color>
-    <Color x:Key="ColorDownloadBadgeOverlay">#1A22C55E</Color>
-    <Color x:Key="ColorUploadBadgeOverlay">#1AF97316</Color>
+    <Color x:Key="ColorDownloadBadgeOverlay">#6A22C55E</Color>
+    <Color x:Key="ColorUploadBadgeOverlay">#6AF97316</Color>
     <Color x:Key="ColorWindowOverlay">#01000000</Color>
     <Color x:Key="ColorPinHover">#30000000</Color>
     <Color x:Key="ColorPinActive">#40000000</Color>
