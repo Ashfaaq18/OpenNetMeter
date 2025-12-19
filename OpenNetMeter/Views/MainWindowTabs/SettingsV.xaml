@@ -210,34 +210,8 @@
                             <TextBlock Text="Mini Widget" Style="{StaticResource TitleText}" 
                                      Margin="24,0,0,0"/>
                         </Border>
-                        
+
                         <StackPanel Grid.Row="1" Margin="24,20">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Transparency" Style="{StaticResource PrimaryText}" 
-                                         VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource SecondaryText}">
-                                    <Run Text="{Binding MiniWidgetTransparentSlider}"/>
-                                    <Run Text="%"/>
-                                </TextBlock>
-                            </Grid>
-                            
-                            <Slider Margin="0,12,0,8" 
-                                    Minimum="0" Maximum="100" 
-                                    Value="{Binding MiniWidgetTransparentSlider}"
-                                    Style="{StaticResource ModernSlider}"/>
-                            
-                            <Grid>
-                                <TextBlock HorizontalAlignment="Left" Text="0%" Style="{StaticResource SecondaryText}"/>
-                                <TextBlock HorizontalAlignment="Right" Text="100%" Style="{StaticResource SecondaryText}"/>
-                            </Grid>
-
-                            <Border Height="1" Background="{StaticResource BrushSurfaceDivider}" Margin="0,20,0,20"/>
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -252,6 +226,33 @@
                                           IsChecked="{Binding MiniWidgetVisibility}"
                                           VerticalAlignment="Center"/>
                             </Grid>
+
+                            <Border Height="1" Background="{StaticResource BrushSurfaceDivider}" Margin="0,20,0,20"/>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Transparency" Style="{StaticResource PrimaryText}" 
+                                     VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource SecondaryText}">
+                                <Run Text="{Binding MiniWidgetTransparentSlider}"/>
+                                <Run Text="%"/>
+                                </TextBlock>
+                            </Grid>
+
+                            <Slider Margin="0,12,0,8" 
+                                    Minimum="0" Maximum="100" 
+                                    Value="{Binding MiniWidgetTransparentSlider}"
+                                    Style="{StaticResource ModernSlider}"/>
+        
+                            <Grid>
+                                <TextBlock HorizontalAlignment="Left" Text="0%" Style="{StaticResource SecondaryText}"/>
+                                <TextBlock HorizontalAlignment="Right" Text="100%" Style="{StaticResource SecondaryText}"/>
+                            </Grid>
+
                         </StackPanel>
                     </Grid>
                 </Border>

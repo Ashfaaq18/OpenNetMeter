@@ -124,8 +124,7 @@ namespace OpenNetMeter.Views
                 return;
 
             miniWidget.ShowMiniWidget();
-            if (mainWin != null)
-                mainWin.svm.MiniWidgetVisibility = true;
+            mainWin?.svm.SyncMiniWidgetVisibility(true);
         }
 
         public void HideMiniWidget()
@@ -134,8 +133,7 @@ namespace OpenNetMeter.Views
                 return;
 
             miniWidget.HideMiniWidget();
-            if (mainWin != null)
-                mainWin.svm.MiniWidgetVisibility = false;
+            mainWin?.svm.SyncMiniWidgetVisibility(false);
         }
 
         private void SetMiniWidgetVisibility(bool isVisible)

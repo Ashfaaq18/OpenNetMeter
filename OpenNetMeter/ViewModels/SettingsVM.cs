@@ -214,6 +214,15 @@ namespace OpenNetMeter.ViewModels
 
         public event Action<bool>? RequestSetMiniWidgetVisibility;
 
+        public void SyncMiniWidgetVisibility(bool isVisible)
+        {
+            if (miniWidgetVisibility == isVisible)
+                return;
+
+            miniWidgetVisibility = isVisible;
+            OnPropertyChanged("MiniWidgetVisibility");
+        }
+
         private bool _isUpdateAvailable;
         public bool IsUpdateAvailable
         {
