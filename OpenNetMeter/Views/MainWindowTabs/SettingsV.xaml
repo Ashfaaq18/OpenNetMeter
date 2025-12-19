@@ -246,6 +246,7 @@
                             <Slider Margin="0,12,0,8" 
                                     Minimum="0" Maximum="100" 
                                     Value="{Binding MiniWidgetTransparentSlider}"
+                                    IsEnabled="{Binding MiniWidgetVisibility}"
                                     Style="{StaticResource ModernSlider}"/>
         
                             <Grid>
