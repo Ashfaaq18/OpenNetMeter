@@ -66,6 +66,25 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Foreground colors -->
+    <Style x:Key="DownloadForeground">
+        <Setter Property="Control.Foreground" Value="{StaticResource BrushAccentGreenDark}"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Control.Foreground" Value="{StaticResource BrushAccentGreenSoft}"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="UploadForeground">
+        <Setter Property="Control.Foreground" Value="{StaticResource BrushAccentPeachDark}"></Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static res:SettingsManager.Current}, Path = DarkMode}" Value="True">
+                <Setter Property="Control.Foreground" Value="{StaticResource BrushAccentPeach}"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="DarkModeBackgroundColor">
         <Setter Property="Control.Background" Value="{StaticResource BrushBlack}"></Setter>
         <Style.Triggers>
@@ -378,6 +397,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.45"/>
+                <Setter Property="Cursor" Value="Arrow"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
     
 </ResourceDictionary>

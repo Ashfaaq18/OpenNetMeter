@@ -197,6 +197,32 @@ namespace OpenNetMeter.ViewModels
         public ICommand UpdateCheckBtn { get; set; }
         public ICommand DownloadUpdateBtn { get; set; }
 
+        private bool miniWidgetVisibility;
+        public bool MiniWidgetVisibility
+        {
+            get { return miniWidgetVisibility; }
+            set
+            {
+                if (miniWidgetVisibility != value)
+                {
+                    miniWidgetVisibility = value;
+                    OnPropertyChanged("MiniWidgetVisibility");
+                    RequestSetMiniWidgetVisibility?.Invoke(value);
+                }
+            }
+        }
+
+        public event Action<bool>? RequestSetMiniWidgetVisibility;
+
+        public void SyncMiniWidgetVisibility(bool isVisible)
+        {
+            if (miniWidgetVisibility == isVisible)
+                return;
+
+            miniWidgetVisibility = isVisible;
+            OnPropertyChanged("MiniWidgetVisibility");
+        }
+
         private bool _isUpdateAvailable;
         public bool IsUpdateAvailable
         {
@@ -251,6 +277,7 @@ namespace OpenNetMeter.ViewModels
             MinimizeOnStart = SettingsManager.Current.MinimizeOnStart;
             DarkMode = SettingsManager.Current.DarkMode;
             MiniWidgetTransparentSlider = SettingsManager.Current.MiniWidgetTransparentSlider;
+            MiniWidgetVisibility = SettingsManager.Current.MiniWidgetVisibility;
 
             if (SetStartWithWin)
                 UnlockMinimizeOnStart = false;

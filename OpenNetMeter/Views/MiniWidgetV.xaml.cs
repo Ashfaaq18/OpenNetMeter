@@ -88,7 +88,10 @@ namespace OpenNetMeter.Views
 
         private void MenuItem_Hide_Click(object sender, RoutedEventArgs e)
         {
-            HideMiniWidget();
+            if (mainWindow is MainWindow mw) // hide from miniwidget
+                mw.HideMiniWidget();
+            else // hide from settings page
+                HideMiniWidget();
         }
         private void MenuItem_Open_Click(object sender, RoutedEventArgs e)
         {
