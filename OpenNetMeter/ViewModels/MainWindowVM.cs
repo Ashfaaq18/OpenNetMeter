@@ -113,6 +113,7 @@ namespace OpenNetMeter.ViewModels
 
             //get initial data usage details from the database
             RefreshSummaryBaseline();
+            UpdateSummaryTab();
         }
 
         private void Svm_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -170,17 +171,11 @@ namespace OpenNetMeter.ViewModels
             sinceDateSessionDownloadBaseline = netProc.CurrentSessionDownloadData;
             sinceDateSessionUploadBaseline = netProc.CurrentSessionUploadData;
 
-            UpdateSummaryTab();
+            UpdateTodayTotals();
         }
-        private void UpdateSummaryTab()
+
+        private void UpdateTodayTotals()
         {
-            //summary tab graph points
-            dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
-
-            //summary tab session usage variables
-            dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
-            dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
-
             long sessionDownloadDelta = netProc.CurrentSessionDownloadData - sinceDateSessionDownloadBaseline;
             long sessionUploadDelta = netProc.CurrentSessionUploadData - sinceDateSessionUploadBaseline;
 
@@ -191,6 +186,18 @@ namespace OpenNetMeter.ViewModels
 
             dusvm.TodayDownloadData = initSinceDateTotalDownloadData + sessionDownloadDelta;
             dusvm.TodayUploadData = initSinceDateTotalUploadData + sessionUploadDelta;
+        }
+
+        private void UpdateSummaryTab()
+        {
+            //summary tab graph points
+            dusvm.Graph.DrawPoints(DownloadSpeed, UploadSpeed);
+
+            //summary tab session usage variables
+            dusvm.CurrentSessionDownloadData = netProc.CurrentSessionDownloadData;
+            dusvm.CurrentSessionUploadData = netProc.CurrentSessionUploadData;
+
+            UpdateTodayTotals();
 
             UpdateMyProcessTable();
         }
@@ -364,6 +371,7 @@ namespace OpenNetMeter.ViewModels
             if (e.PropertyName == nameof(DataUsageSummaryVM.SinceDate))
             {
                 RefreshSummaryBaseline();
+                UpdateSummaryTab();
             }
         }
         private void SwitchTab(object? obj)
