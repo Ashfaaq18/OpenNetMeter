@@ -40,6 +40,7 @@ This program provides the following features,
 <img src="https://github.com/user-attachments/assets/4345217a-aac1-4543-afcf-f7f6b53cdb12" alt="OpenNetMeter dark mode view" width="960" />
 
 ### Network speed mini widget
-<img src="https://github.com/user-attachments/assets/91e587a6-cdec-4b1a-8af7-9500d0dbf8b3" alt="OpenNetMeter mini widget demo" width="420" />
+![onm-widget-v1](https://github.com/user-attachments/assets/13af9d12-8858-4e2b-b02f-348a2fe58d62)
+
 
 
