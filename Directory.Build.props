@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-	  <ProductVersion>0.13.1</ProductVersion>
+	  <ProductVersion>0.14.0</ProductVersion>
 	  <ProductName>OpenNetMeter</ProductName>
 	  <Manufacturer>Ashfaaq18</Manufacturer>
   </PropertyGroup>

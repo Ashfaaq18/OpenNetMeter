@@ -29,23 +29,18 @@ This program provides the following features,
 
 ### Summary tab
 
-![image](https://user-images.githubusercontent.com/27722888/177024162-66ada1ab-05a8-4cea-9903-68eb0abad834.png)
-
-### Detailed tab
-
-![image](https://user-images.githubusercontent.com/27722888/178145774-dc5bebc0-e4fc-49e3-8c85-d27ea6ee5a40.png)
+<img src="https://github.com/user-attachments/assets/f5d3e9dd-c64a-4ba4-979c-4e00786c27f6" alt="OpenNetMeter summary tab with labels" width="960" />
 
 ### History tab
 
-*can retrieve data recorded by this application up to the past 60 days
-
-![image](https://user-images.githubusercontent.com/27722888/177024251-003625cf-412e-49a8-aff5-e556ea15e80d.png)
+<img src="https://github.com/user-attachments/assets/5495baa4-4e03-4ba2-b5c2-5cb6c98be9f4" alt="OpenNetMeter history tab with labels" width="960" />
 
 ### Darkmode
 
-![image](https://user-images.githubusercontent.com/27722888/177024169-137f804d-a3f6-4cb3-8c9a-6e068357fe2c.png)
+<img src="https://github.com/user-attachments/assets/4345217a-aac1-4543-afcf-f7f6b53cdb12" alt="OpenNetMeter dark mode view" width="960" />
 
 ### Network speed mini widget
+![onm-widget-v1](https://github.com/user-attachments/assets/13af9d12-8858-4e2b-b02f-348a2fe58d62)
 
-![MiniWidget_demo1](https://user-images.githubusercontent.com/27722888/168587020-10bb15cc-7176-4d46-a4e9-8fdaf380bbe5.gif)
+
 
