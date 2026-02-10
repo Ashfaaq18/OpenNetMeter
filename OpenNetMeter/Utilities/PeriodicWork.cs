@@ -47,7 +47,7 @@ namespace OpenNetMeter.Utilities
                     }
                     catch (Exception ex)
                     {
-                        EventLogger.Error($"{name} tick error: {ex.Message}");
+                        EventLogger.Error($"{name} tick error", ex);
                     }
                 }
             }

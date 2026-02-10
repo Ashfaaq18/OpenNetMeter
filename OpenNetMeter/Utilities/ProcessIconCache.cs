@@ -55,11 +55,11 @@ namespace OpenNetMeter.Utilities
             }
             catch (Win32Exception winError)
             {
-                EventLogger.Error(winError.Message);
+                EventLogger.Error("Failed to fetch process icon (Win32 error)", winError);
             }
             catch (SystemException sysExError)
             {
-                EventLogger.Error(sysExError.Message);
+                EventLogger.Error("Failed to fetch process icon", sysExError);
             }
 
             return DefaultIcon;

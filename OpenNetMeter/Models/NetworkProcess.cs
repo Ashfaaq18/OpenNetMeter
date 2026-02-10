@@ -436,7 +436,7 @@ namespace OpenNetMeter.Models
                 }
                 catch (AggregateException ex)
                 {
-                    EventLogger.Error($"Packet capture stop error: {ex.InnerException?.Message ?? ex.Message}");
+                    EventLogger.Error("Packet capture stop error", ex);
                 }
                 finally
                 {
@@ -461,7 +461,7 @@ namespace OpenNetMeter.Models
             }
             catch (Exception ex)
             {
-                EventLogger.Error($"{name} stop error: {ex.Message}");
+                EventLogger.Error($"{name} stop error", ex);
             }
             finally
             {
@@ -588,7 +588,7 @@ namespace OpenNetMeter.Models
                 }
                 catch (Exception ex)
                 {
-                    EventLogger.Error(ex.Message);
+                    EventLogger.Error("Packet capture loop error", ex);
                 }
             });
         }

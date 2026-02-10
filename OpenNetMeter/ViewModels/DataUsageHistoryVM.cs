@@ -172,7 +172,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch (IOException ex)
             {
-                EventLogger.Error(ex.Message);
+                EventLogger.Error("Failed to delete usage database file", ex);
             }
         }
 

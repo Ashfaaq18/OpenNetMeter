@@ -39,7 +39,7 @@ namespace OpenNetMeter.Properties
             catch (Exception ex)
             {
                 // Log an error if the json file is corrupt, for example.
-                EventLogger.Error($"Error loading settings: {ex.Message}");
+                EventLogger.Error("Error loading settings", ex);
             }
         }
 

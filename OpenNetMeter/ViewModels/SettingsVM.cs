@@ -353,7 +353,7 @@ namespace OpenNetMeter.ViewModels
             catch (Exception ex)
             {
                 tempMsgStatus = "Error checking for updates.";
-                EventLogger.Error(ex.Message);
+                EventLogger.Error("Error checking for updates", ex);
             }
             finally
             {
@@ -384,7 +384,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch (Exception ex)
             {
-                EventLogger.Error(ex.Message);
+                EventLogger.Error("Error launching update download URL", ex);
             }
         }
 
@@ -420,7 +420,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch (Exception ex)
             {
-                EventLogger.Error(ex.Message);
+                EventLogger.Error("Error while updating startup task registration", ex);
             }
             finally
             {
@@ -433,7 +433,7 @@ namespace OpenNetMeter.ViewModels
                     }
                     catch (Exception ex1)
                     {
-                        EventLogger.Error("Error: " + ex1.Message);
+                        EventLogger.Error("Error creating startup task folder/definition", ex1);
                     }
                 }
             }
@@ -478,7 +478,7 @@ namespace OpenNetMeter.ViewModels
             }
             catch(Exception ex)
             {
-                EventLogger.Error("Error: " + ex.Message);
+                EventLogger.Error("Error creating startup task", ex);
             }
         }
 
