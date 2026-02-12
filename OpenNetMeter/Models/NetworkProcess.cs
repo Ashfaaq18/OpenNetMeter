@@ -291,13 +291,15 @@ namespace OpenNetMeter.Models
 
         /// <summary>
         /// Core network state machine. Compares current network state to tracked state
-        /// and triggers appropriate actions (connect/disconnect/switch).
+        /// and triggers appropriate actions (connect/disconnect/switch/refresh).
         /// 
         /// State transitions:
         /// - Disconnected -> Connected: Start monitoring
         /// - Connected -> Disconnected: Stop monitoring  
         /// - Connected -> Different adapter: Stop then start monitoring
-        /// - Connected -> Same adapter: No action (ignore transient events)
+        /// - Connected -> Same adapter:
+        ///   - IP/name changed: Refresh tracked snapshot (no restart)
+        ///   - No meaningful change: Ignore transient event
         /// 
         /// Protected by networkChangeLock to prevent concurrent execution.
         /// </summary>
@@ -335,14 +337,38 @@ namespace OpenNetMeter.Models
                     ApplySnapshot(snapshot);
                     StartNetworkProcess();
                 }
-                // else: Same adapter, already connected - nothing to do
-                // This handles transient events during stable connections
+                else
+                {
+                    // Same adapter can still receive DHCP/IPv6 address changes or an SSID/name update.
+                    // Refresh tracked snapshot so packet filtering keeps matching local traffic.
+                    bool ipChanged = HasSnapshotAddressChanged(snapshot);
+                    bool nameChanged = !string.Equals(AdapterName, snapshot.AdapterName, StringComparison.Ordinal);
+                    if (ipChanged || nameChanged)
+                    {
+                        Debug.WriteLine("Ash: Adapter IP/name changed on same adapter - refreshing snapshot");
+                        ApplySnapshot(snapshot);
+
+                        // Keep status text in sync when SSID/name changes without adapter GUID change.
+                        if (nameChanged)
+                            IsNetworkOnline = AdapterName;
+                    }
+                }
+            }
+        }
+
+        private bool HasSnapshotAddressChanged(NetworkSnapshot snapshot)
+        {
+            lock (stateLock)
+            {
+                return !ByteArray.Compare(localIPv4, snapshot.IPv4) ||
+                       !ByteArray.Compare(localIPv6, snapshot.IPv6);
             }
         }
 
         /// <summary>
         /// Updates tracked state from a network snapshot.
-        /// Called when establishing a new connection or switching adapters.
+        /// Called when establishing a new connection, switching adapters,
+        /// or refreshing state on same-adapter IP/name changes.
         /// </summary>
         private void ApplySnapshot(NetworkSnapshot snapshot)
         {
