@@ -54,6 +54,7 @@ namespace OpenNetMeter.Models
         // Lock for debounce cancellation token access
         private readonly object debounceLock = new object();
         private CancellationTokenSource? networkChangeDebounce;
+        private volatile bool isDisposed;
 
         // Lock to ensure only one HandleNetworkChange runs at a time
         private readonly object networkChangeLock = new object();
@@ -270,23 +271,45 @@ namespace OpenNetMeter.Models
         /// </summary>
         private void OnNetworkAddressChanged(object? sender, EventArgs? e)
         {
+            if (isDisposed)
+                return;
+
             CancellationTokenSource cts;
+            CancellationTokenSource? previous;
 
             lock (debounceLock)
             {
+                if (isDisposed)
+                    return;
+
                 // Cancel any pending debounce timer
-                networkChangeDebounce?.Cancel();
-                networkChangeDebounce?.Dispose();
-                networkChangeDebounce = new CancellationTokenSource();
-                cts = networkChangeDebounce;
+                previous = networkChangeDebounce;
+                cts = new CancellationTokenSource();
+                networkChangeDebounce = cts;
             }
 
-            // Wait for debounce period, then process if not cancelled
-            Task.Delay(DebounceDelayMs, cts.Token).ContinueWith(t =>
+            previous?.Cancel();
+            _ = DebounceAndHandleNetworkChangeAsync(cts);
+        }
+
+        private async Task DebounceAndHandleNetworkChangeAsync(CancellationTokenSource cts)
+        {
+            try
             {
-                if (!t.IsCanceled)
+                // Wait for debounce period, then process if not cancelled
+                await Task.Delay(DebounceDelayMs, cts.Token).ConfigureAwait(false);
+
+                if (!isDisposed && !cts.Token.IsCancellationRequested)
                     HandleNetworkChange();
-            }, TaskScheduler.Default);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when superseded by a new address-change event or during shutdown.
+            }
+            finally
+            {
+                cts.Dispose();
+            }
         }
 
         /// <summary>
@@ -305,8 +328,14 @@ namespace OpenNetMeter.Models
         /// </summary>
         private void HandleNetworkChange()
         {
+            if (isDisposed)
+                return;
+
             lock (networkChangeLock)
             {
+                if (isDisposed)
+                    return;
+
                 var snapshot = GetCurrentNetworkSnapshot();
 
                 if (snapshot == null)
@@ -789,6 +818,8 @@ namespace OpenNetMeter.Models
         /// </summary>
         public void Dispose()
         {
+            isDisposed = true;
+
             // Unsubscribe from network change events
             NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
 
@@ -796,7 +827,6 @@ namespace OpenNetMeter.Models
             lock (debounceLock)
             {
                 networkChangeDebounce?.Cancel();
-                networkChangeDebounce?.Dispose();
                 networkChangeDebounce = null;
             }
 
