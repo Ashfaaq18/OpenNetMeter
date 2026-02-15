@@ -72,6 +72,8 @@ namespace OpenNetMeter.Models
         // ETW kernel session for capturing network packets
         private TraceEventSession? kernelSession;
 
+        private const string KernelSessionName = "OpenNetMeter-Kernel";
+
         // Task running the ETW packet capture loop
         public Task? PacketTask;
 
@@ -436,6 +438,7 @@ namespace OpenNetMeter.Models
                 }
             }
 
+            TraceEventSession.GetActiveSession(KernelSessionName)?.Stop();
             // Start packet capture and periodic tasks
             CaptureNetworkPackets();
             StartSpeedMonitoring();
@@ -619,7 +622,7 @@ namespace OpenNetMeter.Models
                 try
                 {
                     // Create kernel trace session (requires admin)
-                    kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
+                    kernelSession = new TraceEventSession(KernelSessionName);
                     kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
 
                     // Subscribe to all TCP/UDP send/receive events
