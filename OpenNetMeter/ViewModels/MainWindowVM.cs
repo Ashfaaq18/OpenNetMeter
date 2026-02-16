@@ -288,7 +288,7 @@ namespace OpenNetMeter.ViewModels
                                     //push data to a buffer which will be pushed to the DB later
                                     netProc.PushToDBBuffer!.TryAdd(app.Key, new MyProcess_Small(app.Key, 0, 0));
                                     netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dusvm.MyProcesses[app.Key].TotalDataRecv;
-                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataRecv = dusvm.MyProcesses[app.Key].TotalDataSend;
+                                    netProc.PushToDBBuffer[app.Key]!.CurrentDataSend = dusvm.MyProcesses[app.Key].TotalDataSend;
                                 }
                             }
 
