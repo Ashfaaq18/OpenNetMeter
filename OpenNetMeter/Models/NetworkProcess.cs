@@ -51,9 +51,9 @@ namespace OpenNetMeter.Models
 
         //---------- Debounce & Synchronization ------------//
 
-        // Lock for debounce cancellation token access
-        private readonly object debounceLock = new object();
-        private CancellationTokenSource? networkChangeDebounce;
+        // Timer-based debounce: each network change event resets the timer.
+        // When it finally fires (after DebounceDelayMs of silence), HandleNetworkChange runs.
+        private Timer? debounceTimer;
         private volatile bool isDisposed;
 
         // Lock to ensure only one HandleNetworkChange runs at a time
@@ -145,6 +145,9 @@ namespace OpenNetMeter.Models
         public void Initialize()
         {
             IsNetworkOnline = "Disconnected";
+
+            // Create the debounce timer (initially not running)
+            debounceTimer = new Timer(_ => HandleNetworkChange(), null, Timeout.Infinite, Timeout.Infinite);
 
             // Subscribe to network address changes (fires on connect/disconnect/IP change)
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -269,48 +272,23 @@ namespace OpenNetMeter.Models
 
         /// <summary>
         /// Event handler for NetworkChange.NetworkAddressChanged.
-        /// Debounces rapid events (common during network transitions) before processing.
+        /// Resets the debounce timer so that HandleNetworkChange only runs
+        /// after DebounceDelayMs of silence (no rapid-fire events).
         /// </summary>
         private void OnNetworkAddressChanged(object? sender, EventArgs? e)
         {
             if (isDisposed)
                 return;
 
-            CancellationTokenSource cts;
-            CancellationTokenSource? previous;
-
-            lock (debounceLock)
-            {
-                if (isDisposed)
-                    return;
-
-                // Cancel any pending debounce timer
-                previous = networkChangeDebounce;
-                cts = new CancellationTokenSource();
-                networkChangeDebounce = cts;
-            }
-
-            previous?.Cancel();
-            _ = DebounceAndHandleNetworkChangeAsync(cts);
-        }
-
-        private async Task DebounceAndHandleNetworkChangeAsync(CancellationTokenSource cts)
-        {
+            // Reset the timer countdown. If another event arrives before it fires,
+            // the timer resets again. No allocations, no CTS, no race conditions.
             try
             {
-                // Wait for debounce period, then process if not cancelled
-                await Task.Delay(DebounceDelayMs, cts.Token).ConfigureAwait(false);
-
-                if (!isDisposed && !cts.Token.IsCancellationRequested)
-                    HandleNetworkChange();
+                debounceTimer?.Change(DebounceDelayMs, Timeout.Infinite);
             }
-            catch (OperationCanceledException)
+            catch (ObjectDisposedException)
             {
-                // Expected when superseded by a new address-change event or during shutdown.
-            }
-            finally
-            {
-                cts.Dispose();
+                // Timer was disposed between the isDisposed check and the Change call — harmless.
             }
         }
 
@@ -428,11 +406,10 @@ namespace OpenNetMeter.Models
             {
                 if (db.CreateTable() < 0)
                 {
-                    Debug.WriteLine("Error: Create table");
+                    EventLogger.Error("Error: Create table");
                 }
                 else
                 {
-                    Debug.WriteLine($"Table created or already exists, adapter table: {AdapterName}");
                     db.InsertUniqueRow_AdapterTable(AdapterName);
                     db.UpdateDatesInDB();
                 }
@@ -539,8 +516,6 @@ namespace OpenNetMeter.Models
             long tempUpload = 0;
 
             networkSpeedWork = new PeriodicWork("Network speed", TimeSpan.FromSeconds(1));
-            Debug.WriteLine("Operation Started : Network capture");
-
             networkSpeedWork.Start(_ =>
             {
                 // Read current totals (atomic reads)
@@ -576,8 +551,6 @@ namespace OpenNetMeter.Models
         private void StartDbPush()
         {
             dbPushWork = new PeriodicWork("DB push", TimeSpan.FromSeconds(5));
-            Debug.WriteLine("Operation Started : DB push");
-
             dbPushWork.Start(_ =>
             {
 #if DEBUG
@@ -826,12 +799,9 @@ namespace OpenNetMeter.Models
             // Unsubscribe from network change events
             NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
 
-            // Cancel any pending debounce
-            lock (debounceLock)
-            {
-                networkChangeDebounce?.Cancel();
-                networkChangeDebounce = null;
-            }
+            // Dispose the debounce timer (prevents any pending callback from firing)
+            debounceTimer?.Dispose();
+            debounceTimer = null;
 
             // Stop monitoring if active
             if (IsNetworkOnline != "Disconnected")
