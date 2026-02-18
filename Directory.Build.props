@@ -1,7 +1,13 @@
 <Project>
   <PropertyGroup>
-	  <ProductVersion>0.14.2</ProductVersion>
+	  <ProductVersion>0.14.3</ProductVersion>
 	  <ProductName>OpenNetMeter</ProductName>
 	  <Manufacturer>Ashfaaq18</Manufacturer>
   </PropertyGroup>
+
+  <Target Name="ValidateProductVersionForMsi" BeforeTargets="Build">
+    <Error
+      Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(ProductVersion)', '^[0-9]+\.[0-9]+\.[0-9]+$')) != 'True'"
+      Text="Invalid ProductVersion '$(ProductVersion)'. Use 'major.minor.build' format (for example, 0.14.2). MSI major-upgrade detection compares numeric version parts and ignores a fourth segment." />
+  </Target>
 </Project>

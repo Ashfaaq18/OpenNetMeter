@@ -1,5 +1,8 @@
 ﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="DowngradeError" Value="A newer version of [ProductName] is already installed." />
+  <String Id="UpgradeDetectedDlg_Title" Value="[ProductName] Setup" />
+  <String Id="UpgradeDetectedDlgTitle" Value="Upgrade existing installation" />
+  <String Id="UpgradeDetectedDlgDescription" Value="A previous version of [ProductName] is already installed. Setup will upgrade it to this version and keep your existing settings." />
 
   <String Id="PrerequisitesDlg_Title" Value="[ProductName] Setup" />
   <String Id="PrerequisitesDlgBitmap" Value="WixUI_Bmp_Banner" />

@@ -22,16 +22,36 @@
 			<Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication" Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX=&quot;1&quot; and NOT Installed" Order="998"/>
 			<Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999" />
 
-			<Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="OptionsDlg" />
+			<Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="UpgradeDetectedDlg" Condition="WIX_UPGRADE_DETECTED AND NOT Installed" Order="1" />
+			<Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="OptionsDlg" Condition="NOT (WIX_UPGRADE_DETECTED AND NOT Installed)" Order="2" />
 			
-			<Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="2"/>
-			<Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="OptionsDlg" Order="3"/>
+			<Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Condition="Installed" Order="1"/>
+			<Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="UpgradeDetectedDlg" Condition="WIX_UPGRADE_DETECTED AND NOT Installed" Order="2"/>
+			<Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="OptionsDlg" Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED" Order="3"/>
 
 			<Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="MaintenanceTypeDlg" />
 
 			<Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg" />
 			<Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg" />
 			<Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg" />
+
+			<Dialog Id="UpgradeDetectedDlg" Width="370" Height="270" Title="!(loc.UpgradeDetectedDlg_Title)">
+				<Control Id="Title" Type="Text" X="15" Y="6" Width="340" Height="15"
+							Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}!(loc.UpgradeDetectedDlgTitle)" />
+				<Control Id="Line" Type="Line" X="0" Y="23" Width="370" Height="0" />
+				<Control Id="Description" Type="Text" X="20" Y="55" Width="330" Height="60"
+							Transparent="yes" NoPrefix="yes" Text="!(loc.UpgradeDetectedDlgDescription)" />
+
+				<Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="Back">
+					<Publish Event="NewDialog" Value="WelcomeDlg" />
+				</Control>
+				<Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="Next">
+					<Publish Event="NewDialog" Value="VerifyReadyDlg" />
+				</Control>
+				<Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+					<Publish Event="SpawnDialog" Value="CancelDlg" />
+				</Control>
+			</Dialog>
 
 			<Dialog Id="OptionsDlg" Width="370" Height="270" Title="[ProductName] Setup">
 				<Control Id="Title" Type="Text" X="15" Y="6" Width="340" Height="15"
