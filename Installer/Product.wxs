@@ -90,7 +90,7 @@
 		<StandardDirectory Id="DesktopFolder" />
 
 		<ComponentGroup Id="ShortcutComponents" Directory="DesktopFolder">
-			<Component Id="CmpDesktopShortcut" Guid="*" Condition="DESKTOP_SHORTCUT=&quot;1&quot;">
+			<Component Id="CmpDesktopShortcut" Guid="2dd319fe-df0c-4f5f-95d6-00a83eb09cb4" Condition="DESKTOP_SHORTCUT=&quot;1&quot;">
 				<Shortcut Id="AppDesktopShortcut"
 						  Name="$(ProductName)"
 						  Target="[InstallFolder]$(ProductName).exe"
@@ -101,22 +101,6 @@
 							   Key="Software\$(Manufacturer)\$(ProductName)"
 							   Name="DesktopShortcutInstalled"
 							   Type="integer" Value="1" KeyPath="yes" />
-			</Component>
-		</ComponentGroup>
-	</Fragment>
-
-	<Fragment>
-		<ComponentGroup Id="EventLogComponents" Directory="InstallFolder">
-			<Component Id="CreateEventSource64BitFullNet4" Guid="*" Condition="NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64">
-				<!-- Create an Event Source -->
-				<util:EventSource 
-					Name="$(ProductName)" 
-					Log="Application"
-					EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR64]EventLogMessages.dll"
-					SupportsInformationals="yes"
-					SupportsWarnings="yes"
-					SupportsErrors="yes"
-					KeyPath="yes" />
 			</Component>
 		</ComponentGroup>
 	</Fragment>
