@@ -22,12 +22,19 @@
               DllEntry="WixShellExec"
               Impersonate="yes" />
 
+		<CustomAction Id="CloseRunningApp"
+              Directory="System64Folder"
+              Execute="deferred"
+              Impersonate="no"
+              Return="ignore"
+              ExeCommand='cmd.exe /c "taskkill /F /IM $(ProductName).exe"' />
+
 		<CustomAction Id="CleanupAppData"
               Directory="System64Folder"
               Execute="deferred"
               Impersonate="yes"
               Return="ignore"
-              ExeCommand='cmd.exe /c "del /Q "%LOCALAPPDATA%\$(ProductName)\settings.json" "%LOCALAPPDATA%\$(ProductName)\OpenNetMeter.sqlite" "%LOCALAPPDATA%\$(ProductName)\OpenNetMeter.sqlite-wal" "%LOCALAPPDATA%\$(ProductName)\OpenNetMeter.sqlite-shm" &amp; rmdir "%LOCALAPPDATA%\$(ProductName)""' />
+              ExeCommand='cmd.exe /c "rmdir /S /Q "%LOCALAPPDATA%\$(ProductName)""' />
 
 		<CustomAction Id="DeleteOpenNetMeterTask"
 					  Directory="System64Folder"
@@ -37,7 +44,9 @@
 					  ExeCommand='cmd.exe /c "schtasks /Delete /TN "\OpenNetMeter\OpenNetMeterLogon" /F &amp; schtasks /Delete /TN "\OpenNetMeter" /F"' />
 
 		<InstallExecuteSequence>
-			<!-- Uninstall only, not during major upgrade removal -->
+			<Custom Action="CloseRunningApp"
+					After="InstallInitialize"
+					Condition="WIX_UPGRADE_DETECTED OR REMOVE=&quot;ALL&quot;" />
 			<Custom Action="DeleteOpenNetMeterTask"
 					Before="RemoveFiles"
 					Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
