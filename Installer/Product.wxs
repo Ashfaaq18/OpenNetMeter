@@ -22,6 +22,13 @@
               DllEntry="WixShellExec"
               Impersonate="yes" />
 
+		<CustomAction Id="CleanupAppData"
+              Directory="System64Folder"
+              Execute="deferred"
+              Impersonate="yes"
+              Return="ignore"
+              ExeCommand='cmd.exe /c "del /Q "%LOCALAPPDATA%\$(ProductName)\settings.json" "%LOCALAPPDATA%\$(ProductName)\OpenNetMeter.sqlite" "%LOCALAPPDATA%\$(ProductName)\OpenNetMeter.sqlite-wal" "%LOCALAPPDATA%\$(ProductName)\OpenNetMeter.sqlite-shm" &amp; rmdir "%LOCALAPPDATA%\$(ProductName)""' />
+
 		<CustomAction Id="DeleteOpenNetMeterTask"
 					  Directory="System64Folder"
 					  Execute="deferred"
@@ -33,6 +40,9 @@
 			<!-- Uninstall only, not during major upgrade removal -->
 			<Custom Action="DeleteOpenNetMeterTask"
 					Before="RemoveFiles"
+					Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+			<Custom Action="CleanupAppData"
+					Before="InstallFinalize"
 					Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
 		</InstallExecuteSequence>
 
@@ -50,7 +60,6 @@
 		<!-- components to install -->
 		<Feature Id="ProductFeature" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
-			<ComponentGroupRef Id="CleanupComponents" />
 			<ComponentGroupRef Id="ShortcutComponents" />
 		</Feature>
 		
@@ -64,24 +73,6 @@
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
 			<!-- Files to install -->
 			<Files Include="$(SolutionDir)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
-		</ComponentGroup>
-	</Fragment>
-
-
-	<Fragment>
-		<StandardDirectory Id="LocalAppDataFolder">
-			<Directory Id="ProductLocalDataFolder" Name="$(ProductName)"/>
-		</StandardDirectory>
-
-		<ComponentGroup Id="CleanupComponents" Directory="ProductLocalDataFolder">
-			<Component Id="CleanupAppData" Guid="3b5da538-c5a9-4a80-bbe4-5521e6f35b0b" Condition="NOT UPGRADINGPRODUCTCODE">
-				<RegistryValue Root="HKCU" Key="Software\$(Manufacturer)\$(ProductName)\Cleanup" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
-				<!-- runtime created files to remove -->
-				<RemoveFile Id="RemoveSettingsJson" Name="settings.json" On="uninstall" />
-				<RemoveFile Id="RemoveDatabase" Name="OpenNetMeter.sqlite" On="uninstall" />
-
-				<RemoveFolder Id="RemoveAppDataFolder" On="uninstall" />
-			</Component>
 		</ComponentGroup>
 	</Fragment>
 
