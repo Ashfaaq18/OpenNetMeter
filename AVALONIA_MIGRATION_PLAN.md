@@ -37,7 +37,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 - Introduce dispatcher abstraction usage (`IUiDispatcher`) in one focused flow.
 - Keep behavior identical.
 
-## Phase 4
+## Phase 4 (Completed)
 - Extract startup registration logic to `IStartupRegistrationService` Windows implementation.
 
 ## Phase 5

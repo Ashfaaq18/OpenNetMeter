@@ -3,13 +3,11 @@ using OpenNetMeter.Utilities;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using OpenNetMeter.PlatformAbstractions;
-using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 
 namespace OpenNetMeter.ViewModels
@@ -33,8 +31,7 @@ namespace OpenNetMeter.ViewModels
                     SettingsManager.Save();
 
                     UnlockOptionStartWin = false;
-                    //register to task scheduler
-                    SetAppAsTask(value);
+                    startupRegistrationService.SetEnabled(value, MinimizeOnStart);
                     UnlockOptionStartWin = true;
 
                     if (value)
@@ -258,19 +255,23 @@ namespace OpenNetMeter.ViewModels
         }
 
         private string DownloadUrl;
+        private readonly IStartupRegistrationService startupRegistrationService;
 
         private ConfirmationDialogVM? cdvm;
         private MiniWidgetVM? mwvm;
 
         public SettingsVM(MiniWidgetVM mw_ref, ConfirmationDialogVM cdvm_ref)
+            : this(mw_ref, cdvm_ref, new WindowsStartupRegistrationService())
         {
+        }
+
+        public SettingsVM(MiniWidgetVM mw_ref, ConfirmationDialogVM cdvm_ref, IStartupRegistrationService startupRegistrationService)
+        {
+            this.startupRegistrationService = startupRegistrationService;
             mwvm = mw_ref;
             cdvm = cdvm_ref;
             cdvm.BtnCommand = new BaseCommand(ResetDataYesOrNo, true);
             cdvm.DialogMessage = "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
-
-            taskFolder = "OpenNetMeter";
-            taskName = "OpenNetMeterLogon";
 
             //start with windows setting
             UnlockOptionStartWin = true;
@@ -397,89 +398,6 @@ namespace OpenNetMeter.ViewModels
                     DeleteAllFiles = true;
                 if (cdvm != null)
                     cdvm.IsVisible = UiVisibility.Hidden;
-            }
-        }
-
-        // --------- Task Scheduler stuff ------------------//
-        private readonly string taskName;
-        private readonly string taskFolder;
-        private void SetAppAsTask(bool set)
-        {
-            try
-            {
-                TaskScheduler.TaskFolder sub = TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"];
-                if (!set)
-                {
-                    for(int i = 0; i < sub.Tasks.Count; i++)
-                    {
-                        sub.DeleteTask(sub.Tasks[i].Name);
-                    }
-
-                    TaskScheduler.TaskService.Instance.RootFolder.DeleteFolder(taskFolder);
-                }
-                return;
-            }
-            catch (Exception ex)
-            {
-                EventLogger.Error("Error while updating startup task registration", ex);
-            }
-            finally
-            {
-                if (set)
-                {
-                    try
-                    {
-                        TaskScheduler.TaskService.Instance.RootFolder.CreateFolder(taskFolder);
-                        CreateTask();
-                    }
-                    catch (Exception ex1)
-                    {
-                        EventLogger.Error("Error creating startup task folder/definition", ex1);
-                    }
-                }
-            }
-        }
-
-        private void CreateTask()
-        {
-            try
-            {
-                //create task
-                TaskScheduler.TaskDefinition td = TaskScheduler.TaskService.Instance.NewTask();
-                td.RegistrationInfo.Description = "Run OpenNetMeter on system log on";
-                // Set to run at the highest privilege
-                td.Principal.RunLevel = TaskScheduler.TaskRunLevel.Highest;
-                // Task only runs when user is logged on
-                td.Principal.LogonType = TaskScheduler.TaskLogonType.InteractiveToken;
-
-                // These settings will ensure it runs even if on battery power
-                td.Settings.DisallowStartIfOnBatteries = false;
-                td.Settings.StopIfGoingOnBatteries = false;
-
-                //set compatibility to windows 10
-                td.Settings.Compatibility = TaskScheduler.TaskCompatibility.V2_3;
-
-                //set to launch when user logs on
-                TaskScheduler.LogonTrigger logonTrigger = new TaskScheduler.LogonTrigger
-                {
-                    Enabled = true,
-                    UserId = null
-                };
-                td.Triggers.Add(logonTrigger);
-
-                //set action to run application
-                TaskScheduler.ExecAction action = new TaskScheduler.ExecAction();
-                action.Path = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
-                if(MinimizeOnStart)
-                    action.Arguments = "/StartMinimized";
-                td.Actions.Add(action);
-
-                // Register the task in the sub folder
-                TaskScheduler.TaskService.Instance.RootFolder.SubFolders["OpenNetMeter"].RegisterTaskDefinition(taskName, td);
-            }
-            catch(Exception ex)
-            {
-                EventLogger.Error("Error creating startup task", ex);
             }
         }
 
