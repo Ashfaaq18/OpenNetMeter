@@ -46,7 +46,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 6 (Completed)
 - Wrap process icon loading behind `IProcessIconService`.
 
-## Phase 7
+## Phase 7 (Completed)
 - Add `OpenNetMeter.Avalonia` app skeleton (launches, minimal shell only).
 
 ## Phase 8

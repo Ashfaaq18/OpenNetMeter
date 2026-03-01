@@ -1,0 +1,25 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:OpenNetMeter.Avalonia.ViewModels"
+        x:Class="OpenNetMeter.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="900"
+        Height="600"
+        MinWidth="800"
+        MinHeight="500"
+        Title="OpenNetMeter (Avalonia)">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <Grid RowDefinitions="Auto,*" Margin="16">
+    <TextBlock FontSize="20" FontWeight="SemiBold" Text="OpenNetMeter Avalonia Shell"/>
+    <Border Grid.Row="1" Margin="0,12,0,0" Padding="12" CornerRadius="8" Background="#1E3A5F">
+      <TextBlock TextWrapping="Wrap"
+                 Foreground="White"
+                 Text="Phase 7 complete: minimal Avalonia app shell is running. Summary/History/Settings UI will be ported in later phases."/>
+    </Border>
+  </Grid>
+</Window>
