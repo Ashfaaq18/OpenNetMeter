@@ -1,4 +1,5 @@
 ﻿using OpenNetMeter.Models;
+using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
 using System;
 using System.Collections.Generic;
@@ -63,9 +64,18 @@ namespace OpenNetMeter.ViewModels
             }
         }
 
+        private readonly IUiDispatcher uiDispatcher;
+
         public ICommand FilterBtn { get; set; }
+
         public DataUsageHistoryVM()
+            : this(new WpfUiDispatcher(App.Current?.Dispatcher))
         {
+        }
+
+        public DataUsageHistoryVM(IUiDispatcher uiDispatcher)
+        {
+            this.uiDispatcher = uiDispatcher;
             UpdateDates();
             TotalDownloadData = 0;
             TotalUploadData = 0;
@@ -137,9 +147,9 @@ namespace OpenNetMeter.ViewModels
         public void GetAllDBFiles()
         {
             // Ensure collection updates occur on the UI thread
-            if (!App.Current.Dispatcher.CheckAccess())
+            if (!uiDispatcher.CheckAccess())
             {
-                App.Current.Dispatcher.Invoke(() => GetAllDBFiles());
+                uiDispatcher.Post(GetAllDBFiles);
                 return;
             }
 
@@ -181,3 +191,4 @@ namespace OpenNetMeter.ViewModels
 
     }
 }
+

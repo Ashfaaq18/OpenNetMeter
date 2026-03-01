@@ -33,7 +33,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 - Replace WPF `Visibility` in moved code with `UiVisibility`.
 - Add temporary WPF mapping adapter.
 
-## Phase 3
+## Phase 3 (Completed)
 - Introduce dispatcher abstraction usage (`IUiDispatcher`) in one focused flow.
 - Keep behavior identical.
 
