@@ -84,6 +84,7 @@ namespace OpenNetMeter.Models
 
         // Current adapter's unique ID (GUID) - used for comparison to detect changes
         private string currentAdapterId = "";
+        public string CurrentAdapterId => currentAdapterId;
 
         /// <summary>
         /// Primary buffer for storing process network data.

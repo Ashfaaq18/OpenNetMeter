@@ -40,7 +40,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 4 (Completed)
 - Extract startup registration logic to `IStartupRegistrationService` Windows implementation.
 
-## Phase 5
+## Phase 5 (Completed)
 - Wrap current Windows network capture behind `INetworkCaptureService`.
 
 ## Phase 6
