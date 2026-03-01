@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -65,17 +66,19 @@ namespace OpenNetMeter.ViewModels
         }
 
         private readonly IUiDispatcher uiDispatcher;
+        private readonly IProcessIconService processIconService;
 
         public ICommand FilterBtn { get; set; }
 
         public DataUsageHistoryVM()
-            : this(new WpfUiDispatcher(App.Current?.Dispatcher))
+            : this(new WpfUiDispatcher(App.Current?.Dispatcher), new WindowsProcessIconService())
         {
         }
 
-        public DataUsageHistoryVM(IUiDispatcher uiDispatcher)
+        public DataUsageHistoryVM(IUiDispatcher uiDispatcher, IProcessIconService processIconService)
         {
             this.uiDispatcher = uiDispatcher;
+            this.processIconService = processIconService;
             UpdateDates();
             TotalDownloadData = 0;
             TotalUploadData = 0;
@@ -132,7 +135,8 @@ namespace OpenNetMeter.ViewModels
                             if(!Convert.IsDBNull(dataStats[i][0]) && !Convert.IsDBNull(dataStats[i][1]) && !Convert.IsDBNull(dataStats[i][2]))
                             {
                                 string processName = Convert.ToString(dataStats[i][0])!;
-                                MyProcesses.Add(new MyProcess_Small(processName, Convert.ToInt64(dataStats[i][1]), Convert.ToInt64(dataStats[i][2]), ProcessIconCache.GetIcon(processName)));
+                                ImageSource? icon = processIconService.GetProcessIcon(processName) as ImageSource;
+                                MyProcesses.Add(new MyProcess_Small(processName, Convert.ToInt64(dataStats[i][1]), Convert.ToInt64(dataStats[i][2]), icon));
 
                                 TotalDownloadData += Convert.ToInt64(dataStats[i][1]);
                                 TotalUploadData += Convert.ToInt64(dataStats[i][2]);

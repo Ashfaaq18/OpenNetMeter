@@ -43,7 +43,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 5 (Completed)
 - Wrap current Windows network capture behind `INetworkCaptureService`.
 
-## Phase 6
+## Phase 6 (Completed)
 - Wrap process icon loading behind `IProcessIconService`.
 
 ## Phase 7

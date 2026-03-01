@@ -7,6 +7,8 @@ using OpenNetMeter.Models;
 using System.Linq;
 using OpenNetMeter.Utilities;
 using OpenNetMeter.Properties;
+using OpenNetMeter.PlatformAbstractions;
+using System.Windows.Media;
 
 namespace OpenNetMeter.ViewModels
 {
@@ -15,6 +17,7 @@ namespace OpenNetMeter.ViewModels
         private readonly DataUsageSummaryVM dusvm;
         private readonly DataUsageHistoryVM duhvm;
         private readonly MiniWidgetVM mwvm;
+        private readonly IProcessIconService processIconService;
         public SettingsVM svm;
         private readonly NetworkProcess netProc;
         public ICommand SwitchTabCommand { get; set; }
@@ -67,7 +70,13 @@ namespace OpenNetMeter.ViewModels
         }
 
         public MainWindowVM(MiniWidgetVM mw_DataContext, ConfirmationDialogVM cd_DataContext) //runs once during app init
+            : this(mw_DataContext, cd_DataContext, new WindowsProcessIconService())
         {
+        }
+
+        public MainWindowVM(MiniWidgetVM mw_DataContext, ConfirmationDialogVM cd_DataContext, IProcessIconService processIconService) //runs once during app init
+        {
+            this.processIconService = processIconService;
             DownloadSpeed = 0;
             UploadSpeed = 0;
             date1 = DateTime.Now;
@@ -301,7 +310,7 @@ namespace OpenNetMeter.ViewModels
 
         private void EnsureProcessEntry(string processName)
         {
-            var icon = ProcessIconCache.GetIcon(processName);
+            ImageSource? icon = processIconService.GetProcessIcon(processName) as ImageSource;
 
             if (!dusvm.MyProcesses.TryAdd(processName, new MyProcess_Big(processName, 0, 0, 0, 0, icon)))
             {
