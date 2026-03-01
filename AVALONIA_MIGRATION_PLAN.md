@@ -27,7 +27,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 - Add project to solution.
 - No behavior changes.
 
-## Phase 2
+## Phase 2 (Completed)
 - Add `OpenNetMeter.Core` project.
 - Move only `ConfirmationDialogVM` first.
 - Replace WPF `Visibility` in moved code with `UiVisibility`.

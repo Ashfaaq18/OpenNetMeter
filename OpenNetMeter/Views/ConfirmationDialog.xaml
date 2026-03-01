@@ -9,10 +9,14 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
         Title="Confirm" 
-        Visibility="{Binding IsVisible , Mode=TwoWay}"
+        Visibility="{Binding IsVisible, Mode=TwoWay, Converter={StaticResource UiVisibilityToWpfVisibilityConverter}}"
         IsVisibleChanged="Window_IsVisibleChanged"
         WindowStartupLocation="Manual" Loaded="Window_Loaded"
         ShowInTaskbar="False">
+
+    <Window.Resources>
+        <local:UiVisibilityToWpfVisibilityConverter x:Key="UiVisibilityToWpfVisibilityConverter"/>
+    </Window.Resources>
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" GlassFrameThickness="1" CornerRadius="0" />

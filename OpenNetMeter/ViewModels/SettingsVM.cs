@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using OpenNetMeter.PlatformAbstractions;
 using TaskScheduler = Microsoft.Win32.TaskScheduler;
 
 
@@ -314,7 +315,7 @@ namespace OpenNetMeter.ViewModels
         private void ResetData(object? obj)
         {
             if(cdvm != null)
-                cdvm.IsVisible = System.Windows.Visibility.Visible;
+                cdvm.IsVisible = UiVisibility.Visible;
         }
 
         private async void UpdateCheck(object? obj)
@@ -395,7 +396,7 @@ namespace OpenNetMeter.ViewModels
                 if ((string)obj == "Yes")
                     DeleteAllFiles = true;
                 if (cdvm != null)
-                    cdvm.IsVisible = System.Windows.Visibility.Hidden;
+                    cdvm.IsVisible = UiVisibility.Hidden;
             }
         }
 
