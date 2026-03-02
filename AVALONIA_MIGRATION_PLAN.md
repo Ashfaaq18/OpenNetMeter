@@ -61,7 +61,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 11 (Completed)
 - Port Avalonia Summary screen + graph rendering.
 
-## Phase 12
+## Phase 12 (Completed)
 - Stabilization + Windows Avalonia release candidate (WPF still buildable).
 
 ## Cross-Platform Follow-up
