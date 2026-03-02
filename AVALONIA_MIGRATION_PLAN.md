@@ -78,9 +78,36 @@ After core tabs are stable on Windows Avalonia:
 2. `dotnet test OpenNetMeter.Tests/OpenNetMeter.Tests.csproj --configuration Debug`
 3. Short manual smoke checklist for only the changed surface.
 
-## Notes for New Chat Continuation
-If context resets, start from:
-- This file
-- Current completed phase number
-- `git status` + latest commit
-Then continue with the next uncompleted phase using the same small-slice rules.
+## New Chat Handoff (Context Reset Safe)
+Use this checklist when starting a fresh chat:
+1. Share this file first: `AVALONIA_MIGRATION_PLAN.md`
+2. Share repo status:
+   - `git status --short`
+   - `git log -5 --oneline`
+3. State your intent in one line:
+   - example: `Continue from Phase 12; next focus is visual parity / Linux testing / packaging`
+
+### Current Snapshot
+- Completed phases: `1` through `12`, plus sub-phase `11.1`.
+- Avalonia app exists and runs with Summary/History/Settings screens.
+- Linux publish path exists via `scripts/publish-avalonia-rc.ps1` (`linux-x64` supported).
+- WPF app remains buildable in parallel.
+
+### Known Local Friction
+- Occasional `CS2012` / `BG1002` / copy-lock errors can appear when multiple `dotnet` operations overlap.
+- If hit, run commands sequentially and clean build artifacts for the affected project.
+
+### Verification Commands
+1. `dotnet build OpenNetMeter.sln --configuration Debug`
+2. `dotnet test OpenNetMeter.Tests/OpenNetMeter.Tests.csproj --configuration Debug`
+3. Avalonia run:
+   - `dotnet run --project .\OpenNetMeter.Avalonia\OpenNetMeter.Avalonia.csproj`
+4. Linux RC publish:
+   - `powershell -ExecutionPolicy Bypass -File .\scripts\publish-avalonia-rc.ps1 -Runtime linux-x64 -Configuration Debug`
+
+### Copy/Paste Starter for New Chat
+`Use AVALONIA_MIGRATION_PLAN.md as source of truth. Assume phases 1-12 + 11.1 are complete. First read git status and latest commits, then continue with small, reviewable slices only.`
+
+## Recent Commits
+- `46b6fc3` (2026-03-02): connect the sample realtime points to livecharts
+- `1717fa7` (2026-03-02): making the ui look more like the wpf version.
