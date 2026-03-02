@@ -52,7 +52,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 8 (Completed)
 - Port Avalonia main shell/tab navigation bound to shared VM.
 
-## Phase 9
+## Phase 9 (Completed)
 - Port Avalonia Settings screen.
 
 ## Phase 10

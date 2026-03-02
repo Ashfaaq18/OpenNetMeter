@@ -34,11 +34,45 @@
         </Border>
       </TabItem>
       <TabItem Header="Settings">
-        <Border Margin="8" Padding="12" CornerRadius="8" Background="#5A3A1E">
-          <TextBlock Foreground="White"
-                     TextWrapping="Wrap"
-                     Text="Settings tab shell is active. Full settings view port is Phase 9."/>
-        </Border>
+        <ScrollViewer Margin="8">
+          <StackPanel Spacing="12">
+            <Border Padding="12" CornerRadius="8" Background="#1F2630">
+              <StackPanel Spacing="8">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="General"/>
+                <CheckBox Content="Start program on startup"
+                          IsChecked="{Binding Settings.StartWithWindows, Mode=TwoWay}"/>
+                <CheckBox Content="Minimize to tray on startup"
+                          IsChecked="{Binding Settings.MinimizeOnStart, Mode=TwoWay}"/>
+                <CheckBox Content="Dark mode"
+                          IsChecked="{Binding Settings.DarkMode, Mode=TwoWay}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Padding="12" CornerRadius="8" Background="#1F2630">
+              <StackPanel Spacing="8">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Mini Widget"/>
+                <CheckBox Content="Show mini widget"
+                          IsChecked="{Binding Settings.MiniWidgetVisible, Mode=TwoWay}"/>
+                <TextBlock Text="Transparency"/>
+                <Slider Minimum="0"
+                        Maximum="100"
+                        Value="{Binding Settings.MiniWidgetTransparency, Mode=TwoWay}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Padding="12" CornerRadius="8" Background="#1F2630">
+              <StackPanel Spacing="8">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Network Monitoring"/>
+                <TextBlock Text="Monitor these networks"/>
+                <ComboBox ItemsSource="{Binding Settings.NetworkTargets}"
+                          SelectedIndex="{Binding Settings.SelectedNetworkTargetIndex, Mode=TwoWay}"/>
+                <TextBlock Text="Speed format"/>
+                <ComboBox ItemsSource="{Binding Settings.SpeedUnits}"
+                          SelectedIndex="{Binding Settings.SelectedSpeedUnitIndex, Mode=TwoWay}"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
     </TabControl>
   </Grid>
