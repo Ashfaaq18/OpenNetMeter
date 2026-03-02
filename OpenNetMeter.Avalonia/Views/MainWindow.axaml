@@ -29,7 +29,7 @@
         <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
 
           <!-- App icon -->
-          <Image Grid.Column="0" Source="C:\Ash-stuff\GitProjects\Ashfaaq18\OpenNetMeter\OpenNetMeter\Resources\x48.png"
+          <Image Grid.Column="0" Source="avares://OpenNetMeter.Avalonia/Assets/x48.png"
                  Width="28" Height="28" Margin="14,0,0,0"
                  VerticalAlignment="Center"/>
 
@@ -141,8 +141,11 @@
                                Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
                   </StackPanel>
 
-                  <DatePicker HorizontalAlignment="Stretch" Margin="0,0,0,6"
-                              SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"/>
+                  <CalendarDatePicker HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                    Watermark="Select date"
+                    SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"
+                    DisplayDateStart="{Binding Summary.DateMin}"
+                    DisplayDateEnd="{Binding Summary.DateMax}"/>
 
                   <Border CornerRadius="6" Padding="8,4" Background="#2EA043" Margin="0,0,0,4">
                     <Grid ColumnDefinitions="Auto,*">
@@ -410,5 +413,24 @@
     <Style Selector="Button.closeBtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#DA3633"/>
     </Style>
+
+    <Style Selector="CalendarDatePicker">
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="MinHeight" Value="28"/>
+      <Setter Property="Background" Value="#141A22"/>
+      <Setter Property="BorderBrush" Value="#344150"/>
+      <Setter Property="Foreground" Value="#C8D1D9"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="6,3"/>
+    </Style>
+
+    <Style Selector="CalendarDatePicker Calendar">
+      <Setter Property="RenderTransform">
+        <ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
+      </Setter>
+      <Setter Property="RenderTransformOrigin" Value="0%,0%"/>
+    </Style>
+
   </Window.Styles>
 </Window>

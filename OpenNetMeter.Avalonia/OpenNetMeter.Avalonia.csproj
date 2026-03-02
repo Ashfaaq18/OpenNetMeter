@@ -18,4 +18,8 @@
     <ProjectReference Include="..\OpenNetMeter.Core\OpenNetMeter.Core.csproj" />
     <ProjectReference Include="..\OpenNetMeter.PlatformAbstractions\OpenNetMeter.PlatformAbstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
 </Project>
