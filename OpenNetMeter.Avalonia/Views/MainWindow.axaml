@@ -27,11 +27,54 @@
         </Border>
       </TabItem>
       <TabItem Header="History">
-        <Border Margin="8" Padding="12" CornerRadius="8" Background="#2E4A2A">
-          <TextBlock Foreground="White"
-                     TextWrapping="Wrap"
-                     Text="History tab shell is active. Content port comes in next phases."/>
-        </Border>
+        <Grid Margin="8" RowDefinitions="Auto,*,Auto">
+          <Border Padding="12" CornerRadius="8" Background="#1F2630">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <TextBlock VerticalAlignment="Center" Text="Usage of"/>
+              <ComboBox Width="180"
+                        ItemsSource="{Binding History.Profiles}"
+                        SelectedItem="{Binding History.SelectedProfile, Mode=TwoWay}"/>
+              <TextBlock VerticalAlignment="Center" Text="From"/>
+              <DatePicker SelectedDate="{Binding History.DateStart, Mode=TwoWay}"/>
+              <TextBlock VerticalAlignment="Center" Text="To"/>
+              <DatePicker SelectedDate="{Binding History.DateEnd, Mode=TwoWay}"/>
+              <Button Content="Filter"
+                      Command="{Binding History.FilterCommand}"/>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Row="1" Margin="0,12,0,12" Padding="8" CornerRadius="8" Background="#1F2630">
+            <Grid RowDefinitions="Auto,*">
+              <Grid ColumnDefinitions="2*,*,*" Margin="8,4">
+                <TextBlock FontWeight="SemiBold" Text="Process"/>
+                <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="Data Received"/>
+                <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="Data Sent"/>
+              </Grid>
+
+              <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding History.Rows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid ColumnDefinitions="2*,*,*" Margin="8,3">
+                        <TextBlock Text="{Binding ProcessName}"/>
+                        <TextBlock Grid.Column="1" Text="{Binding DownloadText}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding UploadText}"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+          </Border>
+
+          <Border Grid.Row="2" Padding="12" CornerRadius="8" Background="#1F2630">
+            <Grid ColumnDefinitions="2*,*,*">
+              <TextBlock FontWeight="SemiBold" Text="Total"/>
+              <TextBlock Grid.Column="1" Text="{Binding History.TotalDownloadText}"/>
+              <TextBlock Grid.Column="2" Text="{Binding History.TotalUploadText}"/>
+            </Grid>
+          </Border>
+        </Grid>
       </TabItem>
       <TabItem Header="Settings">
         <ScrollViewer Margin="8">
