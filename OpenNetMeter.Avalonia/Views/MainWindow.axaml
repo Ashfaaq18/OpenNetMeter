@@ -10,284 +10,405 @@
         Height="600"
         MinWidth="800"
         MinHeight="500"
-        Title="OpenNetMeter (Avalonia)">
+        Title="OpenNetMeter"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="0"
+        SystemDecorations="BorderOnly"
+        Background="Transparent"
+        TransparencyLevelHint="None">
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid RowDefinitions="Auto,*" Margin="16">
-    <TextBlock FontSize="20" FontWeight="SemiBold" Text="OpenNetMeter Avalonia"/>
-    <TabControl Grid.Row="1"
-                Margin="0,12,0,0"
-                SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
-      <TabItem Header="Summary">
-        <!-- Add xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia" to your Window tag -->
-        <Grid Margin="8" RowDefinitions="*,110" ColumnDefinitions="180,12,*">
+  <Border Background="#0D1117" BorderBrush="#2B3645" BorderThickness="1" CornerRadius="0">
+    <Grid RowDefinitions="50,*,30">
 
-          <!-- ═══ LEFT COLUMN: Session Card, Usage Card, Activity Header ═══ -->
-          <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,10,Auto,10,*">
+      <!-- ═══ TITLE BAR ═══ -->
+      <Border Grid.Row="0" Background="#161B22" IsHitTestVisible="True">
+        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
 
-            <!-- Current Session Card -->
-            <Border Grid.Row="0" Padding="10" CornerRadius="12" Background="#1F2630" BoxShadow="0 2 10 0 #33000000">
-              <StackPanel Spacing="4">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                  <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="#2EA043">
-                    <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
-                              Foreground="White" Width="12" Height="12"/>
-                  </Border>
-                  <TextBlock Text="Current Session" FontSize="11" FontWeight="SemiBold"
-                             Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                </StackPanel>
+          <!-- App icon -->
+          <Image Grid.Column="0" Source="C:\Ash-stuff\GitProjects\Ashfaaq18\OpenNetMeter\OpenNetMeter\Resources\x48.png"
+                 Width="28" Height="28" Margin="14,0,0,0"
+                 VerticalAlignment="Center"/>
 
-                <Border CornerRadius="6" Padding="8,4" Background="#2EA043" Margin="0,0,0,4">
-                  <Grid ColumnDefinitions="Auto,*">
-                    <StackPanel Orientation="Horizontal">
-                      <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+          <!-- Tab buttons -->
+          <Button Grid.Column="1" Content="Summary" Classes="tab"
+                  Classes.active="{Binding IsSummaryTab}"
+                  Command="{Binding SwitchTabCommand}" CommandParameter="0"
+                  Margin="16,0,4,0"/>
+          <Button Grid.Column="2" Content="History" Classes="tab"
+                  Classes.active="{Binding IsHistoryTab}"
+                  Command="{Binding SwitchTabCommand}" CommandParameter="1"
+                  Margin="0,0,4,0"/>
+          <Button Grid.Column="3" Content="Settings" Classes="tab"
+                  Classes.active="{Binding IsSettingsTab}"
+                  Command="{Binding SwitchTabCommand}" CommandParameter="2"/>
+
+          <!-- Spacer (draggable area) -->
+          <Border Grid.Column="4" Background="Transparent" IsHitTestVisible="True"
+                  PointerPressed="TitleBar_PointerPressed"/>
+
+          <!-- About button -->
+          <Button Grid.Column="5" Content="About" Classes="titleBtn"
+                  Click="About_Click"/>
+
+          <!-- Minimize button -->
+          <Button Grid.Column="6" Classes="titleBtn" Click="Minimize_Click">
+            <Panel Width="10" Height="1">
+              <Rectangle Fill="#C8D1D9" Height="1"/>
+            </Panel>
+          </Button>
+
+          <!-- Close button -->
+          <Button Grid.Column="7" Classes="titleBtn closeBtn" Click="Close_Click">
+            <Panel Width="10" Height="10">
+              <Line StartPoint="0,0" EndPoint="10,10" Stroke="#C8D1D9" StrokeThickness="1.2"/>
+              <Line StartPoint="10,0" EndPoint="0,10" Stroke="#C8D1D9" StrokeThickness="1.2"/>
+            </Panel>
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- ═══ CONTENT AREA ═══ -->
+      <TabControl Grid.Row="1"
+                  SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                  Margin="0"
+                  Padding="0">
+        <!-- Hide the built-in tab strip since we have custom title bar tabs -->
+        <TabControl.Styles>
+          <Style Selector="TabControl > TabStripItem">
+            <Setter Property="IsVisible" Value="False"/>
+          </Style>
+        </TabControl.Styles>
+
+        <TabItem>
+          <Grid Margin="12,8" RowDefinitions="*,110" ColumnDefinitions="180,12,*">
+
+            <!-- ═══ LEFT COLUMN ═══ -->
+            <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,10,Auto,10,*">
+
+              <!-- Current Session Card -->
+              <Border Grid.Row="0" Padding="10" CornerRadius="12" Background="#1F2630" BoxShadow="0 2 10 0 #33000000">
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="#2EA043">
+                      <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
                                 Foreground="White" Width="12" Height="12"/>
-                      <TextBlock Text="DL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding Summary.CurrentSessionDownloadText}"
-                               Foreground="White" FontSize="11" FontWeight="SemiBold"
-                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                  </Grid>
-                </Border>
-
-                <Border CornerRadius="6" Padding="8,4" Background="#4EA1FF">
-                  <Grid ColumnDefinitions="Auto,*">
-                    <StackPanel Orientation="Horizontal">
-                      <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
-                                Foreground="White" Width="12" Height="12"/>
-                      <TextBlock Text="UL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding Summary.CurrentSessionUploadText}"
-                               Foreground="White" FontSize="11" FontWeight="SemiBold"
-                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                  </Grid>
-                </Border>
-              </StackPanel>
-            </Border>
-
-            <!-- Usage From Card -->
-            <Border Grid.Row="2" Padding="10" CornerRadius="12" Background="#1F2630" BoxShadow="0 2 10 0 #33000000">
-              <StackPanel Spacing="4">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                  <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="#4EA1FF">
-                    <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
-                              Foreground="White" Width="12" Height="12"/>
-                  </Border>
-                  <TextBlock Text="Usage From" FontSize="11" FontWeight="SemiBold"
-                             Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                </StackPanel>
-
-                <DatePicker HorizontalAlignment="Stretch" Margin="0,0,0,6"
-                            SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"/>
-
-                <Border CornerRadius="6" Padding="8,4" Background="#2EA043" Margin="0,0,0,4">
-                  <Grid ColumnDefinitions="Auto,*">
-                    <StackPanel Orientation="Horizontal">
-                      <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
-                                Foreground="White" Width="12" Height="12"/>
-                      <TextBlock Text="DL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding Summary.TotalFromDateDownloadText}"
-                               Foreground="White" FontSize="11" FontWeight="SemiBold"
-                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                  </Grid>
-                </Border>
-
-                <Border CornerRadius="6" Padding="8,4" Background="#4EA1FF">
-                  <Grid ColumnDefinitions="Auto,*">
-                    <StackPanel Orientation="Horizontal">
-                      <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
-                                Foreground="White" Width="12" Height="12"/>
-                      <TextBlock Text="UL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding Summary.TotalFromDateUploadText}"
-                               Foreground="White" FontSize="11" FontWeight="SemiBold"
-                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                  </Grid>
-                </Border>
-              </StackPanel>
-            </Border>
-
-            <!-- Activity Header (L-shape connector) -->
-            <Border Grid.Row="4" Padding="10" CornerRadius="12,12,0,0" Background="#1F2630"
-                    BoxShadow="0 2 10 0 #33000000" VerticalAlignment="Bottom">
-              <StackPanel>
-                <StackPanel Orientation="Horizontal">
-                  <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="#2EA043">
-                    <PathIcon Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
-                              Foreground="White" Width="12" Height="12"/>
-                  </Border>
-                  <TextBlock Text="Activity" FontSize="11" FontWeight="SemiBold"
-                             Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                  <Ellipse Width="8" Height="8" Fill="#2EA043" VerticalAlignment="Center"/>
-                  <TextBlock Text="Download" Foreground="#8899AA" FontSize="10" Margin="4,0,12,0" VerticalAlignment="Center"/>
-                  <Ellipse Width="8" Height="8" Fill="#4EA1FF" VerticalAlignment="Center"/>
-                  <TextBlock Text="Upload" Foreground="#8899AA" FontSize="10" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-              </StackPanel>
-            </Border>
-          </Grid>
-
-          <!-- ═══ RIGHT COLUMN: Active Processes ═══ -->
-          <Border Grid.Row="0" Grid.Column="2" CornerRadius="12" Background="#1F2630"
-                  BoxShadow="0 2 10 0 #33000000" Margin="0,0,0,10" Padding="0" ClipToBounds="True">
-            <Grid RowDefinitions="Auto,*">
-              <Border Grid.Row="0" Padding="12,8" Background="#28323E"
-                      BorderBrush="#344150" BorderThickness="0,0,0,1">
-                <Grid>
-                  <StackPanel Orientation="Horizontal">
-                    <PathIcon Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z"
-                              Foreground="#AABBCC" Width="16" Height="16"/>
-                    <TextBlock Text="Active Processes" Foreground="White" FontSize="12"
-                               FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    </Border>
+                    <TextBlock Text="Current Session" FontSize="11" FontWeight="SemiBold"
+                               Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
                   </StackPanel>
-                  <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
-                             Foreground="#8899AA" FontSize="10">
-                    <Run Text="{Binding Summary.ProcessCount}"/>
-                    <Run Text=" processes"/>
-                  </TextBlock>
-                </Grid>
+
+                  <Border CornerRadius="6" Padding="8,4" Background="#2EA043" Margin="0,0,0,4">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <StackPanel Orientation="Horizontal">
+                        <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+                                  Foreground="White" Width="12" Height="12"/>
+                        <TextBlock Text="DL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding Summary.CurrentSessionDownloadText}"
+                                 Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+
+                  <Border CornerRadius="6" Padding="8,4" Background="#4EA1FF">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <StackPanel Orientation="Horizontal">
+                        <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
+                                  Foreground="White" Width="12" Height="12"/>
+                        <TextBlock Text="UL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding Summary.CurrentSessionUploadText}"
+                                 Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+                </StackPanel>
               </Border>
 
-              <DataGrid Grid.Row="1"
-                        ItemsSource="{Binding Summary.ActiveProcesses}"
-                        IsReadOnly="True"
-                        CanUserReorderColumns="False"
-                        CanUserResizeColumns="False"
-                        CanUserSortColumns="True"
-                        HeadersVisibility="Column"
-                        GridLinesVisibility="None"
-                        Background="Transparent"
-                        BorderThickness="0">
-                <DataGrid.Columns>
-                  <DataGridTemplateColumn Header="Name" Width="*" MinWidth="120">
-                    <DataGridTemplateColumn.CellTemplate>
-                      <DataTemplate>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4">
-                          <Image Source="{Binding Icon}" Width="16" Height="16"/>
-                          <TextBlock Text="{Binding ProcessName}" VerticalAlignment="Center"
-                                     Margin="8,0,0,0" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                        </StackPanel>
-                      </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                  </DataGridTemplateColumn>
-                  <DataGridTextColumn Header="↓ Current" Width="80" Binding="{Binding CurrentDownload}"/>
-                  <DataGridTextColumn Header="↑ Current" Width="80" Binding="{Binding CurrentUpload}"/>
-                  <DataGridTextColumn Header="↓ Total" Width="80" Binding="{Binding TotalDownload}"/>
-                  <DataGridTextColumn Header="↑ Total" Width="80" Binding="{Binding TotalUpload}"/>
-                </DataGrid.Columns>
-              </DataGrid>
+              <!-- Usage From Card -->
+              <Border Grid.Row="2" Padding="10" CornerRadius="12" Background="#1F2630" BoxShadow="0 2 10 0 #33000000">
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="#4EA1FF">
+                      <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
+                                Foreground="White" Width="12" Height="12"/>
+                    </Border>
+                    <TextBlock Text="Usage From" FontSize="11" FontWeight="SemiBold"
+                               Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                  </StackPanel>
+
+                  <DatePicker HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                              SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"/>
+
+                  <Border CornerRadius="6" Padding="8,4" Background="#2EA043" Margin="0,0,0,4">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <StackPanel Orientation="Horizontal">
+                        <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+                                  Foreground="White" Width="12" Height="12"/>
+                        <TextBlock Text="DL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding Summary.TotalFromDateDownloadText}"
+                                 Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+
+                  <Border CornerRadius="6" Padding="8,4" Background="#4EA1FF">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <StackPanel Orientation="Horizontal">
+                        <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
+                                  Foreground="White" Width="12" Height="12"/>
+                        <TextBlock Text="UL" Foreground="White" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding Summary.TotalFromDateUploadText}"
+                                 Foreground="White" FontSize="11" FontWeight="SemiBold"
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+                </StackPanel>
+              </Border>
+
+              <!-- Activity Header (L-shape connector) -->
+              <Border Grid.Row="4" Padding="10" CornerRadius="12,12,0,0" Background="#1F2630"
+                      BoxShadow="0 2 10 0 #33000000" VerticalAlignment="Bottom">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="#2EA043">
+                      <PathIcon Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+                                Foreground="White" Width="12" Height="12"/>
+                    </Border>
+                    <TextBlock Text="Activity" FontSize="11" FontWeight="SemiBold"
+                               Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Ellipse Width="8" Height="8" Fill="#2EA043" VerticalAlignment="Center"/>
+                    <TextBlock Text="Download" Foreground="#8899AA" FontSize="10" Margin="4,0,12,0" VerticalAlignment="Center"/>
+                    <Ellipse Width="8" Height="8" Fill="#4EA1FF" VerticalAlignment="Center"/>
+                    <TextBlock Text="Upload" Foreground="#8899AA" FontSize="10" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
             </Grid>
-          </Border>
 
-          <!-- ═══ BOTTOM ROW: LiveCharts2 Graph (full width, L-shape) ═══ -->
-          <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-                  Padding="10" CornerRadius="0,12,12,12" Background="#1F2630"
-                  BoxShadow="0 2 10 0 #33000000">
-            <lvc:CartesianChart Series="{Binding Summary.GraphSeries}"
-                                XAxes="{Binding Summary.GraphXAxes}"
-                                YAxes="{Binding Summary.GraphYAxes}"
-                                ZoomMode="None"
-                                TooltipPosition="Hidden"
-                                AnimationsSpeed="00:00:00.150"/>
-          </Border>
-        </Grid>
-      </TabItem>
-      <TabItem Header="History">
-        <Grid Margin="8" RowDefinitions="Auto,*,Auto">
-          <Border Padding="12" CornerRadius="8" Background="#1F2630">
-            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-              <TextBlock VerticalAlignment="Center" Text="Usage of"/>
-              <ComboBox Width="180"
-                        ItemsSource="{Binding History.Profiles}"
-                        SelectedItem="{Binding History.SelectedProfile, Mode=TwoWay}"/>
-              <TextBlock VerticalAlignment="Center" Text="From"/>
-              <DatePicker SelectedDate="{Binding History.DateStart, Mode=TwoWay}"/>
-              <TextBlock VerticalAlignment="Center" Text="To"/>
-              <DatePicker SelectedDate="{Binding History.DateEnd, Mode=TwoWay}"/>
-              <Button Content="Filter"
-                      Command="{Binding History.FilterCommand}"/>
-            </StackPanel>
-          </Border>
+            <!-- ═══ RIGHT COLUMN: Active Processes ═══ -->
+            <Border Grid.Row="0" Grid.Column="2" CornerRadius="12" Background="#1F2630"
+                    BoxShadow="0 2 10 0 #33000000" Margin="0,0,0,10" Padding="0" ClipToBounds="True">
+              <Grid RowDefinitions="Auto,*">
+                <Border Grid.Row="0" Padding="12,8" Background="#28323E"
+                        BorderBrush="#344150" BorderThickness="0,0,0,1">
+                  <Grid>
+                    <StackPanel Orientation="Horizontal">
+                      <PathIcon Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z"
+                                Foreground="#AABBCC" Width="16" Height="16"/>
+                      <TextBlock Text="Active Processes" Foreground="White" FontSize="12"
+                                 FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Foreground="#8899AA" FontSize="10">
+                      <Run Text="{Binding Summary.ProcessCount}"/>
+                      <Run Text=" processes"/>
+                    </TextBlock>
+                  </Grid>
+                </Border>
 
-          <Border Grid.Row="1" Margin="0,12,0,12" Padding="8" CornerRadius="8" Background="#1F2630">
-            <Grid RowDefinitions="Auto,*">
-              <Grid ColumnDefinitions="2*,*,*" Margin="8,4">
-                <TextBlock FontWeight="SemiBold" Text="Process"/>
-                <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="Data Received"/>
-                <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="Data Sent"/>
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding Summary.ActiveProcesses}"
+                          IsReadOnly="True"
+                          CanUserReorderColumns="False"
+                          CanUserResizeColumns="False"
+                          CanUserSortColumns="True"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="None"
+                          Background="Transparent"
+                          BorderThickness="0">
+                  <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Name" Width="*" MinWidth="120">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4">
+                            <Image Source="{Binding Icon}" Width="16" Height="16"/>
+                            <TextBlock Text="{Binding ProcessName}" VerticalAlignment="Center"
+                                       Margin="8,0,0,0" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                          </StackPanel>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="↓ Current" Width="80" Binding="{Binding CurrentDownload}"/>
+                    <DataGridTextColumn Header="↑ Current" Width="80" Binding="{Binding CurrentUpload}"/>
+                    <DataGridTextColumn Header="↓ Total" Width="80" Binding="{Binding TotalDownload}"/>
+                    <DataGridTextColumn Header="↑ Total" Width="80" Binding="{Binding TotalUpload}"/>
+                  </DataGrid.Columns>
+                </DataGrid>
               </Grid>
+            </Border>
 
-              <ScrollViewer Grid.Row="1">
-                <ItemsControl ItemsSource="{Binding History.Rows}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Grid ColumnDefinitions="2*,*,*" Margin="8,3">
-                        <TextBlock Text="{Binding ProcessName}"/>
-                        <TextBlock Grid.Column="1" Text="{Binding DownloadText}"/>
-                        <TextBlock Grid.Column="2" Text="{Binding UploadText}"/>
-                      </Grid>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </ScrollViewer>
-            </Grid>
-          </Border>
+            <!-- ═══ BOTTOM ROW: LiveCharts2 Graph ═══ -->
+            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                    Padding="10" CornerRadius="0,12,12,12" Background="#1F2630"
+                    BoxShadow="0 2 10 0 #33000000">
+              <lvc:CartesianChart Series="{Binding Summary.GraphSeries}"
+                                  XAxes="{Binding Summary.GraphXAxes}"
+                                  YAxes="{Binding Summary.GraphYAxes}"
+                                  ZoomMode="None"
+                                  TooltipPosition="Hidden"
+                                  AnimationsSpeed="00:00:00.150"/>
+            </Border>
+          </Grid>
+        </TabItem>
 
-          <Border Grid.Row="2" Padding="12" CornerRadius="8" Background="#1F2630">
-            <Grid ColumnDefinitions="2*,*,*">
-              <TextBlock FontWeight="SemiBold" Text="Total"/>
-              <TextBlock Grid.Column="1" Text="{Binding History.TotalDownloadText}"/>
-              <TextBlock Grid.Column="2" Text="{Binding History.TotalUploadText}"/>
-            </Grid>
-          </Border>
+        <TabItem>
+          <Grid Margin="12,8" RowDefinitions="Auto,*,Auto">
+            <Border Padding="12" CornerRadius="8" Background="#1F2630">
+              <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock VerticalAlignment="Center" Text="Usage of"/>
+                <ComboBox Width="180"
+                          ItemsSource="{Binding History.Profiles}"
+                          SelectedItem="{Binding History.SelectedProfile, Mode=TwoWay}"/>
+                <TextBlock VerticalAlignment="Center" Text="From"/>
+                <DatePicker SelectedDate="{Binding History.DateStart, Mode=TwoWay}"/>
+                <TextBlock VerticalAlignment="Center" Text="To"/>
+                <DatePicker SelectedDate="{Binding History.DateEnd, Mode=TwoWay}"/>
+                <Button Content="Filter" Command="{Binding History.FilterCommand}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" Margin="0,12,0,12" Padding="8" CornerRadius="8" Background="#1F2630">
+              <Grid RowDefinitions="Auto,*">
+                <Grid ColumnDefinitions="2*,*,*" Margin="8,4">
+                  <TextBlock FontWeight="SemiBold" Text="Process"/>
+                  <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="Data Received"/>
+                  <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="Data Sent"/>
+                </Grid>
+                <ScrollViewer Grid.Row="1">
+                  <ItemsControl ItemsSource="{Binding History.Rows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Grid ColumnDefinitions="2*,*,*" Margin="8,3">
+                          <TextBlock Text="{Binding ProcessName}"/>
+                          <TextBlock Grid.Column="1" Text="{Binding DownloadText}"/>
+                          <TextBlock Grid.Column="2" Text="{Binding UploadText}"/>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Padding="12" CornerRadius="8" Background="#1F2630">
+              <Grid ColumnDefinitions="2*,*,*">
+                <TextBlock FontWeight="SemiBold" Text="Total"/>
+                <TextBlock Grid.Column="1" Text="{Binding History.TotalDownloadText}"/>
+                <TextBlock Grid.Column="2" Text="{Binding History.TotalUploadText}"/>
+              </Grid>
+            </Border>
+          </Grid>
+        </TabItem>
+
+        <TabItem>
+          <ScrollViewer Margin="12,8">
+            <StackPanel Spacing="12">
+              <Border Padding="12" CornerRadius="8" Background="#1F2630">
+                <StackPanel Spacing="8">
+                  <TextBlock Foreground="White" FontWeight="SemiBold" Text="General"/>
+                  <CheckBox Content="Start program on startup" IsChecked="{Binding Settings.StartWithWindows, Mode=TwoWay}"/>
+                  <CheckBox Content="Minimize to tray on startup" IsChecked="{Binding Settings.MinimizeOnStart, Mode=TwoWay}"/>
+                  <CheckBox Content="Dark mode" IsChecked="{Binding Settings.DarkMode, Mode=TwoWay}"/>
+                </StackPanel>
+              </Border>
+              <Border Padding="12" CornerRadius="8" Background="#1F2630">
+                <StackPanel Spacing="8">
+                  <TextBlock Foreground="White" FontWeight="SemiBold" Text="Mini Widget"/>
+                  <CheckBox Content="Show mini widget" IsChecked="{Binding Settings.MiniWidgetVisible, Mode=TwoWay}"/>
+                  <TextBlock Text="Transparency"/>
+                  <Slider Minimum="0" Maximum="100" Value="{Binding Settings.MiniWidgetTransparency, Mode=TwoWay}"/>
+                </StackPanel>
+              </Border>
+              <Border Padding="12" CornerRadius="8" Background="#1F2630">
+                <StackPanel Spacing="8">
+                  <TextBlock Foreground="White" FontWeight="SemiBold" Text="Network Monitoring"/>
+                  <TextBlock Text="Monitor these networks"/>
+                  <ComboBox ItemsSource="{Binding Settings.NetworkTargets}" SelectedIndex="{Binding Settings.SelectedNetworkTargetIndex, Mode=TwoWay}"/>
+                  <TextBlock Text="Speed format"/>
+                  <ComboBox ItemsSource="{Binding Settings.SpeedUnits}" SelectedIndex="{Binding Settings.SelectedSpeedUnitIndex, Mode=TwoWay}"/>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+      </TabControl>
+
+      <!-- ═══ FOOTER BAR ═══ -->
+      <Border Grid.Row="2" Background="#161B22" BorderBrush="#2B3645" BorderThickness="0,1,0,0">
+        <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="10,0">
+          <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12"
+                     Foreground="#C8D1D9" VerticalAlignment="Center"/>
+
+          <TextBlock Grid.Column="1" Text="Download Speed :" FontSize="12"
+                     Foreground="#8899AA" VerticalAlignment="Center" Margin="0,0,4,0"/>
+          <TextBlock Grid.Column="2" FontSize="12" Foreground="#C8D1D9"
+                     VerticalAlignment="Center" Margin="0,0,16,0">
+            <Run Text="{Binding Summary.DownloadSpeedText}"/>
+          </TextBlock>
+
+          <TextBlock Grid.Column="3" Text="Upload Speed :" FontSize="12"
+                     Foreground="#8899AA" VerticalAlignment="Center" Margin="0,0,4,0"/>
+          <TextBlock Grid.Column="4" FontSize="12" Foreground="#C8D1D9"
+                     VerticalAlignment="Center">
+            <Run Text="{Binding Summary.UploadSpeedText}"/>
+          </TextBlock>
         </Grid>
-      </TabItem>
-      <TabItem Header="Settings">
-        <ScrollViewer Margin="8">
-          <StackPanel Spacing="12">
-            <Border Padding="12" CornerRadius="8" Background="#1F2630">
-              <StackPanel Spacing="8">
-                <TextBlock Foreground="White" FontWeight="SemiBold" Text="General"/>
-                <CheckBox Content="Start program on startup"
-                          IsChecked="{Binding Settings.StartWithWindows, Mode=TwoWay}"/>
-                <CheckBox Content="Minimize to tray on startup"
-                          IsChecked="{Binding Settings.MinimizeOnStart, Mode=TwoWay}"/>
-                <CheckBox Content="Dark mode"
-                          IsChecked="{Binding Settings.DarkMode, Mode=TwoWay}"/>
-              </StackPanel>
-            </Border>
+      </Border>
+    </Grid>
+  </Border>
 
-            <Border Padding="12" CornerRadius="8" Background="#1F2630">
-              <StackPanel Spacing="8">
-                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Mini Widget"/>
-                <CheckBox Content="Show mini widget"
-                          IsChecked="{Binding Settings.MiniWidgetVisible, Mode=TwoWay}"/>
-                <TextBlock Text="Transparency"/>
-                <Slider Minimum="0"
-                        Maximum="100"
-                        Value="{Binding Settings.MiniWidgetTransparency, Mode=TwoWay}"/>
-              </StackPanel>
-            </Border>
+  <Window.Styles>
+    <!-- Tab buttons in title bar -->
+    <Style Selector="Button.tab">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#8899AA"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="12,6"/>
+      <Setter Property="BorderThickness" Value="0,0,0,3"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
+      <Setter Property="Height" Value="40"/>
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1C2128"/>
+      <Setter Property="Foreground" Value="#C8D1D9"/>
+    </Style>
+    <Style Selector="Button.tab.active">
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderBrush" Value="#2EA043"/>
+    </Style>
+    <Style Selector="Button.tab.active /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
 
-            <Border Padding="12" CornerRadius="8" Background="#1F2630">
-              <StackPanel Spacing="8">
-                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Network Monitoring"/>
-                <TextBlock Text="Monitor these networks"/>
-                <ComboBox ItemsSource="{Binding Settings.NetworkTargets}"
-                          SelectedIndex="{Binding Settings.SelectedNetworkTargetIndex, Mode=TwoWay}"/>
-                <TextBlock Text="Speed format"/>
-                <ComboBox ItemsSource="{Binding Settings.SpeedUnits}"
-                          SelectedIndex="{Binding Settings.SelectedSpeedUnitIndex, Mode=TwoWay}"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-    </TabControl>
-  </Grid>
+    <!-- Title bar utility buttons -->
+    <Style Selector="Button.titleBtn">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#C8D1D9"/>
+      <Setter Property="Width" Value="50"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="VerticalAlignment" Value="Top"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="Button.titleBtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1C2128"/>
+    </Style>
+    <Style Selector="Button.closeBtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#DA3633"/>
+    </Style>
+  </Window.Styles>
 </Window>
