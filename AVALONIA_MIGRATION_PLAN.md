@@ -58,7 +58,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 10 (Completed)
 - Port Avalonia History screen.
 
-## Phase 11
+## Phase 11 (Completed)
 - Port Avalonia Summary screen + graph rendering.
 
 ## Phase 12

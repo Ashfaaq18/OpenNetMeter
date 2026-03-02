@@ -20,11 +20,74 @@
                 Margin="0,12,0,0"
                 SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
       <TabItem Header="Summary">
-        <Border Margin="8" Padding="12" CornerRadius="8" Background="#1E3A5F">
-          <TextBlock Foreground="White"
-                     TextWrapping="Wrap"
-                     Text="Summary tab shell is wired to shared tab-state view model."/>
-        </Border>
+        <Grid Margin="8" ColumnDefinitions="260,*" RowDefinitions="Auto,*" ColumnSpacing="12">
+          <StackPanel Grid.Row="0" Grid.RowSpan="2" Spacing="10">
+            <Border Padding="12" CornerRadius="8" Background="#1F2630">
+              <StackPanel Spacing="6">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Current Session"/>
+                <TextBlock Text="{Binding Summary.CurrentSessionDownloadText, StringFormat='DL: {0}'}"/>
+                <TextBlock Text="{Binding Summary.CurrentSessionUploadText, StringFormat='UL: {0}'}"/>
+              </StackPanel>
+            </Border>
+
+            <Border Padding="12" CornerRadius="8" Background="#1F2630">
+              <StackPanel Spacing="6">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Usage From (Today)"/>
+                <TextBlock Text="{Binding Summary.TotalFromDateDownloadText, StringFormat='DL: {0}'}"/>
+                <TextBlock Text="{Binding Summary.TotalFromDateUploadText, StringFormat='UL: {0}'}"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <Border Grid.Column="1" Padding="12" CornerRadius="8" Background="#1F2630">
+            <Grid RowDefinitions="Auto,*" RowSpacing="8">
+              <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*">
+                <TextBlock Foreground="White" FontWeight="SemiBold" Text="Activity"/>
+                <Ellipse Grid.Column="1" Width="8" Height="8" Fill="#2EA043" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="Download" Margin="4,0,0,0"/>
+                <Ellipse Grid.Column="3" Width="8" Height="8" Fill="#4EA1FF" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="4" Text="Upload" Margin="4,0,0,0"/>
+              </Grid>
+
+              <Border Grid.Row="1" Height="190" CornerRadius="6" Background="#141A22" BorderBrush="#2B3645" BorderThickness="1">
+                <Canvas Width="760" Height="190">
+                  <Line StartPoint="0,190" EndPoint="760,190" Stroke="#344150" StrokeThickness="1"/>
+                  <Line StartPoint="0,95" EndPoint="760,95" Stroke="#283241" StrokeThickness="1"/>
+                  <Polyline Points="{Binding Summary.DownloadPolylinePoints}" Stroke="#2EA043" StrokeThickness="2"/>
+                  <Polyline Points="{Binding Summary.UploadPolylinePoints}" Stroke="#4EA1FF" StrokeThickness="2"/>
+                </Canvas>
+              </Border>
+            </Grid>
+          </Border>
+
+          <Border Grid.Column="1" Grid.Row="1" Margin="0,12,0,0" Padding="8" CornerRadius="8" Background="#1F2630">
+            <Grid RowDefinitions="Auto,*">
+              <Grid ColumnDefinitions="2*,*,*,*,*" Margin="8,4">
+                <TextBlock FontWeight="SemiBold" Text="Active Processes"/>
+                <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="↓ Current"/>
+                <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="↑ Current"/>
+                <TextBlock Grid.Column="3" FontWeight="SemiBold" Text="↓ Total"/>
+                <TextBlock Grid.Column="4" FontWeight="SemiBold" Text="↑ Total"/>
+              </Grid>
+
+              <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding Summary.ActiveProcesses}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid ColumnDefinitions="2*,*,*,*,*" Margin="8,3">
+                        <TextBlock Text="{Binding ProcessName}"/>
+                        <TextBlock Grid.Column="1" Text="{Binding CurrentDownload}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding CurrentUpload}"/>
+                        <TextBlock Grid.Column="3" Text="{Binding TotalDownload}"/>
+                        <TextBlock Grid.Column="4" Text="{Binding TotalUpload}"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+          </Border>
+        </Grid>
       </TabItem>
       <TabItem Header="History">
         <Grid Margin="8" RowDefinitions="Auto,*,Auto">
