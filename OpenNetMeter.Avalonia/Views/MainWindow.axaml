@@ -15,11 +15,31 @@
   </Design.DataContext>
 
   <Grid RowDefinitions="Auto,*" Margin="16">
-    <TextBlock FontSize="20" FontWeight="SemiBold" Text="OpenNetMeter Avalonia Shell"/>
-    <Border Grid.Row="1" Margin="0,12,0,0" Padding="12" CornerRadius="8" Background="#1E3A5F">
-      <TextBlock TextWrapping="Wrap"
-                 Foreground="White"
-                 Text="Phase 7 complete: minimal Avalonia app shell is running. Summary/History/Settings UI will be ported in later phases."/>
-    </Border>
+    <TextBlock FontSize="20" FontWeight="SemiBold" Text="OpenNetMeter Avalonia"/>
+    <TabControl Grid.Row="1"
+                Margin="0,12,0,0"
+                SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+      <TabItem Header="Summary">
+        <Border Margin="8" Padding="12" CornerRadius="8" Background="#1E3A5F">
+          <TextBlock Foreground="White"
+                     TextWrapping="Wrap"
+                     Text="Summary tab shell is wired to shared tab-state view model."/>
+        </Border>
+      </TabItem>
+      <TabItem Header="History">
+        <Border Margin="8" Padding="12" CornerRadius="8" Background="#2E4A2A">
+          <TextBlock Foreground="White"
+                     TextWrapping="Wrap"
+                     Text="History tab shell is active. Content port comes in next phases."/>
+        </Border>
+      </TabItem>
+      <TabItem Header="Settings">
+        <Border Margin="8" Padding="12" CornerRadius="8" Background="#5A3A1E">
+          <TextBlock Foreground="White"
+                     TextWrapping="Wrap"
+                     Text="Settings tab shell is active. Full settings view port is Phase 9."/>
+        </Border>
+      </TabItem>
+    </TabControl>
   </Grid>
 </Window>

@@ -1,5 +1,7 @@
-﻿namespace OpenNetMeter.Avalonia.ViewModels;
+﻿using OpenNetMeter.Core.ViewModels;
 
-public class MainWindowViewModel
+namespace OpenNetMeter.Avalonia.ViewModels;
+
+public sealed class MainWindowViewModel : MainShellTabsViewModel
 {
 }

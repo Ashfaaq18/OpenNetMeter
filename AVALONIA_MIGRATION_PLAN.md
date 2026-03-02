@@ -49,7 +49,7 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 7 (Completed)
 - Add `OpenNetMeter.Avalonia` app skeleton (launches, minimal shell only).
 
-## Phase 8
+## Phase 8 (Completed)
 - Port Avalonia main shell/tab navigation bound to shared VM.
 
 ## Phase 9
