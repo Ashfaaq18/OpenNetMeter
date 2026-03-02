@@ -78,7 +78,7 @@
                   Padding="0">
         <!-- Hide the built-in tab strip since we have custom title bar tabs -->
         <TabControl.Styles>
-          <Style Selector="TabControl > TabStripItem">
+          <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter">
             <Setter Property="IsVisible" Value="False"/>
           </Style>
         </TabControl.Styles>
