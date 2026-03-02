@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("win-x64", "win-arm64", "win-x86")]
+    [ValidateSet("win-x64", "win-arm64", "win-x86", "linux-x64")]
     [string]$Runtime = "win-x64",
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release"

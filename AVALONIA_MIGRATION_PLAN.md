@@ -61,6 +61,9 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 11 (Completed)
 - Port Avalonia Summary screen + graph rendering.
 
+## Phase 11.1 (Completed)
+- Add Linux (`linux-x64`) Avalonia RC publish support for WSL validation.
+
 ## Phase 12 (Completed)
 - Stabilization + Windows Avalonia release candidate (WPF still buildable).
 
