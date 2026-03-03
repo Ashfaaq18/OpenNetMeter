@@ -1,17 +1,23 @@
 using System;
 using System.Windows.Input;
 using OpenNetMeter.Core.ViewModels;
+using OpenNetMeter.PlatformAbstractions;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class MainWindowViewModel : MainShellTabsViewModel
 {
-    public event EventHandler? RequestMinimizeWindow;
-    public event EventHandler? RequestCloseWindow;
-    public event EventHandler? RequestAbout;
+    private readonly IWindowService windowService;
 
     public MainWindowViewModel()
+        : this(new NoOpWindowService())
     {
+    }
+
+    public MainWindowViewModel(IWindowService windowService)
+    {
+        this.windowService = windowService;
+
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
         {
             if (parameter is null)
@@ -21,9 +27,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
                 SelectedTabIndex = nextIndex;
         });
 
-        AboutCommand = new ActionCommand(() => RequestAbout?.Invoke(this, EventArgs.Empty));
-        MinimizeWindowCommand = new ActionCommand(() => RequestMinimizeWindow?.Invoke(this, EventArgs.Empty));
-        CloseWindowCommand = new ActionCommand(() => RequestCloseWindow?.Invoke(this, EventArgs.Empty));
+        AboutCommand = new RelayCommand(() => this.windowService.ShowAbout());
+        MinimizeWindowCommand = new RelayCommand(() => this.windowService.MinimizeMainWindow());
+        CloseWindowCommand = new RelayCommand(() => this.windowService.CloseMainWindow());
     }
 
     public SummaryViewModel Summary { get; } = new();
@@ -55,25 +61,6 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
         }
     }
 
-    private sealed class ActionCommand : ICommand
-    {
-        private readonly Action execute;
-
-        public ActionCommand(Action execute)
-        {
-            this.execute = execute;
-        }
-
-        public event EventHandler? CanExecuteChanged;
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter)
-        {
-            execute();
-        }
-    }
-
     private sealed class ParameterRelayCommand : ICommand
     {
         private readonly Action<object?> execute;
@@ -83,13 +70,32 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
             this.execute = execute;
         }
 
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
 
         public bool CanExecute(object? parameter) => true;
 
         public void Execute(object? parameter)
         {
             execute(parameter);
+        }
+    }
+
+    private sealed class NoOpWindowService : IWindowService
+    {
+        public void MinimizeMainWindow()
+        {
+        }
+
+        public void CloseMainWindow()
+        {
+        }
+
+        public void ShowAbout()
+        {
         }
     }
 }

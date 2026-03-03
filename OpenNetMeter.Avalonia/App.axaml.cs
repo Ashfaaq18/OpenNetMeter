@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using OpenNetMeter.Avalonia.Services;
 using OpenNetMeter.Avalonia.ViewModels;
 using OpenNetMeter.Avalonia.Views;
 
@@ -17,9 +18,10 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var windowService = new AvaloniaWindowService();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel()
+                DataContext = new MainWindowViewModel(windowService)
             };
         }
 
