@@ -52,17 +52,17 @@
 
           <!-- About button -->
           <Button Grid.Column="5" Content="About" Classes="titleBtn"
-                  Click="About_Click"/>
+                  Command="{Binding AboutCommand}"/>
 
           <!-- Minimize button -->
-          <Button Grid.Column="6" Classes="titleBtn" Click="Minimize_Click">
+          <Button Grid.Column="6" Classes="titleBtn" Command="{Binding MinimizeWindowCommand}">
             <Panel Width="10" Height="1">
               <Rectangle Fill="#C8D1D9" Height="1"/>
             </Panel>
           </Button>
 
           <!-- Close button -->
-          <Button Grid.Column="7" Classes="titleBtn closeBtn" Click="Close_Click">
+          <Button Grid.Column="7" Classes="titleBtn closeBtn" Command="{Binding CloseWindowCommand}">
             <Panel Width="10" Height="10">
               <Line StartPoint="0,0" EndPoint="10,10" Stroke="#C8D1D9" StrokeThickness="1.2"/>
               <Line StartPoint="10,0" EndPoint="0,10" Stroke="#C8D1D9" StrokeThickness="1.2"/>
@@ -141,11 +141,9 @@
                                Foreground="White" VerticalAlignment="Center" Margin="6,0,0,0"/>
                   </StackPanel>
 
-                  <CalendarDatePicker HorizontalAlignment="Stretch" Margin="0,0,0,6"
-                    Watermark="Select date"
-                    SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"
-                    DisplayDateStart="{Binding Summary.DateMin}"
-                    DisplayDateEnd="{Binding Summary.DateMax}"/>
+                  <!-- https://github.com/AvaloniaUI/Avalonia/pull/20487 -->
+                  <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,6"
+                              SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"/>
 
                   <Border CornerRadius="6" Padding="8,4" Background="#2EA043" Margin="0,0,0,4">
                     <Grid ColumnDefinitions="Auto,*">
@@ -413,24 +411,16 @@
     <Style Selector="Button.closeBtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#DA3633"/>
     </Style>
-
-    <Style Selector="CalendarDatePicker">
-      <Setter Property="FontSize" Value="11"/>
-      <Setter Property="MinHeight" Value="28"/>
-      <Setter Property="Background" Value="#141A22"/>
-      <Setter Property="BorderBrush" Value="#344150"/>
-      <Setter Property="Foreground" Value="#C8D1D9"/>
-      <Setter Property="CornerRadius" Value="6"/>
-      <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="Padding" Value="6,3"/>
+    <Style Selector="DatePickerPresenter">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Width" Value="140" />
     </Style>
-
-    <Style Selector="CalendarDatePicker Calendar">
-      <Setter Property="RenderTransform">
-        <ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
-      </Setter>
-      <Setter Property="RenderTransformOrigin" Value="0%,0%"/>
+    <Style Selector="DatePickerPresenter /template/ DateTimePickerPanel > ListBoxItem">
+      <Setter Property="FontSize" Value="11" /> <Setter Property="Padding" Value="2,0" /> 
     </Style>
-
+    <Style Selector="DatePicker">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Padding" Value="2" />
+    </Style>
   </Window.Styles>
 </Window>

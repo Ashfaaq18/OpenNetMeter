@@ -6,7 +6,7 @@ public class MainShellTabsViewModel : INotifyPropertyChanged
 {
     private int selectedTabIndex;
 
-    public int SelectedTabIndex
+    public virtual int SelectedTabIndex
     {
         get => selectedTabIndex;
         set
@@ -21,6 +21,6 @@ public class MainShellTabsViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void OnPropertyChanged(string propertyName) =>
+    protected void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
