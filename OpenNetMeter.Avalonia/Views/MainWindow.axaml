@@ -23,7 +23,7 @@
 
   <Border Background="#0D1117" BorderBrush="#2B3645" BorderThickness="1" CornerRadius="0">
     <Grid RowDefinitions="50,*,30">
-
+        
       <!-- ═══ TITLE BAR ═══ -->
       <Border Grid.Row="0" Background="#161B22" IsHitTestVisible="True">
         <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
@@ -216,34 +216,45 @@
                   </Grid>
                 </Border>
 
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding Summary.ActiveProcesses}"
-                          IsReadOnly="True"
-                          CanUserReorderColumns="False"
-                          CanUserResizeColumns="False"
-                          CanUserSortColumns="True"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="None"
-                          Background="Transparent"
-                          BorderThickness="0">
-                  <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Name" Width="*" MinWidth="120">
-                      <DataGridTemplateColumn.CellTemplate>
+                <Grid Grid.Row="1" RowDefinitions="Auto,*">
+                  <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,8,10,4">
+                    <Button Content="Name" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="Name"
+                            HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Foreground="#AAB7C6" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                    <Button Grid.Column="1" Content="↓ Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentDownload"
+                            HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Foreground="#AAB7C6" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                    <Button Grid.Column="2" Content="↑ Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentUpload"
+                            HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Foreground="#AAB7C6" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                    <Button Grid.Column="3" Content="↓ Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalDownload"
+                            HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Foreground="#AAB7C6" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                    <Button Grid.Column="4" Content="↑ Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalUpload"
+                            HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+                            Foreground="#AAB7C6" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                  </Grid>
+
+                  <ScrollViewer Grid.Row="1" Margin="0,0,0,6">
+                    <ItemsControl ItemsSource="{Binding Summary.ActiveProcesses}">
+                      <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4">
-                            <Image Source="{Binding Icon}" Width="16" Height="16"/>
-                            <TextBlock Text="{Binding ProcessName}" VerticalAlignment="Center"
-                                       Margin="8,0,0,0" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                          </StackPanel>
+                          <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <Image Source="{Binding Icon}" Width="16" Height="16"/>
+                              <TextBlock Text="{Binding ProcessName}" Foreground="#D0D7DE"
+                                         FontSize="11" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{Binding CurrentDownload}" Foreground="#D0D7DE" FontSize="11"/>
+                            <TextBlock Grid.Column="2" Text="{Binding CurrentUpload}" Foreground="#D0D7DE" FontSize="11"/>
+                            <TextBlock Grid.Column="3" Text="{Binding TotalDownload}" Foreground="#D0D7DE" FontSize="11"/>
+                            <TextBlock Grid.Column="4" Text="{Binding TotalUpload}" Foreground="#D0D7DE" FontSize="11"/>
+                          </Grid>
                         </DataTemplate>
-                      </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="↓ Current" Width="80" Binding="{Binding CurrentDownload}"/>
-                    <DataGridTextColumn Header="↑ Current" Width="80" Binding="{Binding CurrentUpload}"/>
-                    <DataGridTextColumn Header="↓ Total" Width="80" Binding="{Binding TotalDownload}"/>
-                    <DataGridTextColumn Header="↑ Total" Width="80" Binding="{Binding TotalUpload}"/>
-                  </DataGrid.Columns>
-                </DataGrid>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </Grid>
               </Grid>
             </Border>
 

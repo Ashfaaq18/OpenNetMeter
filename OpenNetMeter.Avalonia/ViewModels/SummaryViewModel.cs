@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Windows.Input;
 using Avalonia.Threading;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
@@ -16,6 +18,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged
     private readonly DispatcherTimer timer;
     private readonly ObservableCollection<ObservablePoint> dlValues = new();
     private readonly ObservableCollection<ObservablePoint> ulValues = new();
+    private string? currentSortColumn;
+    private bool sortDescending;
 
     private const int WindowSize = 35;
     private int tickCount;
@@ -95,9 +99,16 @@ public sealed class SummaryViewModel : INotifyPropertyChanged
             new("system", "120 KB", "95 KB", "12 MB", "9 MB")
         ];
 
+        SortProcessesCommand = new ParameterRelayCommand(parameter =>
+        {
+            var column = parameter?.ToString();
+            if (string.IsNullOrWhiteSpace(column))
+                return;
+
+            SortProcesses(column);
+        });
+
         sinceDate = DateTimeOffset.Now.Date.AddDays(-7);
-        latestDownloadMbps = 0;
-        latestUploadMbps = 0;
 
         timer = new DispatcherTimer
         {
@@ -120,6 +131,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged
     public string DownloadSpeedText => $"{latestDownloadMbps:0.0} Mbps";
     public string UploadSpeedText => $"{latestUploadMbps:0.0} Mbps";
     public int ProcessCount => ActiveProcesses.Count;
+    public ICommand SortProcessesCommand { get; }
 
     public DateTimeOffset? SinceDate
     {
@@ -174,6 +186,56 @@ public sealed class SummaryViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(UploadSpeedText));
     }
 
+    private void SortProcesses(string column)
+    {
+        if (string.Equals(currentSortColumn, column, StringComparison.Ordinal))
+        {
+            sortDescending = !sortDescending;
+        }
+        else
+        {
+            currentSortColumn = column;
+            sortDescending = false;
+        }
+
+        Func<SummaryProcessRowViewModel, IComparable> selector = column switch
+        {
+            "Name" => p => p.ProcessName,
+            "CurrentDownload" => p => ParseDataSizeToBytes(p.CurrentDownload),
+            "CurrentUpload" => p => ParseDataSizeToBytes(p.CurrentUpload),
+            "TotalDownload" => p => ParseDataSizeToBytes(p.TotalDownload),
+            "TotalUpload" => p => ParseDataSizeToBytes(p.TotalUpload),
+            _ => p => p.ProcessName
+        };
+
+        var sorted = sortDescending
+            ? ActiveProcesses.OrderByDescending(selector).ToList()
+            : ActiveProcesses.OrderBy(selector).ToList();
+
+        ActiveProcesses.Clear();
+        foreach (var item in sorted)
+            ActiveProcesses.Add(item);
+    }
+
+    private static long ParseDataSizeToBytes(string value)
+    {
+        var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0 || !double.TryParse(parts[0], out var size))
+            return 0;
+
+        var unit = parts.Length > 1 ? parts[1].ToUpperInvariant() : "B";
+        var multiplier = unit switch
+        {
+            "TB" => 1024d * 1024d * 1024d * 1024d,
+            "GB" => 1024d * 1024d * 1024d,
+            "MB" => 1024d * 1024d,
+            "KB" => 1024d,
+            _ => 1d
+        };
+
+        return (long)(size * multiplier);
+    }
+
     private static string FormatBytes(long value)
     {
         string[] suffix = { "B", "KB", "MB", "GB", "TB" };
@@ -191,6 +253,29 @@ public sealed class SummaryViewModel : INotifyPropertyChanged
     private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private sealed class ParameterRelayCommand : ICommand
+    {
+        private readonly Action<object?> execute;
+
+        public ParameterRelayCommand(Action<object?> execute)
+        {
+            this.execute = execute;
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public bool CanExecute(object? parameter) => true;
+
+        public void Execute(object? parameter)
+        {
+            execute(parameter);
+        }
     }
 }
 

@@ -33,6 +33,7 @@ bld/
 [Ll]og/
 [Ll]ogs/
 _rc/
+_verify_build/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
