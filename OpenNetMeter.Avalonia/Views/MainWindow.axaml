@@ -391,6 +391,10 @@
       <Setter Property="Height" Value="40"/>
       <Setter Property="CornerRadius" Value="0"/>
     </Style>
+    <Style Selector="Button.tab /template/ ContentPresenter">
+      <Setter Property="BorderThickness" Value="0,0,0,3"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
     <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#1C2128"/>
       <Setter Property="Foreground" Value="#C8D1D9"/>
@@ -401,6 +405,7 @@
     </Style>
     <Style Selector="Button.tab.active /template/ ContentPresenter">
       <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderBrush" Value="#2EA043"/>
     </Style>
 
     <!-- Title bar utility buttons -->
