@@ -13,6 +13,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private DateTimeOffset? dateEnd;
     private long totalDownload;
     private long totalUpload;
+    private string? currentSortColumn;
+    private bool sortDescending;
 
     public HistoryViewModel()
     {
@@ -29,6 +31,14 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
         Rows = new ObservableCollection<HistoryRowViewModel>();
         FilterCommand = new RelayCommand(ApplyFilter);
+        SortRowsCommand = new ParameterRelayCommand(parameter =>
+        {
+            var column = parameter?.ToString();
+            if (string.IsNullOrWhiteSpace(column))
+                return;
+
+            SortRows(column);
+        });
         ApplyFilter();
     }
 
@@ -102,6 +112,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     public string TotalUploadText => FormatBytes(TotalUpload);
 
     public ICommand FilterCommand { get; }
+    public ICommand SortRowsCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -133,6 +144,36 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         Rows.Add(new HistoryRowViewModel(name, download, upload));
     }
 
+    private void SortRows(string column)
+    {
+        if (string.Equals(currentSortColumn, column, StringComparison.Ordinal))
+        {
+            sortDescending = !sortDescending;
+        }
+        else
+        {
+            currentSortColumn = column;
+            sortDescending = false;
+        }
+
+        var sorted = column switch
+        {
+            "Download" => sortDescending
+                ? Rows.OrderByDescending(r => r.DownloadBytes).ToList()
+                : Rows.OrderBy(r => r.DownloadBytes).ToList(),
+            "Upload" => sortDescending
+                ? Rows.OrderByDescending(r => r.UploadBytes).ToList()
+                : Rows.OrderBy(r => r.UploadBytes).ToList(),
+            _ => sortDescending
+                ? Rows.OrderByDescending(r => r.ProcessName).ToList()
+                : Rows.OrderBy(r => r.ProcessName).ToList()
+        };
+
+        Rows.Clear();
+        foreach (var row in sorted)
+            Rows.Add(row);
+    }
+
     private static string FormatBytes(long value)
     {
         string[] suffix = { "B", "KB", "MB", "GB", "TB" };
@@ -149,6 +190,29 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private sealed class ParameterRelayCommand : ICommand
+    {
+        private readonly Action<object?> execute;
+
+        public ParameterRelayCommand(Action<object?> execute)
+        {
+            this.execute = execute;
+        }
+
+        public event EventHandler? CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public bool CanExecute(object? parameter) => true;
+
+        public void Execute(object? parameter)
+        {
+            execute(parameter);
+        }
     }
 }
 
