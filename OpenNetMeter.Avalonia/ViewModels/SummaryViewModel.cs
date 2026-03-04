@@ -91,13 +91,21 @@ public sealed class SummaryViewModel : INotifyPropertyChanged
             }
         ];
 
-        ActiveProcesses =
-        [
-            new("chrome", "2.1 MB", "1.0 MB", "142 MB", "68 MB"),
-            new("discord", "620 KB", "190 KB", "18 MB", "9 MB"),
-            new("steam", "8.4 MB", "700 KB", "1.2 GB", "122 MB"),
-            new("system", "120 KB", "95 KB", "12 MB", "9 MB")
-        ];
+        ActiveProcesses = [];
+        for (var i = 1; i <= 40; i++)
+        {
+            var currentDownKb = 120 + (i * 37 % 900);
+            var currentUpKb = 80 + (i * 23 % 700);
+            var totalDownMb = 25 + (i * 17 % 2400);
+            var totalUpMb = 10 + (i * 13 % 1300);
+
+            ActiveProcesses.Add(new SummaryProcessRowViewModel(
+                $"process-{i:00}",
+                $"{currentDownKb} KB",
+                $"{currentUpKb} KB",
+                $"{totalDownMb} MB",
+                $"{totalUpMb} MB"));
+        }
 
         SortProcessesCommand = new ParameterRelayCommand(parameter =>
         {
