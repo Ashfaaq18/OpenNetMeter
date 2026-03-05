@@ -341,7 +341,9 @@
                 <StackPanel Spacing="8">
                   <TextBlock Foreground="White" FontWeight="SemiBold" Text="General"/>
                   <CheckBox Content="Start program on startup" IsChecked="{Binding Settings.StartWithWindows, Mode=TwoWay}"/>
-                  <CheckBox Content="Minimize to tray on startup" IsChecked="{Binding Settings.MinimizeOnStart, Mode=TwoWay}"/>
+                  <CheckBox Content="Minimize to tray on startup"
+                            IsChecked="{Binding Settings.MinimizeOnStart, Mode=TwoWay}"
+                            IsEnabled="{Binding Settings.CanChangeMinimizeOnStart}"/>
                   <CheckBox Content="Dark mode" IsChecked="{Binding Settings.DarkMode, Mode=TwoWay}"/>
                 </StackPanel>
               </Border>
@@ -358,8 +360,30 @@
                   <TextBlock Foreground="White" FontWeight="SemiBold" Text="Network Monitoring"/>
                   <TextBlock Text="Monitor these networks"/>
                   <ComboBox ItemsSource="{Binding Settings.NetworkTargets}" SelectedIndex="{Binding Settings.SelectedNetworkTargetIndex, Mode=TwoWay}"/>
+                  <TextBlock Text="Speed magnitude"/>
+                  <ComboBox ItemsSource="{Binding Settings.SpeedMagnitudes}" SelectedIndex="{Binding Settings.SelectedSpeedMagnitudeIndex, Mode=TwoWay}"/>
                   <TextBlock Text="Speed format"/>
                   <ComboBox ItemsSource="{Binding Settings.SpeedUnits}" SelectedIndex="{Binding Settings.SelectedSpeedUnitIndex, Mode=TwoWay}"/>
+                </StackPanel>
+              </Border>
+              <Border Padding="12" CornerRadius="8" Background="#1F2630">
+                <StackPanel Spacing="8">
+                  <TextBlock Foreground="White" FontWeight="SemiBold" Text="Data Management"/>
+                  <TextBlock Text="Delete all saved profiles and usage history"/>
+                  <Button Content="DELETE ALL" Command="{Binding Settings.ResetDataCommand}"/>
+                </StackPanel>
+              </Border>
+              <Border Padding="12" CornerRadius="8" Background="#1F2630">
+                <StackPanel Spacing="8">
+                  <TextBlock Foreground="White" FontWeight="SemiBold" Text="Updates"/>
+                  <TextBlock Text="{Binding Settings.UpdateStatusMessage}"/>
+                  <ProgressBar IsVisible="{Binding Settings.IsCheckingForUpdates}" IsIndeterminate="True" Height="4"/>
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Check for updates" Command="{Binding Settings.CheckForUpdatesCommand}"/>
+                    <Button Content="Download update"
+                            Command="{Binding Settings.DownloadUpdateCommand}"
+                            IsVisible="{Binding Settings.IsUpdateAvailable}"/>
+                  </StackPanel>
                 </StackPanel>
               </Border>
             </StackPanel>
