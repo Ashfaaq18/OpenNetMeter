@@ -1,13 +1,16 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using Microsoft.Data.Sqlite;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class HistoryViewModel : INotifyPropertyChanged
 {
+    private readonly string dbPath;
     private string? selectedProfile;
     private DateTimeOffset? dateStart;
     private DateTimeOffset? dateEnd;
@@ -18,18 +21,10 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
     public HistoryViewModel()
     {
-        Profiles = new ObservableCollection<string>
-        {
-            "Primary Adapter",
-            "Wi-Fi Adapter",
-            "Ethernet Adapter"
-        };
+        dbPath = ResolveDatabasePath();
 
-        SelectedProfile = Profiles.FirstOrDefault();
-        DateStart = DateTimeOffset.Now.Date.AddDays(-7);
-        DateEnd = DateTimeOffset.Now.Date;
-
-        Rows = new ObservableCollection<HistoryRowViewModel>();
+        Profiles = [];
+        Rows = [];
         FilterCommand = new RelayCommand(ApplyFilter);
         SortRowsCommand = new ParameterRelayCommand(parameter =>
         {
@@ -39,7 +34,16 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
             SortRows(column);
         });
-        ApplyFilter();
+
+        DateStart = DateTimeOffset.Now.Date.AddDays(-7);
+        DateEnd = DateTimeOffset.Now.Date;
+
+        LoadProfiles();
+        if (Profiles.Count > 0)
+        {
+            SelectedProfile = Profiles[0];
+            ApplyFilter();
+        }
     }
 
     public ObservableCollection<string> Profiles { get; }
@@ -116,32 +120,68 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private void LoadProfiles()
+    {
+        Profiles.Clear();
+
+        if (!File.Exists(dbPath))
+            return;
+
+        using var connection = OpenReadOnlyConnection(dbPath);
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT Name FROM Adapter ORDER BY Name";
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (!reader.IsDBNull(0))
+                Profiles.Add(reader.GetString(0));
+        }
+    }
+
     private void ApplyFilter()
     {
         Rows.Clear();
+        TotalDownload = 0;
+        TotalUpload = 0;
 
-        var start = DateStart?.Date ?? DateTimeOffset.Now.Date.AddDays(-7);
-        var end = DateEnd?.Date ?? DateTimeOffset.Now.Date;
+        if (string.IsNullOrWhiteSpace(SelectedProfile) || !File.Exists(dbPath))
+            return;
+
+        var start = (DateStart ?? DateTimeOffset.Now.Date).Date;
+        var end = (DateEnd ?? DateTimeOffset.Now.Date).Date;
         if (end < start)
             (start, end) = (end, start);
 
-        int days = Math.Max(1, (end - start).Days + 1);
-        int profileFactor = Math.Abs((SelectedProfile ?? "default").GetHashCode()) % 5 + 1;
+        using var connection = OpenReadOnlyConnection(dbPath);
+        connection.Open();
 
-        AddRow("chrome", days, 42_000L * profileFactor);
-        AddRow("discord", days, 28_000L * (profileFactor + 1));
-        AddRow("steam", days, 65_000L * (profileFactor + 2));
-        AddRow("system", days, 12_000L * (profileFactor + 3));
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT p.Name, SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
+            "FROM ProcessDate pd " +
+            "JOIN Process p ON p.ID = pd.ProcessID " +
+            "JOIN Adapter a ON a.ID = pd.AdapterID " +
+            "JOIN Date d ON d.ID = pd.DateID " +
+            "WHERE a.Name = @AdapterName " +
+            "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate " +
+            "GROUP BY p.ID, p.Name " +
+            "ORDER BY p.Name";
+        command.Parameters.AddWithValue("@AdapterName", SelectedProfile);
+        command.Parameters.AddWithValue("@StartDate", ToDateInt(start));
+        command.Parameters.AddWithValue("@EndDate", ToDateInt(end));
 
-        TotalDownload = Rows.Sum(r => r.DownloadBytes);
-        TotalUpload = Rows.Sum(r => r.UploadBytes);
-    }
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var processName = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+            var download = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
+            var upload = reader.IsDBNull(2) ? 0 : reader.GetInt64(2);
 
-    private void AddRow(string name, int days, long baseValue)
-    {
-        long download = baseValue * days;
-        long upload = (baseValue / 2) * days;
-        Rows.Add(new HistoryRowViewModel(name, download, upload));
+            Rows.Add(new HistoryRowViewModel(processName, download, upload));
+            TotalDownload += download;
+            TotalUpload += upload;
+        }
     }
 
     private void SortRows(string column)
@@ -174,6 +214,21 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             Rows.Add(row);
     }
 
+    private static SqliteConnection OpenReadOnlyConnection(string path)
+    {
+        var csb = new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadOnly
+        };
+        return new SqliteConnection(csb.ToString());
+    }
+
+    private static int ToDateInt(DateTime date)
+    {
+        return (date.Year * 10000) + (date.Month * 100) + date.Day;
+    }
+
     private static string FormatBytes(long value)
     {
         string[] suffix = { "B", "KB", "MB", "GB", "TB" };
@@ -185,6 +240,13 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             unit++;
         }
         return $"{current:0.##} {suffix[unit]}";
+    }
+
+    private static string ResolveDatabasePath()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appFolder = Path.Combine(localAppData, "OpenNetMeter");
+        return Path.Combine(appFolder, "OpenNetMeter.sqlite");
     }
 
     private void OnPropertyChanged(string propertyName)
