@@ -5,18 +5,25 @@ using OpenNetMeter.PlatformAbstractions;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
-public sealed class MainWindowViewModel : MainShellTabsViewModel
+public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 {
     private readonly IWindowService windowService;
+    private readonly INetworkCaptureService networkCaptureService;
+    private string networkStatus = "Disconnected";
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService())
     {
     }
 
-    public MainWindowViewModel(IWindowService windowService)
+    public MainWindowViewModel(IWindowService windowService, INetworkCaptureService networkCaptureService)
     {
         this.windowService = windowService;
+        this.networkCaptureService = networkCaptureService;
+
+        Summary = new SummaryViewModel(this.networkCaptureService);
+        History = new HistoryViewModel();
+        Settings = new SettingsViewModel();
 
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
         {
@@ -30,11 +37,14 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
         AboutCommand = new RelayCommand(() => this.windowService.ShowAbout());
         MinimizeWindowCommand = new RelayCommand(() => this.windowService.MinimizeMainWindow());
         CloseWindowCommand = new RelayCommand(() => this.windowService.CloseMainWindow());
+
+        this.networkCaptureService.NetworkChanged += OnNetworkChanged;
+        this.networkCaptureService.Start();
     }
 
-    public SummaryViewModel Summary { get; } = new();
-    public HistoryViewModel History { get; } = new();
-    public SettingsViewModel Settings { get; } = new();
+    public SummaryViewModel Summary { get; }
+    public HistoryViewModel History { get; }
+    public SettingsViewModel Settings { get; }
 
     public ICommand SwitchTabCommand { get; }
     public ICommand AboutCommand { get; }
@@ -44,7 +54,18 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
     public bool IsSummaryTab => SelectedTabIndex == 0;
     public bool IsHistoryTab => SelectedTabIndex == 1;
     public bool IsSettingsTab => SelectedTabIndex == 2;
-    public string NetworkStatus => "Connected";
+
+    public string NetworkStatus
+    {
+        get => networkStatus;
+        private set
+        {
+            if (networkStatus == value)
+                return;
+            networkStatus = value;
+            OnPropertyChanged(nameof(NetworkStatus));
+        }
+    }
 
     public override int SelectedTabIndex
     {
@@ -59,6 +80,25 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
             OnPropertyChanged(nameof(IsHistoryTab));
             OnPropertyChanged(nameof(IsSettingsTab));
         }
+    }
+
+    public void Dispose()
+    {
+        Summary.Dispose();
+        networkCaptureService.NetworkChanged -= OnNetworkChanged;
+        networkCaptureService.Dispose();
+    }
+
+    private void OnNetworkChanged(object? sender, NetworkSnapshotChangedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(e.AdapterName))
+        {
+            NetworkStatus = "Disconnected";
+            Summary.ClearOnDisconnect();
+            return;
+        }
+
+        NetworkStatus = $"Connected : {e.AdapterName}";
     }
 
     private sealed class ParameterRelayCommand : ICommand
@@ -86,16 +126,26 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel
 
     private sealed class NoOpWindowService : IWindowService
     {
-        public void MinimizeMainWindow()
+        public void MinimizeMainWindow() { }
+        public void CloseMainWindow() { }
+        public void ShowAbout() { }
+    }
+
+    private sealed class NoOpNetworkCaptureService : INetworkCaptureService
+    {
+        public event EventHandler<NetworkSnapshotChangedEventArgs>? NetworkChanged
         {
+            add { }
+            remove { }
+        }
+        public event EventHandler<NetworkTrafficEventArgs>? TrafficObserved
+        {
+            add { }
+            remove { }
         }
 
-        public void CloseMainWindow()
-        {
-        }
-
-        public void ShowAbout()
-        {
-        }
+        public void Start() { }
+        public void Stop() { }
+        public void Dispose() { }
     }
 }

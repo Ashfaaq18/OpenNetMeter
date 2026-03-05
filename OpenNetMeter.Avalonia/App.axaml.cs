@@ -19,9 +19,10 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var windowService = new AvaloniaWindowService();
+            var networkCaptureService = new WindowsNetworkCaptureService();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(windowService)
+                DataContext = new MainWindowViewModel(windowService, networkCaptureService)
             };
         }
 
