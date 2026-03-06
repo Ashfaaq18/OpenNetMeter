@@ -14,13 +14,14 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="0"
-        SystemDecorations="BorderOnly"
+        SystemDecorations="None"
         Background="Transparent"
         TransparencyLevelHint="None">
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
+  <Grid>
   <Border Background="#0D1117" BorderBrush="#2B3645" BorderThickness="1" CornerRadius="0">
     <Grid RowDefinitions="50,*,30">
         
@@ -414,6 +415,26 @@
       </Border>
     </Grid>
   </Border>
+
+  <!-- Resize hit zones for custom chrome -->
+  <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="6" Background="Transparent"
+          Cursor="SizeNorthSouth" PointerPressed="ResizeTop_PointerPressed"/>
+  <Border HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="6" Background="Transparent"
+          Cursor="SizeNorthSouth" PointerPressed="ResizeBottom_PointerPressed"/>
+  <Border HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="6" Background="Transparent"
+          Cursor="SizeWestEast" PointerPressed="ResizeLeft_PointerPressed"/>
+  <Border HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="6" Background="Transparent"
+          Cursor="SizeWestEast" PointerPressed="ResizeRight_PointerPressed"/>
+
+  <Border HorizontalAlignment="Left" VerticalAlignment="Top" Width="10" Height="10" Background="Transparent"
+          Cursor="TopLeftCorner" PointerPressed="ResizeTopLeft_PointerPressed"/>
+  <Border HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10" Background="Transparent"
+          Cursor="TopRightCorner" PointerPressed="ResizeTopRight_PointerPressed"/>
+  <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="10" Height="10" Background="Transparent"
+          Cursor="BottomLeftCorner" PointerPressed="ResizeBottomLeft_PointerPressed"/>
+  <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="10" Background="Transparent"
+          Cursor="BottomRightCorner" PointerPressed="ResizeBottomRight_PointerPressed"/>
+  </Grid>
 
   <Window.Styles>
     <!-- Tab buttons in title bar -->
