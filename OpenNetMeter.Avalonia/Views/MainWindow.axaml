@@ -21,12 +21,34 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
+  <Window.Resources>
+    <!-- Theme colors -->
+    <SolidColorBrush x:Key="BrushBgWindow" Color="#0D1117"/>
+    <SolidColorBrush x:Key="BrushBgTitleBar" Color="#161B22"/>
+    <SolidColorBrush x:Key="BrushBgSurface" Color="#1F2630"/>
+    <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#1C2128"/>
+    <SolidColorBrush x:Key="BrushBgSubtle" Color="#252D38"/>
+    <SolidColorBrush x:Key="BrushBorderMain" Color="#2B3645"/>
+    <SolidColorBrush x:Key="BrushBorderSubtle" Color="#344150"/>
+    <SolidColorBrush x:Key="BrushTextPrimary" Color="#C8D1D9"/>
+    <SolidColorBrush x:Key="BrushTextSecondary" Color="#8899AA"/>
+    <SolidColorBrush x:Key="BrushAccentGreen" Color="#2EA043"/>
+    <SolidColorBrush x:Key="BrushAccentBlue" Color="#4EA1FF"/>
+    <SolidColorBrush x:Key="BrushDanger" Color="#DA3633"/>
+
+    <!-- Typography scale -->
+    <x:Double x:Key="FontSizeXs">10</x:Double>
+    <x:Double x:Key="FontSizeSm">11</x:Double>
+    <x:Double x:Key="FontSizeMd">12</x:Double>
+    <x:Double x:Key="FontSizeLg">13</x:Double>
+  </Window.Resources>
+
   <Grid>
-    <Border Background="#0D1117" BorderBrush="#2B3645" BorderThickness="1" CornerRadius="0">
+    <Border Background="{DynamicResource BrushBgWindow}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1" CornerRadius="0">
       <Grid RowDefinitions="50,*,30">
 
         <!-- ═══ TITLE BAR ═══ -->
-        <Border Grid.Row="0" Background="#161B22" IsHitTestVisible="True">
+        <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}" IsHitTestVisible="True">
           <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
 
             <!-- App icon -->
@@ -595,7 +617,7 @@
         </TabControl>
 
         <!-- ═══ FOOTER BAR ═══ -->
-        <Border Grid.Row="2" Background="#161B22" BorderBrush="#2B3645" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" Background="{DynamicResource BrushBgTitleBar}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="0,1,0,0">
           <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="10,0">
             <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12"
                        Foreground="#C8D1D9" VerticalAlignment="Center"/>
@@ -639,11 +661,27 @@
   </Grid>
 
   <Window.Styles>
+    <!-- Base typography/control sizing -->
+    <Style Selector="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
+    </Style>
+    <Style Selector="DatePicker">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+      <Setter Property="Padding" Value="2" />
+    </Style>
+
     <!-- Tab buttons in title bar -->
     <Style Selector="Button.tab">
       <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Foreground" Value="#8899AA"/>
-      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextSecondary}"/>
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeLg}"/>
       <Setter Property="Padding" Value="12,6"/>
       <Setter Property="BorderThickness" Value="0,0,0,3"/>
       <Setter Property="BorderBrush" Value="Transparent"/>
@@ -656,22 +694,22 @@
       <Setter Property="BorderBrush" Value="Transparent"/>
     </Style>
     <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#1C2128"/>
-      <Setter Property="Foreground" Value="#C8D1D9"/>
+      <Setter Property="Background" Value="{DynamicResource BrushBgSurfaceHover}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
     </Style>
     <Style Selector="Button.tab.active">
       <Setter Property="Foreground" Value="White"/>
-      <Setter Property="BorderBrush" Value="#2EA043"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentGreen}"/>
     </Style>
     <Style Selector="Button.tab.active /template/ ContentPresenter">
       <Setter Property="Foreground" Value="White"/>
-      <Setter Property="BorderBrush" Value="#2EA043"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentGreen}"/>
     </Style>
 
     <!-- Title bar utility buttons -->
     <Style Selector="Button.titleBtn">
       <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Foreground" Value="#C8D1D9"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
       <Setter Property="Width" Value="50"/>
       <Setter Property="Height" Value="32"/>
       <Setter Property="VerticalAlignment" Value="Top"/>
@@ -682,30 +720,26 @@
       <Setter Property="CornerRadius" Value="0"/>
     </Style>
     <Style Selector="Button.titleBtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#1C2128"/>
+      <Setter Property="Background" Value="{DynamicResource BrushBgSurfaceHover}"/>
     </Style>
     <Style Selector="Button.closeBtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#DA3633"/>
+      <Setter Property="Background" Value="{DynamicResource BrushDanger}"/>
     </Style>
     <Style Selector="DatePickerPresenter">
       <Setter Property="MinWidth" Value="0" />
       <Setter Property="Width" Value="140" />
     </Style>
     <Style Selector="DatePickerPresenter /template/ DateTimePickerPanel > ListBoxItem">
-      <Setter Property="FontSize" Value="11" /> <Setter Property="Padding" Value="2,0" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" /> <Setter Property="Padding" Value="2,0" />
   </Style>
-    <Style Selector="DatePicker">
-      <Setter Property="FontSize" Value="11" />
-      <Setter Property="Padding" Value="2" />
-    </Style>
 
       <!-- Pill-style radio buttons for settings -->
     <Style Selector="RadioButton.pill">
-      <Setter Property="Background" Value="#252D38"/>
-      <Setter Property="Foreground" Value="#8899AA"/>
+      <Setter Property="Background" Value="{DynamicResource BrushBgSubtle}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextSecondary}"/>
       <Setter Property="CornerRadius" Value="6"/>
       <Setter Property="Padding" Value="16,8"/>
-      <Setter Property="BorderBrush" Value="#344150"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushBorderSubtle}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="Cursor" Value="Hand"/>
       <Setter Property="Template">
@@ -722,16 +756,16 @@
       </Setter>
     </Style>
     <Style Selector="RadioButton.pill:pointerover">
-      <Setter Property="Background" Value="#2B3645"/>
-      <Setter Property="BorderBrush" Value="#4EA1FF"/>
+      <Setter Property="Background" Value="{DynamicResource BrushBorderMain}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentBlue}"/>
     </Style>
     <Style Selector="RadioButton.pill:checked">
       <Setter Property="Background" Value="#1A3A5C"/>
-      <Setter Property="BorderBrush" Value="#4EA1FF"/>
-      <Setter Property="Foreground" Value="#4EA1FF"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentBlue}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushAccentBlue}"/>
     </Style>
     <Style Selector="RadioButton.pill:checked /template/ ContentPresenter">
-      <Setter Property="Foreground" Value="#4EA1FF"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushAccentBlue}"/>
     </Style>
   </Window.Styles>
 </Window>
