@@ -1,6 +1,8 @@
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
@@ -20,6 +22,16 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsViewModel()
     {
+        var settings = SettingsManager.Current;
+        startWithWindows = settings.StartWithWin;
+        minimizeOnStart = settings.MinimizeOnStart;
+        darkMode = settings.DarkMode;
+        miniWidgetVisible = settings.MiniWidgetVisibility;
+        miniWidgetTransparency = settings.MiniWidgetTransparentSlider;
+        selectedNetworkTargetIndex = settings.NetworkType;
+        selectedSpeedMagnitudeIndex = settings.NetworkSpeedMagnitude;
+        selectedSpeedUnitIndex = settings.NetworkSpeedFormat;
+
         ResetDataCommand = new RelayCommand(ResetData);
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
         DownloadUpdateCommand = new RelayCommand(DownloadUpdate);
@@ -34,6 +46,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
                 return;
 
             startWithWindows = value;
+            SettingsManager.Current.StartWithWin = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(StartWithWindows));
             OnPropertyChanged(nameof(CanChangeMinimizeOnStart));
         }
@@ -47,6 +61,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (minimizeOnStart == value)
                 return;
             minimizeOnStart = value;
+            SettingsManager.Current.MinimizeOnStart = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(MinimizeOnStart));
         }
     }
@@ -61,6 +77,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (darkMode == value)
                 return;
             darkMode = value;
+            SettingsManager.Current.DarkMode = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(DarkMode));
         }
     }
@@ -73,6 +91,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (miniWidgetVisible == value)
                 return;
             miniWidgetVisible = value;
+            SettingsManager.Current.MiniWidgetVisibility = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(MiniWidgetVisible));
         }
     }
@@ -85,6 +105,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (miniWidgetTransparency.Equals(value))
                 return;
             miniWidgetTransparency = value;
+            SettingsManager.Current.MiniWidgetTransparentSlider = (int)Math.Round(value);
+            SettingsManager.Save();
             OnPropertyChanged(nameof(MiniWidgetTransparency));
         }
     }
@@ -99,6 +121,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (selectedNetworkTargetIndex == value)
                 return;
             selectedNetworkTargetIndex = value;
+            SettingsManager.Current.NetworkType = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(SelectedNetworkTargetIndex));
             OnPropertyChanged(nameof(IsNetworkTargetPrivate));
             OnPropertyChanged(nameof(IsNetworkTargetPublic));
@@ -146,6 +170,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (selectedSpeedMagnitudeIndex == value)
                 return;
             selectedSpeedMagnitudeIndex = value;
+            SettingsManager.Current.NetworkSpeedMagnitude = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(SelectedSpeedMagnitudeIndex));
         }
     }
@@ -160,6 +186,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             if (selectedSpeedUnitIndex == value)
                 return;
             selectedSpeedUnitIndex = value;
+            SettingsManager.Current.NetworkSpeedFormat = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(SelectedSpeedUnitIndex));
         }
     }

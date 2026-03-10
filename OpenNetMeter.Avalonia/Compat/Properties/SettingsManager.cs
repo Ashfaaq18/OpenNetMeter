@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace OpenNetMeter.Properties;
 
 internal static class SettingsManager
 {
     private static readonly string filePath;
+    private static readonly object sync = new();
     public static AppSettings Current { get; } = new();
 
     static SettingsManager()
@@ -17,22 +19,98 @@ internal static class SettingsManager
 
     public static void Load()
     {
-        if (!File.Exists(filePath))
-            return;
+        lock (sync)
+        {
+            if (!File.Exists(filePath))
+                return;
+
+            try
+            {
+                var json = File.ReadAllText(filePath);
+                var root = JsonNode.Parse(json) as JsonObject;
+                if (root == null)
+                    return;
+
+                Current.DarkMode = GetBool(root, nameof(AppSettings.DarkMode), Current.DarkMode);
+                Current.StartWithWin = GetBool(root, nameof(AppSettings.StartWithWin), Current.StartWithWin);
+                Current.MinimizeOnStart = GetBool(root, nameof(AppSettings.MinimizeOnStart), Current.MinimizeOnStart);
+                Current.MiniWidgetVisibility = GetBool(root, nameof(AppSettings.MiniWidgetVisibility), Current.MiniWidgetVisibility);
+                Current.MiniWidgetTransparentSlider = GetInt(root, nameof(AppSettings.MiniWidgetTransparentSlider), Current.MiniWidgetTransparentSlider);
+                Current.NetworkType = GetInt(root, nameof(AppSettings.NetworkType), Current.NetworkType);
+                Current.NetworkSpeedFormat = GetInt(root, nameof(AppSettings.NetworkSpeedFormat), Current.NetworkSpeedFormat);
+                Current.NetworkSpeedMagnitude = GetInt(root, nameof(AppSettings.NetworkSpeedMagnitude), Current.NetworkSpeedMagnitude);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    public static void Save()
+    {
+        lock (sync)
+        {
+            JsonObject root;
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject ?? [];
+                }
+                catch
+                {
+                    root = [];
+                }
+            }
+            else
+            {
+                root = [];
+            }
+
+            root[nameof(AppSettings.DarkMode)] = Current.DarkMode;
+            root[nameof(AppSettings.StartWithWin)] = Current.StartWithWin;
+            root[nameof(AppSettings.MinimizeOnStart)] = Current.MinimizeOnStart;
+            root[nameof(AppSettings.MiniWidgetVisibility)] = Current.MiniWidgetVisibility;
+            root[nameof(AppSettings.MiniWidgetTransparentSlider)] = Current.MiniWidgetTransparentSlider;
+            root[nameof(AppSettings.NetworkType)] = Current.NetworkType;
+            root[nameof(AppSettings.NetworkSpeedFormat)] = Current.NetworkSpeedFormat;
+            root[nameof(AppSettings.NetworkSpeedMagnitude)] = Current.NetworkSpeedMagnitude;
+
+            var json = root.ToJsonString(new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            File.WriteAllText(filePath, json);
+        }
+    }
+
+    private static bool GetBool(JsonObject root, string key, bool fallback)
+    {
+        if (!root.TryGetPropertyValue(key, out var node) || node == null)
+            return fallback;
 
         try
         {
-            var json = File.ReadAllText(filePath);
-            var loaded = JsonSerializer.Deserialize<AppSettings>(json);
-            if (loaded == null)
-                return;
-
-            Current.NetworkType = loaded.NetworkType;
-            Current.NetworkSpeedFormat = loaded.NetworkSpeedFormat;
-            Current.NetworkSpeedMagnitude = loaded.NetworkSpeedMagnitude;
+            return node.GetValue<bool>();
         }
         catch
         {
+            return fallback;
+        }
+    }
+
+    private static int GetInt(JsonObject root, string key, int fallback)
+    {
+        if (!root.TryGetPropertyValue(key, out var node) || node == null)
+            return fallback;
+
+        try
+        {
+            return node.GetValue<int>();
+        }
+        catch
+        {
+            return fallback;
         }
     }
 }
