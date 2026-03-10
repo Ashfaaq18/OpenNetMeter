@@ -653,16 +653,14 @@
             <TextBlock Grid.Column="1" Text="Download Speed :" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondaryAlt}" VerticalAlignment="Center" Margin="0,0,4,0"/>
             <TextBlock Grid.Column="2" FontSize="12" Foreground="{DynamicResource BrushTextUi}"
-                       VerticalAlignment="Center" Margin="0,0,16,0">
-              <Run Text="{Binding Summary.DownloadSpeedText}"/>
-            </TextBlock>
+                       VerticalAlignment="Center" Margin="0,0,16,0"
+                       Text="{Binding Summary.DownloadSpeedText}"/>
 
             <TextBlock Grid.Column="3" Text="Upload Speed :" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondaryAlt}" VerticalAlignment="Center" Margin="0,0,4,0"/>
             <TextBlock Grid.Column="4" FontSize="12" Foreground="{DynamicResource BrushTextUi}"
-                       VerticalAlignment="Center">
-              <Run Text="{Binding Summary.UploadSpeedText}"/>
-            </TextBlock>
+                       VerticalAlignment="Center"
+                       Text="{Binding Summary.UploadSpeedText}"/>
           </Grid>
         </Border>
       </Grid>

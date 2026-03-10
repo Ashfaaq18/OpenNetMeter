@@ -24,6 +24,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         Summary = new SummaryViewModel(this.networkCaptureService);
         History = new HistoryViewModel();
         Settings = new SettingsViewModel();
+        Settings.PropertyChanged += Settings_PropertyChanged;
 
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
         {
@@ -84,6 +85,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
     public void Dispose()
     {
+        Settings.PropertyChanged -= Settings_PropertyChanged;
         Summary.Dispose();
         networkCaptureService.NetworkChanged -= OnNetworkChanged;
         networkCaptureService.Dispose();
@@ -99,6 +101,15 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         }
 
         NetworkStatus = $"Connected : {e.AdapterName}";
+    }
+
+    private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SettingsViewModel.SelectedSpeedMagnitudeIndex) ||
+            e.PropertyName == nameof(SettingsViewModel.SelectedSpeedUnitIndex))
+        {
+            Summary.RefreshSpeedDisplayFormat();
+        }
     }
 
     private sealed class ParameterRelayCommand : ICommand

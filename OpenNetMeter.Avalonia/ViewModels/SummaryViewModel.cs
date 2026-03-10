@@ -10,6 +10,7 @@ using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using OpenNetMeter.PlatformAbstractions;
+using OpenNetMeter.Properties;
 using SkiaSharp;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
@@ -37,6 +38,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private DateTimeOffset? sinceDate;
     private long pendingDownloadBytes;
     private long pendingUploadBytes;
+    private long latestDownloadBytesPerSecond;
+    private long latestUploadBytesPerSecond;
 
     public SummaryViewModel(INetworkCaptureService networkCaptureService)
     {
@@ -134,8 +137,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public string CurrentSessionUploadText => FormatBytes(currentSessionUpload);
     public string TotalFromDateDownloadText => FormatBytes(totalFromDateDownload);
     public string TotalFromDateUploadText => FormatBytes(totalFromDateUpload);
-    public string DownloadSpeedText => $"{latestDownloadMbps:0.0} Mbps";
-    public string UploadSpeedText => $"{latestUploadMbps:0.0} Mbps";
+    public string DownloadSpeedText => $"{FormatSpeed(latestDownloadBytesPerSecond)}ps";
+    public string UploadSpeedText => $"{FormatSpeed(latestUploadBytesPerSecond)}ps";
     public int ProcessCount => ActiveProcesses.Count;
 
     public DateTimeOffset? SinceDate
@@ -170,6 +173,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         latestDownloadMbps = 0;
         latestUploadMbps = 0;
+        latestDownloadBytesPerSecond = 0;
+        latestUploadBytesPerSecond = 0;
 
         dlValues.Clear();
         ulValues.Clear();
@@ -226,6 +231,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         latestDownloadMbps = secondDownloadBytes * 8d / 1_000_000d;
         latestUploadMbps = secondUploadBytes * 8d / 1_000_000d;
+        latestDownloadBytesPerSecond = secondDownloadBytes;
+        latestUploadBytesPerSecond = secondUploadBytes;
         currentSessionDownload += secondDownloadBytes;
         currentSessionUpload += secondUploadBytes;
         totalFromDateDownload += secondDownloadBytes;
@@ -332,6 +339,85 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         return $"{current:0.##} {suffix[unit]}";
     }
 
+    public void RefreshSpeedDisplayFormat()
+    {
+        OnPropertyChanged(nameof(DownloadSpeedText));
+        OnPropertyChanged(nameof(UploadSpeedText));
+    }
+
+    private static string FormatSpeed(long bytesPerSecond)
+    {
+        var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
+        var magnitude = NormalizeMagnitude(SettingsManager.Current.NetworkSpeedMagnitude);
+        var value = useBytes ? bytesPerSecond : bytesPerSecond * 8;
+        var (adjustedSize, mag) = GetAdjustedSize(value, magnitude);
+
+        return decimal.Round(adjustedSize, 2).ToString() + (useBytes ? BytesSuffix(mag) : BitsSuffix(mag));
+    }
+
+    private static SpeedMagnitude NormalizeMagnitude(int magnitude)
+    {
+        return Enum.IsDefined(typeof(SpeedMagnitude), magnitude)
+            ? (SpeedMagnitude)magnitude
+            : SpeedMagnitude.Auto;
+    }
+
+    private static (decimal adjustedSize, int mag) GetAdjustedSize(long value, SpeedMagnitude magnitude)
+    {
+        int mag;
+        decimal adjustedSize;
+
+        if (magnitude == SpeedMagnitude.Auto)
+        {
+            mag = value > 0 ? (int)Math.Log(value, 1024) : 0;
+            mag = Math.Clamp(mag, 0, 6);
+
+            adjustedSize = (decimal)value / (1L << (mag * 10));
+            if (Math.Round(adjustedSize, 1) >= 1000 && mag < 6)
+            {
+                mag += 1;
+                adjustedSize /= 1024;
+            }
+        }
+        else
+        {
+            mag = Math.Clamp((int)magnitude, 0, 6);
+            adjustedSize = (decimal)value / (1L << (mag * 10));
+        }
+
+        return (adjustedSize, mag);
+    }
+
+    private static string BytesSuffix(int value)
+    {
+        return value switch
+        {
+            0 => "B",
+            1 => "KB",
+            2 => "MB",
+            3 => "GB",
+            4 => "TB",
+            5 => "PB",
+            6 => "EB",
+            _ => "B"
+        };
+    }
+
+    private static string BitsSuffix(int value)
+    {
+        return value switch
+        {
+            0 => "b",
+            1 => "Kb",
+            2 => "Mb",
+            3 => "Gb",
+            4 => "Tb",
+            5 => "Pb",
+            6 => "Eb",
+            _ => "b"
+        };
+    }
+
     private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -365,6 +451,14 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         public long DownloadBytes;
         public long UploadBytes;
     }
+}
+
+internal enum SpeedMagnitude
+{
+    Auto = 0,
+    Kilo = 1,
+    Mega = 2,
+    Giga = 3
 }
 
 public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
