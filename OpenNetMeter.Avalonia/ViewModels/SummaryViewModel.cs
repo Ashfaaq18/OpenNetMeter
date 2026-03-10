@@ -42,8 +42,10 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     {
         this.networkCaptureService = networkCaptureService;
 
-        var dlColor = new SKColor(0x2E, 0xA0, 0x43);
-        var ulColor = new SKColor(0x4E, 0xA1, 0xFF);
+        // Match WPF dark theme accents:
+        // Download -> #367061, Upload -> #D98868
+        var dlColor = new SKColor(0x36, 0x70, 0x61);
+        var ulColor = new SKColor(0xD9, 0x88, 0x68);
 
         GraphSeries =
         [
@@ -88,8 +90,9 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             {
                 MinLimit = 0,
                 ShowSeparatorLines = true,
-                SeparatorsPaint = new SolidColorPaint(new SKColor(0x28, 0x32, 0x41)) { StrokeThickness = 1 },
-                LabelsPaint = new SolidColorPaint(new SKColor(0x88, 0x99, 0xAA)),
+                // Match dark divider/text tones from MainWindow resources
+                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
+                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
                 TextSize = 10,
                 Labeler = v =>
                 {

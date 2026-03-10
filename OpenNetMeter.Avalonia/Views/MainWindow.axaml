@@ -57,6 +57,7 @@
     <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#3D2020"/>
     <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
     <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
+    <SolidColorBrush x:Key="BrushGraphBackground" Color="#252525"/>
     <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
     <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
     <BoxShadows x:Key="ShadowStrong">0 2 10 0 #33000000</BoxShadows>
@@ -312,6 +313,7 @@
                       Padding="10" CornerRadius="0,12,12,12" Background="{DynamicResource BrushSurfacePanel}"
                       BoxShadow="{DynamicResource ShadowStrong}">
                 <lvc:CartesianChart Series="{Binding Summary.GraphSeries}"
+                                    Background="{DynamicResource BrushGraphBackground}"
                                     XAxes="{Binding Summary.GraphXAxes}"
                                     YAxes="{Binding Summary.GraphYAxes}"
                                     ZoomMode="None"
