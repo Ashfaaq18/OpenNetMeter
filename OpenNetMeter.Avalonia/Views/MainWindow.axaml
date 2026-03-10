@@ -37,23 +37,23 @@
     <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
     <SolidColorBrush x:Key="BrushAccentBlue" Color="#D98868"/>
     <SolidColorBrush x:Key="BrushDanger" Color="#E81123"/>
-    <SolidColorBrush x:Key="BrushSurfacePanel" Color="#1F2630"/>
-    <SolidColorBrush x:Key="BrushPanelAlt" Color="#252D38"/>
-    <SolidColorBrush x:Key="BrushHeaderRow" Color="#28323E"/>
-    <SolidColorBrush x:Key="BrushDivider" Color="#2B3645"/>
-    <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#344150"/>
-    <SolidColorBrush x:Key="BrushTextUi" Color="#C8D1D9"/>
-    <SolidColorBrush x:Key="BrushTextBody" Color="#D0D7DE"/>
-    <SolidColorBrush x:Key="BrushTextMuted" Color="#6E7B8B"/>
-    <SolidColorBrush x:Key="BrushTextFaint" Color="#505C6B"/>
-    <SolidColorBrush x:Key="BrushTextHeader" Color="#AAB7C6"/>
-    <SolidColorBrush x:Key="BrushIconMuted" Color="#AABBCC"/>
-    <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#8899AA"/>
-    <SolidColorBrush x:Key="BrushSuccess" Color="#2EA043"/>
-    <SolidColorBrush x:Key="BrushInfo" Color="#4EA1FF"/>
-    <SolidColorBrush x:Key="BrushWarning" Color="#F0883E"/>
+    <SolidColorBrush x:Key="BrushSurfacePanel" Color="#303030"/>
+    <SolidColorBrush x:Key="BrushPanelAlt" Color="#252525"/>
+    <SolidColorBrush x:Key="BrushHeaderRow" Color="#2A2A2A"/>
+    <SolidColorBrush x:Key="BrushDivider" Color="#555555"/>
+    <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#616161"/>
+    <SolidColorBrush x:Key="BrushTextUi" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="BrushTextBody" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="BrushTextMuted" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushTextFaint" Color="#6B7280"/>
+    <SolidColorBrush x:Key="BrushTextHeader" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="BrushIconMuted" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushSuccess" Color="#367061"/>
+    <SolidColorBrush x:Key="BrushInfo" Color="#D98868"/>
+    <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
     <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
-    <SolidColorBrush x:Key="BrushDangerBright" Color="#DA3633"/>
+    <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
     <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#3D2020"/>
     <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
     <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
