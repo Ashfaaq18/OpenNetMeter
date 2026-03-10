@@ -23,18 +23,18 @@
 
   <Window.Resources>
     <!-- Theme colors -->
-    <SolidColorBrush x:Key="BrushBgWindow" Color="#0D1117"/>
-    <SolidColorBrush x:Key="BrushBgTitleBar" Color="#161B22"/>
-    <SolidColorBrush x:Key="BrushBgSurface" Color="#1F2630"/>
-    <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#1C2128"/>
-    <SolidColorBrush x:Key="BrushBgSubtle" Color="#252D38"/>
-    <SolidColorBrush x:Key="BrushBorderMain" Color="#2B3645"/>
-    <SolidColorBrush x:Key="BrushBorderSubtle" Color="#344150"/>
-    <SolidColorBrush x:Key="BrushTextPrimary" Color="#C8D1D9"/>
-    <SolidColorBrush x:Key="BrushTextSecondary" Color="#8899AA"/>
-    <SolidColorBrush x:Key="BrushAccentGreen" Color="#2EA043"/>
-    <SolidColorBrush x:Key="BrushAccentBlue" Color="#4EA1FF"/>
-    <SolidColorBrush x:Key="BrushDanger" Color="#DA3633"/>
+    <SolidColorBrush x:Key="BrushBgWindow" Color="#151515"/>
+    <SolidColorBrush x:Key="BrushBgTitleBar" Color="#202020"/>
+    <SolidColorBrush x:Key="BrushBgSurface" Color="#303030"/>
+    <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#2A2A2A"/>
+    <SolidColorBrush x:Key="BrushBgSubtle" Color="#252525"/>
+    <SolidColorBrush x:Key="BrushBorderMain" Color="#616161"/>
+    <SolidColorBrush x:Key="BrushBorderSubtle" Color="#555555"/>
+    <SolidColorBrush x:Key="BrushTextPrimary" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="BrushTextSecondary" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
+    <SolidColorBrush x:Key="BrushAccentBlue" Color="#D98868"/>
+    <SolidColorBrush x:Key="BrushDanger" Color="#E81123"/>
 
     <!-- Typography scale -->
     <x:Double x:Key="FontSizeXs">10</x:Double>
