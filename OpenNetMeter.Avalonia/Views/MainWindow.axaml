@@ -514,20 +514,20 @@
                       <StackPanel Grid.Column="0" Spacing="0">
                         <TextBlock Text="Monitor these networks" Foreground="{DynamicResource BrushTextBody}" FontSize="13" Margin="0,0,0,4"/>
                         <TextBlock Text="Choose Public for internet-only traffic" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,0,0,14"/>
-                        <!-- <StackPanel Orientation="Horizontal" Spacing="8">
-                        <RadioButton GroupName="NetTarget" Classes="pill"
-                        IsChecked="{Binding Settings.SelectedNetworkTargetIndex, Converter={x:Static BoolConverters.Equals}, ConverterParameter=0}">
-                        <TextBlock Text="Private"/>
-                        </RadioButton>
-                        <RadioButton GroupName="NetTarget" Classes="pill"
-                        IsChecked="{Binding Settings.SelectedNetworkTargetIndex, Converter={x:Static BoolConverters.Equals}, ConverterParameter=1}">
-                        <TextBlock Text="Public"/>
-                        </RadioButton>
-                        <RadioButton GroupName="NetTarget" Classes="pill"
-                        IsChecked="{Binding Settings.SelectedNetworkTargetIndex, Converter={x:Static BoolConverters.Equals}, ConverterParameter=2}">
-                        <TextBlock Text="Both"/>
-                        </RadioButton>
-                        </StackPanel>-->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <RadioButton GroupName="NetTarget" Classes="pill"
+                                       IsChecked="{Binding Settings.IsNetworkTargetPrivate, Mode=TwoWay}">
+                            <TextBlock Text="Private"/>
+                          </RadioButton>
+                          <RadioButton GroupName="NetTarget" Classes="pill"
+                                       IsChecked="{Binding Settings.IsNetworkTargetPublic, Mode=TwoWay}">
+                            <TextBlock Text="Public"/>
+                          </RadioButton>
+                          <RadioButton GroupName="NetTarget" Classes="pill"
+                                       IsChecked="{Binding Settings.IsNetworkTargetBoth, Mode=TwoWay}">
+                            <TextBlock Text="Both"/>
+                          </RadioButton>
+                        </StackPanel>
                       </StackPanel>
                       <!-- Vertical divider -->
                       <Border Grid.Column="1" Width="1" Background="{DynamicResource BrushDivider}" Margin="24,0"/>

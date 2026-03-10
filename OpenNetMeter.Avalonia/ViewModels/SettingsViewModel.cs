@@ -100,6 +100,39 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
                 return;
             selectedNetworkTargetIndex = value;
             OnPropertyChanged(nameof(SelectedNetworkTargetIndex));
+            OnPropertyChanged(nameof(IsNetworkTargetPrivate));
+            OnPropertyChanged(nameof(IsNetworkTargetPublic));
+            OnPropertyChanged(nameof(IsNetworkTargetBoth));
+        }
+    }
+
+    public bool IsNetworkTargetPrivate
+    {
+        get => SelectedNetworkTargetIndex == 0;
+        set
+        {
+            if (value)
+                SelectedNetworkTargetIndex = 0;
+        }
+    }
+
+    public bool IsNetworkTargetPublic
+    {
+        get => SelectedNetworkTargetIndex == 1;
+        set
+        {
+            if (value)
+                SelectedNetworkTargetIndex = 1;
+        }
+    }
+
+    public bool IsNetworkTargetBoth
+    {
+        get => SelectedNetworkTargetIndex == 2;
+        set
+        {
+            if (value)
+                SelectedNetworkTargetIndex = 2;
         }
     }
 
