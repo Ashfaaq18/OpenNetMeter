@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Threading;
@@ -10,8 +11,11 @@ using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using Microsoft.Data.Sqlite;
+using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 using SkiaSharp;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
@@ -28,6 +32,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private readonly DispatcherTimer flushTimer;
     private string? currentSortColumn;
     private bool sortDescending;
+    private string activeAdapterName = string.Empty;
+    private long sinceDateDbDownloadBaseline;
+    private long sinceDateDbUploadBaseline;
+    private long sinceDateSessionDownloadBaseline;
+    private long sinceDateSessionUploadBaseline;
 
     private const int WindowSize = 35;
     private int tickCount;
@@ -119,7 +128,9 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             SortProcesses(column);
         });
 
-        sinceDate = DateTimeOffset.Now.Date;
+        DateMax = DateTime.Today;
+        DateMin = DateMax.AddDays(-ApplicationDB.DataStoragePeriodInDays);
+        sinceDate = DateMax;
         this.networkCaptureService.TrafficObserved += OnTrafficObserved;
 
         flushTimer = new DispatcherTimer
@@ -143,16 +154,20 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public string DownloadSpeedText => $"{FormatSpeed(latestDownloadBytesPerSecond)}ps";
     public string UploadSpeedText => $"{FormatSpeed(latestUploadBytesPerSecond)}ps";
     public int ProcessCount => ActiveProcesses.Count;
+    public DateTime DateMin { get; }
+    public DateTime DateMax { get; }
 
     public DateTimeOffset? SinceDate
     {
         get => sinceDate;
         set
         {
-            if (sinceDate == value)
+            var normalized = NormalizeSinceDate(value);
+            if (sinceDate == normalized)
                 return;
 
-            sinceDate = value;
+            sinceDate = normalized;
+            RefreshSinceDateBaseline();
             OnPropertyChanged(nameof(SinceDate));
         }
     }
@@ -178,6 +193,15 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         latestUploadMbps = 0;
         latestDownloadBytesPerSecond = 0;
         latestUploadBytesPerSecond = 0;
+        currentSessionDownload = 0;
+        currentSessionUpload = 0;
+        totalFromDateDownload = 0;
+        totalFromDateUpload = 0;
+        sinceDateDbDownloadBaseline = 0;
+        sinceDateDbUploadBaseline = 0;
+        sinceDateSessionDownloadBaseline = 0;
+        sinceDateSessionUploadBaseline = 0;
+        activeAdapterName = string.Empty;
 
         dlValues.Clear();
         ulValues.Clear();
@@ -188,8 +212,22 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         ActiveProcesses.Clear();
         processIndex.Clear();
         OnPropertyChanged(nameof(ProcessCount));
+        OnPropertyChanged(nameof(CurrentSessionDownloadText));
+        OnPropertyChanged(nameof(CurrentSessionUploadText));
+        OnPropertyChanged(nameof(TotalFromDateDownloadText));
+        OnPropertyChanged(nameof(TotalFromDateUploadText));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
+    }
+
+    public void SetActiveAdapter(string adapterName)
+    {
+        var normalized = adapterName?.Trim() ?? string.Empty;
+        if (string.Equals(activeAdapterName, normalized, StringComparison.Ordinal))
+            return;
+
+        activeAdapterName = normalized;
+        RefreshSinceDateBaseline();
     }
 
     private void OnTrafficObserved(object? sender, NetworkTrafficEventArgs e)
@@ -238,8 +276,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         latestUploadBytesPerSecond = secondUploadBytes;
         currentSessionDownload += secondDownloadBytes;
         currentSessionUpload += secondUploadBytes;
-        totalFromDateDownload += secondDownloadBytes;
-        totalFromDateUpload += secondUploadBytes;
+        UpdateTotalFromDateFromBaselines();
 
         AppendGraphPoint();
         ApplyProcessTick(pendingSnapshot);
@@ -250,6 +287,120 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(TotalFromDateUploadText));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
+    }
+
+    private void RefreshSinceDateBaseline()
+    {
+        sinceDateSessionDownloadBaseline = currentSessionDownload;
+        sinceDateSessionUploadBaseline = currentSessionUpload;
+
+        if (string.IsNullOrWhiteSpace(activeAdapterName))
+        {
+            sinceDateDbDownloadBaseline = 0;
+            sinceDateDbUploadBaseline = 0;
+            totalFromDateDownload = 0;
+            totalFromDateUpload = 0;
+        }
+        else
+        {
+            var fromDate = (sinceDate ?? DateTimeOffset.Now.Date).Date;
+            var totals = ReadDbTotals(activeAdapterName, fromDate, DateTime.Today);
+            sinceDateDbDownloadBaseline = totals.download;
+            sinceDateDbUploadBaseline = totals.upload;
+            UpdateTotalFromDateFromBaselines();
+        }
+
+        OnPropertyChanged(nameof(TotalFromDateDownloadText));
+        OnPropertyChanged(nameof(TotalFromDateUploadText));
+    }
+
+    private void UpdateTotalFromDateFromBaselines()
+    {
+        var sessionDownloadDelta = currentSessionDownload - sinceDateSessionDownloadBaseline;
+        var sessionUploadDelta = currentSessionUpload - sinceDateSessionUploadBaseline;
+
+        if (sessionDownloadDelta < 0)
+            sessionDownloadDelta = 0;
+        if (sessionUploadDelta < 0)
+            sessionUploadDelta = 0;
+
+        totalFromDateDownload = sinceDateDbDownloadBaseline + sessionDownloadDelta;
+        totalFromDateUpload = sinceDateDbUploadBaseline + sessionUploadDelta;
+    }
+
+    private static (long download, long upload) ReadDbTotals(string adapterName, DateTime startDate, DateTime endDate)
+    {
+        try
+        {
+            var dbPath = ResolveDatabasePath();
+            if (!File.Exists(dbPath))
+                return (0, 0);
+
+            var fromDate = startDate.Date;
+            var toDate = endDate.Date;
+            if (toDate < fromDate)
+                (fromDate, toDate) = (toDate, fromDate);
+
+            using var connection = OpenReadOnlyConnection(dbPath);
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText =
+                "SELECT SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
+                "FROM ProcessDate pd " +
+                "JOIN Adapter a ON a.ID = pd.AdapterID " +
+                "JOIN Date d ON d.ID = pd.DateID " +
+                "WHERE a.Name = @AdapterName " +
+                "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate";
+            command.Parameters.AddWithValue("@AdapterName", adapterName);
+            command.Parameters.AddWithValue("@StartDate", ToDateInt(fromDate));
+            command.Parameters.AddWithValue("@EndDate", ToDateInt(toDate));
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                var download = reader.IsDBNull(0) ? 0 : reader.GetInt64(0);
+                var upload = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
+                return (download, upload);
+            }
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error($"Failed to read summary totals from database for adapter '{adapterName}'", ex);
+        }
+
+        return (0, 0);
+    }
+
+    private static SqliteConnection OpenReadOnlyConnection(string path)
+    {
+        var csb = new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadOnly
+        };
+        return new SqliteConnection(csb.ToString());
+    }
+
+    private static int ToDateInt(DateTime date)
+    {
+        return (date.Year * 10000) + (date.Month * 100) + date.Day;
+    }
+
+    private static string ResolveDatabasePath()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appFolder = Path.Combine(localAppData, "OpenNetMeter");
+        return Path.Combine(appFolder, "OpenNetMeter.sqlite");
+    }
+
+    private DateTimeOffset NormalizeSinceDate(DateTimeOffset? value)
+    {
+        var candidate = (value ?? DateTimeOffset.Now.Date).Date;
+        if (candidate > DateMax)
+            candidate = DateMax;
+        if (candidate < DateMin)
+            candidate = DateMin;
+        return candidate;
     }
 
     private void AppendGraphPoint()

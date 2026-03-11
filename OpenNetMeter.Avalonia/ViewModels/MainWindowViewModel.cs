@@ -104,6 +104,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         }
 
         NetworkStatus = $"Connected : {e.AdapterName}";
+        Summary.SetActiveAdapter(e.AdapterName);
     }
 
     private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

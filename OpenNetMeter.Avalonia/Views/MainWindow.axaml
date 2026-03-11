@@ -271,16 +271,16 @@
                       <Button Content="Name" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="Name"
                               HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                               Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-                      <Button Grid.Column="1" Content="? Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentDownload"
+                      <Button Grid.Column="1" Content="↓ Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentDownload"
                               HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                               Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-                      <Button Grid.Column="2" Content="? Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentUpload"
+                      <Button Grid.Column="2" Content="↑ Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentUpload"
                               HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                               Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-                      <Button Grid.Column="3" Content="? Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalDownload"
+                      <Button Grid.Column="3" Content="↓ Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalDownload"
                               HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                               Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-                      <Button Grid.Column="4" Content="? Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalUpload"
+                      <Button Grid.Column="4" Content="↑ Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalUpload"
                               HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                               Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
                     </Grid>
