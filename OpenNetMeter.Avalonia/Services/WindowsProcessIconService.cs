@@ -13,11 +13,12 @@ namespace OpenNetMeter.Avalonia.Services;
 public sealed class WindowsProcessIconService : IProcessIconService
 {
     private readonly ConcurrentDictionary<string, AvaloniaBitmap?> cache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly AvaloniaBitmap? DefaultIcon = CreateDefaultIcon();
 
     public object? GetProcessIcon(string processName)
     {
         if (string.IsNullOrWhiteSpace(processName))
-            return null;
+            return DefaultIcon;
 
         return cache.GetOrAdd(processName, LoadIcon);
     }
@@ -26,7 +27,7 @@ public sealed class WindowsProcessIconService : IProcessIconService
     {
         var nameWithoutExtension = Path.GetFileNameWithoutExtension(processName);
         if (string.IsNullOrWhiteSpace(nameWithoutExtension))
-            return null;
+            return DefaultIcon;
 
         try
         {
@@ -68,6 +69,23 @@ public sealed class WindowsProcessIconService : IProcessIconService
             // Ignore top-level errors and return no icon.
         }
 
-        return null;
+        return DefaultIcon;
+    }
+
+    private static AvaloniaBitmap? CreateDefaultIcon()
+    {
+        try
+        {
+            using var icon = (Icon)SystemIcons.Application.Clone();
+            using var bitmap = icon.ToBitmap();
+            using var ms = new MemoryStream();
+            bitmap.Save(ms, ImageFormat.Png);
+            ms.Position = 0;
+            return new AvaloniaBitmap(ms);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
