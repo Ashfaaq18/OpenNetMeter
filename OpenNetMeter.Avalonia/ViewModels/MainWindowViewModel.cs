@@ -12,16 +12,19 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private string networkStatus = "Disconnected";
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService())
     {
     }
 
-    public MainWindowViewModel(IWindowService windowService, INetworkCaptureService networkCaptureService)
+    public MainWindowViewModel(
+        IWindowService windowService,
+        INetworkCaptureService networkCaptureService,
+        IProcessIconService processIconService)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
 
-        Summary = new SummaryViewModel(this.networkCaptureService);
+        Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
         History = new HistoryViewModel();
         Settings = new SettingsViewModel();
         Settings.PropertyChanged += Settings_PropertyChanged;
@@ -158,5 +161,10 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         public void Start() { }
         public void Stop() { }
         public void Dispose() { }
+    }
+
+    private sealed class NoOpProcessIconService : IProcessIconService
+    {
+        public object? GetProcessIcon(string processName) => null;
     }
 }

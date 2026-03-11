@@ -18,6 +18,7 @@ namespace OpenNetMeter.Avalonia.ViewModels;
 public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly INetworkCaptureService networkCaptureService;
+    private readonly IProcessIconService processIconService;
     private readonly ObservableCollection<ObservablePoint> dlValues = new();
     private readonly ObservableCollection<ObservablePoint> ulValues = new();
     private readonly Dictionary<string, SummaryProcessRowViewModel> processIndex = new(StringComparer.OrdinalIgnoreCase);
@@ -41,9 +42,10 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
 
-    public SummaryViewModel(INetworkCaptureService networkCaptureService)
+    public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService)
     {
         this.networkCaptureService = networkCaptureService;
+        this.processIconService = processIconService;
 
         // Match WPF dark theme accents:
         // Download -> #367061, Upload -> #D98868
@@ -278,7 +280,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
             if (!processIndex.TryGetValue(kvp.Key, out var row))
             {
-                row = new SummaryProcessRowViewModel(kvp.Key);
+                row = new SummaryProcessRowViewModel(kvp.Key, processIconService.GetProcessIcon(kvp.Key));
                 processIndex[kvp.Key] = row;
                 ActiveProcesses.Add(row);
                 OnPropertyChanged(nameof(ProcessCount));
@@ -468,12 +470,13 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
     private long totalDownloadBytes;
     private long totalUploadBytes;
 
-    public SummaryProcessRowViewModel(string processName)
+    public SummaryProcessRowViewModel(string processName, object? icon = null)
     {
         ProcessName = processName;
+        Icon = icon;
     }
 
-    public object? Icon => null;
+    public object? Icon { get; }
     public string ProcessName { get; }
     public long CurrentDownloadBytes => currentDownloadBytes;
     public long CurrentUploadBytes => currentUploadBytes;

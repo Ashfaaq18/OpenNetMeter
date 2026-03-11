@@ -24,9 +24,12 @@ public partial class App : Application
             INetworkCaptureService networkCaptureService = OperatingSystem.IsWindows()
                 ? new WindowsNetworkCaptureService()
                 : new PlaceholderNetworkCaptureService();
+            IProcessIconService processIconService = OperatingSystem.IsWindows()
+                ? new WindowsProcessIconService()
+                : new PlaceholderProcessIconService();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(windowService, networkCaptureService)
+                DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService)
             };
         }
 
