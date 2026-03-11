@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Properties;
 
@@ -40,8 +41,9 @@ internal static class SettingsManager
                 Current.NetworkSpeedFormat = GetInt(root, nameof(AppSettings.NetworkSpeedFormat), Current.NetworkSpeedFormat);
                 Current.NetworkSpeedMagnitude = GetInt(root, nameof(AppSettings.NetworkSpeedMagnitude), Current.NetworkSpeedMagnitude);
             }
-            catch
+            catch (Exception ex)
             {
+                EventLogger.Error("Error loading settings", ex);
             }
         }
     }
@@ -57,8 +59,9 @@ internal static class SettingsManager
                 {
                     root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject ?? [];
                 }
-                catch
+                catch (Exception ex)
                 {
+                    EventLogger.Error("Error parsing existing settings file before save; creating new settings root", ex);
                     root = [];
                 }
             }
@@ -93,8 +96,9 @@ internal static class SettingsManager
         {
             return node.GetValue<bool>();
         }
-        catch
+        catch (Exception ex)
         {
+            EventLogger.Error($"Error reading bool setting '{key}'", ex);
             return fallback;
         }
     }
@@ -108,8 +112,9 @@ internal static class SettingsManager
         {
             return node.GetValue<int>();
         }
-        catch
+        catch (Exception ex)
         {
+            EventLogger.Error($"Error reading int setting '{key}'", ex);
             return fallback;
         }
     }

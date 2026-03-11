@@ -43,6 +43,7 @@ namespace OpenNetMeter.Utilities
                     }
                     catch (OperationCanceledException)
                     {
+                        EventLogger.Warn($"{name} tick cancelled");
                         throw;
                     }
                     catch (Exception ex)
@@ -54,6 +55,7 @@ namespace OpenNetMeter.Utilities
             catch (OperationCanceledException)
             {
                 Debug.WriteLine($"{name} task cancelled");
+                EventLogger.Warn($"{name} task cancelled");
             }
         }
 
@@ -72,7 +74,7 @@ namespace OpenNetMeter.Utilities
                 }
                 catch (OperationCanceledException)
                 {
-                    // expected on cancellation
+                    EventLogger.Warn($"{name} stop cancelled");
                 }
             }
             finally

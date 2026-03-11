@@ -261,9 +261,9 @@ namespace OpenNetMeter.Models
                         return match.Groups[1].Value.Trim();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail - SSID is nice-to-have, not critical
+                EventLogger.Error("Failed to read connected SSID", ex);
             }
 
             return null;
@@ -289,7 +289,7 @@ namespace OpenNetMeter.Models
             }
             catch (ObjectDisposedException)
             {
-                // Timer was disposed between the isDisposed check and the Change call — harmless.
+                EventLogger.Warn("Debounce timer was disposed while handling network address change");
             }
         }
 

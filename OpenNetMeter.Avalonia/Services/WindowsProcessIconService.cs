@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using Avalonia.Media.Imaging;
 using OpenNetMeter.PlatformAbstractions;
+using OpenNetMeter.Utilities;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace OpenNetMeter.Avalonia.Services;
@@ -52,9 +53,9 @@ public sealed class WindowsProcessIconService : IProcessIconService
                         ms.Position = 0;
                         return new AvaloniaBitmap(ms);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Ignore per-process access errors and continue.
+                        EventLogger.Error($"Failed to fetch icon for process '{processName}' from candidate instance", ex);
                     }
                 }
             }
@@ -64,9 +65,9 @@ public sealed class WindowsProcessIconService : IProcessIconService
                     process.Dispose();
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore top-level errors and return no icon.
+            EventLogger.Error($"Failed to resolve process icon for '{processName}'", ex);
         }
 
         return DefaultIcon;
@@ -83,8 +84,9 @@ public sealed class WindowsProcessIconService : IProcessIconService
             ms.Position = 0;
             return new AvaloniaBitmap(ms);
         }
-        catch
+        catch (Exception ex)
         {
+            EventLogger.Error("Failed to create default process icon", ex);
             return null;
         }
     }
