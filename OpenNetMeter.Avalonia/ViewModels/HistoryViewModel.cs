@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Media;
 using Microsoft.Data.Sqlite;
 using OpenNetMeter.PlatformAbstractions;
 
@@ -186,7 +187,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             var download = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
             var upload = reader.IsDBNull(2) ? 0 : reader.GetInt64(2);
 
-            var icon = processIconService.GetProcessIcon(processName);
+            var icon = processIconService.GetProcessIcon(processName) as IImage;
             Rows.Add(new HistoryRowViewModel(processName, download, upload, icon));
             TotalDownload += download;
             TotalUpload += upload;
@@ -294,7 +295,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
 public sealed class HistoryRowViewModel
 {
-    public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes, object? icon = null)
+    public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes, IImage? icon = null)
     {
         ProcessName = processName;
         DownloadBytes = downloadBytes;
@@ -302,7 +303,7 @@ public sealed class HistoryRowViewModel
         Icon = icon;
     }
 
-    public object? Icon { get; }
+    public IImage? Icon { get; }
     public string ProcessName { get; }
     public long DownloadBytes { get; }
     public long UploadBytes { get; }

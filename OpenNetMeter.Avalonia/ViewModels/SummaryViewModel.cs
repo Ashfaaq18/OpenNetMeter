@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Threading;
+using Avalonia.Media;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
@@ -280,7 +281,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
             if (!processIndex.TryGetValue(kvp.Key, out var row))
             {
-                row = new SummaryProcessRowViewModel(kvp.Key, processIconService.GetProcessIcon(kvp.Key));
+                row = new SummaryProcessRowViewModel(kvp.Key, processIconService.GetProcessIcon(kvp.Key) as IImage);
                 processIndex[kvp.Key] = row;
                 ActiveProcesses.Add(row);
                 OnPropertyChanged(nameof(ProcessCount));
@@ -470,13 +471,13 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
     private long totalDownloadBytes;
     private long totalUploadBytes;
 
-    public SummaryProcessRowViewModel(string processName, object? icon = null)
+    public SummaryProcessRowViewModel(string processName, IImage? icon = null)
     {
         ProcessName = processName;
         Icon = icon;
     }
 
-    public object? Icon { get; }
+    public IImage? Icon { get; }
     public string ProcessName { get; }
     public long CurrentDownloadBytes => currentDownloadBytes;
     public long CurrentUploadBytes => currentUploadBytes;
