@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
 
 namespace OpenNetMeter.Avalonia.Services;
 
+[SupportedOSPlatform("windows")]
 public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 {
     private NetworkProcess? networkProcess;

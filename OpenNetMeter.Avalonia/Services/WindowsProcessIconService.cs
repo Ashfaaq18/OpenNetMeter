@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.Versioning;
 using Avalonia.Media.Imaging;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
@@ -11,6 +12,7 @@ using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace OpenNetMeter.Avalonia.Services;
 
+[SupportedOSPlatform("windows")]
 public sealed class WindowsProcessIconService : IProcessIconService
 {
     private readonly ConcurrentDictionary<string, AvaloniaBitmap?> cache = new(StringComparer.OrdinalIgnoreCase);

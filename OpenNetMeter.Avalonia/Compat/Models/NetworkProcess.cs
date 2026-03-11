@@ -14,10 +14,12 @@ using System.Collections.Generic;
 using OpenNetMeter.Utilities;
 using OpenNetMeter.Properties;
 using System.Diagnostics.Eventing.Reader;
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 
 namespace OpenNetMeter.Models
 {
+    [SupportedOSPlatform("windows")]
     public partial class NetworkProcess : IDisposable
     {
         //---------- Constants ------------//
