@@ -25,7 +25,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         this.networkCaptureService = networkCaptureService;
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
-        History = new HistoryViewModel();
+        History = new HistoryViewModel(processIconService);
         Settings = new SettingsViewModel();
         Settings.PropertyChanged += Settings_PropertyChanged;
 

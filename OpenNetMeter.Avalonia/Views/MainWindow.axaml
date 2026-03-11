@@ -364,7 +364,10 @@
                       <ItemsControl.ItemTemplate>
                         <DataTemplate>
                           <Grid ColumnDefinitions="3*,1.5*,1.5*" Margin="10,4">
-                            <TextBlock Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <Image Source="{Binding Icon}" Width="16" Height="16"/>
+                              <TextBlock Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"/>
+                            </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding DownloadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"/>
                             <TextBlock Grid.Column="2" Text="{Binding UploadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"/>
                           </Grid>

@@ -5,12 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using Microsoft.Data.Sqlite;
+using OpenNetMeter.PlatformAbstractions;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class HistoryViewModel : INotifyPropertyChanged
 {
     private readonly string dbPath;
+    private readonly IProcessIconService processIconService;
     private string? selectedProfile;
     private DateTimeOffset? dateStart;
     private DateTimeOffset? dateEnd;
@@ -20,7 +22,13 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private bool sortDescending;
 
     public HistoryViewModel()
+        : this(new NoOpProcessIconService())
     {
+    }
+
+    public HistoryViewModel(IProcessIconService processIconService)
+    {
+        this.processIconService = processIconService;
         dbPath = ResolveDatabasePath();
 
         Profiles = [];
@@ -178,7 +186,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             var download = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
             var upload = reader.IsDBNull(2) ? 0 : reader.GetInt64(2);
 
-            Rows.Add(new HistoryRowViewModel(processName, download, upload));
+            var icon = processIconService.GetProcessIcon(processName);
+            Rows.Add(new HistoryRowViewModel(processName, download, upload, icon));
             TotalDownload += download;
             TotalUpload += upload;
         }
@@ -276,17 +285,24 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             execute(parameter);
         }
     }
+
+    private sealed class NoOpProcessIconService : IProcessIconService
+    {
+        public object? GetProcessIcon(string processName) => null;
+    }
 }
 
 public sealed class HistoryRowViewModel
 {
-    public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes)
+    public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes, object? icon = null)
     {
         ProcessName = processName;
         DownloadBytes = downloadBytes;
         UploadBytes = uploadBytes;
+        Icon = icon;
     }
 
+    public object? Icon { get; }
     public string ProcessName { get; }
     public long DownloadBytes { get; }
     public long UploadBytes { get; }
