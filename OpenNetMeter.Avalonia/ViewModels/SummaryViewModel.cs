@@ -147,10 +147,10 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
 
-    public string CurrentSessionDownloadText => FormatBytes(currentSessionDownload);
-    public string CurrentSessionUploadText => FormatBytes(currentSessionUpload);
-    public string TotalFromDateDownloadText => FormatBytes(totalFromDateDownload);
-    public string TotalFromDateUploadText => FormatBytes(totalFromDateUpload);
+    public string CurrentSessionDownloadText => ByteSizeFormatter.FormatBytes(currentSessionDownload);
+    public string CurrentSessionUploadText => ByteSizeFormatter.FormatBytes(currentSessionUpload);
+    public string TotalFromDateDownloadText => ByteSizeFormatter.FormatBytes(totalFromDateDownload);
+    public string TotalFromDateUploadText => ByteSizeFormatter.FormatBytes(totalFromDateUpload);
     public string DownloadSpeedText => $"{FormatSpeed(latestDownloadBytesPerSecond)}ps";
     public string UploadSpeedText => $"{FormatSpeed(latestUploadBytesPerSecond)}ps";
     public int ProcessCount => ActiveProcesses.Count;
@@ -479,20 +479,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             ActiveProcesses.Add(item);
     }
 
-    private static string FormatBytes(long value)
-    {
-        string[] suffix = { "B", "KB", "MB", "GB", "TB" };
-        var current = (double)value;
-        var unit = 0;
-        while (current >= 1024 && unit < suffix.Length - 1)
-        {
-            current /= 1024;
-            unit++;
-        }
-
-        return $"{current:0.##} {suffix[unit]}";
-    }
-
     public void RefreshSpeedDisplayFormat()
     {
         OnPropertyChanged(nameof(DownloadSpeedText));
@@ -577,29 +563,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class ParameterRelayCommand : ICommand
-    {
-        private readonly Action<object?> execute;
-
-        public ParameterRelayCommand(Action<object?> execute)
-        {
-            this.execute = execute;
-        }
-
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter)
-        {
-            execute(parameter);
-        }
-    }
-
     private sealed class PendingTraffic
     {
         public long DownloadBytes;
@@ -635,10 +598,10 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
     public long TotalDownloadBytes => totalDownloadBytes;
     public long TotalUploadBytes => totalUploadBytes;
 
-    public string CurrentDownload => FormatBytes(currentDownloadBytes);
-    public string CurrentUpload => FormatBytes(currentUploadBytes);
-    public string TotalDownload => FormatBytes(totalDownloadBytes);
-    public string TotalUpload => FormatBytes(totalUploadBytes);
+    public string CurrentDownload => ByteSizeFormatter.FormatBytes(currentDownloadBytes);
+    public string CurrentUpload => ByteSizeFormatter.FormatBytes(currentUploadBytes);
+    public string TotalDownload => ByteSizeFormatter.FormatBytes(totalDownloadBytes);
+    public string TotalUpload => ByteSizeFormatter.FormatBytes(totalUploadBytes);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -692,20 +655,6 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(CurrentUpload));
             OnPropertyChanged(nameof(TotalUpload));
         }
-    }
-
-    private static string FormatBytes(long value)
-    {
-        string[] suffix = { "B", "KB", "MB", "GB", "TB" };
-        var current = (double)value;
-        var unit = 0;
-        while (current >= 1024 && unit < suffix.Length - 1)
-        {
-            current /= 1024;
-            unit++;
-        }
-
-        return $"{current:0.##} {suffix[unit]}";
     }
 
     private void OnPropertyChanged(string propertyName) =>

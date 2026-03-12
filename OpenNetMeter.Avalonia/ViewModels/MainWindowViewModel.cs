@@ -116,29 +116,6 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         }
     }
 
-    private sealed class ParameterRelayCommand : ICommand
-    {
-        private readonly Action<object?> execute;
-
-        public ParameterRelayCommand(Action<object?> execute)
-        {
-            this.execute = execute;
-        }
-
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter)
-        {
-            execute(parameter);
-        }
-    }
-
     private sealed class NoOpWindowService : IWindowService
     {
         public void MinimizeMainWindow() { }

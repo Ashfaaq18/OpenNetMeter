@@ -121,8 +121,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         }
     }
 
-    public string TotalDownloadText => FormatBytes(TotalDownload);
-    public string TotalUploadText => FormatBytes(TotalUpload);
+    public string TotalDownloadText => ByteSizeFormatter.FormatBytes(TotalDownload);
+    public string TotalUploadText => ByteSizeFormatter.FormatBytes(TotalUpload);
 
     public ICommand FilterCommand { get; }
     public ICommand SortRowsCommand { get; }
@@ -239,19 +239,6 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         return (date.Year * 10000) + (date.Month * 100) + date.Day;
     }
 
-    private static string FormatBytes(long value)
-    {
-        string[] suffix = { "B", "KB", "MB", "GB", "TB" };
-        double current = value;
-        int unit = 0;
-        while (current >= 1024 && unit < suffix.Length - 1)
-        {
-            current /= 1024;
-            unit++;
-        }
-        return $"{current:0.##} {suffix[unit]}";
-    }
-
     private static string ResolveDatabasePath()
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -262,29 +249,6 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    private sealed class ParameterRelayCommand : ICommand
-    {
-        private readonly Action<object?> execute;
-
-        public ParameterRelayCommand(Action<object?> execute)
-        {
-            this.execute = execute;
-        }
-
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter)
-        {
-            execute(parameter);
-        }
     }
 
     private sealed class NoOpProcessIconService : IProcessIconService
@@ -307,19 +271,6 @@ public sealed class HistoryRowViewModel
     public string ProcessName { get; }
     public long DownloadBytes { get; }
     public long UploadBytes { get; }
-    public string DownloadText => FormatBytes(DownloadBytes);
-    public string UploadText => FormatBytes(UploadBytes);
-
-    private static string FormatBytes(long value)
-    {
-        string[] suffix = { "B", "KB", "MB", "GB", "TB" };
-        double current = value;
-        int unit = 0;
-        while (current >= 1024 && unit < suffix.Length - 1)
-        {
-            current /= 1024;
-            unit++;
-        }
-        return $"{current:0.##} {suffix[unit]}";
-    }
+    public string DownloadText => ByteSizeFormatter.FormatBytes(DownloadBytes);
+    public string UploadText => ByteSizeFormatter.FormatBytes(UploadBytes);
 }
