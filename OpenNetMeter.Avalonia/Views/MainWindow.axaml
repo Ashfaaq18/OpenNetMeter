@@ -21,6 +21,10 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding CloseAboutCommand}"/>
+  </Window.KeyBindings>
+
   <Window.Resources>
     <!-- Theme colors -->
     <SolidColorBrush x:Key="BrushTransparent" Color="Transparent"/>
@@ -58,6 +62,8 @@
     <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
     <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
     <SolidColorBrush x:Key="BrushGraphBackground" Color="#252525"/>
+    <SolidColorBrush x:Key="BrushOverlayScrim" Color="#A0000000"/>
+    <SolidColorBrush x:Key="BrushLink" Color="#5FA8FF"/>
     <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
     <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
     <BoxShadows x:Key="ShadowStrong">0 2 10 0 #33000000</BoxShadows>
@@ -687,6 +693,62 @@
             Cursor="BottomLeftCorner" PointerPressed="ResizeBottomLeft_PointerPressed"/>
     <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="10" Background="{DynamicResource BrushTransparent}"
             Cursor="BottomRightCorner" PointerPressed="ResizeBottomRight_PointerPressed"/>
+
+    <!-- ABOUT MODAL -->
+    <Border IsVisible="{Binding IsAboutOpen}"
+            Background="{DynamicResource BrushOverlayScrim}">
+      <Grid>
+        <Border Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1"
+                Background="{DynamicResource BrushBgWindow}">
+          <Grid RowDefinitions="Auto,*">
+
+            <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}">
+              <Grid ColumnDefinitions="*,Auto" Margin="12,0,0,10">
+                <StackPanel Grid.Column="0" Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                  <Image Source="avares://OpenNetMeter.Avalonia/Assets/x48.png"
+                         Width="48" Height="48"/>
+                  <TextBlock Text="OpenNetMeter" FontSize="30" FontWeight="Bold"
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right" Command="{Binding CloseAboutCommand}">
+                  <Panel Width="10" Height="10">
+                    <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                    <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                  </Panel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="{DynamicResource BrushBgSubtle}" Padding="10">
+              <Border BorderBrush="{DynamicResource BrushBorderSubtle}" BorderThickness="1"
+                      Background="{DynamicResource BrushBgSurface}" Padding="12">
+                <StackPanel Spacing="10">
+                  <TextBlock Text="{Binding AboutVersionText}"
+                             FontSize="{DynamicResource FontSizeMd}"
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                  <TextBlock TextWrapping="Wrap"
+                             Text="This product is created and maintained by Ashfaaq Riphque."
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                  <TextBlock TextWrapping="Wrap"
+                             Text="If you find any problems with the product or have ideas for improvements, feel free to create an issue at:"
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                  <Button Classes="linkBtn"
+                          Command="{Binding OpenAboutRepositoryCommand}"
+                          HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding AboutRepositoryUrl}"
+                               Foreground="{DynamicResource BrushLink}"
+                               TextDecorations="Underline"/>
+                  </Button>
+                </StackPanel>
+              </Border>
+            </Border>
+
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
   </Grid>
 
   <Window.Styles>
@@ -753,6 +815,17 @@
     </Style>
     <Style Selector="Button.closeBtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BrushDanger}"/>
+    </Style>
+    <Style Selector="Button.linkBtn">
+      <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
+    <Style Selector="Button.linkBtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="Opacity" Value="0.85"/>
     </Style>
     <Style Selector="DatePickerPresenter">
       <Setter Property="MinWidth" Value="0" />

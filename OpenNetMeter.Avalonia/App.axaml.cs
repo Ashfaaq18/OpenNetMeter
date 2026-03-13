@@ -34,6 +34,7 @@ public partial class App : Application
             };
 
             var windowService = new AvaloniaWindowService();
+            IExternalLinkService externalLinkService = new ExternalLinkService();
             INetworkCaptureService networkCaptureService = OperatingSystem.IsWindows()
                 ? new WindowsNetworkCaptureService()
                 : new PlaceholderNetworkCaptureService();
@@ -42,7 +43,7 @@ public partial class App : Application
                 : new PlaceholderProcessIconService();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService)
+                DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService)
             };
         }
 

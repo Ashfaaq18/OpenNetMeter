@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Windows.Input;
 using OpenNetMeter.Core.ViewModels;
 using OpenNetMeter.PlatformAbstractions;
@@ -7,22 +8,28 @@ namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 {
+    private const string AboutRepositoryUri = "https://github.com/Ashfaaq18/OpenNetMeter";
+
     private readonly IWindowService windowService;
     private readonly INetworkCaptureService networkCaptureService;
+    private readonly IExternalLinkService externalLinkService;
     private string networkStatus = "Disconnected";
+    private bool isAboutOpen;
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService())
     {
     }
 
     public MainWindowViewModel(
         IWindowService windowService,
         INetworkCaptureService networkCaptureService,
-        IProcessIconService processIconService)
+        IProcessIconService processIconService,
+        IExternalLinkService externalLinkService)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
+        this.externalLinkService = externalLinkService;
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
         History = new HistoryViewModel(processIconService);
@@ -38,7 +45,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
                 SelectedTabIndex = nextIndex;
         });
 
-        AboutCommand = new RelayCommand(() => this.windowService.ShowAbout());
+        AboutCommand = new RelayCommand(() => IsAboutOpen = true);
+        CloseAboutCommand = new RelayCommand(() => IsAboutOpen = false);
+        OpenAboutRepositoryCommand = new RelayCommand(() => this.externalLinkService.Open(AboutRepositoryUri));
         MinimizeWindowCommand = new RelayCommand(() => this.windowService.MinimizeMainWindow());
         CloseWindowCommand = new RelayCommand(() => this.windowService.CloseMainWindow());
 
@@ -49,9 +58,13 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     public SummaryViewModel Summary { get; }
     public HistoryViewModel History { get; }
     public SettingsViewModel Settings { get; }
+    public string AboutVersionText { get; } = $"Version: {Assembly.GetExecutingAssembly()?.GetName().Version}";
+    public string AboutRepositoryUrl { get; } = AboutRepositoryUri;
 
     public ICommand SwitchTabCommand { get; }
     public ICommand AboutCommand { get; }
+    public ICommand CloseAboutCommand { get; }
+    public ICommand OpenAboutRepositoryCommand { get; }
     public ICommand MinimizeWindowCommand { get; }
     public ICommand CloseWindowCommand { get; }
 
@@ -68,6 +81,19 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
                 return;
             networkStatus = value;
             OnPropertyChanged(nameof(NetworkStatus));
+        }
+    }
+
+    public bool IsAboutOpen
+    {
+        get => isAboutOpen;
+        private set
+        {
+            if (isAboutOpen == value)
+                return;
+
+            isAboutOpen = value;
+            OnPropertyChanged(nameof(IsAboutOpen));
         }
     }
 
@@ -144,5 +170,10 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private sealed class NoOpProcessIconService : IProcessIconService
     {
         public object? GetProcessIcon(string processName) => null;
+    }
+
+    private sealed class NoOpExternalLinkService : IExternalLinkService
+    {
+        public void Open(string uri) { }
     }
 }
