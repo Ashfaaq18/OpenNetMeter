@@ -7,12 +7,18 @@ namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class MiniWidgetViewModel : INotifyPropertyChanged
 {
+    private const string PinLightAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/pin.png";
+    private const string PinDarkAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/pin-dark.png";
+    private const string UnpinLightAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/unpin.png";
+    private const string UnpinDarkAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/unpin-dark.png";
+
     private string downloadSpeedText = "35.2 Mbps";
     private string uploadSpeedText = "4.8 Mbps";
     private string currentSessionDownloadText = "1.24 GB";
     private string currentSessionUploadText = "98.4 MB";
     private string backgroundColor = "#cc252525";
     private bool isPinned;
+    private bool darkMode;
     private ICommand togglePinnedCommand;
 
     public string DownloadSpeedText
@@ -74,7 +80,8 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
             SettingsManager.Current.MiniWidgetPinned = value;
             SettingsManager.Save();
             OnPropertyChanged(nameof(IsPinned));
-            OnPropertyChanged(nameof(PinButtonText));
+            OnPropertyChanged(nameof(PinIconSource));
+            OnPropertyChanged(nameof(PinToolTip));
         }
     }
 
@@ -90,7 +97,11 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
         }
     }
 
-    public string PinButtonText => IsPinned ? "Unpin" : "Pin";
+    public string PinIconSource => IsPinned
+        ? (darkMode ? UnpinDarkAsset : UnpinLightAsset)
+        : (darkMode ? PinDarkAsset : PinLightAsset);
+
+    public string PinToolTip => IsPinned ? "Unpin" : "Pin";
 
     public ICommand OpenMainWindowCommand { get; private set; } = new RelayCommand(() => { });
     public ICommand HideWidgetCommand { get; private set; } = new RelayCommand(() => { });
@@ -115,9 +126,11 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
     {
         var clampedTransparency = Math.Clamp(transparency, 0, 100);
         var alpha = ((100 - clampedTransparency) * 255) / 100;
+        this.darkMode = darkMode;
         BackgroundColor = darkMode
             ? $"#{alpha:x2}252525"
             : $"#{alpha:x2}f1f1f1";
+        OnPropertyChanged(nameof(PinIconSource));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
