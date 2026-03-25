@@ -67,6 +67,20 @@ Run the Avalonia app on Windows, Linux, and macOS.
 ## Phase 12 (Completed)
 - Stabilization + Windows Avalonia release candidate (WPF still buildable).
 
+## Phase 13 (Completed)
+- Port the Avalonia desktop shell to near-WPF parity for the mini widget and surrounding window behavior.
+- Completed in small sub-slices, but now tracked as one completed phase for handoff simplicity.
+- Includes:
+  - Avalonia mini widget window
+  - live Summary data wiring
+  - drag/pin/context menu behavior
+  - widget visibility and appearance sync with settings
+  - widget and main-window geometry persistence + out-of-bounds recovery
+  - Windows tray icon/menu
+  - hide-to-tray behavior
+  - Windows widget z-order maintenance above the taskbar
+  - visual polish closer to the WPF widget
+
 ## Cross-Platform Follow-up
 After core tabs are stable on Windows Avalonia:
 1. Implement Linux backend(s) for capture/startup/tray-related features.
@@ -89,9 +103,30 @@ Use this checklist when starting a fresh chat:
 
 ### Current Snapshot
 - Completed phases: `1` through `12`, plus sub-phase `11.1`.
+- Completed Phase `13` for Avalonia desktop shell / mini widget parity.
 - Avalonia app exists and runs with Summary/History/Settings screens.
+- Avalonia shell now includes:
+  - in-window About modal
+  - Windows mini widget
+  - settings-driven widget visibility/appearance
+  - window geometry persistence
+  - tray icon/menu
+  - hide-to-tray
+  - Windows widget z-order maintenance
+- Avalonia parity work already landed for:
+  - settings persistence through `settings.json`
+  - settings-driven speed format / network target wiring
+  - summary `Usage From` card logic
+  - process icons in Summary and History
+  - centralized Avalonia window colors/resources
+- Windows-only callsites are isolated/annotated for Windows-specific services.
+- Avalonia app-side logging/event viewer hooks were added for exception and catch-path diagnostics.
 - Linux publish path exists via `scripts/publish-avalonia-rc.ps1` (`linux-x64` supported).
 - WPF app remains buildable in parallel.
+- Current Linux/macOS status:
+  - Avalonia app can build/run
+  - mini widget/network capture/process icon/tray behavior are still Windows-first
+  - non-Windows uses placeholders where platform backends are not implemented yet
 
 ### Known Local Friction
 - Occasional `CS2012` / `BG1002` / copy-lock errors can appear when multiple `dotnet` operations overlap.
@@ -106,8 +141,11 @@ Use this checklist when starting a fresh chat:
    - `powershell -ExecutionPolicy Bypass -File .\scripts\publish-avalonia-rc.ps1 -Runtime linux-x64 -Configuration Debug`
 
 ### Copy/Paste Starter for New Chat
-`Use AVALONIA_MIGRATION_PLAN.md as source of truth. Assume phases 1-12 + 11.1 are complete. First read git status and latest commits, then continue with small, reviewable slices only.`
+`Use AVALONIA_MIGRATION_PLAN.md as source of truth. Assume phases 1-13 + 11.1 are complete. First read git status and latest commits, then continue with small, reviewable slices only.`
 
 ## Recent Commits
-- `46b6fc3` (2026-03-02): connect the sample realtime points to livecharts
-- `1717fa7` (2026-03-02): making the ui look more like the wpf version.
+- `6312c6f` (2026-03-25): `feat(avalonia): polish mini widget visuals to match WPF`
+- `5c70dea` (2026-03-25): `feat(avalonia): keep mini widget above taskbar on windows`
+- `c295eb7` (2026-03-25): `feat(avalonia): hide main window to tray and exit only from tray`
+- `bb9f197` (2026-03-25): `feat(avalonia): add system tray icon and menu actions`
+- `c99a10d` (2026-03-25): `feat(avalonia): persist main window geometry and recover off-screen windows`
