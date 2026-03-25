@@ -22,6 +22,8 @@ namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 {
+    private const double GraphLogBase = 10d;
+    private const int MaxSpeedMagnitude = 6;
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IProcessIconService processIconService;
     private readonly ObservableCollection<ObservablePoint> dlValues = new();
@@ -51,6 +53,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long pendingUploadBytes;
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
+    private int graphAxisMagnitude;
 
     public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService)
     {
@@ -99,24 +102,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             }
         ];
 
-        GraphYAxes =
-        [
-            new Axis
-            {
-                MinLimit = 0,
-                ShowSeparatorLines = true,
-                // Match dark divider/text tones from MainWindow resources
-                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
-                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
-                TextSize = 10,
-                Labeler = v =>
-                {
-                    if (v < 1) return $"{v:0.0} Mbps";
-                    if (v < 10) return $"{v:0.#} Mbps";
-                    return $"{v:0} Mbps";
-                }
-            }
-        ];
+        GraphYAxes = CreateGraphYAxes();
 
         ActiveProcesses = [];
         SortProcessesCommand = new ParameterRelayCommand(parameter =>
@@ -143,7 +129,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public ISeries[] GraphSeries { get; }
     public Axis[] GraphXAxes { get; }
-    public Axis[] GraphYAxes { get; }
+    public Axis[] GraphYAxes { get; private set; }
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
 
@@ -212,6 +198,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         ActiveProcesses.Clear();
         processIndex.Clear();
         OnPropertyChanged(nameof(ProcessCount));
+        UpdateGraphAxisLabelScale();
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
@@ -405,8 +392,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     private void AppendGraphPoint()
     {
-        dlValues.Add(new ObservablePoint(tickCount, latestDownloadMbps));
-        ulValues.Add(new ObservablePoint(tickCount, latestUploadMbps));
+        dlValues.Add(new ObservablePoint(tickCount, MbpsToGraphValue(latestDownloadMbps)));
+        ulValues.Add(new ObservablePoint(tickCount, MbpsToGraphValue(latestUploadMbps)));
 
         while (dlValues.Count > WindowSize)
             dlValues.RemoveAt(0);
@@ -419,7 +406,81 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             GraphXAxes[0].MaxLimit = tickCount;
         }
 
+        UpdateGraphAxisLabelScale();
         tickCount++;
+    }
+
+    private Axis[] CreateGraphYAxes()
+    {
+        return
+        [
+            new Axis
+            {
+                MinLimit = 0,
+                ShowSeparatorLines = true,
+                // Match dark divider/text tones from MainWindow resources
+                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
+                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
+                TextSize = 10,
+                Labeler = FormatGraphAxisLabel
+            }
+        ];
+    }
+
+    private static double MbpsToGraphValue(double mbps)
+    {
+        if (mbps <= 0)
+            return 0;
+
+        // Plot the graph on a logarithmic curve while preserving zero traffic.
+        return Math.Log(mbps + 1, GraphLogBase);
+    }
+
+    private static double GraphValueToMbps(double graphValue)
+    {
+        if (graphValue <= 0)
+            return 0;
+
+        return Math.Pow(GraphLogBase, graphValue) - 1;
+    }
+
+    private static long GraphValueToBytesPerSecond(double graphValue)
+    {
+        if (graphValue <= 0)
+            return 0;
+
+        return (long)Math.Round(GraphValueToMbps(graphValue) * 1_000_000d / 8d);
+    }
+
+    private void UpdateGraphAxisLabelScale()
+    {
+        var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
+        long maxBytesPerSecond = 0;
+
+        if (dlValues.Count > 0)
+            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueToBytesPerSecond(dlValues.Max(point => point.Y ?? 0d)));
+
+        if (ulValues.Count > 0)
+            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueToBytesPerSecond(ulValues.Max(point => point.Y ?? 0d)));
+
+        var displayValue = useBytes ? maxBytesPerSecond : maxBytesPerSecond * 8;
+        var (_, magnitude) = GetAdjustedSize(displayValue, SpeedMagnitude.Auto);
+
+        if (graphAxisMagnitude == magnitude)
+            return;
+
+        graphAxisMagnitude = magnitude;
+    }
+
+    private string FormatGraphAxisLabel(double graphValue)
+    {
+        var bytesPerSecond = GraphValueToBytesPerSecond(graphValue);
+        var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
+        var displayValue = useBytes ? bytesPerSecond : bytesPerSecond * 8;
+        var adjustedSize = ScaleToMagnitude(displayValue, graphAxisMagnitude);
+        var suffix = useBytes ? BytesSuffix(graphAxisMagnitude) : BitsSuffix(graphAxisMagnitude);
+
+        return $"{FormatGraphAxisValue(adjustedSize)} {suffix}/s";
     }
 
     private void ApplyProcessTick(Dictionary<string, PendingTraffic> pendingSnapshot)
@@ -481,6 +542,9 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public void RefreshSpeedDisplayFormat()
     {
+        UpdateGraphAxisLabelScale();
+        GraphYAxes = CreateGraphYAxes();
+        OnPropertyChanged(nameof(GraphYAxes));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
@@ -493,6 +557,26 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         var (adjustedSize, mag) = GetAdjustedSize(value, magnitude);
 
         return decimal.Round(adjustedSize, 2).ToString() + (useBytes ? BytesSuffix(mag) : BitsSuffix(mag));
+    }
+
+    private static decimal ScaleToMagnitude(long value, int magnitude)
+    {
+        var clampedMagnitude = Math.Clamp(magnitude, 0, MaxSpeedMagnitude);
+        return (decimal)value / (1L << (clampedMagnitude * 10));
+    }
+
+    private static string FormatGraphAxisValue(decimal adjustedSize)
+    {
+        if (adjustedSize <= 0)
+            return "0";
+
+        var rounded = adjustedSize < 10
+            ? decimal.Round(adjustedSize, 1)
+            : decimal.Round(adjustedSize, 0);
+
+        return rounded == decimal.Truncate(rounded)
+            ? rounded.ToString("0")
+            : rounded.ToString("0.#");
     }
 
     private static SpeedMagnitude NormalizeMagnitude(int magnitude)
