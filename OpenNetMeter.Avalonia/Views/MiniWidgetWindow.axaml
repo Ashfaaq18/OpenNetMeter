@@ -22,8 +22,30 @@
           BorderThickness="1"
           BorderBrush="#555555"
           Background="#DD202020"
-          Padding="10">
-    <Grid ColumnDefinitions="*,12,*">
+          Padding="10"
+          PointerPressed="WidgetChrome_PointerPressed">
+    <Border.ContextMenu>
+      <ContextMenu>
+        <MenuItem Header="Open"
+                  Command="{Binding OpenMainWindowCommand}"/>
+        <MenuItem Header="Hide"
+                  Command="{Binding HideWidgetCommand}"/>
+      </ContextMenu>
+    </Border.ContextMenu>
+
+    <Grid RowDefinitions="Auto,*"
+          ColumnDefinitions="*,Auto">
+      <Button Grid.Column="1"
+              Padding="8,2"
+              MinWidth="52"
+              HorizontalAlignment="Right"
+              Command="{Binding TogglePinnedCommand}"
+              Content="{Binding PinButtonText}"/>
+
+      <Grid Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Margin="0,8,0,0"
+            ColumnDefinitions="*,12,*">
       <StackPanel Grid.Column="0" Spacing="2">
         <StackPanel Orientation="Horizontal" Spacing="6">
           <Border Width="20" Height="20" CornerRadius="4" Background="#367061">
@@ -65,6 +87,7 @@
                    FontSize="11"
                    Foreground="#C8C8C8"/>
       </StackPanel>
+      </Grid>
     </Grid>
   </Border>
 </Window>

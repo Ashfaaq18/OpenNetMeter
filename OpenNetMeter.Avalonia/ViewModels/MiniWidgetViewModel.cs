@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
@@ -8,6 +10,8 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
     private string uploadSpeedText = "4.8 Mbps";
     private string currentSessionDownloadText = "1.24 GB";
     private string currentSessionUploadText = "98.4 MB";
+    private bool isPinned;
+    private ICommand togglePinnedCommand;
 
     public string DownloadSpeedText
     {
@@ -55,6 +59,38 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
             currentSessionUploadText = value;
             OnPropertyChanged(nameof(CurrentSessionUploadText));
         }
+    }
+
+    public bool IsPinned
+    {
+        get => isPinned;
+        set
+        {
+            if (isPinned == value)
+                return;
+            isPinned = value;
+            OnPropertyChanged(nameof(IsPinned));
+            OnPropertyChanged(nameof(PinButtonText));
+        }
+    }
+
+    public string PinButtonText => IsPinned ? "Unpin" : "Pin";
+
+    public ICommand OpenMainWindowCommand { get; private set; } = new RelayCommand(() => { });
+    public ICommand HideWidgetCommand { get; private set; } = new RelayCommand(() => { });
+    public ICommand TogglePinnedCommand => togglePinnedCommand;
+
+    public MiniWidgetViewModel()
+    {
+        togglePinnedCommand = new RelayCommand(() => IsPinned = !IsPinned);
+    }
+
+    public void SetActions(Action openMainWindow, Action hideWidget)
+    {
+        OpenMainWindowCommand = new RelayCommand(openMainWindow);
+        HideWidgetCommand = new RelayCommand(hideWidget);
+        OnPropertyChanged(nameof(OpenMainWindowCommand));
+        OnPropertyChanged(nameof(HideWidgetCommand));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

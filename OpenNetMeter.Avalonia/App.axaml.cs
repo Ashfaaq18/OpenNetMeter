@@ -45,15 +45,14 @@ public partial class App : Application
             IProcessIconService processIconService = OperatingSystem.IsWindows()
                 ? new WindowsProcessIconService()
                 : new PlaceholderProcessIconService();
+            var mainWindow = new MainWindow();
 
             miniWidgetService = OperatingSystem.IsWindows()
-                ? new WindowsMiniWidgetService(miniWidgetViewModel)
+                ? new WindowsMiniWidgetService(miniWidgetViewModel, mainWindow)
                 : new PlaceholderMiniWidgetService();
 
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel)
-            };
+            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel);
+            desktop.MainWindow = mainWindow;
 
             if (OperatingSystem.IsWindows())
                 miniWidgetService.Show();
