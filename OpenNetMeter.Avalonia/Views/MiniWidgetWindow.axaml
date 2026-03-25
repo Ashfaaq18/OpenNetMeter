@@ -5,7 +5,7 @@
         xmlns:vm="clr-namespace:OpenNetMeter.Avalonia.ViewModels"
         x:Class="OpenNetMeter.Avalonia.Views.MiniWidgetWindow"
         x:DataType="vm:MiniWidgetViewModel"
-        Width="324"
+        Width="260"
         Height="44"
         CanResize="False"
         SystemDecorations="None"
