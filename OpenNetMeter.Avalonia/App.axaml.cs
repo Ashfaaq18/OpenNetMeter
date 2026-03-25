@@ -28,10 +28,12 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             IMiniWidgetService miniWidgetService = new PlaceholderMiniWidgetService();
+            ITrayService trayService = new PlaceholderTrayService();
 
             desktop.Exit += (_, _) =>
             {
                 EventLogger.Info("Application exiting");
+                trayService.Dispose();
                 miniWidgetService.Dispose();
                 SettingsManager.Save();
             };
@@ -54,6 +56,10 @@ public partial class App : Application
             mainWindow.InitializeWindowState(miniWidgetService);
             mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService);
             desktop.MainWindow = mainWindow;
+
+            trayService = OperatingSystem.IsWindows()
+                ? new WindowsTrayService(this, desktop, mainWindow, miniWidgetService)
+                : new PlaceholderTrayService();
 
             if (OperatingSystem.IsWindows() && SettingsManager.Current.MiniWidgetVisibility)
                 miniWidgetService.Show();

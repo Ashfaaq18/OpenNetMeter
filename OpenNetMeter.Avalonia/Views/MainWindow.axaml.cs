@@ -46,6 +46,24 @@ public partial class MainWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
+    public void OpenFromTray()
+    {
+        if (!IsVisible)
+            Show();
+
+        if (WindowState == WindowState.Minimized)
+            WindowState = WindowState.Normal;
+
+        Activate();
+    }
+
+    public void ResetWindowPositions()
+    {
+        CenterOnPrimaryScreen();
+        SaveWindowGeometry();
+        miniWidgetService?.ResetPosition(this);
+    }
+
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         BeginMoveDrag(e);
