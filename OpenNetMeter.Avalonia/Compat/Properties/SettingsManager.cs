@@ -36,6 +36,10 @@ internal static class SettingsManager
                 Current.StartWithWin = GetBool(root, nameof(AppSettings.StartWithWin), Current.StartWithWin);
                 Current.MinimizeOnStart = GetBool(root, nameof(AppSettings.MinimizeOnStart), Current.MinimizeOnStart);
                 Current.MiniWidgetVisibility = GetBool(root, nameof(AppSettings.MiniWidgetVisibility), Current.MiniWidgetVisibility);
+                Current.MiniWidgetPinned = GetBool(root, nameof(AppSettings.MiniWidgetPinned), Current.MiniWidgetPinned);
+                Current.MiniWidgetPosX = GetInt(root, nameof(AppSettings.MiniWidgetPosX), Current.MiniWidgetPosX);
+                Current.MiniWidgetPosY = GetInt(root, nameof(AppSettings.MiniWidgetPosY), Current.MiniWidgetPosY);
+                Current.MiniWidgetPositionInitialized = GetBool(root, nameof(AppSettings.MiniWidgetPositionInitialized), Current.MiniWidgetPositionInitialized);
                 Current.MiniWidgetTransparentSlider = GetInt(root, nameof(AppSettings.MiniWidgetTransparentSlider), Current.MiniWidgetTransparentSlider);
                 Current.NetworkType = GetInt(root, nameof(AppSettings.NetworkType), Current.NetworkType);
                 Current.NetworkSpeedFormat = GetInt(root, nameof(AppSettings.NetworkSpeedFormat), Current.NetworkSpeedFormat);
@@ -74,6 +78,10 @@ internal static class SettingsManager
             root[nameof(AppSettings.StartWithWin)] = Current.StartWithWin;
             root[nameof(AppSettings.MinimizeOnStart)] = Current.MinimizeOnStart;
             root[nameof(AppSettings.MiniWidgetVisibility)] = Current.MiniWidgetVisibility;
+            root[nameof(AppSettings.MiniWidgetPinned)] = Current.MiniWidgetPinned;
+            root[nameof(AppSettings.MiniWidgetPosX)] = Current.MiniWidgetPosX;
+            root[nameof(AppSettings.MiniWidgetPosY)] = Current.MiniWidgetPosY;
+            root[nameof(AppSettings.MiniWidgetPositionInitialized)] = Current.MiniWidgetPositionInitialized;
             root[nameof(AppSettings.MiniWidgetTransparentSlider)] = Current.MiniWidgetTransparentSlider;
             root[nameof(AppSettings.NetworkType)] = Current.NetworkType;
             root[nameof(AppSettings.NetworkSpeedFormat)] = Current.NetworkSpeedFormat;

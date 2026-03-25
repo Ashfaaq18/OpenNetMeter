@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
+using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
@@ -69,6 +70,8 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
             if (isPinned == value)
                 return;
             isPinned = value;
+            SettingsManager.Current.MiniWidgetPinned = value;
+            SettingsManager.Save();
             OnPropertyChanged(nameof(IsPinned));
             OnPropertyChanged(nameof(PinButtonText));
         }
@@ -83,6 +86,7 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
     public MiniWidgetViewModel()
     {
         togglePinnedCommand = new RelayCommand(() => IsPinned = !IsPinned);
+        isPinned = SettingsManager.Current.MiniWidgetPinned;
     }
 
     public void SetActions(Action openMainWindow, Action hideWidget)

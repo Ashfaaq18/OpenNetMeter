@@ -1,7 +1,9 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using OpenNetMeter.Avalonia.ViewModels;
 using OpenNetMeter.Avalonia.Views;
+using OpenNetMeter.Properties;
 using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Avalonia.Services;
@@ -10,6 +12,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
 {
     private readonly Window mainWindow;
     private readonly MiniWidgetWindow window;
+    private bool restoringPosition;
 
     public WindowsMiniWidgetService(MiniWidgetViewModel viewModel, Window mainWindow)
     {
@@ -20,6 +23,8 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         };
 
         viewModel.SetActions(OpenMainWindow, Hide);
+        window.Opened += Window_Opened;
+        window.PositionChanged += Window_PositionChanged;
     }
 
     public void Show()
@@ -78,5 +83,49 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         {
             EventLogger.Error("Failed to open main window from mini widget", ex);
         }
+    }
+
+    private void Window_Opened(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (SettingsManager.Current.MiniWidgetPositionInitialized)
+            {
+                restoringPosition = true;
+                window.Position = new PixelPoint(SettingsManager.Current.MiniWidgetPosX, SettingsManager.Current.MiniWidgetPosY);
+                restoringPosition = false;
+                return;
+            }
+
+            SaveWindowPosition();
+        }
+        catch (Exception ex)
+        {
+            restoringPosition = false;
+            EventLogger.Error("Failed to restore mini widget window position", ex);
+        }
+    }
+
+    private void Window_PositionChanged(object? sender, PixelPointEventArgs e)
+    {
+        if (restoringPosition)
+            return;
+
+        try
+        {
+            SaveWindowPosition();
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to save mini widget window position", ex);
+        }
+    }
+
+    private void SaveWindowPosition()
+    {
+        SettingsManager.Current.MiniWidgetPosX = window.Position.X;
+        SettingsManager.Current.MiniWidgetPosY = window.Position.Y;
+        SettingsManager.Current.MiniWidgetPositionInitialized = true;
+        SettingsManager.Save();
     }
 }
