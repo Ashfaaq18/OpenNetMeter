@@ -13,11 +13,12 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private readonly IWindowService windowService;
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IExternalLinkService externalLinkService;
+    private readonly MiniWidgetViewModel miniWidget;
     private string networkStatus = "Disconnected";
     private bool isAboutOpen;
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel())
     {
     }
 
@@ -25,16 +26,19 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         IWindowService windowService,
         INetworkCaptureService networkCaptureService,
         IProcessIconService processIconService,
-        IExternalLinkService externalLinkService)
+        IExternalLinkService externalLinkService,
+        MiniWidgetViewModel miniWidget)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
         this.externalLinkService = externalLinkService;
+        this.miniWidget = miniWidget;
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
         History = new HistoryViewModel(processIconService);
         Settings = new SettingsViewModel();
         Settings.PropertyChanged += Settings_PropertyChanged;
+        Summary.PropertyChanged += Summary_PropertyChanged;
 
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
         {
@@ -53,6 +57,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         this.networkCaptureService.NetworkChanged += OnNetworkChanged;
         this.networkCaptureService.Start();
+        SyncMiniWidgetFromSummary();
     }
 
     public SummaryViewModel Summary { get; }
@@ -115,6 +120,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     public void Dispose()
     {
         Settings.PropertyChanged -= Settings_PropertyChanged;
+        Summary.PropertyChanged -= Summary_PropertyChanged;
         Summary.Dispose();
         networkCaptureService.NetworkChanged -= OnNetworkChanged;
         networkCaptureService.Dispose();
@@ -140,6 +146,27 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         {
             Summary.RefreshSpeedDisplayFormat();
         }
+    }
+
+    private void Summary_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SummaryViewModel.DownloadSpeedText):
+            case nameof(SummaryViewModel.UploadSpeedText):
+            case nameof(SummaryViewModel.CurrentSessionDownloadText):
+            case nameof(SummaryViewModel.CurrentSessionUploadText):
+                SyncMiniWidgetFromSummary();
+                break;
+        }
+    }
+
+    private void SyncMiniWidgetFromSummary()
+    {
+        miniWidget.DownloadSpeedText = Summary.DownloadSpeedText;
+        miniWidget.UploadSpeedText = Summary.UploadSpeedText;
+        miniWidget.CurrentSessionDownloadText = Summary.CurrentSessionDownloadText;
+        miniWidget.CurrentSessionUploadText = Summary.CurrentSessionUploadText;
     }
 
     private sealed class NoOpWindowService : IWindowService

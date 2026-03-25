@@ -52,7 +52,7 @@ public partial class App : Application
 
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService)
+                DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel)
             };
 
             if (OperatingSystem.IsWindows())
