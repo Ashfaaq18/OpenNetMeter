@@ -13,6 +13,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
     private readonly Window mainWindow;
     private readonly MiniWidgetViewModel viewModel;
     private readonly MiniWidgetWindow window;
+    private readonly WindowsWidgetZOrderHelper zOrderHelper;
     private bool restoringPosition;
 
     public event Action<bool>? VisibilityChanged;
@@ -25,6 +26,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         {
             DataContext = viewModel
         };
+        zOrderHelper = new WindowsWidgetZOrderHelper(window);
 
         viewModel.SetActions(OpenMainWindow, Hide);
         window.Opened += Window_Opened;
@@ -40,6 +42,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
             else
                 window.Activate();
 
+            zOrderHelper.Start();
             VisibilityChanged?.Invoke(true);
         }
         catch (Exception ex)
@@ -55,6 +58,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
             if (window.IsVisible)
                 window.Hide();
 
+            zOrderHelper.Stop();
             VisibilityChanged?.Invoke(false);
         }
         catch (Exception ex)
@@ -112,6 +116,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
     {
         try
         {
+            zOrderHelper.Dispose();
             window.Close();
         }
         catch (Exception ex)
