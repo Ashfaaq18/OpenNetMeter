@@ -11,12 +11,16 @@ namespace OpenNetMeter.Avalonia.Services;
 public sealed class WindowsMiniWidgetService : IMiniWidgetService
 {
     private readonly Window mainWindow;
+    private readonly MiniWidgetViewModel viewModel;
     private readonly MiniWidgetWindow window;
     private bool restoringPosition;
+
+    public event Action<bool>? VisibilityChanged;
 
     public WindowsMiniWidgetService(MiniWidgetViewModel viewModel, Window mainWindow)
     {
         this.mainWindow = mainWindow;
+        this.viewModel = viewModel;
         window = new MiniWidgetWindow
         {
             DataContext = viewModel
@@ -35,6 +39,8 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
                 window.Show();
             else
                 window.Activate();
+
+            VisibilityChanged?.Invoke(true);
         }
         catch (Exception ex)
         {
@@ -48,11 +54,18 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         {
             if (window.IsVisible)
                 window.Hide();
+
+            VisibilityChanged?.Invoke(false);
         }
         catch (Exception ex)
         {
             EventLogger.Error("Failed to hide mini widget window", ex);
         }
+    }
+
+    public void RefreshAppearance(bool darkMode, int transparency)
+    {
+        viewModel.RefreshBackground(darkMode, transparency);
     }
 
     public void Dispose()

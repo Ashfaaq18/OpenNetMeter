@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Windows.Input;
+using OpenNetMeter.Avalonia.Services;
 using OpenNetMeter.Core.ViewModels;
 using OpenNetMeter.PlatformAbstractions;
 
@@ -18,7 +19,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private bool isAboutOpen;
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService())
     {
     }
 
@@ -27,7 +28,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         INetworkCaptureService networkCaptureService,
         IProcessIconService processIconService,
         IExternalLinkService externalLinkService,
-        MiniWidgetViewModel miniWidget)
+        MiniWidgetViewModel miniWidget,
+        IMiniWidgetService miniWidgetService)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
@@ -36,7 +38,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
         History = new HistoryViewModel(processIconService);
-        Settings = new SettingsViewModel();
+        Settings = new SettingsViewModel(miniWidget, miniWidgetService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Summary.PropertyChanged += Summary_PropertyChanged;
 

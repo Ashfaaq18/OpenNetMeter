@@ -2,12 +2,14 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using OpenNetMeter.Avalonia.Services;
 using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class SettingsViewModel : INotifyPropertyChanged
 {
+    private readonly IMiniWidgetService miniWidgetService;
     private bool startWithWindows;
     private bool minimizeOnStart;
     private bool darkMode;
@@ -20,8 +22,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private bool isUpdateAvailable;
     private string updateStatusMessage = "Click to check for updates";
 
-    public SettingsViewModel()
+    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService)
     {
+        this.miniWidgetService = miniWidgetService;
         var settings = SettingsManager.Current;
         startWithWindows = settings.StartWithWin;
         minimizeOnStart = settings.MinimizeOnStart;
@@ -35,6 +38,14 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         ResetDataCommand = new RelayCommand(ResetData);
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
         DownloadUpdateCommand = new RelayCommand(DownloadUpdate);
+
+        this.miniWidgetService.VisibilityChanged += SyncMiniWidgetVisibility;
+        this.miniWidgetService.RefreshAppearance(darkMode, (int)Math.Round(miniWidgetTransparency));
+    }
+
+    public SettingsViewModel()
+        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService())
+    {
     }
 
     public bool StartWithWindows
@@ -79,6 +90,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             darkMode = value;
             SettingsManager.Current.DarkMode = value;
             SettingsManager.Save();
+            miniWidgetService.RefreshAppearance(value, (int)Math.Round(MiniWidgetTransparency));
             OnPropertyChanged(nameof(DarkMode));
         }
     }
@@ -93,6 +105,10 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             miniWidgetVisible = value;
             SettingsManager.Current.MiniWidgetVisibility = value;
             SettingsManager.Save();
+            if (value)
+                miniWidgetService.Show();
+            else
+                miniWidgetService.Hide();
             OnPropertyChanged(nameof(MiniWidgetVisible));
         }
     }
@@ -107,6 +123,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             miniWidgetTransparency = value;
             SettingsManager.Current.MiniWidgetTransparentSlider = (int)Math.Round(value);
             SettingsManager.Save();
+            miniWidgetService.RefreshAppearance(DarkMode, (int)Math.Round(value));
             OnPropertyChanged(nameof(MiniWidgetTransparency));
         }
     }
@@ -233,6 +250,17 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     public ICommand DownloadUpdateCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void SyncMiniWidgetVisibility(bool isVisible)
+    {
+        if (miniWidgetVisible == isVisible)
+            return;
+
+        miniWidgetVisible = isVisible;
+        SettingsManager.Current.MiniWidgetVisibility = isVisible;
+        SettingsManager.Save();
+        OnPropertyChanged(nameof(MiniWidgetVisible));
+    }
 
     private void ResetData()
     {

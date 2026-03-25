@@ -11,6 +11,7 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
     private string uploadSpeedText = "4.8 Mbps";
     private string currentSessionDownloadText = "1.24 GB";
     private string currentSessionUploadText = "98.4 MB";
+    private string backgroundColor = "#cc252525";
     private bool isPinned;
     private ICommand togglePinnedCommand;
 
@@ -77,6 +78,18 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
         }
     }
 
+    public string BackgroundColor
+    {
+        get => backgroundColor;
+        private set
+        {
+            if (backgroundColor == value)
+                return;
+            backgroundColor = value;
+            OnPropertyChanged(nameof(BackgroundColor));
+        }
+    }
+
     public string PinButtonText => IsPinned ? "Unpin" : "Pin";
 
     public ICommand OpenMainWindowCommand { get; private set; } = new RelayCommand(() => { });
@@ -87,6 +100,7 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
     {
         togglePinnedCommand = new RelayCommand(() => IsPinned = !IsPinned);
         isPinned = SettingsManager.Current.MiniWidgetPinned;
+        RefreshBackground(SettingsManager.Current.DarkMode, SettingsManager.Current.MiniWidgetTransparentSlider);
     }
 
     public void SetActions(Action openMainWindow, Action hideWidget)
@@ -95,6 +109,15 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
         HideWidgetCommand = new RelayCommand(hideWidget);
         OnPropertyChanged(nameof(OpenMainWindowCommand));
         OnPropertyChanged(nameof(HideWidgetCommand));
+    }
+
+    public void RefreshBackground(bool darkMode, int transparency)
+    {
+        var clampedTransparency = Math.Clamp(transparency, 0, 100);
+        var alpha = ((100 - clampedTransparency) * 255) / 100;
+        BackgroundColor = darkMode
+            ? $"#{alpha:x2}252525"
+            : $"#{alpha:x2}f1f1f1";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

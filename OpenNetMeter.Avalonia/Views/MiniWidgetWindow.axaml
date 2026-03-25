@@ -21,7 +21,7 @@
           CornerRadius="10"
           BorderThickness="1"
           BorderBrush="#555555"
-          Background="#DD202020"
+          Background="{Binding BackgroundColor}"
           Padding="10"
           PointerPressed="WidgetChrome_PointerPressed">
     <Border.ContextMenu>
