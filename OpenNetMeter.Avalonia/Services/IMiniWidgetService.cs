@@ -1,3 +1,5 @@
+using Avalonia.Controls;
+
 namespace OpenNetMeter.Avalonia.Services;
 
 public interface IMiniWidgetService : System.IDisposable
@@ -7,4 +9,6 @@ public interface IMiniWidgetService : System.IDisposable
     void Show();
     void Hide();
     void RefreshAppearance(bool darkMode, int transparency);
+    void ResetPosition(Window mainWindow);
+    void EnsurePositionOnScreen(Window mainWindow);
 }

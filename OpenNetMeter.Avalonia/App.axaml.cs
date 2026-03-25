@@ -51,6 +51,7 @@ public partial class App : Application
                 ? new WindowsMiniWidgetService(miniWidgetViewModel, mainWindow)
                 : new PlaceholderMiniWidgetService();
 
+            mainWindow.InitializeWindowState(miniWidgetService);
             mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService);
             desktop.MainWindow = mainWindow;
 

@@ -35,6 +35,11 @@ internal static class SettingsManager
                 Current.DarkMode = GetBool(root, nameof(AppSettings.DarkMode), Current.DarkMode);
                 Current.StartWithWin = GetBool(root, nameof(AppSettings.StartWithWin), Current.StartWithWin);
                 Current.MinimizeOnStart = GetBool(root, nameof(AppSettings.MinimizeOnStart), Current.MinimizeOnStart);
+                Current.WinPosX = GetInt(root, nameof(AppSettings.WinPosX), Current.WinPosX);
+                Current.WinPosY = GetInt(root, nameof(AppSettings.WinPosY), Current.WinPosY);
+                Current.WinWidth = GetInt(root, nameof(AppSettings.WinWidth), Current.WinWidth);
+                Current.WinHeight = GetInt(root, nameof(AppSettings.WinHeight), Current.WinHeight);
+                Current.MainWindowPositionInitialized = GetBool(root, nameof(AppSettings.MainWindowPositionInitialized), Current.MainWindowPositionInitialized);
                 Current.MiniWidgetVisibility = GetBool(root, nameof(AppSettings.MiniWidgetVisibility), Current.MiniWidgetVisibility);
                 Current.MiniWidgetPinned = GetBool(root, nameof(AppSettings.MiniWidgetPinned), Current.MiniWidgetPinned);
                 Current.MiniWidgetPosX = GetInt(root, nameof(AppSettings.MiniWidgetPosX), Current.MiniWidgetPosX);
@@ -77,6 +82,11 @@ internal static class SettingsManager
             root[nameof(AppSettings.DarkMode)] = Current.DarkMode;
             root[nameof(AppSettings.StartWithWin)] = Current.StartWithWin;
             root[nameof(AppSettings.MinimizeOnStart)] = Current.MinimizeOnStart;
+            root[nameof(AppSettings.WinPosX)] = Current.WinPosX;
+            root[nameof(AppSettings.WinPosY)] = Current.WinPosY;
+            root[nameof(AppSettings.WinWidth)] = Current.WinWidth;
+            root[nameof(AppSettings.WinHeight)] = Current.WinHeight;
+            root[nameof(AppSettings.MainWindowPositionInitialized)] = Current.MainWindowPositionInitialized;
             root[nameof(AppSettings.MiniWidgetVisibility)] = Current.MiniWidgetVisibility;
             root[nameof(AppSettings.MiniWidgetPinned)] = Current.MiniWidgetPinned;
             root[nameof(AppSettings.MiniWidgetPosX)] = Current.MiniWidgetPosX;

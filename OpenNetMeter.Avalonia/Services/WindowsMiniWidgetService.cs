@@ -68,6 +68,46 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         viewModel.RefreshBackground(darkMode, transparency);
     }
 
+    public void ResetPosition(Window mainWindow)
+    {
+        try
+        {
+            restoringPosition = true;
+
+            var mainWidth = Math.Max(1, (int)Math.Round(mainWindow.Bounds.Width));
+            var mainHeight = Math.Max(1, (int)Math.Round(mainWindow.Bounds.Height));
+            var widgetWidth = Math.Max(1, (int)Math.Round(window.Bounds.Width > 0 ? window.Bounds.Width : window.Width));
+            var widgetHeight = Math.Max(1, (int)Math.Round(window.Bounds.Height > 0 ? window.Bounds.Height : window.Height));
+
+            var x = mainWindow.Position.X + (mainWidth / 2) - (widgetWidth / 2);
+            var y = mainWindow.Position.Y + (mainHeight / 2) - (widgetHeight / 2);
+
+            window.Position = new PixelPoint(x, y);
+            SaveWindowPosition();
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to reset mini widget window position", ex);
+        }
+        finally
+        {
+            restoringPosition = false;
+        }
+    }
+
+    public void EnsurePositionOnScreen(Window mainWindow)
+    {
+        try
+        {
+            if (!SettingsManager.Current.MiniWidgetPositionInitialized || !IsWindowInBounds(window))
+                ResetPosition(mainWindow);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to validate mini widget window position", ex);
+        }
+    }
+
     public void Dispose()
     {
         try
@@ -107,10 +147,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
                 restoringPosition = true;
                 window.Position = new PixelPoint(SettingsManager.Current.MiniWidgetPosX, SettingsManager.Current.MiniWidgetPosY);
                 restoringPosition = false;
-                return;
             }
-
-            SaveWindowPosition();
         }
         catch (Exception ex)
         {
@@ -140,5 +177,35 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         SettingsManager.Current.MiniWidgetPosY = window.Position.Y;
         SettingsManager.Current.MiniWidgetPositionInitialized = true;
         SettingsManager.Save();
+    }
+
+    private static bool IsWindowInBounds(Window target)
+    {
+        var screens = target.Screens?.All;
+        if (screens is null || screens.Count == 0)
+            return true;
+
+        var width = Math.Max(1, (int)Math.Round(target.Bounds.Width > 0 ? target.Bounds.Width : target.Width));
+        var height = Math.Max(1, (int)Math.Round(target.Bounds.Height > 0 ? target.Bounds.Height : target.Height));
+        const int margin = 32;
+
+        foreach (var screen in screens)
+        {
+            var area = screen.WorkingArea;
+            var areaRight = area.X + area.Width;
+            var areaBottom = area.Y + area.Height;
+            var targetRight = target.Position.X + width;
+            var targetBottom = target.Position.Y + height;
+
+            if (area.X < targetRight - margin &&
+                areaRight > target.Position.X + margin &&
+                area.Y < targetBottom - margin &&
+                areaBottom > target.Position.Y + margin)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

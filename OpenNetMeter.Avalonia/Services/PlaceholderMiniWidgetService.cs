@@ -1,3 +1,5 @@
+using Avalonia.Controls;
+
 namespace OpenNetMeter.Avalonia.Services;
 
 public sealed class PlaceholderMiniWidgetService : IMiniWidgetService
@@ -17,6 +19,14 @@ public sealed class PlaceholderMiniWidgetService : IMiniWidgetService
     }
 
     public void RefreshAppearance(bool darkMode, int transparency)
+    {
+    }
+
+    public void ResetPosition(Window mainWindow)
+    {
+    }
+
+    public void EnsurePositionOnScreen(Window mainWindow)
     {
     }
 
