@@ -14,6 +14,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
     private readonly MiniWidgetViewModel viewModel;
     private readonly MiniWidgetWindow window;
     private readonly WindowsWidgetZOrderHelper zOrderHelper;
+    private bool positionTrackingEnabled;
     private bool restoringPosition;
 
     public event Action<bool>? VisibilityChanged;
@@ -153,6 +154,12 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
                 window.Position = new PixelPoint(SettingsManager.Current.MiniWidgetPosX, SettingsManager.Current.MiniWidgetPosY);
                 restoringPosition = false;
             }
+            else
+            {
+                SaveWindowPosition();
+            }
+
+            positionTrackingEnabled = true;
         }
         catch (Exception ex)
         {
@@ -163,7 +170,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
 
     private void Window_PositionChanged(object? sender, PixelPointEventArgs e)
     {
-        if (restoringPosition)
+        if (restoringPosition || !positionTrackingEnabled)
             return;
 
         try
@@ -196,7 +203,9 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
 
         foreach (var screen in screens)
         {
-            var area = screen.WorkingArea;
+            // Use full screen bounds here, not WorkingArea, so a widget intentionally
+            // positioned over the taskbar is still considered a valid persisted position.
+            var area = screen.Bounds;
             var areaRight = area.X + area.Width;
             var areaBottom = area.Y + area.Height;
             var targetRight = target.Position.X + width;
