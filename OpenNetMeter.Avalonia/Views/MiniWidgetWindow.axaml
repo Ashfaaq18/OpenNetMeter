@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:OpenNetMeter.Avalonia.ViewModels"
+        x:Class="OpenNetMeter.Avalonia.Views.MiniWidgetWindow"
+        x:DataType="vm:MiniWidgetViewModel"
+        Width="320"
+        Height="78"
+        CanResize="False"
+        SystemDecorations="None"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+  <Design.DataContext>
+    <vm:MiniWidgetViewModel />
+  </Design.DataContext>
+
+  <Border Margin="1"
+          CornerRadius="10"
+          BorderThickness="1"
+          BorderBrush="#555555"
+          Background="#DD202020"
+          Padding="10">
+    <Grid ColumnDefinitions="*,12,*">
+      <StackPanel Grid.Column="0" Spacing="2">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Border Width="20" Height="20" CornerRadius="4" Background="#367061">
+            <TextBlock Text="D"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       Foreground="White"/>
+          </Border>
+          <TextBlock Text="{Binding DownloadSpeedText}"
+                     VerticalAlignment="Center"
+                     FontSize="13"
+                     FontWeight="SemiBold"
+                     Foreground="White"/>
+        </StackPanel>
+        <TextBlock Text="{Binding CurrentSessionDownloadText}"
+                   Margin="26,0,0,0"
+                   FontSize="11"
+                   Foreground="#C8C8C8"/>
+      </StackPanel>
+
+      <StackPanel Grid.Column="2" Spacing="2">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Border Width="20" Height="20" CornerRadius="4" Background="#D98868">
+            <TextBlock Text="U"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       Foreground="White"/>
+          </Border>
+          <TextBlock Text="{Binding UploadSpeedText}"
+                     VerticalAlignment="Center"
+                     FontSize="13"
+                     FontWeight="SemiBold"
+                     Foreground="White"/>
+        </StackPanel>
+        <TextBlock Text="{Binding CurrentSessionUploadText}"
+                   Margin="26,0,0,0"
+                   FontSize="11"
+                   Foreground="#C8C8C8"/>
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

@@ -27,24 +27,36 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            IMiniWidgetService miniWidgetService = new PlaceholderMiniWidgetService();
+
             desktop.Exit += (_, _) =>
             {
                 EventLogger.Info("Application exiting");
+                miniWidgetService.Dispose();
                 SettingsManager.Save();
             };
 
             var windowService = new AvaloniaWindowService();
             IExternalLinkService externalLinkService = new ExternalLinkService();
+            var miniWidgetViewModel = new MiniWidgetViewModel();
             INetworkCaptureService networkCaptureService = OperatingSystem.IsWindows()
                 ? new WindowsNetworkCaptureService()
                 : new PlaceholderNetworkCaptureService();
             IProcessIconService processIconService = OperatingSystem.IsWindows()
                 ? new WindowsProcessIconService()
                 : new PlaceholderProcessIconService();
+
+            miniWidgetService = OperatingSystem.IsWindows()
+                ? new WindowsMiniWidgetService(miniWidgetViewModel)
+                : new PlaceholderMiniWidgetService();
+
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService)
             };
+
+            if (OperatingSystem.IsWindows())
+                miniWidgetService.Show();
         }
 
         base.OnFrameworkInitializationCompleted();
