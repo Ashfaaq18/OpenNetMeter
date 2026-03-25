@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer resizeTimer;
     private readonly DispatcherTimer relocationTimer;
     private IMiniWidgetService? miniWidgetService;
+    private bool allowClose;
 
     public MainWindow()
     {
@@ -26,6 +27,7 @@ public partial class MainWindow : Window
         relocationTimer.Tick += RelocationTimer_Tick;
 
         Opened += MainWindow_Opened;
+        Closing += MainWindow_Closing;
         PositionChanged += MainWindow_PositionChanged;
         SizeChanged += MainWindow_SizeChanged;
     }
@@ -55,6 +57,11 @@ public partial class MainWindow : Window
             WindowState = WindowState.Normal;
 
         Activate();
+    }
+
+    public void PrepareForExit()
+    {
+        allowClose = true;
     }
 
     public void ResetWindowPositions()
@@ -93,6 +100,15 @@ public partial class MainWindow : Window
             vm.Dispose();
 
         base.OnClosed(e);
+    }
+
+    private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
+    {
+        if (allowClose)
+            return;
+
+        e.Cancel = true;
+        Hide();
     }
 
     private void MainWindow_Opened(object? sender, EventArgs e)

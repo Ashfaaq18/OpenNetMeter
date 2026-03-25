@@ -35,7 +35,11 @@ public sealed class WindowsTrayService : ITrayService
         menu.Add(openItem);
 
         var exitItem = new NativeMenuItem("Exit");
-        exitItem.Click += (_, _) => desktop.Shutdown();
+        exitItem.Click += (_, _) =>
+        {
+            mainWindow.PrepareForExit();
+            desktop.Shutdown();
+        };
         menu.Add(exitItem);
 
         using var iconStream = AssetLoader.Open(new Uri("avares://OpenNetMeter.Avalonia/Assets/x48.png"));

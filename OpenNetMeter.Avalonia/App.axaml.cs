@@ -27,6 +27,8 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.ShutdownMode = global::Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
+
             IMiniWidgetService miniWidgetService = new PlaceholderMiniWidgetService();
             ITrayService trayService = new PlaceholderTrayService();
 
