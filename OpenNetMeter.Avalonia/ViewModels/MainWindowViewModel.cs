@@ -39,7 +39,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
         History = new HistoryViewModel(processIconService);
-        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService);
+        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Summary.PropertyChanged += Summary_PropertyChanged;
 

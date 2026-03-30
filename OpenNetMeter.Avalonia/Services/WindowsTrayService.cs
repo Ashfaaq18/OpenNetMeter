@@ -42,7 +42,7 @@ public sealed class WindowsTrayService : ITrayService
         };
         menu.Add(exitItem);
 
-        using var iconStream = AssetLoader.Open(new Uri("avares://OpenNetMeter.Avalonia/Assets/x48.png"));
+        using var iconStream = AssetLoader.Open(new Uri("avares://OpenNetMeter/Assets/x48.png"));
         trayIcon = new TrayIcon
         {
             ToolTipText = "OpenNetMeter",

@@ -1,10 +1,13 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using OpenNetMeter.Avalonia.Services;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
@@ -12,6 +15,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly IMiniWidgetService miniWidgetService;
     private readonly IStartupRegistrationService startupRegistrationService;
+    private readonly IExternalLinkService externalLinkService;
     private bool startWithWindows;
     private bool minimizeOnStart;
     private bool darkMode;
@@ -22,12 +26,14 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private int selectedSpeedUnitIndex;
     private bool isCheckingForUpdates;
     private bool isUpdateAvailable;
-    private string updateStatusMessage = "Click to check for updates";
+    private string updateStatusMessage = "Click here to check for new updates";
+    private string downloadUrl = string.Empty;
 
-    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService)
+    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService)
     {
         this.miniWidgetService = miniWidgetService;
         this.startupRegistrationService = startupRegistrationService;
+        this.externalLinkService = externalLinkService;
         var settings = SettingsManager.Current;
         startWithWindows = settings.StartWithWin;
         minimizeOnStart = settings.MinimizeOnStart;
@@ -47,7 +53,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     }
 
     public SettingsViewModel()
-        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService())
+        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService())
     {
     }
 
@@ -274,19 +280,82 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private async Task CheckForUpdatesAsync()
     {
         IsCheckingForUpdates = true;
-        IsUpdateAvailable = false;
         UpdateStatusMessage = "Checking for updates...";
-        await Task.Delay(1200);
-        IsCheckingForUpdates = false;
-        IsUpdateAvailable = true;
-        UpdateStatusMessage = "New update available (placeholder).";
+        IsUpdateAvailable = false;
+        downloadUrl = string.Empty;
+        string statusMessage = string.Empty;
+
+        const int minDisplayTimeMs = 2000;
+        var stopwatch = Stopwatch.StartNew();
+
+        try
+        {
+            (Version? latestVersion, string? nextDownloadUrl) = await UpdateChecker.CheckForUpdatesAsync();
+            if (latestVersion != null && nextDownloadUrl != null)
+            {
+                Version? currentVersion = Assembly.GetExecutingAssembly()?.GetName()?.Version;
+                if (currentVersion != null && latestVersion > currentVersion)
+                {
+                    downloadUrl = nextDownloadUrl;
+                    statusMessage = $"A new version {latestVersion} is available!";
+                    IsUpdateAvailable = true;
+                }
+                else
+                {
+                    statusMessage = "You have the latest version.";
+                }
+            }
+            else
+            {
+                statusMessage = "Error checking for updates.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = "Error checking for updates.";
+            EventLogger.Error("Error checking for updates", ex);
+        }
+        finally
+        {
+            stopwatch.Stop();
+
+            int remainingTime = minDisplayTimeMs - (int)stopwatch.ElapsedMilliseconds;
+            if (remainingTime > 0)
+            {
+                await Task.Delay(remainingTime);
+            }
+
+            IsCheckingForUpdates = false;
+            UpdateStatusMessage = statusMessage;
+        }
     }
 
     private void DownloadUpdate()
     {
-        UpdateStatusMessage = "Download triggered (placeholder).";
+        if (string.IsNullOrWhiteSpace(downloadUrl))
+        {
+            UpdateStatusMessage = "No update download is available.";
+            return;
+        }
+
+        try
+        {
+            externalLinkService.Open(downloadUrl);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Error launching update download URL", ex);
+            UpdateStatusMessage = "Error launching update download URL.";
+        }
     }
 
     private void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private sealed class NoOpExternalLinkService : IExternalLinkService
+    {
+        public void Open(string uri)
+        {
+        }
+    }
 }

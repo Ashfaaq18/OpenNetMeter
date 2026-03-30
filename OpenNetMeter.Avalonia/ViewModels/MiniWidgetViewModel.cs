@@ -7,10 +7,10 @@ namespace OpenNetMeter.Avalonia.ViewModels;
 
 public sealed class MiniWidgetViewModel : INotifyPropertyChanged
 {
-    private const string PinLightAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/pin.png";
-    private const string PinDarkAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/pin-dark.png";
-    private const string UnpinLightAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/unpin.png";
-    private const string UnpinDarkAsset = "avares://OpenNetMeter.Avalonia/Assets/pin/unpin-dark.png";
+    private const string PinLightAsset = "avares://OpenNetMeter/Assets/pin/pin.png";
+    private const string PinDarkAsset = "avares://OpenNetMeter/Assets/pin/pin-dark.png";
+    private const string UnpinLightAsset = "avares://OpenNetMeter/Assets/pin/unpin.png";
+    private const string UnpinDarkAsset = "avares://OpenNetMeter/Assets/pin/unpin-dark.png";
 
     private string downloadSpeedText = "35.2 Mbps";
     private string uploadSpeedText = "4.8 Mbps";

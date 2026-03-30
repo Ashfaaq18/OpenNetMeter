@@ -85,7 +85,7 @@
           <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
 
             <!-- App icon -->
-            <Image Grid.Column="0" Source="avares://OpenNetMeter.Avalonia/Assets/x48.png"
+            <Image Grid.Column="0" Source="avares://OpenNetMeter/Assets/x48.png"
                    Width="28" Height="28" Margin="14,0,0,0"
                    VerticalAlignment="Center"/>
 
@@ -706,7 +706,7 @@
             <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}">
               <Grid ColumnDefinitions="*,Auto" Margin="12,0,0,10">
                 <StackPanel Grid.Column="0" Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-                  <Image Source="avares://OpenNetMeter.Avalonia/Assets/x48.png"
+                  <Image Source="avares://OpenNetMeter/Assets/x48.png"
                          Width="48" Height="48"/>
                   <TextBlock Text="OpenNetMeter" FontSize="30" FontWeight="Bold"
                              Foreground="{DynamicResource BrushTextPrimary}"/>
