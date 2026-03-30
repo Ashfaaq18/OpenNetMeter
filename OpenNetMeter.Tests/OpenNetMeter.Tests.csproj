@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\\OpenNetMeter.Old\\OpenNetMeter\\OpenNetMeter.csproj" />
+    <ProjectReference Include="..\\OpenNetMeter.Old\\OpenNetMeter\\OpenNetMeter.Old.csproj" />
   </ItemGroup>
 
 </Project>
