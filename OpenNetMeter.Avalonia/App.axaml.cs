@@ -28,6 +28,7 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.ShutdownMode = global::Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
+            bool startMinimized = HasStartMinimizedArgument();
 
             IMiniWidgetService miniWidgetService = new PlaceholderMiniWidgetService();
             ITrayService trayService = new PlaceholderTrayService();
@@ -43,6 +44,9 @@ public partial class App : Application
             var windowService = new AvaloniaWindowService();
             IExternalLinkService externalLinkService = new ExternalLinkService();
             var miniWidgetViewModel = new MiniWidgetViewModel();
+            IStartupRegistrationService startupRegistrationService = OperatingSystem.IsWindows()
+                ? new WindowsStartupRegistrationService()
+                : new PlaceholderStartupRegistrationService();
             INetworkCaptureService networkCaptureService = OperatingSystem.IsWindows()
                 ? new WindowsNetworkCaptureService()
                 : new PlaceholderNetworkCaptureService();
@@ -56,12 +60,15 @@ public partial class App : Application
                 : new PlaceholderMiniWidgetService();
 
             mainWindow.InitializeWindowState(miniWidgetService);
-            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService);
+            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService);
             desktop.MainWindow = mainWindow;
 
             trayService = OperatingSystem.IsWindows()
                 ? new WindowsTrayService(this, desktop, mainWindow, miniWidgetService)
                 : new PlaceholderTrayService();
+
+            if (startMinimized)
+                mainWindow.Hide();
 
             if (OperatingSystem.IsWindows() && SettingsManager.Current.MiniWidgetVisibility)
                 miniWidgetService.Show();
@@ -88,5 +95,16 @@ public partial class App : Application
                 EventLogger.Error($"Unhandled exception object: {e.ExceptionObject}");
             }
         };
+    }
+
+    private static bool HasStartMinimizedArgument()
+    {
+        foreach (string arg in Environment.GetCommandLineArgs())
+        {
+            if (string.Equals(arg, "/StartMinimized", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 }

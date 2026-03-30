@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using OpenNetMeter.Avalonia.Services;
+using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
@@ -10,6 +11,7 @@ namespace OpenNetMeter.Avalonia.ViewModels;
 public sealed class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly IMiniWidgetService miniWidgetService;
+    private readonly IStartupRegistrationService startupRegistrationService;
     private bool startWithWindows;
     private bool minimizeOnStart;
     private bool darkMode;
@@ -22,9 +24,10 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private bool isUpdateAvailable;
     private string updateStatusMessage = "Click to check for updates";
 
-    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService)
+    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService)
     {
         this.miniWidgetService = miniWidgetService;
+        this.startupRegistrationService = startupRegistrationService;
         var settings = SettingsManager.Current;
         startWithWindows = settings.StartWithWin;
         minimizeOnStart = settings.MinimizeOnStart;
@@ -44,7 +47,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     }
 
     public SettingsViewModel()
-        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService())
+        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService())
     {
     }
 
@@ -59,6 +62,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             startWithWindows = value;
             SettingsManager.Current.StartWithWin = value;
             SettingsManager.Save();
+            startupRegistrationService.SetEnabled(value, MinimizeOnStart);
             OnPropertyChanged(nameof(StartWithWindows));
             OnPropertyChanged(nameof(CanChangeMinimizeOnStart));
         }

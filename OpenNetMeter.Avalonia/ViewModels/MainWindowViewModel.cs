@@ -19,7 +19,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private bool isAboutOpen;
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService())
     {
     }
 
@@ -29,7 +29,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         IProcessIconService processIconService,
         IExternalLinkService externalLinkService,
         MiniWidgetViewModel miniWidget,
-        IMiniWidgetService miniWidgetService)
+        IMiniWidgetService miniWidgetService,
+        IStartupRegistrationService startupRegistrationService)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
@@ -38,7 +39,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
         History = new HistoryViewModel(processIconService);
-        Settings = new SettingsViewModel(miniWidget, miniWidgetService);
+        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Summary.PropertyChanged += Summary_PropertyChanged;
 
