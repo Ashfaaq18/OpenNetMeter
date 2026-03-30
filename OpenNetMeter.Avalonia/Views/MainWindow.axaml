@@ -404,7 +404,7 @@
 
                   <!-- General -->
                   <Border Grid.Column="0" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
-                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Top">
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
                     <StackPanel>
                       <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -462,7 +462,7 @@
 
                   <!-- Mini Widget -->
                   <Border Grid.Column="2" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
-                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Top">
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
                     <StackPanel>
                       <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -569,7 +569,7 @@
 
                   <!-- Data Management -->
                   <Border Grid.Column="0" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
-                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Top">
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
                     <StackPanel>
                       <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -601,7 +601,7 @@
 
                   <!-- Updates -->
                   <Border Grid.Column="2" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
-                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Top">
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
                     <StackPanel>
                       <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
