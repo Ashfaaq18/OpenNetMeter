@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$project = Join-Path $repoRoot "OpenNetMeter.Avalonia\OpenNetMeter.Avalonia.csproj"
+$project = Join-Path $repoRoot "OpenNetMeter\OpenNetMeter.csproj"
 $output = Join-Path $repoRoot "_rc\avalonia\$Runtime\"
 
 Write-Host "Publishing Avalonia RC..."

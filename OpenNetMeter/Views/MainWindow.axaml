@@ -1,0 +1,921 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+        xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+        x:Class="OpenNetMeter.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="900"
+        Height="600"
+        MinWidth="800"
+        MinHeight="500"
+        Title="OpenNetMeter"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="0"
+        SystemDecorations="None"
+        Background="{DynamicResource BrushTransparent}"
+        TransparencyLevelHint="None">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding CloseAboutCommand}"/>
+  </Window.KeyBindings>
+
+  <Window.Resources>
+    <!-- Theme colors -->
+    <SolidColorBrush x:Key="BrushTransparent" Color="Transparent"/>
+    <SolidColorBrush x:Key="BrushWhite" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="BrushBgWindow" Color="#151515"/>
+    <SolidColorBrush x:Key="BrushBgTitleBar" Color="#202020"/>
+    <SolidColorBrush x:Key="BrushBgSurface" Color="#303030"/>
+    <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#2A2A2A"/>
+    <SolidColorBrush x:Key="BrushBgSubtle" Color="#252525"/>
+    <SolidColorBrush x:Key="BrushBorderMain" Color="#616161"/>
+    <SolidColorBrush x:Key="BrushBorderSubtle" Color="#555555"/>
+    <SolidColorBrush x:Key="BrushTextPrimary" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="BrushTextSecondary" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
+    <SolidColorBrush x:Key="BrushAccentBlue" Color="#D98868"/>
+    <SolidColorBrush x:Key="BrushDanger" Color="#E81123"/>
+    <SolidColorBrush x:Key="BrushSurfacePanel" Color="#303030"/>
+    <SolidColorBrush x:Key="BrushPanelAlt" Color="#252525"/>
+    <SolidColorBrush x:Key="BrushHeaderRow" Color="#2A2A2A"/>
+    <SolidColorBrush x:Key="BrushDivider" Color="#555555"/>
+    <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#616161"/>
+    <SolidColorBrush x:Key="BrushTextUi" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="BrushTextBody" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="BrushTextMuted" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushTextFaint" Color="#6B7280"/>
+    <SolidColorBrush x:Key="BrushTextHeader" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="BrushIconMuted" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#A9ABAB"/>
+    <SolidColorBrush x:Key="BrushSuccess" Color="#367061"/>
+    <SolidColorBrush x:Key="BrushInfo" Color="#D98868"/>
+    <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
+    <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
+    <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
+    <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#3D2020"/>
+    <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
+    <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
+    <SolidColorBrush x:Key="BrushGraphBackground" Color="#252525"/>
+    <SolidColorBrush x:Key="BrushOverlayScrim" Color="#A0000000"/>
+    <SolidColorBrush x:Key="BrushLink" Color="#5FA8FF"/>
+    <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
+    <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
+    <BoxShadows x:Key="ShadowStrong">0 2 10 0 #33000000</BoxShadows>
+    <BoxShadows x:Key="ShadowSoft">0 1 4 0 #20000000</BoxShadows>
+
+    <!-- Typography scale -->
+    <x:Double x:Key="FontSizeXs">10</x:Double>
+    <x:Double x:Key="FontSizeSm">11</x:Double>
+    <x:Double x:Key="FontSizeMd">12</x:Double>
+    <x:Double x:Key="FontSizeLg">13</x:Double>
+  </Window.Resources>
+
+  <Grid>
+    <Border Background="{DynamicResource BrushBgWindow}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1" CornerRadius="0">
+      <Grid RowDefinitions="50,*,30">
+
+        <!-- TITLE BAR -->
+        <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}" IsHitTestVisible="True">
+          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
+
+            <!-- App icon -->
+            <Image Grid.Column="0" Source="avares://OpenNetMeter/Assets/x48.png"
+                   Width="28" Height="28" Margin="14,0,0,0"
+                   VerticalAlignment="Center"/>
+
+            <!-- Tab buttons -->
+            <Button Grid.Column="1" Content="Summary" Classes="tab"
+                    Classes.active="{Binding IsSummaryTab}"
+                    Command="{Binding SwitchTabCommand}" CommandParameter="0"
+                    Margin="16,0,4,0"/>
+            <Button Grid.Column="2" Content="History" Classes="tab"
+                    Classes.active="{Binding IsHistoryTab}"
+                    Command="{Binding SwitchTabCommand}" CommandParameter="1"
+                    Margin="0,0,4,0"/>
+            <Button Grid.Column="3" Content="Settings" Classes="tab"
+                    Classes.active="{Binding IsSettingsTab}"
+                    Command="{Binding SwitchTabCommand}" CommandParameter="2"/>
+
+            <!-- Spacer (draggable area) -->
+            <Border Grid.Column="4" Background="{DynamicResource BrushTransparent}" IsHitTestVisible="True"
+                    PointerPressed="TitleBar_PointerPressed"/>
+
+            <!-- About button -->
+            <Button Grid.Column="5" Content="About" Classes="titleBtn"
+                    Command="{Binding AboutCommand}"/>
+
+            <!-- Minimize button -->
+            <Button Grid.Column="6" Classes="titleBtn" Command="{Binding MinimizeWindowCommand}">
+              <Panel Width="10" Height="1">
+                <Rectangle Fill="{DynamicResource BrushTextUi}" Height="1"/>
+              </Panel>
+            </Button>
+
+            <!-- Close button -->
+            <Button Grid.Column="7" Classes="titleBtn closeBtn" Command="{Binding CloseWindowCommand}">
+              <Panel Width="10" Height="10">
+                <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+              </Panel>
+            </Button>
+          </Grid>
+        </Border>
+
+        <!-- CONTENT AREA -->
+        <TabControl Grid.Row="1"
+                    SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                    Margin="0"
+                    Padding="0">
+          <!-- Hide the built-in tab strip since we have custom title bar tabs -->
+          <TabControl.Styles>
+            <Style Selector="TabControl /template/ ItemsPresenter#PART_ItemsPresenter">
+              <Setter Property="IsVisible" Value="False"/>
+            </Style>
+          </TabControl.Styles>
+
+          <TabItem>
+            <Grid Margin="12,8" RowDefinitions="*,110" ColumnDefinitions="180,12,*">
+
+              <!-- LEFT COLUMN -->
+              <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,10,Auto,10,*">
+
+                <!-- Current Session Card -->
+                <Border Grid.Row="0" Padding="10" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}" BoxShadow="{DynamicResource ShadowStrong}">
+                  <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                      <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushSuccess}">
+                        <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
+                                  Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                      </Border>
+                      <TextBlock Text="Current Session" FontSize="11" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource BrushWhite}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </StackPanel>
+
+                    <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushSuccess}" Margin="0,0,0,4">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal">
+                          <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+                                    Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                          <TextBlock Text="DL" Foreground="{DynamicResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Summary.CurrentSessionDownloadText}"
+                                   Foreground="{DynamicResource BrushWhite}" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                      </Grid>
+                    </Border>
+
+                    <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushInfo}">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal">
+                          <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
+                                    Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                          <TextBlock Text="UL" Foreground="{DynamicResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Summary.CurrentSessionUploadText}"
+                                   Foreground="{DynamicResource BrushWhite}" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                      </Grid>
+                    </Border>
+                  </StackPanel>
+                </Border>
+
+                <!-- Usage From Card -->
+                <Border Grid.Row="2" Padding="10" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}" BoxShadow="{DynamicResource ShadowStrong}">
+                  <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                      <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushInfo}">
+                        <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
+                                  Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                      </Border>
+                      <TextBlock Text="Usage From" FontSize="11" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource BrushWhite}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- https://github.com/AvaloniaUI/Avalonia/pull/20487 -->
+                    <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,6"
+                                SelectedDate="{Binding Summary.SinceDate, Mode=TwoWay}"/>
+
+                    <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushSuccess}" Margin="0,0,0,4">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal">
+                          <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+                                    Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                          <TextBlock Text="DL" Foreground="{DynamicResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Summary.TotalFromDateDownloadText}"
+                                   Foreground="{DynamicResource BrushWhite}" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                      </Grid>
+                    </Border>
+
+                    <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushInfo}">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal">
+                          <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
+                                    Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                          <TextBlock Text="UL" Foreground="{DynamicResource BrushWhite}" FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Summary.TotalFromDateUploadText}"
+                                   Foreground="{DynamicResource BrushWhite}" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                      </Grid>
+                    </Border>
+                  </StackPanel>
+                </Border>
+
+                <!-- Activity Header (L-shape connector) -->
+                <Border Grid.Row="4" Padding="10" CornerRadius="12,12,0,0" Background="{DynamicResource BrushSurfacePanel}"
+                        BoxShadow="{DynamicResource ShadowStrong}" VerticalAlignment="Bottom">
+                  <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                      <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushSuccess}">
+                        <PathIcon Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+                                  Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
+                      </Border>
+                      <TextBlock Text="Activity" FontSize="11" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource BrushWhite}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushSuccess}" VerticalAlignment="Center"/>
+                      <TextBlock Text="Download" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10" Margin="4,0,12,0" VerticalAlignment="Center"/>
+                      <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushInfo}" VerticalAlignment="Center"/>
+                      <TextBlock Text="Upload" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </Grid>
+
+              <!-- RIGHT COLUMN: Active Processes -->
+              <Border Grid.Row="0" Grid.Column="2" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}"
+                      BoxShadow="{DynamicResource ShadowStrong}" Margin="0,0,0,10" Padding="0" ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*">
+                  <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}"
+                          BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,1">
+                    <Grid>
+                      <StackPanel Orientation="Horizontal">
+                        <PathIcon Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z"
+                                  Foreground="{DynamicResource BrushIconMuted}" Width="16" Height="16"/>
+                        <TextBlock Text="Active Processes" Foreground="{DynamicResource BrushWhite}" FontSize="12"
+                                   FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                      </StackPanel>
+                      <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10">
+                        <Run Text="{Binding Summary.ProcessCount}"/>
+                        <Run Text=" processes"/>
+                      </TextBlock>
+                    </Grid>
+                  </Border>
+
+                  <Grid Grid.Row="1" RowDefinitions="Auto,*">
+                    <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,8,10,4">
+                      <Button Content="Name" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="Name"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                      <Button Grid.Column="1" Content="? Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentDownload"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                      <Button Grid.Column="2" Content="? Current" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="CurrentUpload"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                      <Button Grid.Column="3" Content="? Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalDownload"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                      <Button Grid.Column="4" Content="? Total" Command="{Binding Summary.SortProcessesCommand}" CommandParameter="TotalUpload"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" Margin="0,0,0,6">
+                      <ItemsControl ItemsSource="{Binding Summary.ActiveProcesses}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,4">
+                              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" MinWidth="0">
+                                <Image Source="{Binding Icon}" Width="16" Height="16"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}"
+                                           FontSize="11" TextWrapping="Wrap" MinWidth="0"/>
+                              </Grid>
+                              <TextBlock Grid.Column="1" Text="{Binding CurrentDownload}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                              <TextBlock Grid.Column="2" Text="{Binding CurrentUpload}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                              <TextBlock Grid.Column="3" Text="{Binding TotalDownload}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                              <TextBlock Grid.Column="4" Text="{Binding TotalUpload}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </ScrollViewer>
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <!-- BOTTOM ROW: LiveCharts2 Graph -->
+              <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                      Padding="10" CornerRadius="0,12,12,12" Background="{DynamicResource BrushSurfacePanel}"
+                      BoxShadow="{DynamicResource ShadowStrong}">
+                <lvc:CartesianChart Series="{Binding Summary.GraphSeries}"
+                                    Background="{DynamicResource BrushGraphBackground}"
+                                    XAxes="{Binding Summary.GraphXAxes}"
+                                    YAxes="{Binding Summary.GraphYAxes}"
+                                    ZoomMode="None"
+                                    TooltipPosition="Hidden"
+                                    AnimationsSpeed="00:00:00.150"/>
+              </Border>
+            </Grid>
+          </TabItem>
+
+          <TabItem>
+            <Grid Margin="12,8" RowDefinitions="Auto,*,Auto">
+              <Border Padding="12" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+                  <TextBlock VerticalAlignment="Center" Text="Usage of"/>
+                  <ComboBox Width="180"
+                            ItemsSource="{Binding History.Profiles}"
+                            SelectedItem="{Binding History.SelectedProfile, Mode=TwoWay}"/>
+                  <TextBlock VerticalAlignment="Center" Text="From"/>
+                  <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                              SelectedDate="{Binding History.DateStart, Mode=TwoWay}"/>
+                  <TextBlock VerticalAlignment="Center" Text="To"/>
+                  <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                              SelectedDate="{Binding History.DateEnd, Mode=TwoWay}"/>
+                  <Button Width="64" Height="24" Padding="0" Command="{Binding History.FilterCommand}">
+                    <TextBlock Text="Filter" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                  </Button>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Row="1" Margin="0,12,0,12" Padding="0" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*">
+                  <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="3*,1.5*,1.5*">
+                      <Button Content="Process" Command="{Binding History.SortRowsCommand}" CommandParameter="Process"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                      <Button Grid.Column="1" Content="Data Received" Command="{Binding History.SortRowsCommand}" CommandParameter="Download"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                      <Button Grid.Column="2" Content="Data Sent" Command="{Binding History.SortRowsCommand}" CommandParameter="Upload"
+                              HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                              Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+                    </Grid>
+                  </Border>
+
+                  <ScrollViewer Grid.Row="1" Margin="0,0,0,6">
+                    <ItemsControl ItemsSource="{Binding History.Rows}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Grid ColumnDefinitions="3*,1.5*,1.5*" Margin="10,4">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" MinWidth="0">
+                              <Image Source="{Binding Icon}" Width="16" Height="16"/>
+                              <TextBlock Grid.Column="1" Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"
+                                         TextWrapping="Wrap" MinWidth="0"/>
+                            </Grid>
+                            <TextBlock Grid.Column="1" Text="{Binding DownloadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="2" Text="{Binding UploadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </Grid>
+              </Border>
+
+              <Border Grid.Row="2" Padding="12" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}">
+                <Grid ColumnDefinitions="2*,*,*">
+                  <TextBlock FontWeight="SemiBold" Text="Total"/>
+                  <TextBlock Grid.Column="1" Text="{Binding History.TotalDownloadText}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding History.TotalUploadText}"/>
+                </Grid>
+              </Border>
+            </Grid>
+          </TabItem>
+
+          <TabItem>
+            <ScrollViewer Margin="12,8">
+              <StackPanel Spacing="12">
+
+                <!-- ROW 1: General + Mini Widget -->
+                <Grid ColumnDefinitions="*,12,*">
+
+                  <!-- General -->
+                  <Border Grid.Column="0" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
+                    <StackPanel>
+                      <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushSuccess}">
+                            <PathIcon Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                                      Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                          </Border>
+                          <TextBlock Text="General" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                                     VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Border>
+                      <StackPanel Margin="20,16" Spacing="0">
+                        <Grid Margin="0,0,0,16">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <StackPanel Grid.Column="0">
+                            <TextBlock Text="Start on Windows startup" Foreground="{DynamicResource BrushTextBody}" FontSize="13"/>
+                            <TextBlock Text="Launch automatically when you sign in" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,3,0,0"/>
+                          </StackPanel>
+                          <ToggleSwitch Grid.Column="1" IsChecked="{Binding Settings.StartWithWindows, Mode=TwoWay}"
+                                        VerticalAlignment="Center" OnContent="" OffContent="" Margin="0,0,-8,0"/>
+                        </Grid>
+                        <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,16"/>
+                        <Grid Margin="0,0,0,16">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <StackPanel Grid.Column="0">
+                            <TextBlock Text="Minimize to tray on start" Foreground="{DynamicResource BrushTextBody}" FontSize="13"/>
+                            <TextBlock Text="Start quietly in the system tray" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,3,0,0"/>
+                          </StackPanel>
+                          <ToggleSwitch Grid.Column="1" IsChecked="{Binding Settings.MinimizeOnStart, Mode=TwoWay}"
+                                        IsEnabled="{Binding Settings.CanChangeMinimizeOnStart}"
+                                        VerticalAlignment="Center" OnContent="" OffContent="" Margin="0,0,-8,0"/>
+                        </Grid>
+                        <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,16"/>
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <StackPanel Grid.Column="0">
+                            <TextBlock Text="Dark mode" Foreground="{DynamicResource BrushTextBody}" FontSize="13"/>
+                            <TextBlock Text="Use dark theme for the interface" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,3,0,0"/>
+                          </StackPanel>
+                          <ToggleSwitch Grid.Column="1" IsChecked="{Binding Settings.DarkMode, Mode=TwoWay}"
+                                        VerticalAlignment="Center" OnContent="" OffContent="" Margin="0,0,-8,0"/>
+                        </Grid>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+
+                  <!-- Mini Widget -->
+                  <Border Grid.Column="2" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
+                    <StackPanel>
+                      <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushInfo}">
+                            <PathIcon Data="M21,17H7V3H21M21,1H7A2,2 0 0,0 5,3V17A2,2 0 0,0 7,19H21A2,2 0 0,0 23,17V3A2,2 0 0,0 21,1M3,5H1V21A2,2 0 0,0 3,23H19V21H3V5Z"
+                                      Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                          </Border>
+                          <TextBlock Text="Mini Widget" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                                     VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Border>
+                      <StackPanel Margin="20,16" Spacing="0">
+                        <Grid Margin="0,0,0,16">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <StackPanel Grid.Column="0">
+                            <TextBlock Text="Show mini widget" Foreground="{DynamicResource BrushTextBody}" FontSize="13"/>
+                            <TextBlock Text="Floating overlay showing live speeds" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,3,0,0"/>
+                          </StackPanel>
+                          <ToggleSwitch Grid.Column="1" IsChecked="{Binding Settings.MiniWidgetVisible, Mode=TwoWay}"
+                                        VerticalAlignment="Center" OnContent="" OffContent="" Margin="0,0,-8,0"/>
+                        </Grid>
+                        <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,16"/>
+                        <Grid Margin="0,0,0,10">
+                          <TextBlock Text="Transparency" Foreground="{DynamicResource BrushTextBody}" FontSize="13" VerticalAlignment="Center"/>
+                          <Border HorizontalAlignment="Right" CornerRadius="4" Padding="8,3" Background="{DynamicResource BrushPanelAlt}">
+                            <TextBlock Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="12" FontFamily="Consolas,monospace">
+                              <Run Text="{Binding Settings.MiniWidgetTransparency}"/><Run Text="%"/>
+                            </TextBlock>
+                          </Border>
+                        </Grid>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Settings.MiniWidgetTransparency, Mode=TwoWay}"
+                                IsEnabled="{Binding Settings.MiniWidgetVisible}" Margin="0,0,0,4"/>
+                        <Grid>
+                          <TextBlock HorizontalAlignment="Left" Text="Opaque" Foreground="{DynamicResource BrushTextFaint}" FontSize="10"/>
+                          <TextBlock HorizontalAlignment="Right" Text="Transparent" Foreground="{DynamicResource BrushTextFaint}" FontSize="10"/>
+                        </Grid>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                </Grid>
+
+                <!-- ROW 2: Network Monitoring (full width) -->
+                <Border CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+                        BoxShadow="{DynamicResource ShadowSoft}">
+                  <StackPanel>
+                    <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushWarning}">
+                          <PathIcon Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M4,12C4,11.39 4.08,10.79 4.21,10.22L8,14V15C8,16.1 8.9,17 10,17V19.93C6.61,19.44 4,16.07 4,12M17.9,17.39C17.64,16.58 16.9,16 16,16H15V13C15,12.45 14.55,12 14,12H8V10H10C10.55,10 11,9.55 11,9V7H13C14.1,7 15,6.1 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39Z"
+                                    Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                        </Border>
+                        <TextBlock Text="Network Monitoring" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                                   VerticalAlignment="Center"/>
+                      </StackPanel>
+                    </Border>
+                    <Grid ColumnDefinitions="*,Auto,*" Margin="20,16">
+                      <!-- Left: Network target -->
+                      <StackPanel Grid.Column="0" Spacing="0">
+                        <TextBlock Text="Monitor these networks" Foreground="{DynamicResource BrushTextBody}" FontSize="13" Margin="0,0,0,4"/>
+                        <TextBlock Text="Choose Public for internet-only traffic" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,0,0,14"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <RadioButton GroupName="NetTarget" Classes="pill"
+                                       IsChecked="{Binding Settings.IsNetworkTargetPrivate, Mode=TwoWay}">
+                            <TextBlock Text="Private"/>
+                          </RadioButton>
+                          <RadioButton GroupName="NetTarget" Classes="pill"
+                                       IsChecked="{Binding Settings.IsNetworkTargetPublic, Mode=TwoWay}">
+                            <TextBlock Text="Public"/>
+                          </RadioButton>
+                          <RadioButton GroupName="NetTarget" Classes="pill"
+                                       IsChecked="{Binding Settings.IsNetworkTargetBoth, Mode=TwoWay}">
+                            <TextBlock Text="Both"/>
+                          </RadioButton>
+                        </StackPanel>
+                      </StackPanel>
+                      <!-- Vertical divider -->
+                      <Border Grid.Column="1" Width="1" Background="{DynamicResource BrushDivider}" Margin="24,0"/>
+                      <!-- Right: Speed format -->
+                      <StackPanel Grid.Column="2" Spacing="0">
+                        <TextBlock Text="Speed display format" Foreground="{DynamicResource BrushTextBody}" FontSize="13" Margin="0,0,0,4"/>
+                        <TextBlock Text="Choose how speeds are shown" Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,0,0,14"/>
+                        <Grid ColumnDefinitions="*,12,*">
+                          <StackPanel Grid.Column="0" Spacing="6">
+                            <TextBlock Text="Magnitude" Foreground="{DynamicResource BrushTextMuted}" FontSize="11"/>
+                            <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Settings.SpeedMagnitudes}"
+                                      SelectedIndex="{Binding Settings.SelectedSpeedMagnitudeIndex, Mode=TwoWay}"/>
+                          </StackPanel>
+                          <StackPanel Grid.Column="2" Spacing="6">
+                            <TextBlock Text="Unit" Foreground="{DynamicResource BrushTextMuted}" FontSize="11"/>
+                            <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Settings.SpeedUnits}"
+                                      SelectedIndex="{Binding Settings.SelectedSpeedUnitIndex, Mode=TwoWay}"/>
+                          </StackPanel>
+                        </Grid>
+                      </StackPanel>
+                    </Grid>
+                  </StackPanel>
+                </Border>
+
+                <!-- ROW 3: Data Management + Updates -->
+                <Grid ColumnDefinitions="*,12,*">
+
+                  <!-- Data Management -->
+                  <Border Grid.Column="0" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
+                    <StackPanel>
+                      <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushDangerBright}">
+                            <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
+                                      Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                          </Border>
+                          <TextBlock Text="Data Management" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                                     VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Border>
+                      <StackPanel Margin="20,16" Spacing="0">
+                        <Border CornerRadius="8" BorderBrush="{DynamicResource BrushDangerBorderSoft}" BorderThickness="1" Background="{DynamicResource BrushDangerBgSoft}" Padding="16">
+                          <StackPanel Spacing="12">
+                            <StackPanel>
+                              <TextBlock Text="Delete all saved profiles" Foreground="{DynamicResource BrushTextBody}" FontSize="13"/>
+                              <TextBlock Text="Remove all network usage history. This cannot be undone." Foreground="{DynamicResource BrushDangerBright}" FontSize="11" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <Button Command="{Binding Settings.ResetDataCommand}"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Background="{DynamicResource BrushDangerBright}" Foreground="{DynamicResource BrushWhite}" Padding="16,8" CornerRadius="6">
+                              <TextBlock Text="Delete All" FontWeight="SemiBold" FontSize="12"/>
+                            </Button>
+                          </StackPanel>
+                        </Border>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+
+                  <!-- Updates -->
+                  <Border Grid.Column="2" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+                          BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
+                    <StackPanel>
+                      <Border Padding="16,12" Background="{DynamicResource BrushPanelAlt}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushAccentPurple}">
+                            <PathIcon Data="M21,10.12H14.22L16.96,7.3C14.23,4.6 9.81,4.5 7.08,7.2C4.35,9.91 4.35,14.28 7.08,17C9.81,19.7 14.23,19.7 16.96,17C18.32,15.65 19,14.08 19,12.1H21C21,14.08 20.12,16.65 18.36,18.39C14.85,21.87 9.15,21.87 5.64,18.39C2.14,14.92 2.11,9.28 5.62,5.81C9.13,2.34 14.76,2.34 18.27,5.81L21,3V10.12M12.5,8V12.25L16,14.33L15.28,15.54L11,13V8H12.5Z"
+                                      Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                          </Border>
+                          <TextBlock Text="Updates" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                                     VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Border>
+                      <StackPanel Margin="20,16" Spacing="0">
+                        <TextBlock Text="Keep OpenNetMeter up to date for the latest features and fixes"
+                                   Foreground="{DynamicResource BrushTextMuted}" FontSize="11" Margin="0,0,0,16"/>
+                        <TextBlock Text="{Binding Settings.UpdateStatusMessage}" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="12"
+                                   HorizontalAlignment="Center" Margin="0,0,0,12"
+                                   IsVisible="{Binding Settings.UpdateStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                        <ProgressBar IsVisible="{Binding Settings.IsCheckingForUpdates}" IsIndeterminate="True" Height="3"
+                                     Margin="0,0,0,12"/>
+                        <Grid>
+                          <Button Command="{Binding Settings.CheckForUpdatesCommand}"
+                                  IsVisible="{Binding !Settings.IsUpdateAvailable}"
+                                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                  Background="{DynamicResource BrushPanelAlt}" Foreground="{DynamicResource BrushTextUi}" Padding="16,10" CornerRadius="6"
+                                  BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <PathIcon Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                        Foreground="{DynamicResource BrushTextSecondaryAlt}" Width="14" Height="14"/>
+                              <TextBlock Text="Check for updates"/>
+                            </StackPanel>
+                          </Button>
+                          <Button Command="{Binding Settings.DownloadUpdateCommand}"
+                                  IsVisible="{Binding Settings.IsUpdateAvailable}"
+                                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                  Background="{DynamicResource BrushSuccess}" Foreground="{DynamicResource BrushWhite}" Padding="16,10" CornerRadius="6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+                                        Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                              <TextBlock Text="Download Update" FontWeight="SemiBold"/>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                </Grid>
+
+              </StackPanel>
+            </ScrollViewer>
+          </TabItem>
+        </TabControl>
+
+        <!-- FOOTER BAR -->
+        <Border Grid.Row="2" Background="{DynamicResource BrushBgTitleBar}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="0,1,0,0">
+          <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="10,0">
+            <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12"
+                       Foreground="{DynamicResource BrushTextUi}" VerticalAlignment="Center"/>
+
+            <TextBlock Grid.Column="1" Text="Download Speed :" FontSize="12"
+                       Foreground="{DynamicResource BrushTextSecondaryAlt}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+            <TextBlock Grid.Column="2" FontSize="12" Foreground="{DynamicResource BrushTextUi}"
+                       VerticalAlignment="Center" Margin="0,0,16,0"
+                       Text="{Binding Summary.DownloadSpeedText}"/>
+
+            <TextBlock Grid.Column="3" Text="Upload Speed :" FontSize="12"
+                       Foreground="{DynamicResource BrushTextSecondaryAlt}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+            <TextBlock Grid.Column="4" FontSize="12" Foreground="{DynamicResource BrushTextUi}"
+                       VerticalAlignment="Center"
+                       Text="{Binding Summary.UploadSpeedText}"/>
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- Resize hit zones for custom chrome -->
+    <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="6" Background="{DynamicResource BrushTransparent}"
+            Cursor="SizeNorthSouth" PointerPressed="ResizeTop_PointerPressed"/>
+    <Border HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="6" Background="{DynamicResource BrushTransparent}"
+            Cursor="SizeNorthSouth" PointerPressed="ResizeBottom_PointerPressed"/>
+    <Border HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="6" Background="{DynamicResource BrushTransparent}"
+            Cursor="SizeWestEast" PointerPressed="ResizeLeft_PointerPressed"/>
+    <Border HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="6" Background="{DynamicResource BrushTransparent}"
+            Cursor="SizeWestEast" PointerPressed="ResizeRight_PointerPressed"/>
+
+    <Border HorizontalAlignment="Left" VerticalAlignment="Top" Width="10" Height="10" Background="{DynamicResource BrushTransparent}"
+            Cursor="TopLeftCorner" PointerPressed="ResizeTopLeft_PointerPressed"/>
+    <Border HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10" Background="{DynamicResource BrushTransparent}"
+            Cursor="TopRightCorner" PointerPressed="ResizeTopRight_PointerPressed"/>
+    <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="10" Height="10" Background="{DynamicResource BrushTransparent}"
+            Cursor="BottomLeftCorner" PointerPressed="ResizeBottomLeft_PointerPressed"/>
+    <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="10" Background="{DynamicResource BrushTransparent}"
+            Cursor="BottomRightCorner" PointerPressed="ResizeBottomRight_PointerPressed"/>
+
+    <!-- ABOUT MODAL -->
+    <Border IsVisible="{Binding IsAboutOpen}"
+            Background="{DynamicResource BrushOverlayScrim}">
+      <Grid>
+        <Border Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1"
+                Background="{DynamicResource BrushBgWindow}">
+          <Grid RowDefinitions="Auto,*">
+
+            <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}">
+              <Grid ColumnDefinitions="*,Auto" Margin="12,0,0,10">
+                <StackPanel Grid.Column="0" Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                  <Image Source="avares://OpenNetMeter/Assets/x48.png"
+                         Width="48" Height="48"/>
+                  <TextBlock Text="OpenNetMeter" FontSize="30" FontWeight="Bold"
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right" Command="{Binding CloseAboutCommand}">
+                  <Panel Width="10" Height="10">
+                    <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                    <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                  </Panel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="{DynamicResource BrushBgSubtle}" Padding="10">
+              <Border BorderBrush="{DynamicResource BrushBorderSubtle}" BorderThickness="1"
+                      Background="{DynamicResource BrushBgSurface}" Padding="12">
+                <StackPanel Spacing="10">
+                  <TextBlock Text="{Binding AboutVersionText}"
+                             FontSize="{DynamicResource FontSizeMd}"
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                  <TextBlock TextWrapping="Wrap"
+                             Text="This product is created and maintained by Ashfaaq Riphque."
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                  <TextBlock TextWrapping="Wrap"
+                             Text="If you find any problems with the product or have ideas for improvements, feel free to create an issue at:"
+                             Foreground="{DynamicResource BrushTextPrimary}"/>
+                  <Button Classes="linkBtn"
+                          Command="{Binding OpenAboutRepositoryCommand}"
+                          HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding AboutRepositoryUrl}"
+                               Foreground="{DynamicResource BrushLink}"
+                               TextDecorations="Underline"/>
+                  </Button>
+                </StackPanel>
+              </Border>
+            </Border>
+
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- DELETE DATA CONFIRMATION -->
+    <Border IsVisible="{Binding Settings.IsDeleteConfirmationOpen}"
+            Background="{DynamicResource BrushOverlayScrim}">
+      <Grid>
+        <Border Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1"
+                Background="{DynamicResource BrushBgWindow}">
+          <Grid RowDefinitions="Auto,*">
+
+            <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Confirm" VerticalAlignment="Center"
+                           Margin="15,0" Foreground="{DynamicResource BrushTextPrimary}"/>
+
+                <Button Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right"
+                        Command="{Binding Settings.CancelDeleteAllDataCommand}">
+                  <Panel Width="10" Height="10">
+                    <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                    <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                  </Panel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="{DynamicResource BrushBgSubtle}" Padding="20,10,20,20">
+              <StackPanel Spacing="20">
+                <TextBlock Text="{Binding Settings.DeleteConfirmationMessage}"
+                           Foreground="{DynamicResource BrushTextPrimary}"
+                           TextWrapping="Wrap"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.ConfirmDeleteAllDataCommand}">
+                    <TextBlock Text="Yes" HorizontalAlignment="Center"/>
+                  </Button>
+                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.CancelDeleteAllDataCommand}">
+                    <TextBlock Text="No" HorizontalAlignment="Center"/>
+                  </Button>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+  </Grid>
+
+  <Window.Styles>
+    <!-- Base typography/control sizing -->
+    <Style Selector="TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
+    </Style>
+    <Style Selector="DatePicker">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+      <Setter Property="Padding" Value="2" />
+    </Style>
+
+    <!-- Tab buttons in title bar -->
+    <Style Selector="Button.tab">
+      <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextSecondary}"/>
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeLg}"/>
+      <Setter Property="Padding" Value="12,6"/>
+      <Setter Property="BorderThickness" Value="0,0,0,3"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
+      <Setter Property="Height" Value="40"/>
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="Button.tab /template/ ContentPresenter">
+      <Setter Property="BorderThickness" Value="0,0,0,3"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushTransparent}"/>
+    </Style>
+    <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BrushBgSurfaceHover}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
+    </Style>
+    <Style Selector="Button.tab.active">
+      <Setter Property="Foreground" Value="{DynamicResource BrushWhite}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentGreen}"/>
+    </Style>
+    <Style Selector="Button.tab.active /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource BrushWhite}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentGreen}"/>
+    </Style>
+
+    <!-- Title bar utility buttons -->
+    <Style Selector="Button.titleBtn">
+      <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
+      <Setter Property="Width" Value="50"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="VerticalAlignment" Value="Top"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="Button.titleBtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BrushBgSurfaceHover}"/>
+    </Style>
+    <Style Selector="Button.closeBtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BrushDanger}"/>
+    </Style>
+    <Style Selector="Button.linkBtn">
+      <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
+    <Style Selector="Button.linkBtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
+      <Setter Property="Opacity" Value="0.85"/>
+    </Style>
+    <Style Selector="DatePickerPresenter">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Width" Value="140" />
+    </Style>
+    <Style Selector="DatePickerPresenter /template/ DateTimePickerPanel > ListBoxItem">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" /> <Setter Property="Padding" Value="2,0" />
+    </Style>
+
+    <!-- Pill-style radio buttons for settings -->
+    <Style Selector="RadioButton.pill">
+      <Setter Property="Background" Value="{DynamicResource BrushBgSubtle}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextSecondary}"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushBorderSubtle}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalAlignment="Center"/>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.pill:pointerover">
+      <Setter Property="Background" Value="{DynamicResource BrushBorderMain}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentBlue}"/>
+    </Style>
+    <Style Selector="RadioButton.pill:checked">
+      <Setter Property="Background" Value="{DynamicResource BrushPillCheckedBg}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentBlue}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushAccentBlue}"/>
+    </Style>
+    <Style Selector="RadioButton.pill:checked /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource BrushAccentBlue}"/>
+    </Style>
+  </Window.Styles>
+</Window>
+
