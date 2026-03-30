@@ -28,6 +28,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private bool isUpdateAvailable;
     private string updateStatusMessage = "Click here to check for new updates";
     private string downloadUrl = string.Empty;
+    private bool isDeleteConfirmationOpen;
 
     public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService)
     {
@@ -47,6 +48,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         ResetDataCommand = new RelayCommand(ResetData);
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
         DownloadUpdateCommand = new RelayCommand(DownloadUpdate);
+        ConfirmDeleteAllDataCommand = new RelayCommand(ConfirmDeleteAllData);
+        CancelDeleteAllDataCommand = new RelayCommand(CancelDeleteAllData);
 
         this.miniWidgetService.VisibilityChanged += SyncMiniWidgetVisibility;
         this.miniWidgetService.RefreshAppearance(darkMode, (int)Math.Round(miniWidgetTransparency));
@@ -255,11 +258,29 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsDeleteConfirmationOpen
+    {
+        get => isDeleteConfirmationOpen;
+        private set
+        {
+            if (isDeleteConfirmationOpen == value)
+                return;
+            isDeleteConfirmationOpen = value;
+            OnPropertyChanged(nameof(IsDeleteConfirmationOpen));
+        }
+    }
+
+    public string DeleteConfirmationMessage { get; } =
+        "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
+
     public ICommand ResetDataCommand { get; }
     public ICommand CheckForUpdatesCommand { get; }
     public ICommand DownloadUpdateCommand { get; }
+    public ICommand ConfirmDeleteAllDataCommand { get; }
+    public ICommand CancelDeleteAllDataCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+    public event Action? DeleteAllDataConfirmed;
 
     public void SyncMiniWidgetVisibility(bool isVisible)
     {
@@ -274,7 +295,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     private void ResetData()
     {
-        UpdateStatusMessage = "Reset requested (placeholder).";
+        IsDeleteConfirmationOpen = true;
     }
 
     private async Task CheckForUpdatesAsync()
@@ -347,6 +368,17 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             EventLogger.Error("Error launching update download URL", ex);
             UpdateStatusMessage = "Error launching update download URL.";
         }
+    }
+
+    private void ConfirmDeleteAllData()
+    {
+        IsDeleteConfirmationOpen = false;
+        DeleteAllDataConfirmed?.Invoke();
+    }
+
+    private void CancelDeleteAllData()
+    {
+        IsDeleteConfirmationOpen = false;
     }
 
     private void OnPropertyChanged(string propertyName) =>

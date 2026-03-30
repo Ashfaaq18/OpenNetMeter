@@ -750,6 +750,52 @@
         </Border>
       </Grid>
     </Border>
+
+    <!-- DELETE DATA CONFIRMATION -->
+    <Border IsVisible="{Binding Settings.IsDeleteConfirmationOpen}"
+            Background="{DynamicResource BrushOverlayScrim}">
+      <Grid>
+        <Border Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1"
+                Background="{DynamicResource BrushBgWindow}">
+          <Grid RowDefinitions="Auto,*">
+
+            <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Confirm" VerticalAlignment="Center"
+                           Margin="15,0" Foreground="{DynamicResource BrushTextPrimary}"/>
+
+                <Button Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right"
+                        Command="{Binding Settings.CancelDeleteAllDataCommand}">
+                  <Panel Width="10" Height="10">
+                    <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                    <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                  </Panel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="{DynamicResource BrushBgSubtle}" Padding="20,10,20,20">
+              <StackPanel Spacing="20">
+                <TextBlock Text="{Binding Settings.DeleteConfirmationMessage}"
+                           Foreground="{DynamicResource BrushTextPrimary}"
+                           TextWrapping="Wrap"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.ConfirmDeleteAllDataCommand}">
+                    <TextBlock Text="Yes" HorizontalAlignment="Center"/>
+                  </Button>
+                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.CancelDeleteAllDataCommand}">
+                    <TextBlock Text="No" HorizontalAlignment="Center"/>
+                  </Button>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
   </Grid>
 
   <Window.Styles>

@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Avalonia.Media;
 using Microsoft.Data.Sqlite;
 using OpenNetMeter.PlatformAbstractions;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Avalonia.ViewModels;
 
@@ -128,6 +129,40 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     public ICommand SortRowsCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void ReloadProfiles()
+    {
+        string? previousSelection = SelectedProfile;
+        LoadProfiles();
+
+        if (!string.IsNullOrWhiteSpace(previousSelection) && Profiles.Contains(previousSelection))
+        {
+            SelectedProfile = previousSelection;
+        }
+        else
+        {
+            SelectedProfile = Profiles.Count > 0 ? Profiles[0] : null;
+        }
+    }
+
+    public void DeleteAllDbFiles()
+    {
+        try
+        {
+            if (File.Exists(dbPath))
+                File.Delete(dbPath);
+
+            Profiles.Clear();
+            Rows.Clear();
+            SelectedProfile = null;
+            TotalDownload = 0;
+            TotalUpload = 0;
+        }
+        catch (IOException ex)
+        {
+            EventLogger.Error("Failed to delete usage database file", ex);
+        }
+    }
 
     private void LoadProfiles()
     {

@@ -41,6 +41,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         History = new HistoryViewModel(processIconService);
         Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService);
         Settings.PropertyChanged += Settings_PropertyChanged;
+        Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;
         Summary.PropertyChanged += Summary_PropertyChanged;
 
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
@@ -123,6 +124,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     public void Dispose()
     {
         Settings.PropertyChanged -= Settings_PropertyChanged;
+        Settings.DeleteAllDataConfirmed -= Settings_DeleteAllDataConfirmed;
         Summary.PropertyChanged -= Summary_PropertyChanged;
         Summary.Dispose();
         networkCaptureService.NetworkChanged -= OnNetworkChanged;
@@ -149,6 +151,27 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         {
             Summary.RefreshSpeedDisplayFormat();
         }
+    }
+
+    private void Settings_DeleteAllDataConfirmed()
+    {
+        bool wasConnected = !string.Equals(NetworkStatus, "Disconnected", StringComparison.OrdinalIgnoreCase);
+
+        if (wasConnected)
+        {
+            networkCaptureService.Stop();
+            Summary.ClearOnDisconnect();
+            NetworkStatus = "Disconnected";
+        }
+
+        History.DeleteAllDbFiles();
+
+        if (wasConnected)
+        {
+            networkCaptureService.Start();
+        }
+
+        History.ReloadProfiles();
     }
 
     private void Summary_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
