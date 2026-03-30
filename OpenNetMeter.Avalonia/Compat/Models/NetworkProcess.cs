@@ -441,6 +441,8 @@ namespace OpenNetMeter.Models
             StopPeriodicWork(ref networkSpeedWork, "Network speed");
             StopPeriodicWork(ref dbPushWork, "DB push");
 
+            FlushPendingDbWrites();
+
             // Clear process data buffers
             lock (MyProcesses) MyProcesses.Clear();
             lock (MyProcessesBuffer) MyProcessesBuffer.Clear();
@@ -504,6 +506,27 @@ namespace OpenNetMeter.Models
             finally
             {
                 work = null;
+            }
+        }
+
+        private void FlushPendingDbWrites()
+        {
+            lock (PushToDBBuffer)
+            {
+                if (PushToDBBuffer.Count <= 0 || string.IsNullOrWhiteSpace(AdapterName))
+                {
+                    PushToDBBuffer.Clear();
+                    return;
+                }
+
+                using var db = new ApplicationDB(AdapterName);
+                foreach (var (key, proc) in PushToDBBuffer)
+                {
+                    if (proc != null)
+                        db.PushToDB(key, proc.CurrentDataRecv, proc.CurrentDataSend);
+                }
+
+                PushToDBBuffer.Clear();
             }
         }
 
@@ -811,19 +834,7 @@ namespace OpenNetMeter.Models
                 EndNetworkProcess();
 
             // Flush any remaining buffered data to database
-            lock (PushToDBBuffer)
-            {
-                if (PushToDBBuffer.Count > 0)
-                {
-                    using var db = new ApplicationDB(AdapterName);
-                    foreach (var (key, proc) in PushToDBBuffer)
-                    {
-                        if (proc != null)
-                            db.PushToDB(key, proc.CurrentDataRecv, proc.CurrentDataSend);
-                    }
-                    PushToDBBuffer.Clear();
-                }
-            }
+            FlushPendingDbWrites();
         }
     }
 }

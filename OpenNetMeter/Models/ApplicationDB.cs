@@ -14,6 +14,7 @@ namespace OpenNetMeter.Models
     /// </summary>
     internal class ApplicationDB : IDisposable
     {
+        private static string LogTime() => DateTime.Now.ToString("HH:mm:ss.fff");
 
         //
         //                                        THE ER DIAGRAM
@@ -121,6 +122,7 @@ namespace OpenNetMeter.Models
         {
             lock (dbLock)
             {
+                Console.WriteLine($"[{LogTime()}] [SQLite][WPF] PushToDB adapter='{adapterName}' process='{processName}' recv={totalDataRecv} sent={totalDataSend}");
                 InsertUniqueRow_ProcessTable(processName);
                 InsertUniqueRow_AdapterTable(adapterName);
 
@@ -144,6 +146,7 @@ namespace OpenNetMeter.Models
         {
             lock (dbLock)
             {
+                Console.WriteLine($"[{LogTime()}] [SQLite][WPF] CreateTable adapter='{adapterName}' db='{GetUnifiedDBFullPath()}'");
                 // If any function returns negative, result will be negative
                 return CreateAdapterTable() >> 31 |
                        CreateProcessTable() >> 31 |
@@ -160,6 +163,7 @@ namespace OpenNetMeter.Models
         {
             lock (dbLock)
             {
+                Console.WriteLine($"[{LogTime()}] [SQLite][WPF] UpdateDatesInDB adapter='{adapterName}' today='{DateTime.Today:yyyy-MM-dd}' retentionDays={DataStoragePeriodInDays}");
                 InsertUniqueRow_DateTable(DateTime.Today);
                 RemoveOldDate();
                 RemoveOldProcess();
@@ -174,6 +178,7 @@ namespace OpenNetMeter.Models
         {
             lock (dbLock)
             {
+                Console.WriteLine($"[{LogTime()}] [SQLite][WPF] InsertUniqueRow_AdapterTable adapter='{adapter}'");
                 return DB.RunSQLiteNonQuery(
                     "INSERT OR IGNORE INTO Adapter(Name) VALUES(@Name)",
                     new string[,] { { "@Name", adapter } });
@@ -363,6 +368,7 @@ namespace OpenNetMeter.Models
         private void RemoveOldDate()
         {
             var cutoff = DateTime.Now.AddDays(-DataStoragePeriodInDays);
+            Console.WriteLine($"[{LogTime()}] [SQLite][WPF] RemoveOldDate cutoff='{cutoff:yyyy-MM-dd}'");
             DB.RunSQLiteNonQuery(
                 "DELETE FROM Date WHERE (Year * 10000 + Month * 100 + Day) < " +
                 $"({cutoff.Year * 10000 + cutoff.Month * 100 + cutoff.Day})");
@@ -370,6 +376,7 @@ namespace OpenNetMeter.Models
 
         private void RemoveOldProcess()
         {
+            Console.WriteLine($"[{LogTime()}] [SQLite][WPF] RemoveOldProcess");
             DB.RunSQLiteNonQuery(
                 "DELETE FROM Process WHERE ID NOT IN " +
                 "(SELECT DISTINCT ProcessID FROM ProcessDate)");

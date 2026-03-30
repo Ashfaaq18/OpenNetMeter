@@ -98,6 +98,8 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 
                 if (app.Value.CurrentDataSend > 0)
                     TrafficObserved?.Invoke(this, new NetworkTrafficEventArgs(app.Key, app.Value.CurrentDataSend, isReceive: false));
+
+                StageForDatabase(app.Key, app.Value.CurrentDataRecv, app.Value.CurrentDataSend);
             }
 
             networkProcess.MyProcesses.Clear();
@@ -116,9 +118,32 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 
                 if (app.Value.CurrentDataSend > 0)
                     TrafficObserved?.Invoke(this, new NetworkTrafficEventArgs(app.Key, app.Value.CurrentDataSend, isReceive: false));
+
+                StageForDatabase(app.Key, app.Value.CurrentDataRecv, app.Value.CurrentDataSend);
             }
 
             networkProcess.MyProcessesBuffer.Clear();
+        }
+    }
+
+    private void StageForDatabase(string processName, long receivedBytes, long sentBytes)
+    {
+        if (networkProcess == null)
+            return;
+
+        if (receivedBytes <= 0 && sentBytes <= 0)
+            return;
+
+        lock (networkProcess.PushToDBBuffer)
+        {
+            if (!networkProcess.PushToDBBuffer.TryGetValue(processName, out var pending) || pending == null)
+            {
+                pending = new MyProcess_Small(processName, 0, 0);
+                networkProcess.PushToDBBuffer[processName] = pending;
+            }
+
+            pending.CurrentDataRecv += receivedBytes;
+            pending.CurrentDataSend += sentBytes;
         }
     }
 
