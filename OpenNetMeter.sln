@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenNetMeter", "OpenNetMeter\OpenNetMeter.csproj", "{711263C7-44E1-4694-8B30-E65FBD2ECBF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenNetMeter.Old", "OpenNetMeter.Old\OpenNetMeter\OpenNetMeter.csproj", "{711263C7-44E1-4694-8B30-E65FBD2ECBF2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F081DC62-1772-4E91-BDCB-9D69FD1ED0A4}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,11 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseEngine", "DatabaseEngine\DatabaseEngine.csproj", "{49CF6C08-3735-449D-AB1E-33BF6EDEAE4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseEngine", "OpenNetMeter.Old\DatabaseEngine\DatabaseEngine.csproj", "{49CF6C08-3735-449D-AB1E-33BF6EDEAE4E}"
 EndProject
 Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "OpenNetMeter-Installer", "Installer\OpenNetMeter-Installer.wixproj", "{99E49CF2-A3E6-42D9-B41C-06E2CFDC77AA}"
 	ProjectSection(ProjectDependencies) = postProject
-		{711263C7-44E1-4694-8B30-E65FBD2ECBF2} = {711263C7-44E1-4694-8B30-E65FBD2ECBF2}
+		{46E06019-21CF-47C9-A4F2-EF81BF7FA49E} = {46E06019-21CF-47C9-A4F2-EF81BF7FA49E}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenNetMeter.Tests", "OpenNetMeter.Tests\OpenNetMeter.Tests.csproj", "{88D1EC9C-FD79-49BA-A7D5-CC0AB271A85D}"

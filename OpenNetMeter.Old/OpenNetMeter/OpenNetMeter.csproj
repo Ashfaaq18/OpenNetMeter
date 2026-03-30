@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseEngine\DatabaseEngine.csproj" />
-    <ProjectReference Include="..\OpenNetMeter.Core\OpenNetMeter.Core.csproj" />
+    <ProjectReference Include="..\..\OpenNetMeter.Core\OpenNetMeter.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

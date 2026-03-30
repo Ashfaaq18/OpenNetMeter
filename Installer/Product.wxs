@@ -8,7 +8,7 @@
 		 UpgradeCode="c8795db6-2426-4f40-a615-671f26fcaf3a" InstallerVersion="200">
 
 		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="!(loc.DowngradeError)" />
-		<Icon Id="AppIcon.ico" SourceFile="$(SolutionDir)$(ProductName)\Resources\AppIcon.ico"/>
+		<Icon Id="AppIcon.ico" SourceFile="$(SolutionDir)OpenNetMeter.Old\OpenNetMeter\Resources\AppIcon.ico"/>
 		<Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
  
 		<Property Id="DESKTOP_SHORTCUT" Value="1"/>
@@ -81,7 +81,7 @@
 		
 		<ComponentGroup Id="ProductComponents" Directory="InstallFolder">
 			<!-- Files to install -->
-			<Files Include="$(SolutionDir)$(ProductName)\bin\$(Configuration)\$(TargetFramework)\**" />
+			<Files Include="$(SolutionDir)OpenNetMeter.Old\OpenNetMeter\bin\$(Configuration)\$(TargetFramework)\**" />
 		</ComponentGroup>
 	</Fragment>
 
