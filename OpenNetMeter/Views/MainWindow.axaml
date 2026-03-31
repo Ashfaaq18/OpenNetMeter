@@ -11,6 +11,7 @@
         MinWidth="800"
         MinHeight="500"
         Title="OpenNetMeter"
+        Icon="avares://OpenNetMeter/Assets/x48.png"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="0"

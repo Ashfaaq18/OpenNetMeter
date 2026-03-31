@@ -6,6 +6,7 @@
     <Version>$(ProductVersion)</Version>
     <AssemblyName>$(ProductName)</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
