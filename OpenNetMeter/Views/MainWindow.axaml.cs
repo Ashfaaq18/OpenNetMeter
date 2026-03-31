@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer resizeTimer;
     private readonly DispatcherTimer relocationTimer;
     private IMiniWidgetService? miniWidgetService;
+    private ITrayNotificationService? trayNotificationService;
     private bool allowClose;
 
     public MainWindow()
@@ -32,9 +33,10 @@ public partial class MainWindow : Window
         SizeChanged += MainWindow_SizeChanged;
     }
 
-    public void InitializeWindowState(IMiniWidgetService miniWidgetService)
+    public void InitializeWindowState(IMiniWidgetService miniWidgetService, ITrayNotificationService trayNotificationService)
     {
         this.miniWidgetService = miniWidgetService;
+        this.trayNotificationService = trayNotificationService;
 
         if (SettingsManager.Current.MainWindowPositionInitialized)
         {
@@ -108,6 +110,7 @@ public partial class MainWindow : Window
             return;
 
         e.Cancel = true;
+        trayNotificationService?.ShowMinimizedToTrayOnce(this);
         Hide();
     }
 

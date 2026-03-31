@@ -32,11 +32,13 @@ public partial class App : Application
 
             IMiniWidgetService miniWidgetService = new PlaceholderMiniWidgetService();
             ITrayService trayService = new PlaceholderTrayService();
+            ITrayNotificationService trayNotificationService = new PlaceholderTrayNotificationService();
 
             desktop.Exit += (_, _) =>
             {
                 EventLogger.Info("Application exiting");
                 trayService.Dispose();
+                trayNotificationService.Dispose();
                 miniWidgetService.Dispose();
                 SettingsManager.Save();
             };
@@ -59,7 +61,11 @@ public partial class App : Application
                 ? new WindowsMiniWidgetService(miniWidgetViewModel, mainWindow)
                 : new PlaceholderMiniWidgetService();
 
-            mainWindow.InitializeWindowState(miniWidgetService);
+            trayNotificationService = OperatingSystem.IsWindows()
+                ? new WindowsTrayNotificationService()
+                : new PlaceholderTrayNotificationService();
+
+            mainWindow.InitializeWindowState(miniWidgetService, trayNotificationService);
             mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService);
             desktop.MainWindow = mainWindow;
 
