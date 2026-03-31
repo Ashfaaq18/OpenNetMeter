@@ -6,7 +6,7 @@
 	<UseWindowsSDKContracts>true</UseWindowsSDKContracts>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
+    <ApplicationIcon>..\..\Resources\AppIcon.ico</ApplicationIcon>
     <RootNamespace>OpenNetMeter</RootNamespace>
     <Version>$(ProductVersion)</Version>
     <AssemblyName>$(ProductName)</AssemblyName>
@@ -57,10 +57,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\pin\pin.png" />
-    <Resource Include="Resources\pin\pin-dark.png" />
-    <Resource Include="Resources\pin\unpin.png" />
-    <Resource Include="Resources\pin\unpin-dark.png" />
+    <Resource Include="..\..\Resources\pin\pin.png" Link="Resources\pin\pin.png" />
+    <Resource Include="..\..\Resources\pin\pin-dark.png" Link="Resources\pin\pin-dark.png" />
+    <Resource Include="..\..\Resources\pin\unpin.png" Link="Resources\pin\unpin.png" />
+    <Resource Include="..\..\Resources\pin\unpin-dark.png" Link="Resources\pin\unpin-dark.png" />
   </ItemGroup>
 
 </Project>
