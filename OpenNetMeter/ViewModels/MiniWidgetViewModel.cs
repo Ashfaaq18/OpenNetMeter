@@ -1,16 +1,20 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.ViewModels;
 
 public sealed class MiniWidgetViewModel : INotifyPropertyChanged
 {
-    private const string PinLightAsset = "avares://OpenNetMeter/Assets/pin/pin.png";
-    private const string PinDarkAsset = "avares://OpenNetMeter/Assets/pin/pin-dark.png";
-    private const string UnpinLightAsset = "avares://OpenNetMeter/Assets/pin/unpin.png";
-    private const string UnpinDarkAsset = "avares://OpenNetMeter/Assets/pin/unpin-dark.png";
+    private static readonly Bitmap PinLightImage = LoadBitmap("avares://OpenNetMeter/Assets/pin/pin.png");
+    private static readonly Bitmap PinDarkImage = LoadBitmap("avares://OpenNetMeter/Assets/pin/pin-dark.png");
+    private static readonly Bitmap UnpinLightImage = LoadBitmap("avares://OpenNetMeter/Assets/pin/unpin.png");
+    private static readonly Bitmap UnpinDarkImage = LoadBitmap("avares://OpenNetMeter/Assets/pin/unpin-dark.png");
 
     private string downloadSpeedText = "35.2 Mbps";
     private string uploadSpeedText = "4.8 Mbps";
@@ -97,9 +101,9 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
         }
     }
 
-    public string PinIconSource => IsPinned
-        ? (darkMode ? UnpinDarkAsset : UnpinLightAsset)
-        : (darkMode ? PinDarkAsset : PinLightAsset);
+    public IImage PinIconSource => IsPinned
+        ? (darkMode ? UnpinDarkImage : UnpinLightImage)
+        : (darkMode ? PinDarkImage : PinLightImage);
 
     public string PinToolTip => IsPinned ? "Unpin" : "Pin";
 
@@ -134,6 +138,20 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private static Bitmap LoadBitmap(string assetUri)
+    {
+        try
+        {
+            using var assetStream = AssetLoader.Open(new Uri(assetUri));
+            return new Bitmap(assetStream);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error($"Failed to load mini widget pin asset '{assetUri}'", ex);
+            throw;
+        }
+    }
 
     private void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
