@@ -24,7 +24,19 @@ if ([string]::IsNullOrWhiteSpace($productName)) {
 }
 
 Write-Host "Publishing Avalonia app..."
-powershell -ExecutionPolicy Bypass -File ".\scripts\publish-avalonia-rc.ps1" -Runtime $Runtime -Configuration $Configuration
+Write-Host "Cleaning Avalonia project..."
+dotnet clean ".\OpenNetMeter\OpenNetMeter.csproj" --configuration $Configuration
+
+Write-Host "Cleaning installer project..."
+dotnet clean ".\Installer\OpenNetMeter-Installer.wixproj" --configuration $Configuration
+
+$publishOutput = Join-Path $repoRoot "_rc\avalonia\$Runtime"
+if (Test-Path $publishOutput) {
+    Write-Host "Removing previous publish output: $publishOutput"
+    Remove-Item $publishOutput -Recurse -Force
+}
+
+& ".\scripts\publish-avalonia-rc.ps1" -Runtime $Runtime -Configuration $Configuration
 
 $publishedExe = Join-Path $repoRoot "_rc\avalonia\$Runtime\$productName.exe"
 if (-not (Test-Path $publishedExe)) {
