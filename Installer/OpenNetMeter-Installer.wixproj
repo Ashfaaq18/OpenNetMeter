@@ -6,9 +6,11 @@
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <RepoRoot>$(MSBuildProjectDirectory)\..\</RepoRoot>
     <!-- Optional: fallback -->
 	  <DefineConstants>
 		  $(DefineConstants);
+		  RepoRoot=$(RepoRoot);
 		  TargetFramework=$(TargetFramework);
 		  Manufacturer=$(Manufacturer);
 		  ProductName=$(ProductName);

@@ -1,64 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-	<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-	<UseWindowsSDKContracts>true</UseWindowsSDKContracts>
-    <UseWindowsForms>true</UseWindowsForms>
-    <UseWPF>true</UseWPF>
-    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <Version>$(ProductVersion)</Version>
     <AssemblyName>$(ProductName)</AssemblyName>
-    <Win32Resource />
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <Nullable>enable</Nullable>
+    <ApplicationIcon>..\Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
- <ItemGroup>
-    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.15" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ParallelExtensionsCore" Version="2.1.0" />
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.0.0-rc6.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.6" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.12" />
     <PackageReference Include="TaskScheduler" Version="2.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DatabaseEngine\DatabaseEngine.csproj" />
+    <ProjectReference Include="..\OpenNetMeter.Core\OpenNetMeter.Core.csproj" />
+    <ProjectReference Include="..\OpenNetMeter.PlatformAbstractions\OpenNetMeter.PlatformAbstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Resources\pin\pin.png" />
-    <Resource Include="Resources\pin\pin-dark.png" />
-    <Resource Include="Resources\pin\unpin.png" />
-    <Resource Include="Resources\pin\unpin-dark.png" />
-  </ItemGroup>
-
 </Project>

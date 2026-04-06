@@ -1,9 +1,8 @@
-﻿name: Build OpenNetMeter MSI and Push to Single Draft Release
+name: Build OpenNetMeter MSI and Push to Single Draft Release
 
 on:
   workflow_dispatch:
- 
-# Give the release-action permission to create/update releases & assets
+
 permissions:
   contents: write
 
@@ -13,40 +12,41 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
-      - name: Restore & Build Release
+      - name: Build Avalonia MSI
+        shell: pwsh
         run: |
-          dotnet restore .\OpenNetMeter.sln
-          dotnet build   .\OpenNetMeter.sln --configuration Release --no-restore
+          powershell -ExecutionPolicy Bypass -File .\scripts\build-avalonia-msi.ps1 -Runtime win-x64 -Configuration Release
 
       - name: Find built MSI
         id: find_msi
         shell: pwsh
         run: |
           $msi = Get-ChildItem `
-            "$Env:GITHUB_WORKSPACE\Installer\bin\x64\Release\en-us" `
+            "$Env:GITHUB_WORKSPACE\Installer\bin" `
             -Filter 'OpenNetMeter-*.msi' `
+            -Recurse `
+            | Sort-Object LastWriteTimeUtc -Descending `
             | Select-Object -First 1
-          if (-not $msi) { throw '❌ No MSI found!' }
+          if (-not $msi) { throw 'No MSI found after build.' }
 
-          # Properly set the output so it can be consumed later:
           "msi_path=$($msi.FullName)" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-      - name: Create or Update Draft Release & Upload MSI
+      - name: Create or Update Draft Release and Upload MSI
         uses: ncipollo/release-action@v1
         with:
-          token:        ${{ secrets.GITHUB_TOKEN }}
-          tag:          opennetmeter-draft
-          name:         OpenNetMeter (Draft Release)
-          draft:        true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: opennetmeter-draft
+          name: OpenNetMeter (Draft Release)
+          draft: true
           allowUpdates: true
-          artifacts:    ${{ steps.find_msi.outputs.msi_path }}
+          artifacts: ${{ steps.find_msi.outputs.msi_path }}
 
       - name: Echo MSI path
         shell: pwsh
