@@ -45,6 +45,7 @@ public partial class App : Application
 
             var windowService = new AvaloniaWindowService();
             IExternalLinkService externalLinkService = new ExternalLinkService();
+            IThemeService themeService = new AvaloniaThemeService(this);
             var miniWidgetViewModel = new MiniWidgetViewModel();
             IStartupRegistrationService startupRegistrationService = OperatingSystem.IsWindows()
                 ? new WindowsStartupRegistrationService()
@@ -66,7 +67,7 @@ public partial class App : Application
                 : new PlaceholderTrayNotificationService();
 
             mainWindow.InitializeWindowState(miniWidgetService, trayNotificationService);
-            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService);
+            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService, themeService);
             desktop.MainWindow = mainWindow;
 
             trayService = OperatingSystem.IsWindows()

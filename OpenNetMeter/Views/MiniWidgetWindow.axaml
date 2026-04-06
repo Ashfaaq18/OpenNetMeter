@@ -18,13 +18,27 @@
   </Design.DataContext>
 
   <Window.Resources>
-    <SolidColorBrush x:Key="BrushWidgetBorder" Color="#616161"/>
-    <SolidColorBrush x:Key="BrushWidgetText" Color="#F0F0F0"/>
-    <SolidColorBrush x:Key="BrushWidgetTextMuted" Color="#C8C8C8"/>
-    <SolidColorBrush x:Key="BrushDownloadBadge" Color="#367061"/>
-    <SolidColorBrush x:Key="BrushUploadBadge" Color="#D98868"/>
-    <SolidColorBrush x:Key="BrushPinHover" Color="#1AFFFFFF"/>
-    <SolidColorBrush x:Key="BrushPinActive" Color="#261A3A5C"/>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="BrushWidgetBorder" Color="#616161"/>
+          <SolidColorBrush x:Key="BrushWidgetText" Color="#F0F0F0"/>
+          <SolidColorBrush x:Key="BrushWidgetTextMuted" Color="#C8C8C8"/>
+          <SolidColorBrush x:Key="BrushPinHover" Color="#1AFFFFFF"/>
+          <SolidColorBrush x:Key="BrushPinActive" Color="#261A3A5C"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="BrushWidgetBorder" Color="#C7CDD4"/>
+          <SolidColorBrush x:Key="BrushWidgetText" Color="#1F2937"/>
+          <SolidColorBrush x:Key="BrushWidgetTextMuted" Color="#6B7280"/>
+          <SolidColorBrush x:Key="BrushPinHover" Color="#14000000"/>
+          <SolidColorBrush x:Key="BrushPinActive" Color="#261A3A5C"/>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+
+      <SolidColorBrush x:Key="BrushDownloadBadge" Color="#367061"/>
+      <SolidColorBrush x:Key="BrushUploadBadge" Color="#D98868"/>
+    </ResourceDictionary>
   </Window.Resources>
   <Window.Styles>
     <Style Selector="TextBlock.speedValue">

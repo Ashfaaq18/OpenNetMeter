@@ -27,54 +27,93 @@
   </Window.KeyBindings>
 
   <Window.Resources>
-    <!-- Theme colors -->
-    <SolidColorBrush x:Key="BrushTransparent" Color="Transparent"/>
-    <SolidColorBrush x:Key="BrushWhite" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="BrushBgWindow" Color="#151515"/>
-    <SolidColorBrush x:Key="BrushBgTitleBar" Color="#202020"/>
-    <SolidColorBrush x:Key="BrushBgSurface" Color="#303030"/>
-    <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#2A2A2A"/>
-    <SolidColorBrush x:Key="BrushBgSubtle" Color="#252525"/>
-    <SolidColorBrush x:Key="BrushBorderMain" Color="#616161"/>
-    <SolidColorBrush x:Key="BrushBorderSubtle" Color="#555555"/>
-    <SolidColorBrush x:Key="BrushTextPrimary" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="BrushTextSecondary" Color="#A9ABAB"/>
-    <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
-    <SolidColorBrush x:Key="BrushAccentBlue" Color="#D98868"/>
-    <SolidColorBrush x:Key="BrushDanger" Color="#E81123"/>
-    <SolidColorBrush x:Key="BrushSurfacePanel" Color="#303030"/>
-    <SolidColorBrush x:Key="BrushPanelAlt" Color="#252525"/>
-    <SolidColorBrush x:Key="BrushHeaderRow" Color="#2A2A2A"/>
-    <SolidColorBrush x:Key="BrushDivider" Color="#555555"/>
-    <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#616161"/>
-    <SolidColorBrush x:Key="BrushTextUi" Color="#F0F0F0"/>
-    <SolidColorBrush x:Key="BrushTextBody" Color="#F0F0F0"/>
-    <SolidColorBrush x:Key="BrushTextMuted" Color="#A9ABAB"/>
-    <SolidColorBrush x:Key="BrushTextFaint" Color="#6B7280"/>
-    <SolidColorBrush x:Key="BrushTextHeader" Color="#F0F0F0"/>
-    <SolidColorBrush x:Key="BrushIconMuted" Color="#A9ABAB"/>
-    <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#A9ABAB"/>
-    <SolidColorBrush x:Key="BrushSuccess" Color="#367061"/>
-    <SolidColorBrush x:Key="BrushInfo" Color="#D98868"/>
-    <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
-    <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
-    <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
-    <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#3D2020"/>
-    <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
-    <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
-    <SolidColorBrush x:Key="BrushGraphBackground" Color="#252525"/>
-    <SolidColorBrush x:Key="BrushOverlayScrim" Color="#A0000000"/>
-    <SolidColorBrush x:Key="BrushLink" Color="#5FA8FF"/>
-    <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
-    <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
-    <BoxShadows x:Key="ShadowStrong">0 2 10 0 #33000000</BoxShadows>
-    <BoxShadows x:Key="ShadowSoft">0 1 4 0 #20000000</BoxShadows>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="BrushBgWindow" Color="#151515"/>
+          <SolidColorBrush x:Key="BrushBgTitleBar" Color="#202020"/>
+          <SolidColorBrush x:Key="BrushBgSurface" Color="#303030"/>
+          <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#2A2A2A"/>
+          <SolidColorBrush x:Key="BrushBgSubtle" Color="#252525"/>
+          <SolidColorBrush x:Key="BrushBorderMain" Color="#616161"/>
+          <SolidColorBrush x:Key="BrushBorderSubtle" Color="#555555"/>
+          <SolidColorBrush x:Key="BrushTextPrimary" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="BrushTextSecondary" Color="#A9ABAB"/>
+          <SolidColorBrush x:Key="BrushSurfacePanel" Color="#303030"/>
+          <SolidColorBrush x:Key="BrushPanelAlt" Color="#252525"/>
+          <SolidColorBrush x:Key="BrushHeaderRow" Color="#2A2A2A"/>
+          <SolidColorBrush x:Key="BrushDivider" Color="#555555"/>
+          <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#616161"/>
+          <SolidColorBrush x:Key="BrushTextUi" Color="#F0F0F0"/>
+          <SolidColorBrush x:Key="BrushTextBody" Color="#F0F0F0"/>
+          <SolidColorBrush x:Key="BrushTextMuted" Color="#A9ABAB"/>
+          <SolidColorBrush x:Key="BrushTextFaint" Color="#6B7280"/>
+          <SolidColorBrush x:Key="BrushTextHeader" Color="#F0F0F0"/>
+          <SolidColorBrush x:Key="BrushIconMuted" Color="#A9ABAB"/>
+          <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#A9ABAB"/>
+          <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#3D2020"/>
+          <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
+          <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
+          <SolidColorBrush x:Key="BrushGraphBackground" Color="#252525"/>
+          <SolidColorBrush x:Key="BrushLink" Color="#5FA8FF"/>
+          <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
+          <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
+          <BoxShadows x:Key="ShadowStrong">0 2 10 0 #33000000</BoxShadows>
+          <BoxShadows x:Key="ShadowSoft">0 1 4 0 #20000000</BoxShadows>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="BrushBgWindow" Color="#F5F5F5"/>
+          <SolidColorBrush x:Key="BrushBgTitleBar" Color="#ECECEC"/>
+          <SolidColorBrush x:Key="BrushBgSurface" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#F5F5F5"/>
+          <SolidColorBrush x:Key="BrushBgSubtle" Color="#F1F1F1"/>
+          <SolidColorBrush x:Key="BrushBorderMain" Color="#D1D5DB"/>
+          <SolidColorBrush x:Key="BrushBorderSubtle" Color="#D6D6D6"/>
+          <SolidColorBrush x:Key="BrushTextPrimary" Color="#202020"/>
+          <SolidColorBrush x:Key="BrushTextSecondary" Color="#5F6368"/>
+          <SolidColorBrush x:Key="BrushSurfacePanel" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="BrushPanelAlt" Color="#F1F1F1"/>
+          <SolidColorBrush x:Key="BrushHeaderRow" Color="#F0F0F0"/>
+          <SolidColorBrush x:Key="BrushDivider" Color="#D6D6D6"/>
+          <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#C7CDD4"/>
+          <SolidColorBrush x:Key="BrushTextUi" Color="#1F2937"/>
+          <SolidColorBrush x:Key="BrushTextBody" Color="#1F2937"/>
+          <SolidColorBrush x:Key="BrushTextMuted" Color="#6B7280"/>
+          <SolidColorBrush x:Key="BrushTextFaint" Color="#9CA3AF"/>
+          <SolidColorBrush x:Key="BrushTextHeader" Color="#374151"/>
+          <SolidColorBrush x:Key="BrushIconMuted" Color="#6B7280"/>
+          <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#6B7280"/>
+          <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#E5BABA"/>
+          <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#FCEDED"/>
+          <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#DDEAF9"/>
+          <SolidColorBrush x:Key="BrushGraphBackground" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="BrushLink" Color="#0A66CC"/>
+          <SolidColorBrush x:Key="BrushShadowStrong" Color="#1A000000"/>
+          <SolidColorBrush x:Key="BrushShadowSoft" Color="#12000000"/>
+          <BoxShadows x:Key="ShadowStrong">0 2 10 0 #1A000000</BoxShadows>
+          <BoxShadows x:Key="ShadowSoft">0 1 4 0 #12000000</BoxShadows>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
 
-    <!-- Typography scale -->
-    <x:Double x:Key="FontSizeXs">10</x:Double>
-    <x:Double x:Key="FontSizeSm">11</x:Double>
-    <x:Double x:Key="FontSizeMd">12</x:Double>
-    <x:Double x:Key="FontSizeLg">13</x:Double>
+      <!-- Shared colors -->
+      <SolidColorBrush x:Key="BrushTransparent" Color="Transparent"/>
+      <SolidColorBrush x:Key="BrushWhite" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
+      <SolidColorBrush x:Key="BrushAccentBlue" Color="#D98868"/>
+      <SolidColorBrush x:Key="BrushDanger" Color="#E81123"/>
+      <SolidColorBrush x:Key="BrushSuccess" Color="#367061"/>
+      <SolidColorBrush x:Key="BrushInfo" Color="#D98868"/>
+      <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
+      <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
+      <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
+      <SolidColorBrush x:Key="BrushOverlayScrim" Color="#A0000000"/>
+
+      <!-- Typography scale -->
+      <x:Double x:Key="FontSizeXs">10</x:Double>
+      <x:Double x:Key="FontSizeSm">11</x:Double>
+      <x:Double x:Key="FontSizeMd">12</x:Double>
+      <x:Double x:Key="FontSizeLg">13</x:Double>
+    </ResourceDictionary>
   </Window.Resources>
 
   <Grid>

@@ -16,6 +16,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private readonly IMiniWidgetService miniWidgetService;
     private readonly IStartupRegistrationService startupRegistrationService;
     private readonly IExternalLinkService externalLinkService;
+    private readonly IThemeService themeService;
     private bool startWithWindows;
     private bool minimizeOnStart;
     private bool darkMode;
@@ -30,11 +31,12 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private string downloadUrl = string.Empty;
     private bool isDeleteConfirmationOpen;
 
-    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService)
+    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService, IThemeService themeService)
     {
         this.miniWidgetService = miniWidgetService;
         this.startupRegistrationService = startupRegistrationService;
         this.externalLinkService = externalLinkService;
+        this.themeService = themeService;
         var settings = SettingsManager.Current;
         startWithWindows = settings.StartWithWin;
         minimizeOnStart = settings.MinimizeOnStart;
@@ -52,11 +54,12 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         CancelDeleteAllDataCommand = new RelayCommand(CancelDeleteAllData);
 
         this.miniWidgetService.VisibilityChanged += SyncMiniWidgetVisibility;
+        this.themeService.ApplyDarkMode(darkMode);
         this.miniWidgetService.RefreshAppearance(darkMode, (int)Math.Round(miniWidgetTransparency));
     }
 
     public SettingsViewModel()
-        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService())
+        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService(), new NoOpThemeService())
     {
     }
 
@@ -103,6 +106,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             darkMode = value;
             SettingsManager.Current.DarkMode = value;
             SettingsManager.Save();
+            themeService.ApplyDarkMode(value);
             miniWidgetService.RefreshAppearance(value, (int)Math.Round(MiniWidgetTransparency));
             OnPropertyChanged(nameof(DarkMode));
         }
