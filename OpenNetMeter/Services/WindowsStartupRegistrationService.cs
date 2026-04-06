@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.Versioning;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
@@ -91,7 +90,13 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
 
             td.Actions.Add(action);
 
-            TaskScheduler.TaskService.Instance.RootFolder.SubFolders[TaskFolder].RegisterTaskDefinition(TaskName, td);
+            TaskScheduler.TaskService.Instance.RootFolder.SubFolders[TaskFolder].RegisterTaskDefinition(
+                TaskName,
+                td,
+                TaskScheduler.TaskCreation.CreateOrUpdate,
+                null,
+                null,
+                td.Principal.LogonType);
         }
         catch (Exception ex)
         {
@@ -102,7 +107,6 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
     private static (string path, string? arguments) ResolveLaunchCommand(bool startMinimized)
     {
         string? processPath = Environment.ProcessPath;
-        string? assemblyLocation = Assembly.GetEntryAssembly()?.Location;
         string minimizedArgument = startMinimized ? " /StartMinimized" : string.Empty;
 
         if (!string.IsNullOrWhiteSpace(processPath) &&
@@ -112,9 +116,13 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
             return (processPath, startMinimized ? "/StartMinimized" : null);
         }
 
-        if (!string.IsNullOrWhiteSpace(assemblyLocation) && File.Exists(assemblyLocation))
+        string baseDirectory = AppContext.BaseDirectory;
+        string assemblyFileName = $"{AppDomain.CurrentDomain.FriendlyName}.dll";
+        string managedEntryPoint = Path.Combine(baseDirectory, assemblyFileName);
+
+        if (File.Exists(managedEntryPoint))
         {
-            return ("dotnet", $"\"{assemblyLocation}\"{minimizedArgument}");
+            return ("dotnet", $"\"{managedEntryPoint}\"{minimizedArgument}");
         }
 
         string fallbackExe = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
