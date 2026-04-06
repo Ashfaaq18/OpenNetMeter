@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Input;
 using Avalonia.Media;
 using Microsoft.Data.Sqlite;
+using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
 
@@ -149,8 +150,11 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     {
         try
         {
-            if (File.Exists(dbPath))
-                File.Delete(dbPath);
+            ApplicationDB.CloseSharedConnection();
+            DeleteIfExists(dbPath);
+            DeleteIfExists($"{dbPath}-wal");
+            DeleteIfExists($"{dbPath}-shm");
+            DeleteIfExists($"{dbPath}-journal");
 
             Profiles.Clear();
             Rows.Clear();
@@ -158,7 +162,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             TotalDownload = 0;
             TotalUpload = 0;
         }
-        catch (IOException ex)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             EventLogger.Error("Failed to delete usage database file", ex);
         }
@@ -279,6 +283,12 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var appFolder = Path.Combine(localAppData, "OpenNetMeter");
         return Path.Combine(appFolder, "OpenNetMeter.sqlite");
+    }
+
+    private static void DeleteIfExists(string path)
+    {
+        if (File.Exists(path))
+            File.Delete(path);
     }
 
     private void OnPropertyChanged(string propertyName)

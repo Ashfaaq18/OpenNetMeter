@@ -57,6 +57,16 @@ internal sealed class ApplicationDB : IDisposable
         return Path.Combine(Properties.Global.GetFilePath(), UnifiedDBFileName + ".sqlite");
     }
 
+    public static void CloseSharedConnection()
+    {
+        lock (DbLock)
+        {
+            sharedConnection?.Dispose();
+            sharedConnection = null;
+            refCount = 0;
+        }
+    }
+
     public int CreateTable()
     {
         lock (DbLock)
