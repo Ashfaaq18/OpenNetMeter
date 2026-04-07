@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+             x:Class="OpenNetMeter.Views.MainWindowTabs.HistoryView"
+             x:DataType="vm:HistoryViewModel"
+             mc:Ignorable="d">
+  <Grid Margin="12,8" RowDefinitions="Auto,*,Auto">
+    <Border Padding="12" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}">
+      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock VerticalAlignment="Center" Text="Usage of"/>
+        <ComboBox Width="180"
+                  ItemsSource="{Binding Profiles}"
+                  SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"/>
+        <TextBlock VerticalAlignment="Center" Text="From"/>
+        <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                    SelectedDate="{Binding DateStart, Mode=TwoWay}"/>
+        <TextBlock VerticalAlignment="Center" Text="To"/>
+        <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                    SelectedDate="{Binding DateEnd, Mode=TwoWay}"/>
+        <Button Width="64" Height="24" Padding="0" Command="{Binding FilterCommand}">
+          <TextBlock Text="Filter" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Button>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="1" Margin="0,12,0,12" Padding="0" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True">
+      <Grid RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,1">
+          <Grid ColumnDefinitions="3*,1.5*,1.5*">
+            <Button Content="Process" Command="{Binding SortRowsCommand}" CommandParameter="Process"
+                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+            <Button Grid.Column="1" Content="Data Received" Command="{Binding SortRowsCommand}" CommandParameter="Download"
+                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+            <Button Grid.Column="2" Content="Data Sent" Command="{Binding SortRowsCommand}" CommandParameter="Upload"
+                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
+                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+          </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Margin="0,0,0,6">
+          <ItemsControl ItemsSource="{Binding Rows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="3*,1.5*,1.5*" Margin="10,4">
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" MinWidth="0">
+                    <Image Source="{Binding Icon}" Width="16" Height="16"/>
+                    <TextBlock Grid.Column="1" Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"
+                               TextWrapping="Wrap" MinWidth="0"/>
+                  </Grid>
+                  <TextBlock Grid.Column="1" Text="{Binding DownloadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                  <TextBlock Grid.Column="2" Text="{Binding UploadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="2" Padding="12" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}">
+      <Grid ColumnDefinitions="2*,*,*">
+        <TextBlock FontWeight="SemiBold" Text="Total"/>
+        <TextBlock Grid.Column="1" Text="{Binding TotalDownloadText}"/>
+        <TextBlock Grid.Column="2" Text="{Binding TotalUploadText}"/>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
