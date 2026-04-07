@@ -62,6 +62,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         this.networkCaptureService.NetworkChanged += OnNetworkChanged;
         this.networkCaptureService.Start();
+        History.ReloadProfiles();
         SyncMiniWidgetFromSummary();
     }
 
@@ -143,6 +144,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         NetworkStatus = $"Connected : {e.AdapterName}";
         Summary.SetActiveAdapter(e.AdapterName);
+        History.ReloadProfiles();
     }
 
     private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
