@@ -277,11 +277,11 @@
       <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}"/>
     </Style>
     <Style Selector="Button.tab.active">
-      <Setter Property="Foreground" Value="{DynamicResource BrushWhite}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTabActiveText}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentGreen}"/>
     </Style>
     <Style Selector="Button.tab.active /template/ ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource BrushWhite}"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTabActiveText}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BrushAccentGreen}"/>
     </Style>
 

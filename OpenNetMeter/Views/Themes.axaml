@@ -21,6 +21,7 @@
       <SolidColorBrush x:Key="BrushTextMuted" Color="#A9ABAB"/>
       <SolidColorBrush x:Key="BrushTextFaint" Color="#6B7280"/>
       <SolidColorBrush x:Key="BrushTextHeader" Color="#F0F0F0"/>
+      <SolidColorBrush x:Key="BrushTabActiveText" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="BrushIconMuted" Color="#A9ABAB"/>
       <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#A9ABAB"/>
       <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#3D2020"/>
@@ -30,53 +31,61 @@
       <SolidColorBrush x:Key="BrushLink" Color="#5FA8FF"/>
       <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
       <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
+      <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
+      <SolidColorBrush x:Key="BrushAccentBlue" Color="#00A6A0"/>
+      <SolidColorBrush x:Key="BrushSuccess" Color="#367061"/>
+      <SolidColorBrush x:Key="BrushInfo" Color="#D98868"/>
+      <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
+      <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
+      <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
       <BoxShadows x:Key="ShadowStrong">0 2 10 0 #33000000</BoxShadows>
       <BoxShadows x:Key="ShadowSoft">0 1 4 0 #20000000</BoxShadows>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Light">
-      <SolidColorBrush x:Key="BrushBgWindow" Color="#F5F5F5"/>
-      <SolidColorBrush x:Key="BrushBgTitleBar" Color="#ECECEC"/>
+      <SolidColorBrush x:Key="BrushBgWindow" Color="#eaeaea"/>
+      <SolidColorBrush x:Key="BrushBgTitleBar" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="BrushBgSurface" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#F5F5F5"/>
-      <SolidColorBrush x:Key="BrushBgSubtle" Color="#F1F1F1"/>
-      <SolidColorBrush x:Key="BrushBorderMain" Color="#D1D5DB"/>
-      <SolidColorBrush x:Key="BrushBorderSubtle" Color="#D6D6D6"/>
-      <SolidColorBrush x:Key="BrushTextPrimary" Color="#202020"/>
-      <SolidColorBrush x:Key="BrushTextSecondary" Color="#5F6368"/>
+      <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#F9FAFB"/>
+      <SolidColorBrush x:Key="BrushBgSubtle" Color="#F8F8F8"/>
+      <SolidColorBrush x:Key="BrushBorderMain" Color="#4F5050"/>
+      <SolidColorBrush x:Key="BrushBorderSubtle" Color="#E5E7EB"/>
+      <SolidColorBrush x:Key="BrushTextPrimary" Color="#000000"/>
+      <SolidColorBrush x:Key="BrushTextSecondary" Color="#666666"/>
       <SolidColorBrush x:Key="BrushSurfacePanel" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="BrushPanelAlt" Color="#F1F1F1"/>
+      <SolidColorBrush x:Key="BrushPanelAlt" Color="#d8d8d8"/>
       <SolidColorBrush x:Key="BrushHeaderRow" Color="#F0F0F0"/>
-      <SolidColorBrush x:Key="BrushDivider" Color="#D6D6D6"/>
-      <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#C7CDD4"/>
-      <SolidColorBrush x:Key="BrushTextUi" Color="#1F2937"/>
+      <SolidColorBrush x:Key="BrushDivider" Color="#E5E7EB"/>
+      <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#888888"/>
+      <SolidColorBrush x:Key="BrushTextUi" Color="#000000"/>
       <SolidColorBrush x:Key="BrushTextBody" Color="#1F2937"/>
       <SolidColorBrush x:Key="BrushTextMuted" Color="#6B7280"/>
-      <SolidColorBrush x:Key="BrushTextFaint" Color="#9CA3AF"/>
-      <SolidColorBrush x:Key="BrushTextHeader" Color="#374151"/>
+      <SolidColorBrush x:Key="BrushTextFaint" Color="#AAAAAA"/>
+      <SolidColorBrush x:Key="BrushTextHeader" Color="#1A1A1A"/>
+      <SolidColorBrush x:Key="BrushTabActiveText" Color="#000000"/>
       <SolidColorBrush x:Key="BrushIconMuted" Color="#6B7280"/>
-      <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#6B7280"/>
+      <SolidColorBrush x:Key="BrushTextSecondaryAlt" Color="#4F5050"/>
       <SolidColorBrush x:Key="BrushDangerBorderSoft" Color="#E5BABA"/>
       <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#FCEDED"/>
-      <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#DDEAF9"/>
+      <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#F0FDFA"/>
       <SolidColorBrush x:Key="BrushGraphBackground" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="BrushLink" Color="#0A66CC"/>
-      <SolidColorBrush x:Key="BrushShadowStrong" Color="#1A000000"/>
-      <SolidColorBrush x:Key="BrushShadowSoft" Color="#12000000"/>
-      <BoxShadows x:Key="ShadowStrong">0 2 10 0 #1A000000</BoxShadows>
-      <BoxShadows x:Key="ShadowSoft">0 1 4 0 #12000000</BoxShadows>
+      <SolidColorBrush x:Key="BrushLink" Color="#4287F5"/>
+      <SolidColorBrush x:Key="BrushShadowStrong" Color="#1ADDDDDD"/>
+      <SolidColorBrush x:Key="BrushShadowSoft" Color="#14000000"/>
+      <SolidColorBrush x:Key="BrushAccentGreen" Color="#7FB6A8"/>
+      <SolidColorBrush x:Key="BrushAccentBlue" Color="#00A6A0"/>
+      <SolidColorBrush x:Key="BrushSuccess" Color="#6DA395"/>
+      <SolidColorBrush x:Key="BrushInfo" Color="#C97C5D"/>
+      <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
+      <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
+      <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
+      <BoxShadows x:Key="ShadowStrong">0 2 10 0 #1ADDDDDD</BoxShadows>
+      <BoxShadows x:Key="ShadowSoft">0 1 4 0 #14000000</BoxShadows>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
   <SolidColorBrush x:Key="BrushTransparent" Color="Transparent"/>
   <SolidColorBrush x:Key="BrushWhite" Color="#FFFFFF"/>
-  <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
-  <SolidColorBrush x:Key="BrushAccentBlue" Color="#D98868"/>
   <SolidColorBrush x:Key="BrushDanger" Color="#E81123"/>
-  <SolidColorBrush x:Key="BrushSuccess" Color="#367061"/>
-  <SolidColorBrush x:Key="BrushInfo" Color="#D98868"/>
-  <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
-  <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
-  <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
   <SolidColorBrush x:Key="BrushOverlayScrim" Color="#A0000000"/>
 
   <x:Double x:Key="FontSizeXs">10</x:Double>

@@ -18,7 +18,7 @@
                   <PathIcon Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
                             Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
                 </Border>
-                <TextBlock Text="General" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                <TextBlock Text="General" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="13"
                            VerticalAlignment="Center"/>
               </StackPanel>
             </Border>
@@ -75,7 +75,7 @@
                   <PathIcon Data="M21,17H7V3H21M21,1H7A2,2 0 0,0 5,3V17A2,2 0 0,0 7,19H21A2,2 0 0,0 23,17V3A2,2 0 0,0 21,1M3,5H1V21A2,2 0 0,0 3,23H19V21H3V5Z"
                             Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
                 </Border>
-                <TextBlock Text="Mini Widget" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                <TextBlock Text="Mini Widget" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="13"
                            VerticalAlignment="Center"/>
               </StackPanel>
             </Border>
@@ -121,7 +121,7 @@
                 <PathIcon Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M4,12C4,11.39 4.08,10.79 4.21,10.22L8,14V15C8,16.1 8.9,17 10,17V19.93C6.61,19.44 4,16.07 4,12M17.9,17.39C17.64,16.58 16.9,16 16,16H15V13C15,12.45 14.55,12 14,12H8V10H10C10.55,10 11,9.55 11,9V7H13C14.1,7 15,6.1 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39Z"
                           Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
               </Border>
-              <TextBlock Text="Network Monitoring" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+              <TextBlock Text="Network Monitoring" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="13"
                          VerticalAlignment="Center"/>
             </StackPanel>
           </Border>
@@ -175,7 +175,7 @@
                   <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
                             Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
                 </Border>
-                <TextBlock Text="Data Management" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                <TextBlock Text="Data Management" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="13"
                            VerticalAlignment="Center"/>
               </StackPanel>
             </Border>
@@ -206,7 +206,7 @@
                   <PathIcon Data="M21,10.12H14.22L16.96,7.3C14.23,4.6 9.81,4.5 7.08,7.2C4.35,9.91 4.35,14.28 7.08,17C9.81,19.7 14.23,19.7 16.96,17C18.32,15.65 19,14.08 19,12.1H21C21,14.08 20.12,16.65 18.36,18.39C14.85,21.87 9.15,21.87 5.64,18.39C2.14,14.92 2.11,9.28 5.62,5.81C9.13,2.34 14.76,2.34 18.27,5.81L21,3V10.12M12.5,8V12.25L16,14.33L15.28,15.54L11,13V8H12.5Z"
                             Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
                 </Border>
-                <TextBlock Text="Updates" Foreground="{DynamicResource BrushWhite}" FontWeight="SemiBold" FontSize="13"
+                <TextBlock Text="Updates" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="13"
                            VerticalAlignment="Center"/>
               </StackPanel>
             </Border>
