@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -29,6 +30,7 @@ public partial class App : Application
         {
             desktop.ShutdownMode = global::Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
             bool startMinimized = HasStartMinimizedArgument();
+            DebugThemeHotReloadService? debugThemeHotReloadService = null;
 
             IMiniWidgetService miniWidgetService = new PlaceholderMiniWidgetService();
             ITrayService trayService = new PlaceholderTrayService();
@@ -40,6 +42,7 @@ public partial class App : Application
                 trayService.Dispose();
                 trayNotificationService.Dispose();
                 miniWidgetService.Dispose();
+                debugThemeHotReloadService?.Dispose();
                 SettingsManager.Save();
             };
 
@@ -73,6 +76,19 @@ public partial class App : Application
             trayService = OperatingSystem.IsWindows()
                 ? new WindowsTrayService(this, desktop, mainWindow, miniWidgetService)
                 : new PlaceholderTrayService();
+
+#if DEBUG
+            string? themeFilePath = TryResolveDebugThemeFilePath();
+            if (themeFilePath is not null)
+            {
+                Console.WriteLine($"[ThemeHotReload] Source file resolved to '{themeFilePath}'");
+                debugThemeHotReloadService = new DebugThemeHotReloadService(mainWindow, themeFilePath);
+            }
+            else
+            {
+                Console.WriteLine("[ThemeHotReload] Source file was not found");
+            }
+#endif
 
             if (startMinimized)
                 mainWindow.Hide();
@@ -114,4 +130,22 @@ public partial class App : Application
 
         return false;
     }
+
+#if DEBUG
+    private static string? TryResolveDebugThemeFilePath()
+    {
+        string? current = AppContext.BaseDirectory;
+
+        for (int i = 0; i < 6 && current is not null; i++)
+        {
+            string candidate = Path.Combine(current, "Views", "Themes.axaml");
+            if (File.Exists(candidate))
+                return candidate;
+
+            current = Directory.GetParent(current)?.FullName;
+        }
+
+        return null;
+    }
+#endif
 }

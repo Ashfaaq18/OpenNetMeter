@@ -42,7 +42,7 @@
       <BoxShadows x:Key="ShadowSoft">0 1 4 0 #20000000</BoxShadows>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Light">
-      <SolidColorBrush x:Key="BrushBgWindow" Color="#eaeaea"/>
+      <SolidColorBrush x:Key="BrushBgWindow" Color="#eeeeee"/>
       <SolidColorBrush x:Key="BrushBgTitleBar" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="BrushBgSurface" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="BrushBgSurfaceHover" Color="#F9FAFB"/>
@@ -53,7 +53,7 @@
       <SolidColorBrush x:Key="BrushTextSecondary" Color="#666666"/>
       <SolidColorBrush x:Key="BrushSurfacePanel" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="BrushPanelAlt" Color="#d8d8d8"/>
-      <SolidColorBrush x:Key="BrushHeaderRow" Color="#F0F0F0"/>
+      <SolidColorBrush x:Key="BrushHeaderRow" Color="#d6d6d6"/>
       <SolidColorBrush x:Key="BrushDivider" Color="#E5E7EB"/>
       <SolidColorBrush x:Key="BrushBorderEmphasis" Color="#888888"/>
       <SolidColorBrush x:Key="BrushTextUi" Color="#000000"/>
