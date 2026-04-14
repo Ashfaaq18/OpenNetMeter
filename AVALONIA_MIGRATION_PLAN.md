@@ -113,17 +113,6 @@ After core tabs are stable on Windows Avalonia:
 2. `dotnet test OpenNetMeter.Tests/OpenNetMeter.Tests.csproj --configuration Debug`
 3. Short manual smoke checklist for only the changed surface.
 
-## New Chat Handoff (Context Reset Safe)
-
-Use this checklist when starting a fresh chat:
-
-1. Share this file first: `AVALONIA_MIGRATION_PLAN.md`
-2. Share repo status:
-   - `git status --short`
-   - `git log -5 --oneline`
-3. State your intent in one line:
-   - example: `Continue from Phase 12; next focus is visual parity / Linux testing / packaging`
-
 ### Current Snapshot
 
 - Completed phases: `1` through `12`, plus sub-phase `11.1`.
