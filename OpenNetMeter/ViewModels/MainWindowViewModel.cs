@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Windows.Input;
+using Avalonia.Threading;
 using OpenNetMeter.Services;
 using OpenNetMeter.Core.ViewModels;
 using OpenNetMeter.PlatformAbstractions;
@@ -137,13 +138,20 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     {
         if (string.IsNullOrWhiteSpace(e.AdapterName))
         {
-            NetworkStatus = "Disconnected";
-            Summary.ClearOnDisconnect();
+            Dispatcher.UIThread.Post(() =>
+            {
+                NetworkStatus = "Disconnected";
+                Summary.ClearOnDisconnect();
+            });
             return;
         }
 
-        NetworkStatus = $"Connected : {e.AdapterName}";
-        Summary.SetActiveAdapter(e.AdapterName);
+        var adapterName = e.AdapterName;
+        Dispatcher.UIThread.Post(() =>
+        {
+            NetworkStatus = $"Connected : {adapterName}";
+            Summary.SetActiveAdapter(adapterName);
+        });
         History.ReloadProfiles();
     }
 
