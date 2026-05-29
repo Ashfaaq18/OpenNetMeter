@@ -27,7 +27,7 @@
 
     <Border Grid.Row="1" Margin="0,12,0,12" Padding="0" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True">
       <Grid RowDefinitions="Auto,*">
-        <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
           <Grid ColumnDefinitions="3*,1.5*,1.5*">
             <Button Content="Process" Command="{Binding SortRowsCommand}" CommandParameter="Process"
                     HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
