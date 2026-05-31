@@ -12,7 +12,7 @@
       <Border Grid.Row="0" Padding="10" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}" BoxShadow="{DynamicResource ShadowStrong}">
         <StackPanel Spacing="4">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushSuccess}">
+            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushDownload}">
               <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
                         Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
             </Border>
@@ -20,7 +20,7 @@
                        Foreground="{DynamicResource BrushTextHeader}" VerticalAlignment="Center" Margin="6,0,0,0"/>
           </StackPanel>
 
-          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushSuccess}" Margin="0,0,0,4">
+          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushDownload}" Margin="0,0,0,4">
             <Grid ColumnDefinitions="Auto,*">
               <StackPanel Orientation="Horizontal">
                 <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
@@ -33,7 +33,7 @@
             </Grid>
           </Border>
 
-          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushInfo}">
+          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushUpload}">
             <Grid ColumnDefinitions="Auto,*">
               <StackPanel Orientation="Horizontal">
                 <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
@@ -51,7 +51,7 @@
       <Border Grid.Row="2" Padding="10" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}" BoxShadow="{DynamicResource ShadowStrong}">
         <StackPanel Spacing="4">
           <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushInfo}">
+            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushUpload}">
               <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
                         Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
             </Border>
@@ -62,7 +62,7 @@
           <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,6"
                       SelectedDate="{Binding SinceDate, Mode=TwoWay}"/>
 
-          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushSuccess}" Margin="0,0,0,4">
+          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushDownload}" Margin="0,0,0,4">
             <Grid ColumnDefinitions="Auto,*">
               <StackPanel Orientation="Horizontal">
                 <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
@@ -75,7 +75,7 @@
             </Grid>
           </Border>
 
-          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushInfo}">
+          <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource BrushUpload}">
             <Grid ColumnDefinitions="Auto,*">
               <StackPanel Orientation="Horizontal">
                 <PathIcon Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
@@ -94,7 +94,7 @@
               BoxShadow="{DynamicResource ShadowStrong}" VerticalAlignment="Bottom">
         <StackPanel>
           <StackPanel Orientation="Horizontal">
-            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushSuccess}">
+            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushDownload}">
               <PathIcon Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
                         Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
             </Border>
@@ -102,9 +102,9 @@
                        Foreground="{DynamicResource BrushTextHeader}" VerticalAlignment="Center" Margin="6,0,0,0"/>
           </StackPanel>
           <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushSuccess}" VerticalAlignment="Center"/>
+            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushDownload}" VerticalAlignment="Center"/>
             <TextBlock Text="Download" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10" Margin="4,0,12,0" VerticalAlignment="Center"/>
-            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushInfo}" VerticalAlignment="Center"/>
+            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushUpload}" VerticalAlignment="Center"/>
             <TextBlock Text="Upload" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10" Margin="4,0,0,0" VerticalAlignment="Center"/>
           </StackPanel>
         </StackPanel>
@@ -136,16 +136,16 @@
             <Button Content="Name" Command="{Binding SortProcessesCommand}" CommandParameter="Name"
                     HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                     Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="1" Content="? Current" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentDownload"
+            <Button Grid.Column="1" Content="Current DL" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentDownload"
                     HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                     Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="2" Content="? Current" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentUpload"
+            <Button Grid.Column="2" Content="Current UL" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentUpload"
                     HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                     Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="3" Content="? Total" Command="{Binding SortProcessesCommand}" CommandParameter="TotalDownload"
+            <Button Grid.Column="3" Content="Total DL" Command="{Binding SortProcessesCommand}" CommandParameter="TotalDownload"
                     HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                     Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="4" Content="? Total" Command="{Binding SortProcessesCommand}" CommandParameter="TotalUpload"
+            <Button Grid.Column="4" Content="Total UL" Command="{Binding SortProcessesCommand}" CommandParameter="TotalUpload"
                     HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
                     Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
           </Grid>
