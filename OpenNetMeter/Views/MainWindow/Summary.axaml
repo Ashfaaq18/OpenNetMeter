@@ -133,21 +133,120 @@
 
         <Grid Grid.Row="1" RowDefinitions="Auto,*">
           <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,8,10,4">
-            <Button Content="Name" Command="{Binding SortProcessesCommand}" CommandParameter="Name"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="1" Content="Current DL" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentDownload"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="2" Content="Current UL" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentUpload"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="3" Content="Total DL" Command="{Binding SortProcessesCommand}" CommandParameter="TotalDownload"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="4" Content="Total UL" Command="{Binding SortProcessesCommand}" CommandParameter="TotalUpload"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="Name" Foreground="{DynamicResource BrushTextHeader}"
+                            FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+              <Button Command="{Binding SortProcessesCommand}" CommandParameter="Name"
+                      HorizontalAlignment="Left"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Panel Width="8" Height="8">
+                    <PathIcon Data="M7,15L12,10L17,15H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding NameSortAscVisible}"/>
+                    <PathIcon Data="M7,10L12,15L17,10H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding NameSortDescVisible}"/>
+                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
+                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
+                              IsVisible="{Binding !IsNameSorted}"/>
+                  </Panel>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="1" Orientation="Horizontal" >
+              <TextBlock Text="Current DL" Foreground="{DynamicResource BrushTextHeader}"
+                             FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+              <Button Command="{Binding SortProcessesCommand}" CommandParameter="CurrentDownload"
+                      HorizontalAlignment="Left"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Panel Width="8" Height="8">
+                    <PathIcon Data="M7,15L12,10L17,15H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding CurrentDownloadSortAscVisible}"/>
+                    <PathIcon Data="M7,10L12,15L17,10H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding CurrentDownloadSortDescVisible}"/>
+                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
+                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
+                              IsVisible="{Binding !IsCurrentDownloadSorted}"/>
+                  </Panel>
+                </StackPanel>
+              </Button>
+              
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+              <TextBlock Text="Current UL" Foreground="{DynamicResource BrushTextHeader}"
+                             FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                
+              <Button Grid.Column="0" Command="{Binding SortProcessesCommand}" CommandParameter="CurrentUpload"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Panel Width="8" Height="8">
+                    <PathIcon Data="M7,15L12,10L17,15H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding CurrentUploadSortAscVisible}"/>
+                    <PathIcon Data="M7,10L12,15L17,10H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding CurrentUploadSortDescVisible}"/>
+                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
+                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
+                              IsVisible="{Binding !IsCurrentUploadSorted}"/>
+                  </Panel>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+              <TextBlock Text="Total DL" Foreground="{DynamicResource BrushTextHeader}"
+                             FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                
+              <Button Grid.Column="0" Command="{Binding SortProcessesCommand}" CommandParameter="TotalDownload"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Panel Width="8" Height="8">
+                    <PathIcon Data="M7,15L12,10L17,15H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding TotalDownloadSortAscVisible}"/>
+                    <PathIcon Data="M7,10L12,15L17,10H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding TotalDownloadSortDescVisible}"/>
+                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
+                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
+                              IsVisible="{Binding !IsTotalDownloadSorted}"/>
+                  </Panel>
+                  </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="4" Orientation="Horizontal">
+              <TextBlock Text="Total UL" Foreground="{DynamicResource BrushTextHeader}"
+                         FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+              <Button Grid.Column="0" Command="{Binding SortProcessesCommand}" CommandParameter="TotalUpload"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Panel Width="8" Height="8">
+                    <PathIcon Data="M7,15L12,10L17,15H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding TotalUploadSortAscVisible}"/>
+                    <PathIcon Data="M7,10L12,15L17,10H7Z"
+                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+                              IsVisible="{Binding TotalUploadSortDescVisible}"/>
+                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
+                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
+                              IsVisible="{Binding !IsTotalUploadSorted}"/>
+                  </Panel>
+                </StackPanel>
+              </Button>
+             </StackPanel>
           </Grid>
 
           <ScrollViewer Grid.Row="1" Margin="0,0,0,6">
