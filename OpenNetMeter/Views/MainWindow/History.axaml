@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+             xmlns:ctrl="using:OpenNetMeter.Views.Controls"
              x:Class="OpenNetMeter.Views.MainWindowTabs.HistoryView"
              x:DataType="vm:HistoryViewModel"
              mc:Ignorable="d">
@@ -29,15 +30,41 @@
       <Grid RowDefinitions="Auto,*">
         <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
           <Grid ColumnDefinitions="3*,1.5*,1.5*">
-            <Button Content="Process" Command="{Binding SortRowsCommand}" CommandParameter="Process"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="1" Content="Data Received" Command="{Binding SortRowsCommand}" CommandParameter="Download"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
-            <Button Grid.Column="2" Content="Data Sent" Command="{Binding SortRowsCommand}" CommandParameter="Upload"
-                    HorizontalAlignment="Left" Background="{DynamicResource BrushTransparent}" BorderThickness="0"
-                    Foreground="{DynamicResource BrushTextHeader}" FontSize="10" FontWeight="SemiBold" Padding="0"/>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="Process" Foreground="{DynamicResource BrushTextHeader}"
+                         FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+              <Button Command="{Binding SortRowsCommand}" CommandParameter="Process"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <ctrl:SortIndicatorControl ColumnName="Process"
+                                           CurrentSortColumn="{Binding CurrentSortColumn}"
+                                           IsSortDescending="{Binding IsSortDescending}"/>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+              <TextBlock Text="Data Received" Foreground="{DynamicResource BrushTextHeader}"
+                         FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+              <Button Command="{Binding SortRowsCommand}" CommandParameter="Download"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <ctrl:SortIndicatorControl ColumnName="Download"
+                                           CurrentSortColumn="{Binding CurrentSortColumn}"
+                                           IsSortDescending="{Binding IsSortDescending}"/>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+              <TextBlock Text="Data Sent" Foreground="{DynamicResource BrushTextHeader}"
+                         FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+              <Button Command="{Binding SortRowsCommand}" CommandParameter="Upload"
+                      Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
+                      BorderThickness="1" CornerRadius="4" Padding="4,2">
+                <ctrl:SortIndicatorControl ColumnName="Upload"
+                                           CurrentSortColumn="{Binding CurrentSortColumn}"
+                                           IsSortDescending="{Binding IsSortDescending}"/>
+              </Button>
+            </StackPanel>
           </Grid>
         </Border>
 

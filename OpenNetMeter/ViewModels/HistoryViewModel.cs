@@ -97,6 +97,9 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
     public ObservableCollection<HistoryRowViewModel> Rows { get; }
 
+    public string? CurrentSortColumn => currentSortColumn;
+    public bool IsSortDescending => sortDescending;
+
     public long TotalDownload
     {
         get => totalDownload;
@@ -235,15 +238,11 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
     private void SortRows(string column)
     {
-        if (string.Equals(currentSortColumn, column, StringComparison.Ordinal))
-        {
-            sortDescending = !sortDescending;
-        }
-        else
-        {
-            currentSortColumn = column;
-            sortDescending = false;
-        }
+        sortDescending = string.Equals(currentSortColumn, column, StringComparison.Ordinal) ? !sortDescending : false;
+        currentSortColumn = column;
+
+        OnPropertyChanged(nameof(CurrentSortColumn));
+        OnPropertyChanged(nameof(IsSortDescending));
 
         var sorted = column switch
         {
