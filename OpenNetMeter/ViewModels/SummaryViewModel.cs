@@ -133,6 +133,26 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
 
+    public string? CurrentSortColumn => currentSortColumn;
+    public bool IsSortDescending => sortDescending;
+
+    public bool IsNameSorted => string.Equals(currentSortColumn, "Name", StringComparison.Ordinal);
+    public bool IsCurrentDownloadSorted => string.Equals(currentSortColumn, "CurrentDownload", StringComparison.Ordinal);
+    public bool IsCurrentUploadSorted => string.Equals(currentSortColumn, "CurrentUpload", StringComparison.Ordinal);
+    public bool IsTotalDownloadSorted => string.Equals(currentSortColumn, "TotalDownload", StringComparison.Ordinal);
+    public bool IsTotalUploadSorted => string.Equals(currentSortColumn, "TotalUpload", StringComparison.Ordinal);
+
+    public bool NameSortAscVisible => IsNameSorted && !sortDescending;
+    public bool NameSortDescVisible => IsNameSorted && sortDescending;
+    public bool CurrentDownloadSortAscVisible => IsCurrentDownloadSorted && !sortDescending;
+    public bool CurrentDownloadSortDescVisible => IsCurrentDownloadSorted && sortDescending;
+    public bool CurrentUploadSortAscVisible => IsCurrentUploadSorted && !sortDescending;
+    public bool CurrentUploadSortDescVisible => IsCurrentUploadSorted && sortDescending;
+    public bool TotalDownloadSortAscVisible => IsTotalDownloadSorted && !sortDescending;
+    public bool TotalDownloadSortDescVisible => IsTotalDownloadSorted && sortDescending;
+    public bool TotalUploadSortAscVisible => IsTotalUploadSorted && !sortDescending;
+    public bool TotalUploadSortDescVisible => IsTotalUploadSorted && sortDescending;
+
     public string CurrentSessionDownloadText => ByteSizeFormatter.FormatBytes(currentSessionDownload);
     public string CurrentSessionUploadText => ByteSizeFormatter.FormatBytes(currentSessionUpload);
     public string TotalFromDateDownloadText => ByteSizeFormatter.FormatBytes(totalFromDateDownload);
@@ -509,28 +529,23 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    private static readonly Dictionary<string, Func<SummaryProcessRowViewModel, IComparable>> SortSelectors = new(StringComparer.Ordinal)
+    {
+        ["Name"] = p => p.ProcessName,
+        ["CurrentDownload"] = p => p.CurrentDownloadBytes,
+        ["CurrentUpload"] = p => p.CurrentUploadBytes,
+        ["TotalDownload"] = p => p.TotalDownloadBytes,
+        ["TotalUpload"] = p => p.TotalUploadBytes
+    };
+
     private void SortProcesses(string column)
     {
-        if (string.Equals(currentSortColumn, column, StringComparison.Ordinal))
-        {
-            sortDescending = !sortDescending;
-        }
-        else
-        {
-            currentSortColumn = column;
-            sortDescending = false;
-        }
+        sortDescending = string.Equals(currentSortColumn, column, StringComparison.Ordinal) ? !sortDescending : false;
+        currentSortColumn = column;
 
-        Func<SummaryProcessRowViewModel, IComparable> selector = column switch
-        {
-            "Name" => p => p.ProcessName,
-            "CurrentDownload" => p => p.CurrentDownloadBytes,
-            "CurrentUpload" => p => p.CurrentUploadBytes,
-            "TotalDownload" => p => p.TotalDownloadBytes,
-            "TotalUpload" => p => p.TotalUploadBytes,
-            _ => p => p.ProcessName
-        };
+        NotifySortPropertiesChanged();
 
+        var selector = SortSelectors.GetValueOrDefault(column, SortSelectors["Name"]);
         var sorted = sortDescending
             ? ActiveProcesses.OrderByDescending(selector).ToList()
             : ActiveProcesses.OrderBy(selector).ToList();
@@ -538,6 +553,27 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         ActiveProcesses.Clear();
         foreach (var item in sorted)
             ActiveProcesses.Add(item);
+    }
+
+    private void NotifySortPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(CurrentSortColumn));
+        OnPropertyChanged(nameof(IsSortDescending));
+        OnPropertyChanged(nameof(IsNameSorted));
+        OnPropertyChanged(nameof(IsCurrentDownloadSorted));
+        OnPropertyChanged(nameof(IsCurrentUploadSorted));
+        OnPropertyChanged(nameof(IsTotalDownloadSorted));
+        OnPropertyChanged(nameof(IsTotalUploadSorted));
+        OnPropertyChanged(nameof(NameSortAscVisible));
+        OnPropertyChanged(nameof(NameSortDescVisible));
+        OnPropertyChanged(nameof(CurrentDownloadSortAscVisible));
+        OnPropertyChanged(nameof(CurrentDownloadSortDescVisible));
+        OnPropertyChanged(nameof(CurrentUploadSortAscVisible));
+        OnPropertyChanged(nameof(CurrentUploadSortDescVisible));
+        OnPropertyChanged(nameof(TotalDownloadSortAscVisible));
+        OnPropertyChanged(nameof(TotalDownloadSortDescVisible));
+        OnPropertyChanged(nameof(TotalUploadSortAscVisible));
+        OnPropertyChanged(nameof(TotalUploadSortDescVisible));
     }
 
     public void RefreshSpeedDisplayFormat()
