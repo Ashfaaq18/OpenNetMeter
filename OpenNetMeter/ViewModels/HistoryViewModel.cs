@@ -16,6 +16,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 {
     private readonly string dbPath;
     private readonly IProcessIconService processIconService;
+    private readonly IExternalLinkService externalLinkService;
     private string? selectedProfile;
     private DateTimeOffset? dateStart;
     private DateTimeOffset? dateEnd;
@@ -25,13 +26,14 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private bool sortDescending;
 
     public HistoryViewModel()
-        : this(new NoOpProcessIconService())
+        : this(new NoOpProcessIconService(), new NoOpExternalLinkService())
     {
     }
 
-    public HistoryViewModel(IProcessIconService processIconService)
+    public HistoryViewModel(IProcessIconService processIconService, IExternalLinkService externalLinkService)
     {
         this.processIconService = processIconService;
+        this.externalLinkService = externalLinkService;
         dbPath = ResolveDatabasePath();
 
         Profiles = [];
@@ -230,7 +232,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             var upload = reader.IsDBNull(2) ? 0 : reader.GetInt64(2);
 
             var icon = processIconService.GetProcessIcon(processName) as IImage;
-            Rows.Add(new HistoryRowViewModel(processName, download, upload, icon));
+            Rows.Add(new HistoryRowViewModel(processName, download, upload, externalLinkService, icon));
             TotalDownload += download;
             TotalUpload += upload;
         }
@@ -299,22 +301,36 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     {
         public object? GetProcessIcon(string processName) => null;
     }
+
+    private sealed class NoOpExternalLinkService : IExternalLinkService
+    {
+        public void Open(string uri) { }
+    }
 }
 
 public sealed class HistoryRowViewModel
 {
-    public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes, IImage? icon = null)
+    private readonly IExternalLinkService externalLinkService;
+
+    public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes, IExternalLinkService externalLinkService, IImage? icon = null)
     {
         ProcessName = processName;
         DownloadBytes = downloadBytes;
         UploadBytes = uploadBytes;
+        this.externalLinkService = externalLinkService;
         Icon = icon;
+        SearchProcessCommand = new RelayCommand(() =>
+        {
+            var encodedName = Uri.EscapeDataString(ProcessName);
+            externalLinkService.Open($"https://www.google.com/search?q={encodedName}");
+        });
     }
 
     public IImage? Icon { get; }
     public string ProcessName { get; }
     public long DownloadBytes { get; }
     public long UploadBytes { get; }
+    public ICommand SearchProcessCommand { get; }
     public string DownloadText => ByteSizeFormatter.FormatBytes(DownloadBytes);
     public string UploadText => ByteSizeFormatter.FormatBytes(UploadBytes);
 }

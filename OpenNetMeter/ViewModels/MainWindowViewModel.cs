@@ -39,8 +39,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         this.externalLinkService = externalLinkService;
         this.miniWidget = miniWidget;
 
-        Summary = new SummaryViewModel(this.networkCaptureService, processIconService);
-        History = new HistoryViewModel(processIconService);
+        Summary = new SummaryViewModel(this.networkCaptureService, processIconService, externalLinkService);
+        History = new HistoryViewModel(processIconService, externalLinkService);
         Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;

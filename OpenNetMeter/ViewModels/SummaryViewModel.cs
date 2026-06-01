@@ -26,6 +26,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private const int MaxSpeedMagnitude = 6;
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IProcessIconService processIconService;
+    private readonly IExternalLinkService externalLinkService;
     private readonly ObservableCollection<ObservablePoint> dlValues = new();
     private readonly ObservableCollection<ObservablePoint> ulValues = new();
     private readonly Dictionary<string, SummaryProcessRowViewModel> processIndex = new(StringComparer.OrdinalIgnoreCase);
@@ -55,10 +56,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long latestUploadBytesPerSecond;
     private int graphAxisMagnitude;
 
-    public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService)
+    public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService, IExternalLinkService externalLinkService)
     {
         this.networkCaptureService = networkCaptureService;
         this.processIconService = processIconService;
+        this.externalLinkService = externalLinkService;
 
         // Match WPF dark theme accents:
         // Download -> #367061, Upload -> #D98868
@@ -496,7 +498,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
             if (!processIndex.TryGetValue(kvp.Key, out var row))
             {
-                row = new SummaryProcessRowViewModel(kvp.Key, processIconService.GetProcessIcon(kvp.Key) as IImage);
+                row = new SummaryProcessRowViewModel(kvp.Key, externalLinkService, processIconService.GetProcessIcon(kvp.Key) as IImage);
                 processIndex[kvp.Key] = row;
                 ActiveProcesses.Add(row);
                 OnPropertyChanged(nameof(ProcessCount));
@@ -668,19 +670,27 @@ internal enum SpeedMagnitude
 
 public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
 {
+    private readonly IExternalLinkService externalLinkService;
     private long currentDownloadBytes;
     private long currentUploadBytes;
     private long totalDownloadBytes;
     private long totalUploadBytes;
 
-    public SummaryProcessRowViewModel(string processName, IImage? icon = null)
+    public SummaryProcessRowViewModel(string processName, IExternalLinkService externalLinkService, IImage? icon = null)
     {
         ProcessName = processName;
+        this.externalLinkService = externalLinkService;
         Icon = icon;
+        SearchProcessCommand = new RelayCommand(() =>
+        {
+            var encodedName = Uri.EscapeDataString(ProcessName);
+            externalLinkService.Open($"https://www.google.com/search?q={encodedName}");
+        });
     }
 
     public IImage? Icon { get; }
     public string ProcessName { get; }
+    public ICommand SearchProcessCommand { get; }
     public long CurrentDownloadBytes => currentDownloadBytes;
     public long CurrentUploadBytes => currentUploadBytes;
     public long TotalDownloadBytes => totalDownloadBytes;
