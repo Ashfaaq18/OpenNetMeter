@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="OpenNetMeter.Views.Controls.SortIndicatorControl">
+  <Panel Width="8" Height="8">
+    <PathIcon Data="M7,15L12,10L17,15H7Z"
+              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+              IsVisible="{Binding IsAscVisible, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+    <PathIcon Data="M7,10L12,15L17,10H7Z"
+              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
+              IsVisible="{Binding IsDescVisible, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
+              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
+              IsVisible="{Binding IsUnsortedVisible, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+  </Panel>
+</UserControl>
