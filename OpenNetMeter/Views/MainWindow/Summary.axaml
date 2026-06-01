@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
              xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             xmlns:ctrl="using:OpenNetMeter.Views.Controls"
              x:Class="OpenNetMeter.Views.MainWindowTabs.SummaryView"
              x:DataType="vm:SummaryViewModel"
              mc:Ignorable="d">
@@ -141,17 +142,9 @@
                       Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
                       BorderThickness="1" CornerRadius="4" Padding="4,2">
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Panel Width="8" Height="8">
-                    <PathIcon Data="M7,15L12,10L17,15H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding NameSortAscVisible}"/>
-                    <PathIcon Data="M7,10L12,15L17,10H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding NameSortDescVisible}"/>
-                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
-                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
-                              IsVisible="{Binding !IsNameSorted}"/>
-                  </Panel>
+                  <ctrl:SortIndicatorControl ColumnName="Name"
+                                             CurrentSortColumn="{Binding CurrentSortColumn}"
+                                             IsSortDescending="{Binding IsSortDescending}"/>
                 </StackPanel>
               </Button>
             </StackPanel>
@@ -164,17 +157,9 @@
                       Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
                       BorderThickness="1" CornerRadius="4" Padding="4,2">
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Panel Width="8" Height="8">
-                    <PathIcon Data="M7,15L12,10L17,15H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding CurrentDownloadSortAscVisible}"/>
-                    <PathIcon Data="M7,10L12,15L17,10H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding CurrentDownloadSortDescVisible}"/>
-                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
-                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
-                              IsVisible="{Binding !IsCurrentDownloadSorted}"/>
-                  </Panel>
+                  <ctrl:SortIndicatorControl ColumnName="CurrentDownload"
+                                             CurrentSortColumn="{Binding CurrentSortColumn}"
+                                             IsSortDescending="{Binding IsSortDescending}"/>
                 </StackPanel>
               </Button>
               
@@ -188,17 +173,9 @@
                       Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
                       BorderThickness="1" CornerRadius="4" Padding="4,2">
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Panel Width="8" Height="8">
-                    <PathIcon Data="M7,15L12,10L17,15H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding CurrentUploadSortAscVisible}"/>
-                    <PathIcon Data="M7,10L12,15L17,10H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding CurrentUploadSortDescVisible}"/>
-                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
-                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
-                              IsVisible="{Binding !IsCurrentUploadSorted}"/>
-                  </Panel>
+                  <ctrl:SortIndicatorControl ColumnName="CurrentUpload"
+                                             CurrentSortColumn="{Binding CurrentSortColumn}"
+                                             IsSortDescending="{Binding IsSortDescending}"/>
                 </StackPanel>
               </Button>
             </StackPanel>
@@ -211,17 +188,9 @@
                       Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
                       BorderThickness="1" CornerRadius="4" Padding="4,2">
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Panel Width="8" Height="8">
-                    <PathIcon Data="M7,15L12,10L17,15H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding TotalDownloadSortAscVisible}"/>
-                    <PathIcon Data="M7,10L12,15L17,10H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding TotalDownloadSortDescVisible}"/>
-                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
-                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
-                              IsVisible="{Binding !IsTotalDownloadSorted}"/>
-                  </Panel>
+                  <ctrl:SortIndicatorControl ColumnName="TotalDownload"
+                                             CurrentSortColumn="{Binding CurrentSortColumn}"
+                                             IsSortDescending="{Binding IsSortDescending}"/>
                   </StackPanel>
               </Button>
             </StackPanel>
@@ -233,17 +202,9 @@
                       Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}"
                       BorderThickness="1" CornerRadius="4" Padding="4,2">
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Panel Width="8" Height="8">
-                    <PathIcon Data="M7,15L12,10L17,15H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding TotalUploadSortAscVisible}"/>
-                    <PathIcon Data="M7,10L12,15L17,10H7Z"
-                              Foreground="{DynamicResource BrushTextHeader}" Width="8" Height="8"
-                              IsVisible="{Binding TotalUploadSortDescVisible}"/>
-                    <PathIcon Data="M7,10L12,5L17,10H7Z M7,15L12,20L17,15H7Z"
-                              Foreground="{DynamicResource BrushIconMuted}" Width="8" Height="8"
-                              IsVisible="{Binding !IsTotalUploadSorted}"/>
-                  </Panel>
+                  <ctrl:SortIndicatorControl ColumnName="TotalUpload"
+                                             CurrentSortColumn="{Binding CurrentSortColumn}"
+                                             IsSortDescending="{Binding IsSortDescending}"/>
                 </StackPanel>
               </Button>
              </StackPanel>
