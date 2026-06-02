@@ -67,7 +67,8 @@ public partial class App : Application
                 : new PlaceholderTrayNotificationService();
 
             mainWindow.InitializeWindowState(miniWidgetService, trayNotificationService);
-            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService, themeService);
+            ISpeedTestService speedTestService = new SpeedTestService();
+            mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService, themeService, speedTestService);
             desktop.MainWindow = mainWindow;
 
             trayService = OperatingSystem.IsWindows()

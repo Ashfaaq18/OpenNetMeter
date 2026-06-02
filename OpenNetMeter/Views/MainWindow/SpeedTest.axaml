@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
+             x:Class="OpenNetMeter.Views.MainWindowTabs.SpeedTestView"
+             x:DataType="vm:SpeedTestViewModel"
+             mc:Ignorable="d">
+
+  <Grid RowDefinitions="*,Auto,24,Auto,20,Auto,*">
+
+    <!-- Live speed display -->
+    <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="6">
+
+      <TextBlock Text="{Binding StatusText}"
+                 FontSize="{DynamicResource FontSizeMd}"
+                 Foreground="{DynamicResource BrushTextSecondary}"
+                 HorizontalAlignment="Center"/>
+
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                  VerticalAlignment="Center" Spacing="6">
+
+        <TextBlock Text="&#x2193;" FontSize="36"
+                   IsVisible="{Binding IsDownloadPhase}"
+                   Foreground="{DynamicResource BrushDownload}"
+                   VerticalAlignment="Center"/>
+        <TextBlock Text="&#x2191;" FontSize="36"
+                   IsVisible="{Binding IsUploadPhase}"
+                   Foreground="{DynamicResource BrushUpload}"
+                   VerticalAlignment="Center"/>
+
+        <TextBlock Text="{Binding LiveSpeedText}"
+                   FontSize="44"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource BrushTextPrimary}"
+                   VerticalAlignment="Center"/>
+      </StackPanel>
+    </StackPanel>
+
+    <!-- Result cards: Ping / Download / Upload -->
+    <Grid Grid.Row="3" ColumnDefinitions="*,10,*,10,*" Margin="20,0">
+
+      <Border Grid.Column="0" CornerRadius="10"
+              Background="{DynamicResource BrushSurfacePanel}"
+              BoxShadow="{DynamicResource ShadowSoft}" Padding="16,14">
+        <StackPanel HorizontalAlignment="Center" Spacing="6">
+          <TextBlock Text="Ping"
+                     FontSize="{DynamicResource FontSizeSm}"
+                     Foreground="{DynamicResource BrushTextSecondary}"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="{Binding PingText}"
+                     FontSize="18"
+                     FontWeight="SemiBold"
+                     Foreground="{DynamicResource BrushTextPrimary}"
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="2" CornerRadius="10"
+              Background="{DynamicResource BrushSurfacePanel}"
+              BoxShadow="{DynamicResource ShadowSoft}" Padding="16,14">
+        <StackPanel HorizontalAlignment="Center" Spacing="6">
+          <TextBlock Text="Download"
+                     FontSize="{DynamicResource FontSizeSm}"
+                     Foreground="{DynamicResource BrushDownload}"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="{Binding DownloadText}"
+                     FontSize="18"
+                     FontWeight="SemiBold"
+                     Foreground="{DynamicResource BrushTextPrimary}"
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="4" CornerRadius="10"
+              Background="{DynamicResource BrushSurfacePanel}"
+              BoxShadow="{DynamicResource ShadowSoft}" Padding="16,14">
+        <StackPanel HorizontalAlignment="Center" Spacing="6">
+          <TextBlock Text="Upload"
+                     FontSize="{DynamicResource FontSizeSm}"
+                     Foreground="{DynamicResource BrushUpload}"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="{Binding UploadText}"
+                     FontSize="18"
+                     FontWeight="SemiBold"
+                     Foreground="{DynamicResource BrushTextPrimary}"
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Start / Running button -->
+    <Button Grid.Row="5"
+            Command="{Binding RunTestCommand}"
+            HorizontalAlignment="Center"
+            Padding="36,10">
+      <TextBlock Text="{Binding RunButtonText}"
+                 FontSize="{DynamicResource FontSizeMd}"
+                 HorizontalAlignment="Center"/>
+    </Button>
+
+  </Grid>
+</UserControl>

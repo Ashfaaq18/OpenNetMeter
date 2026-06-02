@@ -39,7 +39,7 @@
       <Grid RowDefinitions="50,*,30">
 
         <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}" IsHitTestVisible="True">
-          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
+          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
 
             <Image Grid.Column="0" Source="avares://OpenNetMeter/Assets/x48.png"
                    Width="28" Height="28" Margin="14,0,0,0"
@@ -55,21 +55,25 @@
                     Margin="0,0,4,0"/>
             <Button Grid.Column="3" Content="Settings" Classes="tab"
                     Classes.active="{Binding IsSettingsTab}"
-                    Command="{Binding SwitchTabCommand}" CommandParameter="2"/>
+                    Command="{Binding SwitchTabCommand}" CommandParameter="2"
+                    Margin="0,0,4,0"/>
+            <Button Grid.Column="4" Content="Speed Test" Classes="tab"
+                    Classes.active="{Binding IsSpeedTestTab}"
+                    Command="{Binding SwitchTabCommand}" CommandParameter="3"/>
 
-            <Border Grid.Column="4" Background="{DynamicResource BrushTransparent}" IsHitTestVisible="True"
+            <Border Grid.Column="5" Background="{DynamicResource BrushTransparent}" IsHitTestVisible="True"
                     PointerPressed="TitleBar_PointerPressed"/>
 
-            <Button Grid.Column="5" Content="About" Classes="titleBtn"
+            <Button Grid.Column="6" Content="About" Classes="titleBtn"
                     Command="{Binding AboutCommand}"/>
 
-            <Button Grid.Column="6" Classes="titleBtn" Command="{Binding MinimizeWindowCommand}">
+            <Button Grid.Column="7" Classes="titleBtn" Command="{Binding MinimizeWindowCommand}">
               <Panel Width="10" Height="1">
                 <Rectangle Fill="{DynamicResource BrushTextUi}" Height="1"/>
               </Panel>
             </Button>
 
-            <Button Grid.Column="7" Classes="titleBtn closeBtn" Command="{Binding CloseWindowCommand}">
+            <Button Grid.Column="8" Classes="titleBtn closeBtn" Command="{Binding CloseWindowCommand}">
               <Panel Width="10" Height="10">
                 <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
                 <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
@@ -98,6 +102,10 @@
 
           <TabItem>
             <tabs:SettingsView DataContext="{Binding Settings}"/>
+          </TabItem>
+
+          <TabItem>
+            <tabs:SpeedTestView DataContext="{Binding SpeedTest}"/>
           </TabItem>
         </TabControl>
 

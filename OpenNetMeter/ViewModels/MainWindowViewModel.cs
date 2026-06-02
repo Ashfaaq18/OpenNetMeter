@@ -1,5 +1,7 @@
 using System;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
 using OpenNetMeter.Services;
@@ -20,7 +22,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private bool isAboutOpen;
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpThemeService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpThemeService(), new NoOpSpeedTestService())
     {
     }
 
@@ -32,7 +34,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         MiniWidgetViewModel miniWidget,
         IMiniWidgetService miniWidgetService,
         IStartupRegistrationService startupRegistrationService,
-        IThemeService themeService)
+        IThemeService themeService,
+        ISpeedTestService speedTestService)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
@@ -42,6 +45,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService, externalLinkService);
         History = new HistoryViewModel(processIconService, externalLinkService);
         Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService);
+        SpeedTest = new SpeedTestViewModel(speedTestService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;
         Summary.PropertyChanged += Summary_PropertyChanged;
@@ -70,6 +74,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     public SummaryViewModel Summary { get; }
     public HistoryViewModel History { get; }
     public SettingsViewModel Settings { get; }
+    public SpeedTestViewModel SpeedTest { get; }
     public string AboutVersionText { get; } = $"Version: {Assembly.GetExecutingAssembly()?.GetName().Version}";
     public string AboutRepositoryUrl { get; } = AboutRepositoryUri;
 
@@ -83,6 +88,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     public bool IsSummaryTab => SelectedTabIndex == 0;
     public bool IsHistoryTab => SelectedTabIndex == 1;
     public bool IsSettingsTab => SelectedTabIndex == 2;
+    public bool IsSpeedTestTab => SelectedTabIndex == 3;
 
     public string NetworkStatus
     {
@@ -121,6 +127,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             OnPropertyChanged(nameof(IsSummaryTab));
             OnPropertyChanged(nameof(IsHistoryTab));
             OnPropertyChanged(nameof(IsSettingsTab));
+            OnPropertyChanged(nameof(IsSpeedTestTab));
         }
     }
 
@@ -239,6 +246,12 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private sealed class NoOpExternalLinkService : IExternalLinkService
     {
         public void Open(string uri) { }
+    }
+
+    private sealed class NoOpSpeedTestService : ISpeedTestService
+    {
+        public Task RunAsync(IProgress<SpeedTestProgress> progress, CancellationToken ct = default)
+            => Task.CompletedTask;
     }
 }
 
