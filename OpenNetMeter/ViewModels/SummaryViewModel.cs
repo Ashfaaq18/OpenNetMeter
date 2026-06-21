@@ -64,8 +64,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         // Match WPF dark theme accents:
         // Download -> #367061, Upload -> #D98868
-        var dlColor = new SKColor(0x36, 0x70, 0x61);
-        var ulColor = new SKColor(0xD9, 0x88, 0x68);
+        var dlColor = new SKColor(0x4A, 0xA9, 0x8C);
+        var ulColor = new SKColor(0xE1, 0x77, 0x17);
 
         GraphSeries =
         [

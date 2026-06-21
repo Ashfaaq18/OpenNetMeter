@@ -33,8 +33,8 @@
       <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
       <SolidColorBrush x:Key="BrushAccentGreen" Color="#367061"/>
       <SolidColorBrush x:Key="BrushAccentBlue" Color="#00A6A0"/>
-      <SolidColorBrush x:Key="BrushDownload" Color="#367061"/>
-      <SolidColorBrush x:Key="BrushUpload" Color="#D98868"/>
+      <SolidColorBrush x:Key="BrushDownload" Color="#4AA98C"/>
+      <SolidColorBrush x:Key="BrushUpload" Color="#E17717"/>
       <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
       <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
       <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
@@ -72,8 +72,8 @@
       <SolidColorBrush x:Key="BrushShadowSoft" Color="#14000000"/>
       <SolidColorBrush x:Key="BrushAccentGreen" Color="#7FB6A8"/>
       <SolidColorBrush x:Key="BrushAccentBlue" Color="#00A6A0"/>
-      <SolidColorBrush x:Key="BrushDownload" Color="#6DA395"/>
-      <SolidColorBrush x:Key="BrushUpload" Color="#C97C5D"/>
+      <SolidColorBrush x:Key="BrushDownload" Color="#4AA98C"/>
+      <SolidColorBrush x:Key="BrushUpload" Color="#E17717"/>
       <SolidColorBrush x:Key="BrushWarning" Color="#FFA37E"/>
       <SolidColorBrush x:Key="BrushAccentPurple" Color="#8957E5"/>
       <SolidColorBrush x:Key="BrushDangerBright" Color="#E81123"/>
