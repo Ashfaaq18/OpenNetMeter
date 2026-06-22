@@ -19,6 +19,7 @@ public sealed class SpeedTestViewModel : INotifyPropertyChanged
     private double? downloadMbps;
     private double? uploadMbps;
     private string statusText = "Ready";
+    private ServerInfo? serverInfo;
 
     public SpeedTestViewModel(ISpeedTestService speedTestService)
     {
@@ -63,6 +64,8 @@ public sealed class SpeedTestViewModel : INotifyPropertyChanged
     public string DownloadText => downloadMbps.HasValue ? $"{downloadMbps.Value:F1} Mbps" : "---";
     public string UploadText => uploadMbps.HasValue ? $"{uploadMbps.Value:F1} Mbps" : "---";
     public string RunButtonText => IsTesting ? "Running..." : "Start Test";
+    public string ServerLocationText => serverInfo?.Location is { Length: > 0 } loc ? $"Server: {loc}" : "";
+    public string ServerIspText => serverInfo?.Isp is { Length: > 0 } isp ? $"ISP: {isp}" : "";
 
     private async void StartTest()
     {
@@ -71,6 +74,7 @@ public sealed class SpeedTestViewModel : INotifyPropertyChanged
         pingMs = null;
         downloadMbps = null;
         uploadMbps = null;
+        serverInfo = null;
         LiveSpeedMbps = 0;
 
         cts = new CancellationTokenSource();
@@ -87,6 +91,7 @@ public sealed class SpeedTestViewModel : INotifyPropertyChanged
             if (p.PingMs.HasValue) pingMs = p.PingMs;
             if (p.DownloadMbps.HasValue) downloadMbps = p.DownloadMbps;
             if (p.UploadMbps.HasValue) uploadMbps = p.UploadMbps;
+            if (p.ServerInfo != null) serverInfo = p.ServerInfo;
 
             if (p.Phase is TestPhase.Done or TestPhase.Failed or TestPhase.Idle)
                 LiveSpeedMbps = 0;
@@ -120,6 +125,8 @@ public sealed class SpeedTestViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(UploadText));
         OnPropertyChanged(nameof(LiveSpeedText));
         OnPropertyChanged(nameof(RunButtonText));
+        OnPropertyChanged(nameof(ServerLocationText));
+        OnPropertyChanged(nameof(ServerIspText));
 
         runTestCommand.RaiseCanExecuteChanged();
     }

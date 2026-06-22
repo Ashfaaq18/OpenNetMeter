@@ -14,6 +14,12 @@ public enum TestPhase
     Failed
 }
 
+public sealed class ServerInfo
+{
+    public string Location { get; init; } = "";
+    public string Isp { get; init; } = "";
+}
+
 public sealed class SpeedTestProgress
 {
     public TestPhase Phase { get; init; }
@@ -22,6 +28,7 @@ public sealed class SpeedTestProgress
     public double? DownloadMbps { get; init; }
     public double? UploadMbps { get; init; }
     public string? ErrorMessage { get; init; }
+    public ServerInfo? ServerInfo { get; init; }
 }
 
 public interface ISpeedTestService

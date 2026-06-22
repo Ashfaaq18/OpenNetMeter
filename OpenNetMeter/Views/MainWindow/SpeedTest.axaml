@@ -7,7 +7,7 @@
              x:DataType="vm:SpeedTestViewModel"
              mc:Ignorable="d">
 
-  <Grid RowDefinitions="*,Auto,24,Auto,20,Auto,*">
+  <Grid RowDefinitions="*,Auto,24,Auto,20,Auto,10,Auto,*">
 
     <!-- Live speed display -->
     <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="6">
@@ -98,6 +98,18 @@
                  FontSize="{DynamicResource FontSizeMd}"
                  HorizontalAlignment="Center"/>
     </Button>
+
+    <!-- Server / ISP info -->
+    <StackPanel Grid.Row="7" HorizontalAlignment="Center" Spacing="3">
+      <TextBlock Text="{Binding ServerLocationText}"
+                 FontSize="{DynamicResource FontSizeSm}"
+                 Foreground="{DynamicResource BrushTextFaint}"
+                 HorizontalAlignment="Center"/>
+      <TextBlock Text="{Binding ServerIspText}"
+                 FontSize="{DynamicResource FontSizeSm}"
+                 Foreground="{DynamicResource BrushTextFaint}"
+                 HorizontalAlignment="Center"/>
+    </StackPanel>
 
   </Grid>
 </UserControl>
