@@ -26,45 +26,58 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
         }
     }
 
-    public void SetEnabled(bool enabled, bool startMinimized)
+    private void RemoveONMStartupTask()
     {
         try
         {
-            TaskScheduler.TaskFolder folder = TaskScheduler.TaskService.Instance.RootFolder.SubFolders[TaskFolder];
-            if (!enabled)
+            TaskScheduler.TaskFolder rootFolder = TaskScheduler.TaskService.Instance.RootFolder;
+            if (rootFolder.SubFolders.Exists(TaskFolder))
             {
+                TaskScheduler.TaskFolder folder = rootFolder.SubFolders[TaskFolder];
                 for (int i = 0; i < folder.Tasks.Count; i++)
                 {
                     folder.DeleteTask(folder.Tasks[i].Name);
                 }
-
-                TaskScheduler.TaskService.Instance.RootFolder.DeleteFolder(TaskFolder);
-                return;
+                rootFolder.DeleteFolder(TaskFolder);
             }
         }
         catch (Exception ex)
         {
-            EventLogger.Error("Error while updating startup task registration", ex);
-        }
-
-        if (enabled)
-        {
-            try
-            {
-                TaskScheduler.TaskService.Instance.RootFolder.CreateFolder(TaskFolder);
-                CreateTask(startMinimized);
-            }
-            catch (Exception ex)
-            {
-                EventLogger.Error("Error creating startup task folder/definition", ex);
-            }
+            EventLogger.Error("Error while removing startup task registration", ex);
         }
     }
 
-    private static void CreateTask(bool startMinimized)
+    public void SetEnabled(bool enabled, bool startMinimized)
+    {
+        if (enabled)
+        {
+            CreateONMStartupTask(startMinimized);
+        }
+        else
+        {
+            RemoveONMStartupTask();
+        }
+    }
+
+    private static void CreateONMStartupTask(bool startMinimized)
     {
         try
         {
+            TaskScheduler.TaskFolder rootFolder = TaskScheduler.TaskService.Instance.RootFolder;
+            TaskScheduler.TaskFolder folder;
+            if (rootFolder.SubFolders.Exists(TaskFolder))
+            {
+                folder = rootFolder.SubFolders[TaskFolder];
+                for (int i = 0; i < folder.Tasks.Count; i++)
+                {
+                    folder.DeleteTask(folder.Tasks[i].Name);
+                }
+            }
+            else
+            {
+                folder = rootFolder.CreateFolder(TaskFolder);
+            }
+
             TaskScheduler.TaskDefinition td = TaskScheduler.TaskService.Instance.NewTask();
             td.RegistrationInfo.Description = "Run OpenNetMeter Avalonia on system log on";
             td.Principal.RunLevel = TaskScheduler.TaskRunLevel.Highest;
@@ -90,7 +103,7 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
 
             td.Actions.Add(action);
 
-            TaskScheduler.TaskService.Instance.RootFolder.SubFolders[TaskFolder].RegisterTaskDefinition(
+            folder.RegisterTaskDefinition(
                 TaskName,
                 td,
                 TaskScheduler.TaskCreation.CreateOrUpdate,
