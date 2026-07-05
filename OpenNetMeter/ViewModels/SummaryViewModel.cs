@@ -14,7 +14,6 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.Data.Sqlite;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
-using OpenNetMeter.Properties;
 using OpenNetMeter.Utilities;
 using SkiaSharp;
 
@@ -39,20 +38,16 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long sinceDateDbUploadBaseline;
     private long sinceDateSessionDownloadBaseline;
     private long sinceDateSessionUploadBaseline;
-
-    private int tickCount;
     private long currentSessionDownload;
     private long currentSessionUpload;
     private long totalFromDateDownload;
     private long totalFromDateUpload;
-    private double latestDownloadMbps;
-    private double latestUploadMbps;
     private DateTimeOffset? sinceDate;
     private long pendingDownloadBytes;
     private long pendingUploadBytes;
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
-    private readonly GraphAxisManager graphAxisManager = new();
+    private int tickCount;
 
     public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService, IExternalLinkService externalLinkService)
     {
@@ -102,7 +97,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             }
         ];
 
-        GraphYAxes = graphAxisManager.CreateYAxes();
+        GraphYAxes = CreateGraphYAxes();
 
         ActiveProcesses = [];
         SortProcessesCommand = new ParameterRelayCommand(parameter =>
@@ -140,8 +135,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public string CurrentSessionUploadText => ByteSizeFormatter.FormatBytes(currentSessionUpload);
     public string TotalFromDateDownloadText => ByteSizeFormatter.FormatBytes(totalFromDateDownload);
     public string TotalFromDateUploadText => ByteSizeFormatter.FormatBytes(totalFromDateUpload);
-    public string DownloadSpeedText => $"{FormatSpeed(latestDownloadBytesPerSecond)}ps";
-    public string UploadSpeedText => $"{FormatSpeed(latestUploadBytesPerSecond)}ps";
+    public string DownloadSpeedText => GraphValueHelper.FormatSpeed(latestDownloadBytesPerSecond) + "ps";
+    public string UploadSpeedText => GraphValueHelper.FormatSpeed(latestUploadBytesPerSecond) + "ps";
     public int ProcessCount => ActiveProcesses.Count;
     public DateTime DateMin { get; }
     public DateTime DateMax { get; }
@@ -178,8 +173,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             pendingByProcess.Clear();
         }
 
-        latestDownloadMbps = 0;
-        latestUploadMbps = 0;
         latestDownloadBytesPerSecond = 0;
         latestUploadBytesPerSecond = 0;
         currentSessionDownload = 0;
@@ -201,7 +194,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         ActiveProcesses.Clear();
         processIndex.Clear();
         OnPropertyChanged(nameof(ProcessCount));
-        graphAxisManager.UpdateScale(dlValues, ulValues, GraphYAxes);
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
@@ -260,8 +252,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             pendingByProcess.Clear();
         }
 
-        latestDownloadMbps = secondDownloadBytes * 8d / 1_000_000d;
-        latestUploadMbps = secondUploadBytes * 8d / 1_000_000d;
         latestDownloadBytesPerSecond = secondDownloadBytes;
         latestUploadBytesPerSecond = secondUploadBytes;
         currentSessionDownload += secondDownloadBytes;
@@ -393,26 +383,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         return candidate;
     }
 
-    private void AppendGraphPoint()
-    {
-        dlValues.Add(new ObservablePoint(tickCount, GraphValueHelper.MbpsToGraphValue(latestDownloadMbps)));
-        ulValues.Add(new ObservablePoint(tickCount, GraphValueHelper.MbpsToGraphValue(latestUploadMbps)));
-
-        while (dlValues.Count > WindowSize)
-            dlValues.RemoveAt(0);
-        while (ulValues.Count > WindowSize)
-            ulValues.RemoveAt(0);
-
-        if (tickCount >= WindowSize)
-        {
-            GraphXAxes[0].MinLimit = tickCount - WindowSize;
-            GraphXAxes[0].MaxLimit = tickCount;
-        }
-
-        graphAxisManager.UpdateScale(dlValues, ulValues, GraphYAxes);
-        tickCount++;
-    }
-
     private void ApplyProcessTick(Dictionary<string, PendingTraffic> pendingSnapshot)
     {
         var touched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -473,21 +443,45 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public void RefreshSpeedDisplayFormat()
     {
-        graphAxisManager.UpdateScale(dlValues, ulValues, GraphYAxes);
-        GraphYAxes = graphAxisManager.CreateYAxes();
+        GraphYAxes = CreateGraphYAxes();
         OnPropertyChanged(nameof(GraphYAxes));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
 
-    private static string FormatSpeed(long bytesPerSecond)
+    private Axis[] CreateGraphYAxes()
     {
-        var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
-        var magnitude = GraphValueHelper.NormalizeMagnitude(SettingsManager.Current.NetworkSpeedMagnitude);
-        var value = useBytes ? bytesPerSecond : bytesPerSecond * 8;
-        var (adjustedSize, mag) = GraphValueHelper.GetAdjustedSize(value, magnitude);
+        return
+        [
+            new Axis
+            {
+                MinLimit = 0,
+                ShowSeparatorLines = true,
+                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
+                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
+                TextSize = 10,
+                Labeler = value => GraphValueHelper.FormatSpeed((long)value) + "/s"
+            }
+        ];
+    }
 
-        return decimal.Round(adjustedSize, 2).ToString() + (useBytes ? GraphValueHelper.BytesSuffix(mag) : GraphValueHelper.BitsSuffix(mag));
+    private void AppendGraphPoint()
+    {
+        dlValues.Add(new ObservablePoint(tickCount, latestDownloadBytesPerSecond));
+        ulValues.Add(new ObservablePoint(tickCount, latestUploadBytesPerSecond));
+
+        while (dlValues.Count > WindowSize)
+            dlValues.RemoveAt(0);
+        while (ulValues.Count > WindowSize)
+            ulValues.RemoveAt(0);
+
+        if (tickCount >= WindowSize)
+        {
+            GraphXAxes[0].MinLimit = tickCount - WindowSize;
+            GraphXAxes[0].MaxLimit = tickCount;
+        }
+
+        tickCount++;
     }
 
     private void OnPropertyChanged(string propertyName)
