@@ -1,4 +1,10 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace OpenNetMeter.Utilities;
 
@@ -109,6 +115,85 @@ public static class GraphValueHelper
             6 => "Eb",
             _ => "b"
         };
+    }
+}
+
+public sealed class GraphAxisManager
+{
+    private int magnitude;
+
+    public GraphAxisManager()
+    {
+        magnitude = 0;
+    }
+
+    public Axis[] CreateYAxes()
+    {
+        return
+        [
+            new Axis
+            {
+                MinLimit = 0,
+                MaxLimit = 1,
+                ShowSeparatorLines = true,
+                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
+                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
+                TextSize = 10,
+                Labeler = FormatLabel
+            }
+        ];
+    }
+
+    public void UpdateScale(
+        ObservableCollection<ObservablePoint> dlValues,
+        ObservableCollection<ObservablePoint> ulValues,
+        Axis[] graphYAxes)
+    {
+        var useBytes = OpenNetMeter.Properties.SettingsManager.Current.NetworkSpeedFormat != 0;
+        long maxBytesPerSecond = 0;
+        double maxGraphValue = 0;
+
+        if (dlValues.Count > 0)
+        {
+            var maxDl = dlValues.Max(point => point.Y ?? 0d);
+            maxGraphValue = Math.Max(maxGraphValue, maxDl);
+            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueHelper.GraphValueToBytesPerSecond(maxDl));
+        }
+
+        if (ulValues.Count > 0)
+        {
+            var maxUl = ulValues.Max(point => point.Y ?? 0d);
+            maxGraphValue = Math.Max(maxGraphValue, maxUl);
+            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueHelper.GraphValueToBytesPerSecond(maxUl));
+        }
+
+        if (maxGraphValue > 0 && graphYAxes.Length > 0)
+        {
+            var niceMax = Math.Ceiling(maxGraphValue * 2) / 2;
+            if (niceMax < 1) niceMax = 1;
+            graphYAxes[0].MaxLimit = niceMax;
+        }
+
+        var axisMax = graphYAxes.Length > 0 ? (graphYAxes[0].MaxLimit ?? 1) : 1;
+        var axisMaxBytes = GraphValueHelper.GraphValueToBytesPerSecond(axisMax);
+        var displayValue = useBytes ? axisMaxBytes : axisMaxBytes * 8;
+        var (_, newMagnitude) = GraphValueHelper.GetAdjustedSize(displayValue, SpeedMagnitude.Auto);
+
+        if (magnitude == newMagnitude)
+            return;
+
+        magnitude = newMagnitude;
+    }
+
+    public string FormatLabel(double graphValue)
+    {
+        var bytesPerSecond = GraphValueHelper.GraphValueToBytesPerSecond(graphValue);
+        var useBytes = OpenNetMeter.Properties.SettingsManager.Current.NetworkSpeedFormat != 0;
+        var displayValue = useBytes ? bytesPerSecond : bytesPerSecond * 8;
+        var adjustedSize = GraphValueHelper.ScaleToMagnitude(displayValue, magnitude);
+        var suffix = useBytes ? GraphValueHelper.BytesSuffix(magnitude) : GraphValueHelper.BitsSuffix(magnitude);
+
+        return $"{GraphValueHelper.FormatGraphAxisValue(adjustedSize)} {suffix}/s";
     }
 }
 

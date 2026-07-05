@@ -52,7 +52,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long pendingUploadBytes;
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
-    private int graphAxisMagnitude;
+    private readonly GraphAxisManager graphAxisManager = new();
 
     public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService, IExternalLinkService externalLinkService)
     {
@@ -102,7 +102,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             }
         ];
 
-        GraphYAxes = CreateGraphYAxes();
+        GraphYAxes = graphAxisManager.CreateYAxes();
 
         ActiveProcesses = [];
         SortProcessesCommand = new ParameterRelayCommand(parameter =>
@@ -201,7 +201,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         ActiveProcesses.Clear();
         processIndex.Clear();
         OnPropertyChanged(nameof(ProcessCount));
-        UpdateGraphAxisLabelScale();
+        graphAxisManager.UpdateScale(dlValues, ulValues, GraphYAxes);
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
@@ -409,55 +409,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             GraphXAxes[0].MaxLimit = tickCount;
         }
 
-        UpdateGraphAxisLabelScale();
+        graphAxisManager.UpdateScale(dlValues, ulValues, GraphYAxes);
         tickCount++;
-    }
-
-    private Axis[] CreateGraphYAxes()
-    {
-        return
-        [
-            new Axis
-            {
-                MinLimit = 0,
-                ShowSeparatorLines = true,
-                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
-                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
-                TextSize = 10,
-                Labeler = FormatGraphAxisLabel
-            }
-        ];
-    }
-
-    private void UpdateGraphAxisLabelScale()
-    {
-        var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
-        long maxBytesPerSecond = 0;
-
-        if (dlValues.Count > 0)
-            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueHelper.GraphValueToBytesPerSecond(dlValues.Max(point => point.Y ?? 0d)));
-
-        if (ulValues.Count > 0)
-            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueHelper.GraphValueToBytesPerSecond(ulValues.Max(point => point.Y ?? 0d)));
-
-        var displayValue = useBytes ? maxBytesPerSecond : maxBytesPerSecond * 8;
-        var (_, magnitude) = GraphValueHelper.GetAdjustedSize(displayValue, SpeedMagnitude.Auto);
-
-        if (graphAxisMagnitude == magnitude)
-            return;
-
-        graphAxisMagnitude = magnitude;
-    }
-
-    private string FormatGraphAxisLabel(double graphValue)
-    {
-        var bytesPerSecond = GraphValueHelper.GraphValueToBytesPerSecond(graphValue);
-        var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
-        var displayValue = useBytes ? bytesPerSecond : bytesPerSecond * 8;
-        var adjustedSize = GraphValueHelper.ScaleToMagnitude(displayValue, graphAxisMagnitude);
-        var suffix = useBytes ? GraphValueHelper.BytesSuffix(graphAxisMagnitude) : GraphValueHelper.BitsSuffix(graphAxisMagnitude);
-
-        return $"{GraphValueHelper.FormatGraphAxisValue(adjustedSize)} {suffix}/s";
     }
 
     private void ApplyProcessTick(Dictionary<string, PendingTraffic> pendingSnapshot)
@@ -520,8 +473,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public void RefreshSpeedDisplayFormat()
     {
-        UpdateGraphAxisLabelScale();
-        GraphYAxes = CreateGraphYAxes();
+        graphAxisManager.UpdateScale(dlValues, ulValues, GraphYAxes);
+        GraphYAxes = graphAxisManager.CreateYAxes();
         OnPropertyChanged(nameof(GraphYAxes));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
