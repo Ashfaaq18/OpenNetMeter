@@ -22,8 +22,7 @@ namespace OpenNetMeter.ViewModels;
 
 public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 {
-    private const double GraphLogBase = 10d;
-    private const int MaxSpeedMagnitude = 6;
+    private const int WindowSize = 35;
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IProcessIconService processIconService;
     private readonly IExternalLinkService externalLinkService;
@@ -41,7 +40,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long sinceDateSessionDownloadBaseline;
     private long sinceDateSessionUploadBaseline;
 
-    private const int WindowSize = 35;
     private int tickCount;
     private long currentSessionDownload;
     private long currentSessionUpload;
@@ -397,8 +395,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     private void AppendGraphPoint()
     {
-        dlValues.Add(new ObservablePoint(tickCount, MbpsToGraphValue(latestDownloadMbps)));
-        ulValues.Add(new ObservablePoint(tickCount, MbpsToGraphValue(latestUploadMbps)));
+        dlValues.Add(new ObservablePoint(tickCount, GraphValueHelper.MbpsToGraphValue(latestDownloadMbps)));
+        ulValues.Add(new ObservablePoint(tickCount, GraphValueHelper.MbpsToGraphValue(latestUploadMbps)));
 
         while (dlValues.Count > WindowSize)
             dlValues.RemoveAt(0);
@@ -423,7 +421,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             {
                 MinLimit = 0,
                 ShowSeparatorLines = true,
-                // Match dark divider/text tones from MainWindow resources
                 SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
                 LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
                 TextSize = 10,
@@ -432,44 +429,19 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         ];
     }
 
-    private static double MbpsToGraphValue(double mbps)
-    {
-        if (mbps <= 0)
-            return 0;
-
-        // Plot the graph on a logarithmic curve while preserving zero traffic.
-        return Math.Log(mbps + 1, GraphLogBase);
-    }
-
-    private static double GraphValueToMbps(double graphValue)
-    {
-        if (graphValue <= 0)
-            return 0;
-
-        return Math.Pow(GraphLogBase, graphValue) - 1;
-    }
-
-    private static long GraphValueToBytesPerSecond(double graphValue)
-    {
-        if (graphValue <= 0)
-            return 0;
-
-        return (long)Math.Round(GraphValueToMbps(graphValue) * 1_000_000d / 8d);
-    }
-
     private void UpdateGraphAxisLabelScale()
     {
         var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
         long maxBytesPerSecond = 0;
 
         if (dlValues.Count > 0)
-            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueToBytesPerSecond(dlValues.Max(point => point.Y ?? 0d)));
+            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueHelper.GraphValueToBytesPerSecond(dlValues.Max(point => point.Y ?? 0d)));
 
         if (ulValues.Count > 0)
-            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueToBytesPerSecond(ulValues.Max(point => point.Y ?? 0d)));
+            maxBytesPerSecond = Math.Max(maxBytesPerSecond, GraphValueHelper.GraphValueToBytesPerSecond(ulValues.Max(point => point.Y ?? 0d)));
 
         var displayValue = useBytes ? maxBytesPerSecond : maxBytesPerSecond * 8;
-        var (_, magnitude) = GetAdjustedSize(displayValue, SpeedMagnitude.Auto);
+        var (_, magnitude) = GraphValueHelper.GetAdjustedSize(displayValue, SpeedMagnitude.Auto);
 
         if (graphAxisMagnitude == magnitude)
             return;
@@ -479,13 +451,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     private string FormatGraphAxisLabel(double graphValue)
     {
-        var bytesPerSecond = GraphValueToBytesPerSecond(graphValue);
+        var bytesPerSecond = GraphValueHelper.GraphValueToBytesPerSecond(graphValue);
         var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
         var displayValue = useBytes ? bytesPerSecond : bytesPerSecond * 8;
-        var adjustedSize = ScaleToMagnitude(displayValue, graphAxisMagnitude);
-        var suffix = useBytes ? BytesSuffix(graphAxisMagnitude) : BitsSuffix(graphAxisMagnitude);
+        var adjustedSize = GraphValueHelper.ScaleToMagnitude(displayValue, graphAxisMagnitude);
+        var suffix = useBytes ? GraphValueHelper.BytesSuffix(graphAxisMagnitude) : GraphValueHelper.BitsSuffix(graphAxisMagnitude);
 
-        return $"{FormatGraphAxisValue(adjustedSize)} {suffix}/s";
+        return $"{GraphValueHelper.FormatGraphAxisValue(adjustedSize)} {suffix}/s";
     }
 
     private void ApplyProcessTick(Dictionary<string, PendingTraffic> pendingSnapshot)
@@ -558,94 +530,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private static string FormatSpeed(long bytesPerSecond)
     {
         var useBytes = SettingsManager.Current.NetworkSpeedFormat != 0;
-        var magnitude = NormalizeMagnitude(SettingsManager.Current.NetworkSpeedMagnitude);
+        var magnitude = GraphValueHelper.NormalizeMagnitude(SettingsManager.Current.NetworkSpeedMagnitude);
         var value = useBytes ? bytesPerSecond : bytesPerSecond * 8;
-        var (adjustedSize, mag) = GetAdjustedSize(value, magnitude);
+        var (adjustedSize, mag) = GraphValueHelper.GetAdjustedSize(value, magnitude);
 
-        return decimal.Round(adjustedSize, 2).ToString() + (useBytes ? BytesSuffix(mag) : BitsSuffix(mag));
-    }
-
-    private static decimal ScaleToMagnitude(long value, int magnitude)
-    {
-        var clampedMagnitude = Math.Clamp(magnitude, 0, MaxSpeedMagnitude);
-        return (decimal)value / (1L << (clampedMagnitude * 10));
-    }
-
-    private static string FormatGraphAxisValue(decimal adjustedSize)
-    {
-        if (adjustedSize <= 0)
-            return "0";
-
-        var rounded = adjustedSize < 10
-            ? decimal.Round(adjustedSize, 1)
-            : decimal.Round(adjustedSize, 0);
-
-        return rounded == decimal.Truncate(rounded)
-            ? rounded.ToString("0")
-            : rounded.ToString("0.#");
-    }
-
-    private static SpeedMagnitude NormalizeMagnitude(int magnitude)
-    {
-        return Enum.IsDefined(typeof(SpeedMagnitude), magnitude)
-            ? (SpeedMagnitude)magnitude
-            : SpeedMagnitude.Auto;
-    }
-
-    private static (decimal adjustedSize, int mag) GetAdjustedSize(long value, SpeedMagnitude magnitude)
-    {
-        int mag;
-        decimal adjustedSize;
-
-        if (magnitude == SpeedMagnitude.Auto)
-        {
-            mag = value > 0 ? (int)Math.Log(value, 1024) : 0;
-            mag = Math.Clamp(mag, 0, 6);
-
-            adjustedSize = (decimal)value / (1L << (mag * 10));
-            if (Math.Round(adjustedSize, 1) >= 1000 && mag < 6)
-            {
-                mag += 1;
-                adjustedSize /= 1024;
-            }
-        }
-        else
-        {
-            mag = Math.Clamp((int)magnitude, 0, 6);
-            adjustedSize = (decimal)value / (1L << (mag * 10));
-        }
-
-        return (adjustedSize, mag);
-    }
-
-    private static string BytesSuffix(int value)
-    {
-        return value switch
-        {
-            0 => "B",
-            1 => "KB",
-            2 => "MB",
-            3 => "GB",
-            4 => "TB",
-            5 => "PB",
-            6 => "EB",
-            _ => "B"
-        };
-    }
-
-    private static string BitsSuffix(int value)
-    {
-        return value switch
-        {
-            0 => "b",
-            1 => "Kb",
-            2 => "Mb",
-            3 => "Gb",
-            4 => "Tb",
-            5 => "Pb",
-            6 => "Eb",
-            _ => "b"
-        };
+        return decimal.Round(adjustedSize, 2).ToString() + (useBytes ? GraphValueHelper.BytesSuffix(mag) : GraphValueHelper.BitsSuffix(mag));
     }
 
     private void OnPropertyChanged(string propertyName)
@@ -658,14 +547,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         public long DownloadBytes;
         public long UploadBytes;
     }
-}
-
-internal enum SpeedMagnitude
-{
-    Auto = 0,
-    Kilo = 1,
-    Mega = 2,
-    Giga = 3
 }
 
 public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
