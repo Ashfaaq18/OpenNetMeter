@@ -19,6 +19,9 @@
 
   <Window.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://OpenNetMeter/Views/Themes.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="BrushWidgetBorder" Color="#616161"/>
@@ -35,9 +38,6 @@
           <SolidColorBrush x:Key="BrushPinActive" Color="#261A3A5C"/>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
-
-      <SolidColorBrush x:Key="BrushDownloadBadge" Color="#367061"/>
-      <SolidColorBrush x:Key="BrushUploadBadge" Color="#D98868"/>
     </ResourceDictionary>
   </Window.Resources>
   <Window.Styles>
@@ -98,7 +98,7 @@
                   VerticalAlignment="Center">
         <Border Width="20"
                 Height="24"
-                Background="{DynamicResource BrushDownloadBadge}"
+                Background="{DynamicResource BrushDownload}"
                 CornerRadius="4"
                 VerticalAlignment="Center">
           <TextBlock Text="↓"
@@ -116,7 +116,7 @@
                       Spacing="3">
             <TextBlock Classes="totalLabel"
                        Text="Total:"
-                       Foreground="{DynamicResource BrushDownloadBadge}"/>
+                       Foreground="{DynamicResource BrushDownload}"/>
             <TextBlock Classes="totalValue"
                        Text="{Binding CurrentSessionDownloadText}"/>
           </StackPanel>
@@ -130,7 +130,7 @@
                   VerticalAlignment="Center">
         <Border Width="20"
                 Height="24"
-                Background="{DynamicResource BrushUploadBadge}"
+                Background="{DynamicResource BrushUpload}"
                 CornerRadius="4"
                 VerticalAlignment="Center">
           <TextBlock Text="↑"
@@ -148,7 +148,7 @@
                       Spacing="3">
             <TextBlock Classes="totalLabel"
                        Text="Total:"
-                       Foreground="{DynamicResource BrushUploadBadge}"/>
+                       Foreground="{DynamicResource BrushUpload}"/>
             <TextBlock Classes="totalValue"
                        Text="{Binding CurrentSessionUploadText}"/>
           </StackPanel>
