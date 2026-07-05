@@ -21,12 +21,9 @@ namespace OpenNetMeter.ViewModels;
 
 public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 {
-    private const int WindowSize = 35;
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IProcessIconService processIconService;
     private readonly IExternalLinkService externalLinkService;
-    private readonly ObservableCollection<ObservablePoint> dlValues = new();
-    private readonly ObservableCollection<ObservablePoint> ulValues = new();
     private readonly Dictionary<string, SummaryProcessRowViewModel> processIndex = new(StringComparer.OrdinalIgnoreCase);
     private readonly object pendingLock = new();
     private readonly Dictionary<string, PendingTraffic> pendingByProcess = new(StringComparer.OrdinalIgnoreCase);
@@ -47,57 +44,14 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long pendingUploadBytes;
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
-    private int tickCount;
+
+    private Graph graph;
 
     public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService, IExternalLinkService externalLinkService)
     {
         this.networkCaptureService = networkCaptureService;
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
-
-        // Match WPF dark theme accents:
-        // Download -> #367061, Upload -> #D98868
-        var dlColor = new SKColor(0x4A, 0xA9, 0x8C);
-        var ulColor = new SKColor(0xE1, 0x77, 0x17);
-
-        GraphSeries =
-        [
-            new LineSeries<ObservablePoint>
-            {
-                Values = dlValues,
-                Stroke = new SolidColorPaint(dlColor, 2),
-                GeometrySize = 0,
-                GeometryStroke = null,
-                GeometryFill = null,
-                Fill = new SolidColorPaint(dlColor.WithAlpha(0x33)),
-                LineSmoothness = 0.3,
-                Name = "Download"
-            },
-            new LineSeries<ObservablePoint>
-            {
-                Values = ulValues,
-                Stroke = new SolidColorPaint(ulColor, 2),
-                GeometrySize = 0,
-                GeometryStroke = null,
-                GeometryFill = null,
-                Fill = new SolidColorPaint(ulColor.WithAlpha(0x33)),
-                LineSmoothness = 0.3,
-                Name = "Upload"
-            }
-        ];
-
-        GraphXAxes =
-        [
-            new Axis
-            {
-                ShowSeparatorLines = false,
-                IsVisible = false,
-                MinLimit = 0,
-                MaxLimit = WindowSize
-            }
-        ];
-
-        GraphYAxes = CreateGraphYAxes();
 
         ActiveProcesses = [];
         SortProcessesCommand = new ParameterRelayCommand(parameter =>
@@ -108,6 +62,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
             SortProcesses(column);
         });
+
+        graph = new Graph();
 
         DateMax = DateTime.Today;
         DateMin = DateMax.AddDays(-ApplicationDB.DataStoragePeriodInDays);
@@ -121,12 +77,12 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         flushTimer.Tick += (_, _) => FlushPendingTraffic();
         flushTimer.Start();
     }
-
-    public ISeries[] GraphSeries { get; }
-    public Axis[] GraphXAxes { get; }
-    public Axis[] GraphYAxes { get; private set; }
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
+
+    public ISeries[] GraphSeries => graph.GraphSeries;
+    public Axis[] GraphXAxes => graph.GraphXAxes;
+    public Axis[] GraphYAxes => graph.GraphYAxes;
 
     public string? CurrentSortColumn => currentSortColumn;
     public bool IsSortDescending => sortDescending;
@@ -135,12 +91,21 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public string CurrentSessionUploadText => ByteSizeFormatter.FormatBytes(currentSessionUpload);
     public string TotalFromDateDownloadText => ByteSizeFormatter.FormatBytes(totalFromDateDownload);
     public string TotalFromDateUploadText => ByteSizeFormatter.FormatBytes(totalFromDateUpload);
-    public string DownloadSpeedText => GraphValueHelper.FormatSpeed(latestDownloadBytesPerSecond) + "ps";
-    public string UploadSpeedText => GraphValueHelper.FormatSpeed(latestUploadBytesPerSecond) + "ps";
+    public string DownloadSpeedText => FormatSpeed(latestDownloadBytesPerSecond) + "ps";
+    public string UploadSpeedText => FormatSpeed(latestUploadBytesPerSecond) + "ps";
     public int ProcessCount => ActiveProcesses.Count;
     public DateTime DateMin { get; }
     public DateTime DateMax { get; }
 
+    public static string FormatSpeed(long bytesPerSecond)
+    {
+        var useBytes = Properties.SettingsManager.Current.NetworkSpeedFormat != 0;
+        var magnitude = NetworkSpeed.NormalizeMagnitude(Properties.SettingsManager.Current.NetworkSpeedMagnitude);
+        var value = useBytes ? bytesPerSecond : bytesPerSecond * 8;
+        var (adjustedSize, mag) = NetworkSpeed.GetAdjustedSize(value, magnitude);
+        return decimal.Round(adjustedSize, 2).ToString() + (useBytes ? NetworkSpeed.BytesSuffix(mag) : NetworkSpeed.BitsSuffix(mag));
+    }
+    
     public DateTimeOffset? SinceDate
     {
         get => sinceDate;
@@ -185,11 +150,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         sinceDateSessionUploadBaseline = 0;
         activeAdapterName = string.Empty;
 
-        dlValues.Clear();
-        ulValues.Clear();
-        tickCount = 0;
-        GraphXAxes[0].MinLimit = 0;
-        GraphXAxes[0].MaxLimit = WindowSize;
+        graph.ClearOnDisconnect();
 
         ActiveProcesses.Clear();
         processIndex.Clear();
@@ -258,7 +219,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         currentSessionUpload += secondUploadBytes;
         UpdateTotalFromDateFromBaselines();
 
-        AppendGraphPoint();
+        graph.AppendGraphPoint(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
         ApplyProcessTick(pendingSnapshot);
 
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
@@ -443,46 +404,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public void RefreshSpeedDisplayFormat()
     {
-        GraphYAxes = CreateGraphYAxes();
-        OnPropertyChanged(nameof(GraphYAxes));
+        graph.RefreshSpeedDisplayFormat();
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
 
-    private Axis[] CreateGraphYAxes()
-    {
-        return
-        [
-            new Axis
-            {
-                MinLimit = 0,
-                ShowSeparatorLines = true,
-                SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
-                LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
-                TextSize = 10,
-                Labeler = value => GraphValueHelper.FormatSpeed((long)value) + "/s"
-            }
-        ];
-    }
-
-    private void AppendGraphPoint()
-    {
-        dlValues.Add(new ObservablePoint(tickCount, latestDownloadBytesPerSecond));
-        ulValues.Add(new ObservablePoint(tickCount, latestUploadBytesPerSecond));
-
-        while (dlValues.Count > WindowSize)
-            dlValues.RemoveAt(0);
-        while (ulValues.Count > WindowSize)
-            ulValues.RemoveAt(0);
-
-        if (tickCount >= WindowSize)
-        {
-            GraphXAxes[0].MinLimit = tickCount - WindowSize;
-            GraphXAxes[0].MaxLimit = tickCount;
-        }
-
-        tickCount++;
-    }
 
     private void OnPropertyChanged(string propertyName)
     {
