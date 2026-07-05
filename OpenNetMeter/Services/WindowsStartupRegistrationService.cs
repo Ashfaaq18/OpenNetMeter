@@ -34,7 +34,7 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
             if (rootFolder.SubFolders.Exists(TaskFolder))
             {
                 TaskScheduler.TaskFolder folder = rootFolder.SubFolders[TaskFolder];
-                for (int i = 0; i < folder.Tasks.Count; i++)
+                for (int i = folder.Tasks.Count - 1; i >= 0; i--)
                 {
                     folder.DeleteTask(folder.Tasks[i].Name);
                 }
@@ -68,7 +68,7 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
             if (rootFolder.SubFolders.Exists(TaskFolder))
             {
                 folder = rootFolder.SubFolders[TaskFolder];
-                for (int i = 0; i < folder.Tasks.Count; i++)
+                for (int i = folder.Tasks.Count - 1; i >= 0; i--)
                 {
                     folder.DeleteTask(folder.Tasks[i].Name);
                 }
