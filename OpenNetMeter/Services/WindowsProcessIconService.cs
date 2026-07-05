@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.Versioning;
-using Avalonia.Media.Imaging;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
 using AvaloniaBitmap = Avalonia.Media.Imaging.Bitmap;
@@ -55,9 +55,19 @@ public sealed class WindowsProcessIconService : IProcessIconService
                         ms.Position = 0;
                         return new AvaloniaBitmap(ms);
                     }
+                    catch (Win32Exception ex) when (ex.NativeErrorCode == 5 || ex.NativeErrorCode == unchecked((int)0x80004005))
+                    {
+                        // Access denied on protected processes (csrss, lsass, etc.) is expected
+                        continue;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Process exited between enumeration and access - race condition
+                        continue;
+                    }
                     catch (Exception ex)
                     {
-                        EventLogger.Error($"Failed to fetch icon for process '{processName}' from candidate instance", ex);
+                        EventLogger.Error($"Failed to fetch icon for process '{processName}'", ex);
                     }
                 }
             }
