@@ -8,14 +8,11 @@ using System.Windows.Input;
 using Avalonia.Threading;
 using Avalonia.Media;
 using LiveChartsCore;
-using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.Data.Sqlite;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
-using SkiaSharp;
 
 namespace OpenNetMeter.ViewModels;
 
