@@ -68,11 +68,13 @@ public sealed class Graph
         [
             new Axis
             {
+                Name = "Network Speed",
                 MinLimit = 0,
                 ShowSeparatorLines = true,
                 SeparatorsPaint = new SolidColorPaint(new SKColor(0x55, 0x55, 0x55)) { StrokeThickness = 1 },
                 LabelsPaint = new SolidColorPaint(new SKColor(0xA9, 0xAB, 0xAB)),
                 TextSize = 10,
+                NameTextSize = 12,
                 Labeler = value => OpenNetMeter.ViewModels.SummaryViewModel.FormatSpeed((long)value)
             }
         ];

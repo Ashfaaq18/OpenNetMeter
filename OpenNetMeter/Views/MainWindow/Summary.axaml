@@ -90,26 +90,6 @@
           </Border>
         </StackPanel>
       </Border>
-
-      <Border Grid.Row="4" Padding="10" CornerRadius="12,12,0,0" Background="{DynamicResource BrushSurfacePanel}"
-              BoxShadow="{DynamicResource ShadowStrong}" VerticalAlignment="Bottom">
-        <StackPanel>
-          <StackPanel Orientation="Horizontal">
-            <Border CornerRadius="6" Padding="4" Width="22" Height="22" Background="{DynamicResource BrushDownload}">
-              <PathIcon Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
-                        Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
-            </Border>
-            <TextBlock Text="Activity" FontSize="11" FontWeight="SemiBold"
-                       Foreground="{DynamicResource BrushTextHeader}" VerticalAlignment="Center" Margin="6,0,0,0"/>
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushDownload}" VerticalAlignment="Center"/>
-            <TextBlock Text="Download" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10" Margin="4,0,12,0" VerticalAlignment="Center"/>
-            <Ellipse Width="8" Height="8" Fill="{DynamicResource BrushUpload}" VerticalAlignment="Center"/>
-            <TextBlock Text="Upload" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10" Margin="4,0,0,0" VerticalAlignment="Center"/>
-          </StackPanel>
-        </StackPanel>
-      </Border>
     </Grid>
 
     <Border Grid.Row="0" Grid.Column="2" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}"
@@ -242,7 +222,7 @@
     </Border>
 
     <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-            Padding="10" CornerRadius="0,12,12,12" Background="{DynamicResource BrushSurfacePanel}"
+            Padding="10" CornerRadius="12" Background="{DynamicResource BrushSurfacePanel}"
             BoxShadow="{DynamicResource ShadowStrong}">
       <lvc:CartesianChart Series="{Binding GraphSeries}"
                           Background="{DynamicResource BrushGraphBackground}"
