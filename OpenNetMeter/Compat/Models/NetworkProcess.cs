@@ -669,13 +669,11 @@ namespace OpenNetMeter.Models
                 localIp = src.AddressFamily == AddressFamily.InterNetwork ? localIPv4 : localIPv6;
             }
 
-            // Cache address bytes to avoid repeated allocations
-            var srcBytes = src.GetAddressBytes();
-            var destBytes = dest.GetAddressBytes();
-
-            // Check if packet involves our local IP
-            bool isSrc = ByteArray.Compare(srcBytes, localIp);
-            bool isDest = ByteArray.Compare(destBytes, localIp);
+            // Compare source/destination against the local IP without allocating
+            // byte arrays for every packet. During sustained high-throughput
+            // copies this significantly reduces GC pressure.
+            bool isSrc = MatchesLocalIp(src, localIp);
+            bool isDest = MatchesLocalIp(dest, localIp);
 
             // XOR: exactly one should match (either we sent it or received it)
             // If both match (loopback) or neither match (other adapter), skip
@@ -765,6 +763,19 @@ namespace OpenNetMeter.Models
         }
 
         //---------- IP Classification ------------//
+
+        /// <summary>
+        /// Compares an IP address to the cached local IP bytes without allocating
+        /// a new byte array. Uses a stack-allocated span as temporary storage.
+        /// </summary>
+        private static bool MatchesLocalIp(IPAddress ip, byte[] localIpBytes)
+        {
+            Span<byte> temp = stackalloc byte[16];
+            if (!ip.TryWriteBytes(temp.Slice(0, localIpBytes.Length), out _))
+                return false;
+
+            return temp.Slice(0, localIpBytes.Length).SequenceEqual(localIpBytes.AsSpan());
+        }
 
         /// <summary>
         /// Determines if an IP address is in a private (non-routable) range.

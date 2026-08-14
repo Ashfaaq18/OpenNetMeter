@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -20,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\\OpenNetMeter.Old\\OpenNetMeter\\OpenNetMeter.Old.csproj" />
+    <ProjectReference Include="..\\OpenNetMeter\\OpenNetMeter.csproj" />
   </ItemGroup>
 
 </Project>
