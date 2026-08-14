@@ -1,13 +1,41 @@
-name: Build OpenNetMeter MSI and Push to Single Draft Release
+name: Build and Test / Draft MSI
 
 on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
+  test:
+    runs-on: windows-latest
+    name: Build and Test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release
+
   draft-msi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
     runs-on: windows-latest
 
     steps:
