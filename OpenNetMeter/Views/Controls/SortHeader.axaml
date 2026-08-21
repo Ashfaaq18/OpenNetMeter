@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctrl="using:OpenNetMeter.Views.Controls"
+             x:Class="OpenNetMeter.Views.Controls.SortHeader">
+  <StackPanel Orientation="Horizontal">
+    <TextBlock Text="{Binding Header, RelativeSource={RelativeSource AncestorType=UserControl}}"
+               Foreground="{DynamicResource BrushTextHeader}"
+               FontSize="10" FontWeight="SemiBold"
+               VerticalAlignment="Center" Margin="0,0,4,0"/>
+    <Button Command="{Binding SortCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            CommandParameter="{Binding SortKey, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            HorizontalAlignment="Left"
+            Background="{DynamicResource BrushHeaderRow}"
+            BorderBrush="{DynamicResource BrushBorderEmphasis}"
+            BorderThickness="1" CornerRadius="4" Padding="4,2">
+      <ctrl:SortIndicatorControl
+        ColumnName="{Binding SortKey, RelativeSource={RelativeSource AncestorType=UserControl}}"
+        CurrentSortColumn="{Binding CurrentSortColumn, RelativeSource={RelativeSource AncestorType=UserControl}}"
+        IsSortDescending="{Binding IsSortDescending, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+    </Button>
+  </StackPanel>
+</UserControl>
