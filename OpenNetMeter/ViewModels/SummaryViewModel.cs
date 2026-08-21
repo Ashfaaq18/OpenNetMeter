@@ -9,7 +9,6 @@ using Avalonia.Threading;
 using Avalonia.Media;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
-using Microsoft.Data.Sqlite;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
@@ -41,6 +40,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long pendingUploadBytes;
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
+    private int weeklyTrendTickCounter;
 
     private Graph graph;
 
@@ -61,6 +61,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         });
 
         graph = new Graph();
+        WeeklyTrend = new WeeklyUsageTrendViewModel();
 
         DateMax = DateTime.Today;
         DateMin = DateMax.AddDays(-ApplicationDB.DataStoragePeriodInDays);
@@ -76,6 +77,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     }
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
+    public WeeklyUsageTrendViewModel WeeklyTrend { get; }
 
     public ISeries[] GraphSeries => graph.GraphSeries;
     public Axis[] GraphXAxes => graph.GraphXAxes;
@@ -148,6 +150,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         activeAdapterName = string.Empty;
 
         graph.ClearOnDisconnect();
+        weeklyTrendTickCounter = 0;
+        WeeklyTrend.Reset();
 
         ActiveProcesses.Clear();
         processIndex.Clear();
@@ -168,6 +172,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         activeAdapterName = normalized;
         RefreshSinceDateBaseline();
+        RefreshWeeklyTrend();
     }
 
     private void OnTrafficObserved(object? sender, NetworkTrafficEventArgs e)
@@ -219,12 +224,26 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         graph.AppendGraphPoint(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
         ApplyProcessTick(pendingSnapshot);
 
+        // The capture service pushes to the DB every 5s, so re-reading the week this often
+        // keeps today's bar close to live without querying on every tick.
+        if (++weeklyTrendTickCounter >= WeeklyTrendRefreshTicks)
+            RefreshWeeklyTrend();
+
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
+    }
+
+    /// <summary>Flush ticks (one per second) between reloads of the weekly trend card.</summary>
+    private const int WeeklyTrendRefreshTicks = 15;
+
+    private void RefreshWeeklyTrend()
+    {
+        weeklyTrendTickCounter = 0;
+        WeeklyTrend.Refresh(activeAdapterName);
     }
 
     private void RefreshSinceDateBaseline()
@@ -270,7 +289,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            var dbPath = ResolveDatabasePath();
+            var dbPath = UsageDatabase.ResolveDatabasePath();
             if (!File.Exists(dbPath))
                 return (0, 0);
 
@@ -279,7 +298,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             if (toDate < fromDate)
                 (fromDate, toDate) = (toDate, fromDate);
 
-            using var connection = OpenReadOnlyConnection(dbPath);
+            using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
             connection.Open();
             using var command = connection.CreateCommand();
             command.CommandText =
@@ -290,8 +309,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
                 "WHERE a.Name = @AdapterName " +
                 "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate";
             command.Parameters.AddWithValue("@AdapterName", adapterName);
-            command.Parameters.AddWithValue("@StartDate", ToDateInt(fromDate));
-            command.Parameters.AddWithValue("@EndDate", ToDateInt(toDate));
+            command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(fromDate));
+            command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(toDate));
 
             using var reader = command.ExecuteReader();
             if (reader.Read())
@@ -307,28 +326,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         }
 
         return (0, 0);
-    }
-
-    private static SqliteConnection OpenReadOnlyConnection(string path)
-    {
-        var csb = new SqliteConnectionStringBuilder
-        {
-            DataSource = path,
-            Mode = SqliteOpenMode.ReadOnly
-        };
-        return new SqliteConnection(csb.ToString());
-    }
-
-    private static int ToDateInt(DateTime date)
-    {
-        return (date.Year * 10000) + (date.Month * 100) + date.Day;
-    }
-
-    private static string ResolveDatabasePath()
-    {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(localAppData, "OpenNetMeter");
-        return Path.Combine(appFolder, "OpenNetMeter.sqlite");
     }
 
     private DateTimeOffset NormalizeSinceDate(DateTimeOffset? value)

@@ -8,6 +8,16 @@
              x:Class="OpenNetMeter.Views.MainWindowTabs.SummaryView"
              x:DataType="vm:SummaryViewModel"
              mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="TextBlock.dayLabel">
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextFaint}"/>
+    </Style>
+    <Style Selector="TextBlock.dayLabel.today">
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="{DynamicResource BrushTextHeader}"/>
+    </Style>
+  </UserControl.Styles>
+
   <Grid Margin="12,8" RowDefinitions="*,110" ColumnDefinitions="180,12,*">
     <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,10,Auto,10,Auto">
       <Border Grid.Row="0" Padding="8" CornerRadius="12"
@@ -63,29 +73,69 @@
       <Border Grid.Row="4" Padding="8" CornerRadius="12"
               Background="{DynamicResource BrushSurfacePanel}" BoxShadow="{DynamicResource ShadowStrong}">
         <StackPanel Spacing="4">
-          <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+          <StackPanel Orientation="Horizontal">
             <Border CornerRadius="6" Padding="4" Width="18" Height="18"
-                    Background="{DynamicResource BrushUpload}">
-              <PathIcon Data="{DynamicResource IconDatabase}"
+                    Background="{DynamicResource BrushAccentPurple}">
+              <PathIcon Data="{DynamicResource IconChartLine}"
                         Foreground="{DynamicResource BrushWhite}" Width="12" Height="12"/>
             </Border>
-            <TextBlock Text="Usage From" FontSize="11" FontWeight="SemiBold"
+            <TextBlock Text="Weekly Trend" FontSize="11" FontWeight="SemiBold"
                        Foreground="{DynamicResource BrushTextHeader}"
                        VerticalAlignment="Center" Margin="6,0,0,0"/>
           </StackPanel>
 
-          <DatePicker MinWidth="0" Width="140" Height="30"
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                      Margin="0,0,0,6"
-                      SelectedDate="{Binding SinceDate, Mode=TwoWay}"/>
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding WeeklyTrend.TotalText}"
+                       Foreground="{DynamicResource BrushTextBody}"
+                       FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <Border Grid.Column="1" CornerRadius="4" Padding="4,1"
+                    Background="{DynamicResource BrushHeaderRow}"
+                    IsVisible="{Binding WeeklyTrend.HasComparison}"
+                    ToolTip.Tip="Compared with the previous 7 days">
+              <StackPanel Orientation="Horizontal" Spacing="3">
+                <PathIcon Width="8" Height="8" VerticalAlignment="Center"
+                          Foreground="{DynamicResource BrushTextSecondaryAlt}"
+                          Data="{DynamicResource IconTrendDown}"
+                          IsVisible="{Binding !WeeklyTrend.IsIncrease}"/>
+                <PathIcon Width="8" Height="8" VerticalAlignment="Center"
+                          Foreground="{DynamicResource BrushTextSecondaryAlt}"
+                          Data="{DynamicResource IconTrendUp}"
+                          IsVisible="{Binding WeeklyTrend.IsIncrease}"/>
+                <TextBlock Text="{Binding WeeklyTrend.DeltaText}" FontSize="10"
+                           Foreground="{DynamicResource BrushTextSecondaryAlt}"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </Border>
+          </Grid>
 
-          <ctrl:StatRow Header="DL" Value="{Binding TotalFromDateDownloadText}"
-                        BackgroundBrush="{DynamicResource BrushDownload}"
-                        IconData="{DynamicResource IconDownload}"
-                        Margin="0,0,0,4"/>
-          <ctrl:StatRow Header="UL" Value="{Binding TotalFromDateUploadText}"
-                        BackgroundBrush="{DynamicResource BrushUpload}"
-                        IconData="{DynamicResource IconUpload}"/>
+          <ItemsControl ItemsSource="{Binding WeeklyTrend.Days}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Rows="1"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:WeeklyUsageDayViewModel">
+                <Grid RowDefinitions="34,Auto" Margin="1,0" ToolTip.Tip="{Binding TooltipText}">
+                  <Border Grid.Row="0" CornerRadius="3"
+                          Background="{DynamicResource BrushHeaderRow}"/>
+                  <Border Grid.Row="0" CornerRadius="3" ClipToBounds="True"
+                          VerticalAlignment="Bottom" Height="{Binding TotalBarHeight}">
+                    <StackPanel>
+                      <Border Height="{Binding UploadBarHeight}"
+                              Background="{DynamicResource BrushUpload}"/>
+                      <Border Height="{Binding DownloadBarHeight}"
+                              Background="{DynamicResource BrushDownload}"/>
+                    </StackPanel>
+                  </Border>
+                  <TextBlock Grid.Row="1" Text="{Binding DayLabel}"
+                             Classes="dayLabel" Classes.today="{Binding IsToday}"
+                             FontSize="9" Margin="0,3,0,0"
+                             HorizontalAlignment="Center"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </StackPanel>
       </Border>
     </Grid>
