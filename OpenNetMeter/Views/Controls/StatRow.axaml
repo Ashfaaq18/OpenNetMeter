@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="OpenNetMeter.Views.Controls.StatRow"
+             TextBrush="{DynamicResource BrushWhite}"
+             IconBrush="{DynamicResource BrushWhite}">
+  <Border CornerRadius="6" Padding="8,4" Background="{Binding BackgroundBrush, RelativeSource={RelativeSource AncestorType=UserControl}}">
+    <Grid ColumnDefinitions="Auto,*">
+      <StackPanel Orientation="Horizontal">
+        <PathIcon Data="{Binding IconData, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                  Foreground="{Binding IconBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                  Width="12" Height="12"/>
+        <TextBlock Text="{Binding Header, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   Foreground="{Binding TextBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   FontSize="10" VerticalAlignment="Center" Margin="4,0,0,0"/>
+      </StackPanel>
+      <TextBlock Grid.Column="1"
+                 Text="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                 Foreground="{Binding TextBrush, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                 FontSize="11" FontWeight="SemiBold"
+                 HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Grid>
+  </Border>
+</UserControl>
