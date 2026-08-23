@@ -28,6 +28,7 @@
       <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#1A1215"/>
       <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#1A3A5C"/>
       <SolidColorBrush x:Key="BrushGraphBackground" Color="#252525"/>
+      <SolidColorBrush x:Key="BrushGraphGridLine" Color="#3A3A3A"/>
       <SolidColorBrush x:Key="BrushLink" Color="#5FA8FF"/>
       <SolidColorBrush x:Key="BrushShadowStrong" Color="#33000000"/>
       <SolidColorBrush x:Key="BrushShadowSoft" Color="#20000000"/>
@@ -67,6 +68,7 @@
       <SolidColorBrush x:Key="BrushDangerBgSoft" Color="#FCEDED"/>
       <SolidColorBrush x:Key="BrushPillCheckedBg" Color="#F0FDFA"/>
       <SolidColorBrush x:Key="BrushGraphBackground" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="BrushGraphGridLine" Color="#E5E7EB"/>
       <SolidColorBrush x:Key="BrushLink" Color="#4287F5"/>
       <SolidColorBrush x:Key="BrushShadowStrong" Color="#1ADDDDDD"/>
       <SolidColorBrush x:Key="BrushShadowSoft" Color="#14000000"/>
