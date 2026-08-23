@@ -3,8 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:OpenNetMeter.ViewModels"
-             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:ctrl="using:OpenNetMeter.Views.Controls"
+             xmlns:chart="using:OpenNetMeter.Views.Controls.Charting"
              x:Class="OpenNetMeter.Views.MainWindowTabs.SummaryView"
              x:DataType="vm:SummaryViewModel"
              mc:Ignorable="d">
@@ -227,16 +227,17 @@
     </Border>
 
     <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-            Padding="10" CornerRadius="12"
+            Padding="4" CornerRadius="12"
             Background="{DynamicResource BrushSurfacePanel}"
             BoxShadow="{DynamicResource ShadowStrong}">
-      <lvc:CartesianChart Series="{Binding GraphSeries}"
-                          Background="{DynamicResource BrushGraphBackground}"
-                          XAxes="{Binding GraphXAxes}"
-                          YAxes="{Binding GraphYAxes}"
-                          ZoomMode="None"
-                          TooltipPosition="Hidden"
-                          AnimationsSpeed="00:00:00.150"/>
+      <chart:SpeedChart History="{Binding SpeedHistory}"
+                        AxisName="Network Speed"
+                        Background="{DynamicResource BrushGraphBackground}"
+                        CornerRadius="6"
+                        DownloadBrush="{DynamicResource BrushDownload}"
+                        UploadBrush="{DynamicResource BrushUpload}"
+                        GridLineBrush="{DynamicResource BrushGraphGridLine}"
+                        LabelBrush="{DynamicResource BrushTextMuted}"/>
     </Border>
   </Grid>
 </UserControl>

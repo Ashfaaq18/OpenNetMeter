@@ -7,11 +7,10 @@ using System.Linq;
 using System.Windows.Input;
 using Avalonia.Threading;
 using Avalonia.Media;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
+using OpenNetMeter.Views.Controls.Charting;
 
 namespace OpenNetMeter.ViewModels;
 
@@ -42,7 +41,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long latestUploadBytesPerSecond;
     private int weeklyTrendTickCounter;
 
-    private Graph graph;
+    private readonly SpeedHistory speedHistory = new();
 
     public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService, IExternalLinkService externalLinkService)
     {
@@ -60,7 +59,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             SortProcesses(column);
         });
 
-        graph = new Graph();
         WeeklyTrend = new WeeklyUsageTrendViewModel();
 
         DateMax = DateTime.Today;
@@ -79,9 +77,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public ICommand SortProcessesCommand { get; }
     public WeeklyUsageTrendViewModel WeeklyTrend { get; }
 
-    public ISeries[] GraphSeries => graph.GraphSeries;
-    public Axis[] GraphXAxes => graph.GraphXAxes;
-    public Axis[] GraphYAxes => graph.GraphYAxes;
+    public SpeedHistory SpeedHistory => speedHistory;
 
     public string? CurrentSortColumn => currentSortColumn;
     public bool IsSortDescending => sortDescending;
@@ -149,7 +145,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         sinceDateSessionUploadBaseline = 0;
         activeAdapterName = string.Empty;
 
-        graph.ClearOnDisconnect();
+        speedHistory.Clear();
         weeklyTrendTickCounter = 0;
         WeeklyTrend.Reset();
 
@@ -221,7 +217,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         currentSessionUpload += secondUploadBytes;
         UpdateTotalFromDateFromBaselines();
 
-        graph.AppendGraphPoint(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
+        speedHistory.Append(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
         ApplyProcessTick(pendingSnapshot);
 
         // The capture service pushes to the DB every 5s, so re-reading the week this often
@@ -398,7 +394,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public void RefreshSpeedDisplayFormat()
     {
-        graph.RefreshSpeedDisplayFormat();
+        speedHistory.NotifyDisplayFormatChanged();
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
