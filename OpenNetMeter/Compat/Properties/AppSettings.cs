@@ -15,7 +15,7 @@ public class AppSettings
     public int MiniWidgetPosX { get; set; }
     public int MiniWidgetPosY { get; set; }
     public bool MiniWidgetPositionInitialized { get; set; }
-    public int MiniWidgetTransparentSlider { get; set; } = 20;
+    public int MiniWidgetTransparentSlider { get; set; } = 0;
 
     public int NetworkType { get; set; } = 2;
     public int NetworkSpeedFormat { get; set; } = 0;
