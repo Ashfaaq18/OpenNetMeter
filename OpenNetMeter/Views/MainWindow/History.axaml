@@ -15,10 +15,10 @@
                   ItemsSource="{Binding Profiles}"
                   SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"/>
         <TextBlock VerticalAlignment="Center" Text="From"/>
-        <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+        <DatePicker MinWidth="0" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                     SelectedDate="{Binding DateStart, Mode=TwoWay}"/>
         <TextBlock VerticalAlignment="Center" Text="To"/>
-        <DatePicker MinWidth="0" Width="140" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+        <DatePicker MinWidth="0" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                     SelectedDate="{Binding DateEnd, Mode=TwoWay}"/>
         <Button Width="64" Height="24" Padding="0" Command="{Binding FilterCommand}">
           <TextBlock Text="Filter" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -73,7 +73,7 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Grid ColumnDefinitions="3*,1.5*,1.5*" Margin="10,4">
-                  <StackPanel Orientation="Horizontal" Spacing="4" MinWidth="0">
+                  <Grid ColumnDefinitions="Auto,Auto,*" MinWidth="0">
                     <Button Command="{Binding SearchProcessCommand}"
                             Background="Transparent" BorderThickness="0"
                             Padding="2" Cursor="Hand"
@@ -82,10 +82,10 @@
                               Width="12" Height="12"
                               Foreground="{DynamicResource BrushTextSecondary}"/>
                     </Button>
-                    <Image Source="{Binding Icon}" Width="16" Height="16"/>
-                    <TextBlock Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"
-                               TextWrapping="Wrap" MinWidth="0" VerticalAlignment="Center"/>
-                  </StackPanel>
+                    <Image Grid.Column="1" Source="{Binding Icon}" Width="16" Height="16" Margin="4,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="{Binding ProcessName}" Foreground="{DynamicResource BrushTextBody}" FontSize="11"
+                               TextWrapping="Wrap" MinWidth="0" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                  </Grid>
                   <TextBlock Grid.Column="1" Text="{Binding DownloadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
                   <TextBlock Grid.Column="2" Text="{Binding UploadText}" Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
                 </Grid>

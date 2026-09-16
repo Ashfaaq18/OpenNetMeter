@@ -252,10 +252,7 @@
     <Style Selector="ComboBox">
       <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
     </Style>
-    <Style Selector="DatePicker">
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
-      <Setter Property="Padding" Value="2" />
-    </Style>
+    <StyleInclude Source="avares://OpenNetMeter/Views/Styles/DatePickerStyles.axaml"/>
 
     <Style Selector="Button.tab">
       <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
@@ -313,14 +310,6 @@
     <Style Selector="Button.linkBtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>
       <Setter Property="Opacity" Value="0.85"/>
-    </Style>
-    <Style Selector="DatePickerPresenter">
-      <Setter Property="MinWidth" Value="0" />
-      <Setter Property="Width" Value="140" />
-    </Style>
-    <Style Selector="DatePickerPresenter /template/ DateTimePickerPanel > ListBoxItem">
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
-      <Setter Property="Padding" Value="2,0" />
     </Style>
 
     <Style Selector="RadioButton.pill">

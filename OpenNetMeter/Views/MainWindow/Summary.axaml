@@ -57,7 +57,7 @@
                        VerticalAlignment="Center" Margin="6,0,0,0"/>
           </StackPanel>
 
-          <DatePicker MinWidth="0" Width="140" Height="30"
+          <DatePicker MinWidth="0" Height="30"
                       HorizontalAlignment="Stretch" VerticalAlignment="Center"
                       SelectedDate="{Binding SinceDate, Mode=TwoWay}"/>
 
@@ -194,7 +194,7 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,4">
-                    <StackPanel Orientation="Horizontal" Spacing="4" MinWidth="0">
+                    <Grid ColumnDefinitions="Auto,Auto,*" MinWidth="0">
                       <Button Command="{Binding SearchProcessCommand}"
                               Background="Transparent" BorderThickness="0"
                               Padding="2" Cursor="Hand"
@@ -203,12 +203,12 @@
                                   Width="12" Height="12"
                                   Foreground="{DynamicResource BrushTextSecondary}"/>
                       </Button>
-                      <Image Source="{Binding Icon}" Width="16" Height="16"/>
-                      <TextBlock Text="{Binding ProcessName}"
+                      <Image Grid.Column="1" Source="{Binding Icon}" Width="16" Height="16" Margin="4,0,0,0"/>
+                      <TextBlock Grid.Column="2" Text="{Binding ProcessName}"
                                  Foreground="{DynamicResource BrushTextBody}"
                                  FontSize="11" TextWrapping="Wrap"
-                                 MinWidth="0" VerticalAlignment="Center"/>
-                    </StackPanel>
+                                 MinWidth="0" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    </Grid>
                     <TextBlock Grid.Column="1" Text="{Binding CurrentDownload}"
                                Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Top"/>
                     <TextBlock Grid.Column="2" Text="{Binding CurrentUpload}"

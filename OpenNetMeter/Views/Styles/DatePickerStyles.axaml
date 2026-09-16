@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Collapsed date box (the button showing day/month/year) -->
+  <Style Selector="DatePicker">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+    <Setter Property="MonthFormat" Value="MMM" />
+  </Style>
+  <Style Selector="DatePicker /template/ TextBlock#PART_DayTextBlock">
+    <Setter Property="Width" Value="20" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+  <Style Selector="DatePicker /template/ TextBlock#PART_MonthTextBlock">
+    <Setter Property="Width" Value="40" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+  <Style Selector="DatePicker /template/ TextBlock#PART_YearTextBlock">
+    <Setter Property="Width" Value="40" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+
+  <!-- Flyout popup (day/month/year spinner lists) -->
+  <Style Selector="DatePickerPresenter">
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Width" Value="140" />
+  </Style>
+  <Style Selector="DatePickerPresenter /template/ DateTimePickerPanel > ListBoxItem">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+    <Setter Property="Padding" Value="2,0" />
+  </Style>
+
+</Styles>
