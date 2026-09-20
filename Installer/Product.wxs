@@ -1,7 +1,6 @@
 <!-- Import global variables -->
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-	 xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx"
 	 xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 	<Package Language="1033"
 		 Name="$(ProductName)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)"
@@ -57,12 +56,6 @@
 
 		<MediaTemplate EmbedCab="yes"/>
 
-		<netfx:DotNetCompatibilityCheck Id="netCoreStatus64"
-		Property="NETCORESTATUS" RollForward="latestMajor"
-		RuntimeType="core" Version="8.0.1" Platform="x64" />
-			<Launch Condition="Installed OR NETCORESTATUS=&quot;0&quot;"
-				Message="[ProductName] requires Microsoft .NET 8.0 Runtime." />
-		
 		<!-- UI stuff-->
 		<UIRef Id="WixUIFeatureTree" />
 
