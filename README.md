@@ -22,6 +22,8 @@ This program provides the following features,
 2. This application requires admin privileges.
 3. Optional : To add this as a startup program, go to the settings tab and tick the checkbox.
 
+> no more .zip format and a separate .net runtime installation required :)
+
 ## Uninstallation
 
 1. simply uninstall from the control panel.
