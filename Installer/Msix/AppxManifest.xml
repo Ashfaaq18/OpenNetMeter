@@ -20,9 +20,9 @@
   <Capabilities>
     <rescap:Capability Name="allowElevation" /><rescap:Capability Name="runFullTrust" />
   </Capabilities>
-<Applications><Application Id="OPENNETMETER" Executable="VFS\ProgramFilesX86\OpenNetMeter\OpenNetMeter.exe" EntryPoint="Windows.FullTrustApplication"><uap:VisualElements BackgroundColor="transparent" DisplayName="OpenNetMeter" Square150x150Logo="Assets\OPENNETMETER-Square150x150Logo.png" Square44x44Logo="Assets\OPENNETMETER-Square44x44Logo.png" Description="OpenNetMeter"><uap:DefaultTile Wide310x150Logo="Assets\OPENNETMETER-Wide310x150Logo.png" Square310x310Logo="Assets\OPENNETMETER-Square310x310Logo.png" Square71x71Logo="Assets\OPENNETMETER-Square71x71Logo.png" /></uap:VisualElements><Extensions><desktop7:Extension Category="windows.shortcut"><desktop7:Shortcut File="[{Desktop}]\OpenNetMeter.lnk" Icon="[{Package}]\VFS\ProgramFilesX86\OpenNetMeter\OpenNetMeter.exe" /></desktop7:Extension>
+<Applications><Application Id="OPENNETMETER" Executable="VFS\ProgramFilesX64\OpenNetMeter\OpenNetMeter.exe" EntryPoint="Windows.FullTrustApplication"><uap:VisualElements BackgroundColor="transparent" DisplayName="OpenNetMeter" Square150x150Logo="Assets\OPENNETMETER-Square150x150Logo.png" Square44x44Logo="Assets\OPENNETMETER-Square44x44Logo.png" Description="OpenNetMeter"><uap:DefaultTile Wide310x150Logo="Assets\OPENNETMETER-Wide310x150Logo.png" Square310x310Logo="Assets\OPENNETMETER-Square310x310Logo.png" Square71x71Logo="Assets\OPENNETMETER-Square71x71Logo.png" /></uap:VisualElements><Extensions><desktop7:Extension Category="windows.shortcut"><desktop7:Shortcut File="[{Desktop}]\OpenNetMeter.lnk" Icon="[{Package}]\VFS\ProgramFilesX64\OpenNetMeter\OpenNetMeter.exe" /></desktop7:Extension>
   <!-- Stable launch path with package identity, used by the Start-with-Windows task. Alias must match ExecutionAlias in WindowsStartupRegistrationService. -->
-  <uap3:Extension Category="windows.appExecutionAlias" Executable="VFS\ProgramFilesX86\OpenNetMeter\OpenNetMeter.exe" EntryPoint="Windows.FullTrustApplication">
+  <uap3:Extension Category="windows.appExecutionAlias" Executable="VFS\ProgramFilesX64\OpenNetMeter\OpenNetMeter.exe" EntryPoint="Windows.FullTrustApplication">
     <uap3:AppExecutionAlias>
       <desktop:ExecutionAlias Alias="OpenNetMeter.exe" />
     </uap3:AppExecutionAlias>
