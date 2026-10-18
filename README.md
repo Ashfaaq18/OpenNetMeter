@@ -11,7 +11,7 @@ This program provides the following features,
 - network speed.
 - current connection's session data usage.
 - Data usage for today.
-- retrieve data usage up to the past 60 days and anywhere in between in detailed format.
+- retrieve detailed data usage for any date range within your chosen history retention (60 days by default, up to forever), and export it as CSV or JSON.
 - A mini widget to show the network speed (can be placed over the taskbar). 
 
 ## Installation

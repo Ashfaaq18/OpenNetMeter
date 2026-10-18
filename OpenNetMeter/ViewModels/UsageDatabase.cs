@@ -17,6 +17,30 @@ internal static class UsageDatabase
         return Path.Combine(appFolder, "OpenNetMeter.sqlite");
     }
 
+    /// <summary>
+    /// Size on disk of the database including its write-ahead log, or 0 if it doesn't exist yet.
+    /// </summary>
+    public static long GetDatabaseSizeBytes()
+    {
+        long total = 0;
+        string path = ResolveDatabasePath();
+        foreach (var file in new[] { path, path + "-wal" })
+        {
+            try
+            {
+                var info = new FileInfo(file);
+                if (info.Exists)
+                    total += info.Length;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Size is informational only.
+            }
+        }
+
+        return total;
+    }
+
     public static SqliteConnection OpenReadOnlyConnection(string path)
     {
         var csb = new SqliteConnectionStringBuilder

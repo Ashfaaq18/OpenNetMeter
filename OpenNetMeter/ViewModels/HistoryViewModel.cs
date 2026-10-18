@@ -3,11 +3,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Media;
 using Microsoft.Data.Sqlite;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
+using OpenNetMeter.Services;
 using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.ViewModels;
@@ -17,6 +19,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private readonly string dbPath;
     private readonly IProcessIconService processIconService;
     private readonly IExternalLinkService externalLinkService;
+    private readonly IFileSaveDialogService fileSaveDialogService;
+    private readonly RelayCommand exportCommand;
     private string? selectedProfile;
     private DateTimeOffset? dateStart;
     private DateTimeOffset? dateEnd;
@@ -24,21 +28,25 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private long totalUpload;
     private string? currentSortColumn;
     private bool sortDescending;
+    private bool isExporting;
 
     public HistoryViewModel()
-        : this(new NoOpProcessIconService(), new NoOpExternalLinkService())
+        : this(new NoOpProcessIconService(), new NoOpExternalLinkService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
     {
     }
 
-    public HistoryViewModel(IProcessIconService processIconService, IExternalLinkService externalLinkService)
+    public HistoryViewModel(IProcessIconService processIconService, IExternalLinkService externalLinkService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
     {
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
-        dbPath = ResolveDatabasePath();
+        this.fileSaveDialogService = fileSaveDialogService;
+        ExportStatus = new ExportStatusViewModel(fileRevealService);
+        dbPath = UsageDatabase.ResolveDatabasePath();
 
         Profiles = [];
         Rows = [];
         FilterCommand = new RelayCommand(ApplyFilter);
+        exportCommand = new RelayCommand(async () => await ExportAsync(), () => !string.IsNullOrWhiteSpace(SelectedProfile) && !isExporting);
         SortRowsCommand = new ParameterRelayCommand(parameter =>
         {
             var column = parameter?.ToString();
@@ -70,6 +78,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
                 return;
             selectedProfile = value;
             OnPropertyChanged(nameof(SelectedProfile));
+            ExportStatus.Clear();
+            exportCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -131,10 +141,22 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     public string TotalDownloadText => ByteSizeFormatter.FormatBytes(TotalDownload);
     public string TotalUploadText => ByteSizeFormatter.FormatBytes(TotalUpload);
 
+    public ExportStatusViewModel ExportStatus { get; }
+
     public ICommand FilterCommand { get; }
     public ICommand SortRowsCommand { get; }
+    public ICommand ExportCommand => exportCommand;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>
+    /// Re-reads profiles and the current filter, e.g. after old history was purged.
+    /// </summary>
+    public void Refresh()
+    {
+        ReloadProfiles();
+        ApplyFilter();
+    }
 
     public void ReloadProfiles()
     {
@@ -156,6 +178,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         try
         {
             ApplicationDB.CloseSharedConnection();
+            // Pooled read-only connections (History, Summary, export) would otherwise keep the file open.
+            SqliteConnection.ClearAllPools();
             DeleteIfExists(dbPath);
             DeleteIfExists($"{dbPath}-wal");
             DeleteIfExists($"{dbPath}-shm");
@@ -180,7 +204,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         if (!File.Exists(dbPath))
             return;
 
-        using var connection = OpenReadOnlyConnection(dbPath);
+        using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
         connection.Open();
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT Name FROM Adapter ORDER BY Name";
@@ -201,12 +225,9 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         if (string.IsNullOrWhiteSpace(SelectedProfile) || !File.Exists(dbPath))
             return;
 
-        var start = (DateStart ?? DateTimeOffset.Now.Date).Date;
-        var end = (DateEnd ?? DateTimeOffset.Now.Date).Date;
-        if (end < start)
-            (start, end) = (end, start);
+        var (start, end) = GetSelectedRange();
 
-        using var connection = OpenReadOnlyConnection(dbPath);
+        using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
         connection.Open();
 
         using var command = connection.CreateCommand();
@@ -221,8 +242,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             "GROUP BY p.ID, p.Name " +
             "ORDER BY p.Name";
         command.Parameters.AddWithValue("@AdapterName", SelectedProfile);
-        command.Parameters.AddWithValue("@StartDate", ToDateInt(start));
-        command.Parameters.AddWithValue("@EndDate", ToDateInt(end));
+        command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(start));
+        command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(end));
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -264,26 +285,52 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             Rows.Add(row);
     }
 
-    private static SqliteConnection OpenReadOnlyConnection(string path)
+    private (DateTime Start, DateTime End) GetSelectedRange()
     {
-        var csb = new SqliteConnectionStringBuilder
+        var start = (DateStart ?? DateTimeOffset.Now.Date).Date;
+        var end = (DateEnd ?? DateTimeOffset.Now.Date).Date;
+        return end < start ? (end, start) : (start, end);
+    }
+
+    private async Task ExportAsync()
+    {
+        var profile = SelectedProfile;
+        if (string.IsNullOrWhiteSpace(profile) || isExporting)
+            return;
+
+        isExporting = true;
+        ExportStatus.Clear();
+        exportCommand.RaiseCanExecuteChanged();
+        try
         {
-            DataSource = path,
-            Mode = SqliteOpenMode.ReadOnly
-        };
-        return new SqliteConnection(csb.ToString());
+            var (start, end) = GetSelectedRange();
+            string? path = await fileSaveDialogService.PickSavePathAsync(
+                "Export usage history",
+                SanitizeFileName($"OpenNetMeter-{profile}-{start:yyyyMMdd}-{end:yyyyMMdd}"),
+                UsageExporter.FileTypes);
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            ExportStatus.ShowProgress();
+            int count = await UsageExporter.ExportAsync(dbPath, path, profile, start, end);
+            ExportStatus.ShowSuccess(count, path);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Error exporting usage history", ex);
+            ExportStatus.ShowError();
+        }
+        finally
+        {
+            isExporting = false;
+            exportCommand.RaiseCanExecuteChanged();
+        }
     }
 
-    private static int ToDateInt(DateTime date)
+    private static string SanitizeFileName(string fileName)
     {
-        return (date.Year * 10000) + (date.Month * 100) + date.Day;
-    }
-
-    private static string ResolveDatabasePath()
-    {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(localAppData, "OpenNetMeter");
-        return Path.Combine(appFolder, "OpenNetMeter.sqlite");
+        var invalid = Path.GetInvalidFileNameChars();
+        return new string(fileName.Select(c => invalid.Contains(c) ? '_' : c).ToArray());
     }
 
     private static void DeleteIfExists(string path)

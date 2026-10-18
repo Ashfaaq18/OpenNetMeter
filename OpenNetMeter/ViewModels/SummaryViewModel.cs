@@ -62,7 +62,6 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         WeeklyTrend = new WeeklyUsageTrendViewModel();
 
         DateMax = DateTime.Today;
-        DateMin = DateMax.AddDays(-ApplicationDB.DataStoragePeriodInDays);
         sinceDate = DateMax;
         this.networkCaptureService.TrafficObserved += OnTrafficObserved;
 
@@ -89,7 +88,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public string DownloadSpeedText => FormatSpeed(latestDownloadBytesPerSecond) + "ps";
     public string UploadSpeedText => FormatSpeed(latestUploadBytesPerSecond) + "ps";
     public int ProcessCount => ActiveProcesses.Count;
-    public DateTime DateMin { get; }
+    public DateTime DateMin =>
+        HistoryRetention.GetCutoff(DateMax, Properties.SettingsManager.Current.HistoryRetentionDays) ?? DateTime.MinValue;
     public DateTime DateMax { get; }
 
     public static string FormatSpeed(long bytesPerSecond)
@@ -158,6 +158,22 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(TotalFromDateUploadText));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
+    }
+
+    /// <summary>
+    /// Re-reads DB-backed totals after old history was purged, clamping the "since" date to the new retention.
+    /// </summary>
+    public void RefreshAfterHistoryPurge()
+    {
+        var normalized = NormalizeSinceDate(sinceDate);
+        if (sinceDate != normalized)
+        {
+            sinceDate = normalized;
+            OnPropertyChanged(nameof(SinceDate));
+        }
+
+        RefreshSinceDateBaseline();
+        RefreshWeeklyTrend();
     }
 
     public void SetActiveAdapter(string adapterName)
