@@ -13,12 +13,47 @@ internal sealed class ApplicationDB : IDisposable
     private static int refCount;
 
     private readonly string adapterName;
+    private readonly SqliteConnection? countedConnection;
     private bool disposed;
 
     private static string LogTime() => DateTime.Now.ToString("HH:mm:ss.fff");
 
     public const string UnifiedDBFileName = "OpenNetMeter";
-    public const int DataStoragePeriodInDays = 60;
+
+    private const string CreateAdapterTableSql =
+        "CREATE TABLE IF NOT EXISTS Adapter(" +
+        "ID INTEGER PRIMARY KEY NOT NULL, " +
+        "Name TEXT NOT NULL UNIQUE)";
+
+    private const string CreateProcessTableSql =
+        "CREATE TABLE IF NOT EXISTS Process(" +
+        "ID INTEGER PRIMARY KEY NOT NULL, " +
+        "Name TEXT NOT NULL UNIQUE)";
+
+    private const string CreateDateTableSql =
+        "CREATE TABLE IF NOT EXISTS Date(" +
+        "ID INTEGER PRIMARY KEY NOT NULL, " +
+        "Year INTEGER NOT NULL, " +
+        "Month INTEGER NOT NULL, " +
+        "Day INTEGER NOT NULL, " +
+        "UNIQUE (Year, Month, Day) ON CONFLICT IGNORE)";
+
+    private const string CreateProcessDateTableSql =
+        "CREATE TABLE IF NOT EXISTS ProcessDate(" +
+        "ID INTEGER PRIMARY KEY NOT NULL, " +
+        "ProcessID INTEGER NOT NULL, " +
+        "DateID INTEGER NOT NULL, " +
+        "AdapterID INTEGER NOT NULL, " +
+        "DataReceived INTEGER NOT NULL, " +
+        "DataSent INTEGER NOT NULL, " +
+        "FOREIGN KEY(ProcessID) REFERENCES Process(ID) ON DELETE CASCADE, " +
+        "FOREIGN KEY(DateID) REFERENCES Date(ID) ON DELETE CASCADE, " +
+        "FOREIGN KEY(AdapterID) REFERENCES Adapter(ID) ON DELETE CASCADE, " +
+        "UNIQUE (ProcessID, DateID, AdapterID) ON CONFLICT IGNORE)";
+
+    // Without this, each Date row deleted by the retention purge cascades via a full ProcessDate scan.
+    private const string CreateProcessDateDateIndexSql =
+        "CREATE INDEX IF NOT EXISTS IX_ProcessDate_DateID ON ProcessDate(DateID)";
 
     public ApplicationDB(string dBFileName)
     {
@@ -47,6 +82,7 @@ internal sealed class ApplicationDB : IDisposable
             }
 
             refCount++;
+            countedConnection = sharedConnection;
         }
 
         Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] ApplicationDB created adapter='{dBFileName}'");
@@ -75,7 +111,8 @@ internal sealed class ApplicationDB : IDisposable
             return CreateAdapterTable() >> 31 |
                    CreateProcessTable() >> 31 |
                    CreateDateTable() >> 31 |
-                   CreateProcessDateTable() >> 31;
+                   CreateProcessDateTable() >> 31 |
+                   RunNonQuery(CreateProcessDateDateIndexSql) >> 31;
         }
     }
 
@@ -94,11 +131,53 @@ internal sealed class ApplicationDB : IDisposable
     {
         lock (DbLock)
         {
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] UpdateDatesInDB adapter='{adapterName}' today='{DateTime.Today:yyyy-MM-dd}' retentionDays={DataStoragePeriodInDays}");
+            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] UpdateDatesInDB adapter='{adapterName}' today='{DateTime.Today:yyyy-MM-dd}' retentionDays={Properties.SettingsManager.Current.HistoryRetentionDays}");
             InsertUniqueRow_DateTable(DateTime.Today);
             RemoveOldDate();
             RemoveOldProcess();
         }
+    }
+
+    /// <summary>
+    /// Deletes history older than the configured retention period. Safe to call while capture is running.
+    /// </summary>
+    public static void ApplyRetention()
+    {
+        if (!File.Exists(GetUnifiedDBFullPath()))
+            return;
+
+        // Hold the lock across create/purge/dispose so CloseSharedConnection (Delete All) can't interleave.
+        lock (DbLock)
+        {
+            using var db = new ApplicationDB(string.Empty);
+            RunNonQuery(CreateProcessDateDateIndexSql);
+            db.RemoveOldDate();
+            db.RemoveOldProcess();
+        }
+    }
+
+    /// <summary>
+    /// Creates all tables on the given connection. Lets tests build a database with the real schema.
+    /// </summary>
+    internal static void CreateSchema(SqliteConnection connection)
+    {
+        RunNonQuery(connection, CreateAdapterTableSql);
+        RunNonQuery(connection, CreateProcessTableSql);
+        RunNonQuery(connection, CreateDateTableSql);
+        RunNonQuery(connection, CreateProcessDateTableSql);
+        RunNonQuery(connection, CreateProcessDateDateIndexSql);
+    }
+
+    /// <summary>
+    /// Deletes Date rows older than <paramref name="cutoff"/>. ProcessDate rows follow via ON DELETE CASCADE,
+    /// which requires PRAGMA foreign_keys=ON on the connection.
+    /// </summary>
+    internal static int DeleteDatesBefore(SqliteConnection connection, DateTime cutoff)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "DELETE FROM Date WHERE (Year * 10000 + Month * 100 + Day) < @Cutoff";
+        command.Parameters.AddWithValue("@Cutoff", (cutoff.Year * 10000) + (cutoff.Month * 100) + cutoff.Day);
+        return command.ExecuteNonQuery();
     }
 
     public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
@@ -241,6 +320,11 @@ internal sealed class ApplicationDB : IDisposable
 
         lock (DbLock)
         {
+            // CloseSharedConnection may have replaced the connection this instance was counted
+            // against; decrementing then would release someone else's reference.
+            if (!ReferenceEquals(sharedConnection, countedConnection))
+                return;
+
             refCount--;
             if (refCount == 0 && sharedConnection != null)
             {
@@ -255,45 +339,22 @@ internal sealed class ApplicationDB : IDisposable
 
     private int CreateProcessTable()
     {
-        return RunNonQuery(
-            "CREATE TABLE IF NOT EXISTS Process(" +
-            "ID INTEGER PRIMARY KEY NOT NULL, " +
-            "Name TEXT NOT NULL UNIQUE)");
+        return RunNonQuery(CreateProcessTableSql);
     }
 
     private int CreateDateTable()
     {
-        return RunNonQuery(
-            "CREATE TABLE IF NOT EXISTS Date(" +
-            "ID INTEGER PRIMARY KEY NOT NULL, " +
-            "Year INTEGER NOT NULL, " +
-            "Month INTEGER NOT NULL, " +
-            "Day INTEGER NOT NULL, " +
-            "UNIQUE (Year, Month, Day) ON CONFLICT IGNORE)");
+        return RunNonQuery(CreateDateTableSql);
     }
 
     private int CreateProcessDateTable()
     {
-        return RunNonQuery(
-            "CREATE TABLE IF NOT EXISTS ProcessDate(" +
-            "ID INTEGER PRIMARY KEY NOT NULL, " +
-            "ProcessID INTEGER NOT NULL, " +
-            "DateID INTEGER NOT NULL, " +
-            "AdapterID INTEGER NOT NULL, " +
-            "DataReceived INTEGER NOT NULL, " +
-            "DataSent INTEGER NOT NULL, " +
-            "FOREIGN KEY(ProcessID) REFERENCES Process(ID) ON DELETE CASCADE, " +
-            "FOREIGN KEY(DateID) REFERENCES Date(ID) ON DELETE CASCADE, " +
-            "FOREIGN KEY(AdapterID) REFERENCES Adapter(ID) ON DELETE CASCADE, " +
-            "UNIQUE (ProcessID, DateID, AdapterID) ON CONFLICT IGNORE)");
+        return RunNonQuery(CreateProcessDateTableSql);
     }
 
     private int CreateAdapterTable()
     {
-        return RunNonQuery(
-            "CREATE TABLE IF NOT EXISTS Adapter(" +
-            "ID INTEGER PRIMARY KEY NOT NULL, " +
-            "Name TEXT NOT NULL UNIQUE)");
+        return RunNonQuery(CreateAdapterTableSql);
     }
 
     private int InsertUniqueRow_ProcessTable(string appName)
@@ -314,11 +375,22 @@ internal sealed class ApplicationDB : IDisposable
 
     private void RemoveOldDate()
     {
-        var cutoff = DateTime.Now.AddDays(-DataStoragePeriodInDays);
+        var cutoff = HistoryRetention.GetCutoff(DateTime.Today, Properties.SettingsManager.Current.HistoryRetentionDays);
+        if (cutoff == null)
+        {
+            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] RemoveOldDate skipped (retention=forever)");
+            return;
+        }
+
         Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] RemoveOldDate cutoff='{cutoff:yyyy-MM-dd}'");
-        RunNonQuery(
-            "DELETE FROM Date WHERE (Year * 10000 + Month * 100 + Day) < " +
-            $"({cutoff.Year * 10000 + cutoff.Month * 100 + cutoff.Day})");
+        try
+        {
+            DeleteDatesBefore(Connection, cutoff.Value);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("SQLite retention purge failed", ex);
+        }
     }
 
     private void RemoveOldProcess()
@@ -386,7 +458,14 @@ internal sealed class ApplicationDB : IDisposable
 
     private static int RunNonQuery(string query, params (string Name, string Value)[] parameters)
     {
-        return RunNonQuery(Connection, query, parameters);
+        var connection = sharedConnection;
+        if (connection == null)
+        {
+            EventLogger.Error($"SQLite non-query skipped: database not initialized. Query='{query}'");
+            return -1;
+        }
+
+        return RunNonQuery(connection, query, parameters);
     }
 
     private static int RunNonQuery(SqliteConnection connection, string query, params (string Name, string Value)[] parameters)

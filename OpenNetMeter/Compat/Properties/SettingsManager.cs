@@ -49,6 +49,8 @@ internal static class SettingsManager
                 Current.NetworkType = GetInt(root, nameof(AppSettings.NetworkType), Current.NetworkType);
                 Current.NetworkSpeedFormat = GetInt(root, nameof(AppSettings.NetworkSpeedFormat), Current.NetworkSpeedFormat);
                 Current.NetworkSpeedMagnitude = GetInt(root, nameof(AppSettings.NetworkSpeedMagnitude), Current.NetworkSpeedMagnitude);
+                Current.HistoryRetentionDays = Models.HistoryRetention.Normalize(
+                    GetInt(root, nameof(AppSettings.HistoryRetentionDays), Current.HistoryRetentionDays));
             }
             catch (Exception ex)
             {
@@ -96,6 +98,7 @@ internal static class SettingsManager
             root[nameof(AppSettings.NetworkType)] = Current.NetworkType;
             root[nameof(AppSettings.NetworkSpeedFormat)] = Current.NetworkSpeedFormat;
             root[nameof(AppSettings.NetworkSpeedMagnitude)] = Current.NetworkSpeedMagnitude;
+            root[nameof(AppSettings.HistoryRetentionDays)] = Current.HistoryRetentionDays;
 
             var json = root.ToJsonString(new JsonSerializerOptions
             {

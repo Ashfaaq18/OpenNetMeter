@@ -180,6 +180,53 @@
               </StackPanel>
             </Border>
             <StackPanel Margin="20,16" Spacing="0">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                  <TextBlock Text="History retention" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
+                  <TextBlock Text="How long daily usage is kept" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
+                </StackPanel>
+                <ComboBox Grid.Column="1" MinWidth="110" VerticalAlignment="Center"
+                          ItemsSource="{Binding RetentionOptions}"
+                          SelectedIndex="{Binding SelectedRetentionIndex, Mode=TwoWay}"/>
+              </Grid>
+              <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,8"/>
+              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                  <TextBlock Text="Export usage data" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
+                  <TextBlock Text="Save all stored history as CSV or JSON" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
+                </StackPanel>
+                <Button Grid.Column="1" MinWidth="110" VerticalAlignment="Center" HorizontalContentAlignment="Center"
+                        Command="{Binding ExportAllCommand}"
+                        Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}" Padding="16,6" CornerRadius="6"
+                        BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                  <TextBlock Text="Export..."/>
+                </Button>
+              </Grid>
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="6" Margin="0,0,0,8"
+                    IsVisible="{Binding ExportStatus.IsVisible}">
+                <Panel Grid.Column="0" VerticalAlignment="Center">
+                  <PathIcon Width="11" Height="11"
+                            Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                            Foreground="{DynamicResource BrushDownload}"
+                            IsVisible="{Binding ExportStatus.IsSuccess}"/>
+                  <PathIcon Width="11" Height="11"
+                            Data="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+                            Foreground="{DynamicResource BrushDangerBright}"
+                            IsVisible="{Binding ExportStatus.IsError}"/>
+                </Panel>
+                <TextBlock Grid.Column="1" Text="{Binding ExportStatus.Message}" FontSize="10" VerticalAlignment="Center"
+                           Foreground="{DynamicResource BrushTextSecondaryAlt}"/>
+                <TextBlock Grid.Column="2" Text="{Binding ExportStatus.FileName}" FontSize="10" VerticalAlignment="Center"
+                           TextTrimming="PrefixCharacterEllipsis"
+                           Foreground="{DynamicResource BrushTextSecondaryAlt}"
+                           ToolTip.Tip="{Binding ExportStatus.FilePath}"/>
+                <Button Grid.Column="3" Classes="linkBtn" VerticalAlignment="Center"
+                        Command="{Binding ExportStatus.RevealCommand}"
+                        IsVisible="{Binding ExportStatus.CanReveal}">
+                  <TextBlock Text="Open folder" FontSize="10" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+                </Button>
+              </Grid>
+              <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,12"/>
               <Border CornerRadius="8" BorderBrush="{DynamicResource BrushDangerBorderSoft}" BorderThickness="1" Background="{DynamicResource BrushDangerBgSoft}" Padding="16">
                 <StackPanel Spacing="12">
                   <StackPanel>

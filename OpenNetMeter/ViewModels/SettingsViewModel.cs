@@ -1,9 +1,12 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using OpenNetMeter.Models;
 using OpenNetMeter.Services;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Properties;
@@ -17,6 +20,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private readonly IStartupRegistrationService startupRegistrationService;
     private readonly IExternalLinkService externalLinkService;
     private readonly IThemeService themeService;
+    private readonly IFileSaveDialogService fileSaveDialogService;
     private bool startWithWindows;
     private bool minimizeOnStart;
     private bool darkMode;
@@ -29,14 +33,21 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private bool isUpdateAvailable;
     private string updateStatusMessage = "Click here to check for new updates";
     private string downloadUrl = string.Empty;
-    private bool isDeleteConfirmationOpen;
+    private int selectedRetentionIndex;
+    private bool isExporting;
+    private bool isConfirmationOpen;
+    private string confirmationMessage = string.Empty;
+    private Action? pendingConfirm;
+    private Action? pendingCancel;
 
-    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService, IThemeService themeService)
+    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService, IThemeService themeService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
     {
+        ExportStatus = new ExportStatusViewModel(fileRevealService);
         this.miniWidgetService = miniWidgetService;
         this.startupRegistrationService = startupRegistrationService;
         this.externalLinkService = externalLinkService;
         this.themeService = themeService;
+        this.fileSaveDialogService = fileSaveDialogService;
         var settings = SettingsManager.Current;
         startWithWindows = settings.StartWithWin;
         minimizeOnStart = settings.MinimizeOnStart;
@@ -46,12 +57,14 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         selectedNetworkTargetIndex = settings.NetworkType;
         selectedSpeedMagnitudeIndex = settings.NetworkSpeedMagnitude;
         selectedSpeedUnitIndex = settings.NetworkSpeedFormat;
+        selectedRetentionIndex = HistoryRetention.IndexOf(settings.HistoryRetentionDays);
 
         ResetDataCommand = new RelayCommand(ResetData);
+        ExportAllCommand = new RelayCommand(async () => await ExportAllAsync());
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
         DownloadUpdateCommand = new RelayCommand(DownloadUpdate);
-        ConfirmDeleteAllDataCommand = new RelayCommand(ConfirmDeleteAllData);
-        CancelDeleteAllDataCommand = new RelayCommand(CancelDeleteAllData);
+        ConfirmCommand = new RelayCommand(Confirm);
+        CancelConfirmationCommand = new RelayCommand(CancelConfirmation);
 
         this.miniWidgetService.VisibilityChanged += SyncMiniWidgetVisibility;
         this.themeService.ApplyDarkMode(darkMode);
@@ -59,7 +72,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     }
 
     public SettingsViewModel()
-        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService(), new NoOpThemeService())
+        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService(), new NoOpThemeService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
     {
     }
 
@@ -226,6 +239,50 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public string[] RetentionOptions { get; } = HistoryRetention.Options.Select(o => o.Label).ToArray();
+
+    public int SelectedRetentionIndex
+    {
+        get => selectedRetentionIndex;
+        set
+        {
+            if (selectedRetentionIndex == value || value < 0 || value >= HistoryRetention.Options.Length)
+                return;
+
+            if (IsConfirmationOpen)
+            {
+                // Keyboard input can still reach the ComboBox behind the overlay; snap it back.
+                OnPropertyChanged(nameof(SelectedRetentionIndex));
+                return;
+            }
+
+            selectedRetentionIndex = value;
+            OnPropertyChanged(nameof(SelectedRetentionIndex));
+
+            var (label, newDays) = HistoryRetention.Options[value];
+            if (!HistoryRetention.IsShorter(newDays, SettingsManager.Current.HistoryRetentionDays))
+            {
+                SaveRetention(newDays);
+                return;
+            }
+
+            OpenConfirmation(
+                $"Usage history older than {label} will be permanently deleted.\nDo you still want to continue?",
+                onConfirm: () =>
+                {
+                    SaveRetention(newDays);
+                    RetentionShortened?.Invoke();
+                },
+                onCancel: () =>
+                {
+                    selectedRetentionIndex = HistoryRetention.IndexOf(SettingsManager.Current.HistoryRetentionDays);
+                    OnPropertyChanged(nameof(SelectedRetentionIndex));
+                });
+        }
+    }
+
+    public ExportStatusViewModel ExportStatus { get; }
+
     public bool IsCheckingForUpdates
     {
         get => isCheckingForUpdates;
@@ -262,29 +319,40 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsDeleteConfirmationOpen
+    public bool IsConfirmationOpen
     {
-        get => isDeleteConfirmationOpen;
+        get => isConfirmationOpen;
         private set
         {
-            if (isDeleteConfirmationOpen == value)
+            if (isConfirmationOpen == value)
                 return;
-            isDeleteConfirmationOpen = value;
-            OnPropertyChanged(nameof(IsDeleteConfirmationOpen));
+            isConfirmationOpen = value;
+            OnPropertyChanged(nameof(IsConfirmationOpen));
         }
     }
 
-    public string DeleteConfirmationMessage { get; } =
-        "Warning!!! This will delete all saved profiles.\nDo you still want to continue?";
+    public string ConfirmationMessage
+    {
+        get => confirmationMessage;
+        private set
+        {
+            if (confirmationMessage == value)
+                return;
+            confirmationMessage = value;
+            OnPropertyChanged(nameof(ConfirmationMessage));
+        }
+    }
 
     public ICommand ResetDataCommand { get; }
+    public ICommand ExportAllCommand { get; }
     public ICommand CheckForUpdatesCommand { get; }
     public ICommand DownloadUpdateCommand { get; }
-    public ICommand ConfirmDeleteAllDataCommand { get; }
-    public ICommand CancelDeleteAllDataCommand { get; }
+    public ICommand ConfirmCommand { get; }
+    public ICommand CancelConfirmationCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
     public event Action? DeleteAllDataConfirmed;
+    public event Action? RetentionShortened;
 
     public void SyncMiniWidgetVisibility(bool isVisible)
     {
@@ -299,7 +367,49 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     private void ResetData()
     {
-        IsDeleteConfirmationOpen = true;
+        if (IsConfirmationOpen)
+            return;
+
+        OpenConfirmation(
+            "Warning!!! This will delete all saved profiles.\nDo you still want to continue?",
+            onConfirm: () => DeleteAllDataConfirmed?.Invoke());
+    }
+
+    private static void SaveRetention(int days)
+    {
+        SettingsManager.Current.HistoryRetentionDays = days;
+        SettingsManager.Save();
+    }
+
+    private async Task ExportAllAsync()
+    {
+        if (isExporting)
+            return;
+
+        isExporting = true;
+        ExportStatus.Clear();
+        try
+        {
+            string? path = await fileSaveDialogService.PickSavePathAsync(
+                "Export usage data",
+                $"OpenNetMeter-usage-{DateTime.Today:yyyyMMdd}",
+                UsageExporter.FileTypes);
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            ExportStatus.ShowProgress();
+            int count = await UsageExporter.ExportAsync(UsageDatabase.ResolveDatabasePath(), path);
+            ExportStatus.ShowSuccess(count, path);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Error exporting usage data", ex);
+            ExportStatus.ShowError();
+        }
+        finally
+        {
+            isExporting = false;
+        }
     }
 
     private async Task CheckForUpdatesAsync()
@@ -374,15 +484,33 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ConfirmDeleteAllData()
+    private void OpenConfirmation(string message, Action onConfirm, Action? onCancel = null)
     {
-        IsDeleteConfirmationOpen = false;
-        DeleteAllDataConfirmed?.Invoke();
+        pendingConfirm = onConfirm;
+        pendingCancel = onCancel;
+        ConfirmationMessage = message;
+        IsConfirmationOpen = true;
     }
 
-    private void CancelDeleteAllData()
+    private void Confirm()
     {
-        IsDeleteConfirmationOpen = false;
+        var action = pendingConfirm;
+        CloseConfirmation();
+        action?.Invoke();
+    }
+
+    private void CancelConfirmation()
+    {
+        var action = pendingCancel;
+        CloseConfirmation();
+        action?.Invoke();
+    }
+
+    private void CloseConfirmation()
+    {
+        pendingConfirm = null;
+        pendingCancel = null;
+        IsConfirmationOpen = false;
     }
 
     private void OnPropertyChanged(string propertyName) =>

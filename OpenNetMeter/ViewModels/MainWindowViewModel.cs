@@ -1,8 +1,11 @@
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
+using OpenNetMeter.Models;
 using OpenNetMeter.Services;
+using OpenNetMeter.Utilities;
 using OpenNetMeter.Core.ViewModels;
 using OpenNetMeter.PlatformAbstractions;
 
@@ -20,7 +23,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private bool isAboutOpen;
 
     public MainWindowViewModel()
-        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpThemeService())
+        : this(new NoOpWindowService(), new NoOpNetworkCaptureService(), new NoOpProcessIconService(), new NoOpExternalLinkService(), new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpThemeService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
     {
     }
 
@@ -32,7 +35,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         MiniWidgetViewModel miniWidget,
         IMiniWidgetService miniWidgetService,
         IStartupRegistrationService startupRegistrationService,
-        IThemeService themeService)
+        IThemeService themeService,
+        IFileSaveDialogService fileSaveDialogService,
+        IFileRevealService fileRevealService)
     {
         this.windowService = windowService;
         this.networkCaptureService = networkCaptureService;
@@ -40,10 +45,11 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         this.miniWidget = miniWidget;
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService, externalLinkService);
-        History = new HistoryViewModel(processIconService, externalLinkService);
-        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService);
+        History = new HistoryViewModel(processIconService, externalLinkService, fileSaveDialogService, fileRevealService);
+        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService, fileSaveDialogService, fileRevealService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;
+        Settings.RetentionShortened += Settings_RetentionShortened;
         Summary.PropertyChanged += Summary_PropertyChanged;
 
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
@@ -106,8 +112,14 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
             isAboutOpen = value;
             OnPropertyChanged(nameof(IsAboutOpen));
+            OnPropertyChanged(nameof(IsModalOpen));
         }
     }
+
+    /// <summary>
+    /// True while an in-window dialog is shown; the rest of the window is disabled so focus can't escape to it.
+    /// </summary>
+    public bool IsModalOpen => IsAboutOpen || Settings.IsConfirmationOpen;
 
     public override int SelectedTabIndex
     {
@@ -128,6 +140,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     {
         Settings.PropertyChanged -= Settings_PropertyChanged;
         Settings.DeleteAllDataConfirmed -= Settings_DeleteAllDataConfirmed;
+        Settings.RetentionShortened -= Settings_RetentionShortened;
         Summary.PropertyChanged -= Summary_PropertyChanged;
         Summary.Dispose();
         networkCaptureService.NetworkChanged -= OnNetworkChanged;
@@ -151,8 +164,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         {
             NetworkStatus = $"Connected : {adapterName}";
             Summary.SetActiveAdapter(adapterName);
+            History.ReloadProfiles();
         });
-        History.ReloadProfiles();
     }
 
     private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -161,6 +174,10 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             e.PropertyName == nameof(SettingsViewModel.SelectedSpeedUnitIndex))
         {
             Summary.RefreshSpeedDisplayFormat();
+        }
+        else if (e.PropertyName == nameof(SettingsViewModel.IsConfirmationOpen))
+        {
+            OnPropertyChanged(nameof(IsModalOpen));
         }
     }
 
@@ -183,6 +200,20 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         }
 
         History.ReloadProfiles();
+    }
+
+    private async void Settings_RetentionShortened()
+    {
+        try
+        {
+            await Task.Run(ApplicationDB.ApplyRetention);
+            History.Refresh();
+            Summary.RefreshAfterHistoryPurge();
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to apply history retention", ex);
+        }
     }
 
     private void Summary_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
