@@ -31,6 +31,20 @@ public partial class MainWindow : Window
         Closing += MainWindow_Closing;
         PositionChanged += MainWindow_PositionChanged;
         SizeChanged += MainWindow_SizeChanged;
+
+        // The rest of the window is disabled while a dialog is open, so move focus into the dialog.
+        // "No" is the safe default for confirmations.
+        FocusWhenShown(ConfirmationOverlay, ConfirmNoButton);
+        FocusWhenShown(AboutOverlay, AboutCloseButton);
+    }
+
+    private static void FocusWhenShown(Control overlay, Control target)
+    {
+        overlay.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == IsVisibleProperty && overlay.IsVisible)
+                Dispatcher.UIThread.Post(() => target.Focus(NavigationMethod.Tab), DispatcherPriority.Loaded);
+        };
     }
 
     public void InitializeWindowState(IMiniWidgetService miniWidgetService, ITrayNotificationService trayNotificationService)

@@ -9,6 +9,7 @@
              mc:Ignorable="d">
   <Grid Margin="12,8" RowDefinitions="Auto,*,Auto">
     <Border Padding="12" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}">
+      <StackPanel Spacing="8">
       <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
         <TextBlock VerticalAlignment="Center" Text="Usage of"/>
         <ComboBox Width="180"
@@ -23,6 +24,36 @@
         <Button Width="64" Height="24" Padding="0" Command="{Binding FilterCommand}">
           <TextBlock Text="Filter" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>
+        <Button Width="64" Height="24" Padding="0" Command="{Binding ExportCommand}"
+                ToolTip.Tip="Export daily usage for this profile and date range as CSV or JSON">
+          <TextBlock Text="Export" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Button>
+      </StackPanel>
+
+      <!-- Export feedback: grows the filter bar by one line; success hides itself after a few seconds. -->
+      <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"
+                  IsVisible="{Binding ExportStatus.IsVisible}">
+        <PathIcon Width="12" Height="12" VerticalAlignment="Center"
+                  Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                  Foreground="{DynamicResource BrushDownload}"
+                  IsVisible="{Binding ExportStatus.IsSuccess}"/>
+        <PathIcon Width="12" Height="12" VerticalAlignment="Center"
+                  Data="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+                  Foreground="{DynamicResource BrushDangerBright}"
+                  IsVisible="{Binding ExportStatus.IsError}"/>
+        <TextBlock Text="{Binding ExportStatus.Message}" VerticalAlignment="Center"
+                   Foreground="{DynamicResource BrushTextMuted}"/>
+        <TextBlock Text="{Binding ExportStatus.FileName}" VerticalAlignment="Center" MaxWidth="360"
+                   TextTrimming="PrefixCharacterEllipsis"
+                   Foreground="{DynamicResource BrushTextMuted}"
+                   ToolTip.Tip="{Binding ExportStatus.FilePath}"
+                   IsVisible="{Binding ExportStatus.IsSuccess}"/>
+        <Button Classes="linkBtn" VerticalAlignment="Center" Margin="4,0,0,0"
+                Command="{Binding ExportStatus.RevealCommand}"
+                IsVisible="{Binding ExportStatus.CanReveal}">
+          <TextBlock Text="Open folder" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+        </Button>
+      </StackPanel>
       </StackPanel>
     </Border>
 

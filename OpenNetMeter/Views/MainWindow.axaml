@@ -35,7 +35,9 @@
   </Window.Resources>
 
   <Grid>
-    <Border Background="{DynamicResource BrushBgWindow}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1" CornerRadius="0">
+    <!-- Disabled while a dialog is open so Tab/arrow keys can't reach anything behind the overlay. -->
+    <Border Background="{DynamicResource BrushBgWindow}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1" CornerRadius="0"
+            IsEnabled="{Binding !IsModalOpen}">
       <Grid RowDefinitions="50,*,30">
 
         <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}" IsHitTestVisible="True">
@@ -140,7 +142,8 @@
     <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="10" Background="{DynamicResource BrushTransparent}"
             Cursor="BottomRightCorner" PointerPressed="ResizeBottomRight_PointerPressed"/>
 
-    <Border IsVisible="{Binding IsAboutOpen}"
+    <Border x:Name="AboutOverlay" IsVisible="{Binding IsAboutOpen}"
+            KeyboardNavigation.TabNavigation="Cycle"
             Background="{DynamicResource BrushOverlayScrim}">
       <Grid>
         <Border Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -157,7 +160,7 @@
                              Foreground="{DynamicResource BrushTextPrimary}"/>
                 </StackPanel>
 
-                <Button Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right" Command="{Binding CloseAboutCommand}">
+                <Button x:Name="AboutCloseButton" Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right" Command="{Binding CloseAboutCommand}">
                   <Panel Width="10" Height="10">
                     <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
                     <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
@@ -195,8 +198,12 @@
       </Grid>
     </Border>
 
-    <Border IsVisible="{Binding Settings.IsDeleteConfirmationOpen}"
+    <Border x:Name="ConfirmationOverlay" IsVisible="{Binding Settings.IsConfirmationOpen}"
+            KeyboardNavigation.TabNavigation="Cycle"
             Background="{DynamicResource BrushOverlayScrim}">
+      <Border.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding Settings.CancelConfirmationCommand}"/>
+      </Border.KeyBindings>
       <Grid>
         <Border Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
                 BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1"
@@ -209,7 +216,7 @@
                            Margin="15,0" Foreground="{DynamicResource BrushTextPrimary}"/>
 
                 <Button Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right"
-                        Command="{Binding Settings.CancelDeleteAllDataCommand}">
+                        Command="{Binding Settings.CancelConfirmationCommand}">
                   <Panel Width="10" Height="10">
                     <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
                     <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
@@ -220,15 +227,15 @@
 
             <Border Grid.Row="1" Background="{DynamicResource BrushBgSubtle}" Padding="20,10,20,20">
               <StackPanel Spacing="20">
-                <TextBlock Text="{Binding Settings.DeleteConfirmationMessage}"
+                <TextBlock Text="{Binding Settings.ConfirmationMessage}"
                            Foreground="{DynamicResource BrushTextPrimary}"
                            TextWrapping="Wrap"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
-                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.ConfirmDeleteAllDataCommand}">
+                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.ConfirmCommand}">
                     <TextBlock Text="Yes" HorizontalAlignment="Center"/>
                   </Button>
-                  <Button MinWidth="60" Padding="16,8" Command="{Binding Settings.CancelDeleteAllDataCommand}">
+                  <Button x:Name="ConfirmNoButton" MinWidth="60" Padding="16,8" Command="{Binding Settings.CancelConfirmationCommand}">
                     <TextBlock Text="No" HorizontalAlignment="Center"/>
                   </Button>
                 </StackPanel>
