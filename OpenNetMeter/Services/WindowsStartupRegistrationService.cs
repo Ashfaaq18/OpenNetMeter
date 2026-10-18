@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
@@ -122,6 +123,21 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
         string? processPath = Environment.ProcessPath;
         string minimizedArgument = startMinimized ? " /StartMinimized" : string.Empty;
 
+        // MSIX: launching the exe by path runs it without package identity (separate AppData, so a second
+        // database and settings file), and that path changes with every package update. The execution alias
+        // keeps identity and a stable path. Requires the windows.appExecutionAlias manifest extension.
+        if (IsPackaged())
+        {
+            string aliasPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft", "WindowsApps", ExecutionAlias);
+
+            if (File.Exists(aliasPath))
+                return (aliasPath, startMinimized ? "/StartMinimized" : null);
+
+            EventLogger.Error($"Packaged app has no execution alias at '{aliasPath}'; startup task will launch without package identity.");
+        }
+
         if (!string.IsNullOrWhiteSpace(processPath) &&
             !string.Equals(Path.GetFileName(processPath), "dotnet.exe", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Path.GetFileName(processPath), "dotnet", StringComparison.OrdinalIgnoreCase))
@@ -141,5 +157,25 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
         string fallbackExe = Path.Combine(AppContext.BaseDirectory, "OpenNetMeter.exe");
         return (fallbackExe, startMinimized ? "/StartMinimized" : null);
     }
+
+    private static bool IsPackaged()
+    {
+        try
+        {
+            uint length = 0;
+            return GetCurrentPackageFullName(ref length, null) != AppModelErrorNoPackage;
+        }
+        catch (EntryPointNotFoundException)
+        {
+            return false;
+        }
+    }
+
+    // Must match <desktop:ExecutionAlias Alias="..."/> in the MSIX manifest.
+    private const string ExecutionAlias = "OpenNetMeter.exe";
+    private const int AppModelErrorNoPackage = 15700;
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetCurrentPackageFullName(ref uint packageFullNameLength, char[]? packageFullName);
 }
 
