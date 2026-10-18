@@ -86,6 +86,9 @@ public partial class App : Application
 
             if (OperatingSystem.IsWindows() && SettingsManager.Current.MiniWidgetVisibility)
                 miniWidgetService.Show();
+
+            // A second launch (shortcut, Start menu) exits and asks this copy to show its window instead.
+            Program.InstanceGuard?.ListenForActivation(() => Dispatcher.UIThread.Post(mainWindow.OpenFromTray));
         }
 
         base.OnFrameworkInitializationCompleted();
