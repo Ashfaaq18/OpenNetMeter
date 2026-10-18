@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using OpenNetMeter.Services;
 using OpenNetMeter.ViewModels;
 using OpenNetMeter.Views;
@@ -68,14 +69,20 @@ public partial class App : Application
 
             mainWindow.InitializeWindowState(miniWidgetService, trayNotificationService);
             mainWindow.DataContext = new MainWindowViewModel(windowService, networkCaptureService, processIconService, externalLinkService, miniWidgetViewModel, miniWidgetService, startupRegistrationService, themeService);
-            desktop.MainWindow = mainWindow;
+            if (startMinimized)
+            {
+                // The desktop lifetime shows MainWindow once startup completes, which would undo a Hide()
+                // here. Assign it after startup instead so the app starts in the tray; the tray icon shows it.
+                Dispatcher.UIThread.Post(() => desktop.MainWindow = mainWindow);
+            }
+            else
+            {
+                desktop.MainWindow = mainWindow;
+            }
 
             trayService = OperatingSystem.IsWindows()
                 ? new WindowsTrayService(this, desktop, mainWindow, miniWidgetService)
                 : new PlaceholderTrayService();
-
-            if (startMinimized)
-                mainWindow.Hide();
 
             if (OperatingSystem.IsWindows() && SettingsManager.Current.MiniWidgetVisibility)
                 miniWidgetService.Show();

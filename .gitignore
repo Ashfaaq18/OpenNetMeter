@@ -366,3 +366,6 @@ FodyWeavers.xsd
 
 #My stuff
 MyStuff/
+# Code-signing certificates (MSIX test signing etc.)
+*.p12
+*.cer
