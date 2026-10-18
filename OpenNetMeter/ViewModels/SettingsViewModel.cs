@@ -257,7 +257,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             }
 
             selectedRetentionIndex = value;
-            OnPropertyChanged(nameof(SelectedRetentionIndex));
+            NotifyRetentionSelectionChanged();
 
             var (label, newDays) = HistoryRetention.Options[value];
             if (!HistoryRetention.IsShorter(newDays, SettingsManager.Current.HistoryRetentionDays))
@@ -276,10 +276,18 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
                 onCancel: () =>
                 {
                     selectedRetentionIndex = HistoryRetention.IndexOf(SettingsManager.Current.HistoryRetentionDays);
-                    OnPropertyChanged(nameof(SelectedRetentionIndex));
+                    NotifyRetentionSelectionChanged();
                 });
         }
     }
+
+    public bool IsForeverRetentionSelected =>
+        HistoryRetention.Options[selectedRetentionIndex].Days == HistoryRetention.Forever;
+
+    public string ForeverRetentionWarning =>
+        "History is never deleted, so the database keeps growing " +
+        $"(currently {ByteSizeFormatter.FormatBytes(UsageDatabase.GetDatabaseSizeBytes())}). " +
+        "Export or pick a shorter period if it gets large.";
 
     public ExportStatusViewModel ExportStatus { get; }
 
@@ -373,6 +381,13 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         OpenConfirmation(
             "Warning!!! This will delete all saved profiles.\nDo you still want to continue?",
             onConfirm: () => DeleteAllDataConfirmed?.Invoke());
+    }
+
+    private void NotifyRetentionSelectionChanged()
+    {
+        OnPropertyChanged(nameof(SelectedRetentionIndex));
+        OnPropertyChanged(nameof(IsForeverRetentionSelected));
+        OnPropertyChanged(nameof(ForeverRetentionWarning));
     }
 
     private static void SaveRetention(int days)

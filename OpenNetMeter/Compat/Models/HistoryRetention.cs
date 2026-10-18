@@ -16,7 +16,6 @@ internal static class HistoryRetention
         ("60 days", 60),
         ("180 days", 180),
         ("1 year", 365),
-        ("5 years", 1825),
         ("Forever", Forever)
     ];
 

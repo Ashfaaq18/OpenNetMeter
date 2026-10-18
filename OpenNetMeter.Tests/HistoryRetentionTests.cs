@@ -50,8 +50,9 @@ public class HistoryRetentionTests
     [InlineData(60, 60)]
     [InlineData(90, 180)]
     [InlineData(200, 365)]
-    [InlineData(1825, 1825)]
-    [InlineData(2000, HistoryRetention.Forever)]
+    [InlineData(365, 365)]
+    [InlineData(366, HistoryRetention.Forever)]
+    [InlineData(1825, HistoryRetention.Forever)]
     public void Normalize_RoundsUpToAnOptionSoNoExtraHistoryIsDeleted(int stored, int expected)
     {
         Assert.Equal(expected, HistoryRetention.Normalize(stored));

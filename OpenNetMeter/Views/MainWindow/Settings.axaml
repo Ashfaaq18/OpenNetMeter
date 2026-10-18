@@ -189,6 +189,14 @@
                           ItemsSource="{Binding RetentionOptions}"
                           SelectedIndex="{Binding SelectedRetentionIndex, Mode=TwoWay}"/>
               </Grid>
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Margin="0,0,0,8"
+                    IsVisible="{Binding IsForeverRetentionSelected}">
+                <PathIcon Grid.Column="0" Width="11" Height="11" VerticalAlignment="Top" Margin="0,1,0,0"
+                          Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"
+                          Foreground="{DynamicResource BrushWarning}"/>
+                <TextBlock Grid.Column="1" Text="{Binding ForeverRetentionWarning}" FontSize="10" TextWrapping="Wrap"
+                           Foreground="{DynamicResource BrushWarning}"/>
+              </Grid>
               <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,8"/>
               <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
