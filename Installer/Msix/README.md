@@ -16,6 +16,9 @@ against this file (or replace the generated one with it) before submitting.
   changes with every package version. The alias must match `ExecutionAlias` in
   `OpenNetMeter/Services/WindowsStartupRegistrationService.cs`.
 - **Restricted capabilities** `runFullTrust` and `allowElevation` (ETW kernel capture needs admin).
+- **Paths under `VFS\ProgramFilesX64`.** The MSI is built as an x64 package (see
+  `scripts/build-avalonia-msi.ps1`), so the tool lays the app out there. If the MSI platform changes,
+  update the application `Executable`, the alias `Executable` and the shortcut `Icon` to match.
 
 Update `Version` in `<Identity>` for each submission.
 
