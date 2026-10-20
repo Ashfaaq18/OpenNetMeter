@@ -10,6 +10,11 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
+# Without an explicit platform WiX builds an x86 package, which installs the 64-bit app into
+# Program Files (x86) (Product.wxs uses ProgramFiles6432Folder, which follows the package platform).
+$installerPlatforms = @{ "win-x64" = "x64" }
+$installerPlatform = $installerPlatforms[$Runtime]
+
 $propsPath = Join-Path $repoRoot "Directory.Build.props"
 [xml]$propsXml = Get-Content $propsPath
 $productVersion = $propsXml.Project.PropertyGroup.ProductVersion
@@ -28,7 +33,7 @@ Write-Host "Cleaning Avalonia project..."
 dotnet clean ".\OpenNetMeter\OpenNetMeter.csproj" --configuration $Configuration
 
 Write-Host "Cleaning installer project..."
-dotnet clean ".\Installer\OpenNetMeter-Installer.wixproj" --configuration $Configuration
+dotnet clean ".\Installer\OpenNetMeter-Installer.wixproj" --configuration $Configuration -p:Platform=$installerPlatform
 
 $publishOutput = Join-Path $repoRoot "_rc\avalonia\$Runtime"
 if (Test-Path $publishOutput) {
@@ -45,16 +50,13 @@ if (-not (Test-Path $publishedExe)) {
 
 Write-Host "Verified publish output: $publishedExe"
 Write-Host "Building WiX installer..."
-dotnet build ".\Installer\OpenNetMeter-Installer.wixproj" --configuration $Configuration -m:1
+dotnet build ".\Installer\OpenNetMeter-Installer.wixproj" --configuration $Configuration -p:Platform=$installerPlatform -m:1
 
-$candidateMsiPaths = @(
-    (Join-Path $repoRoot "Installer\bin\$Configuration\en-us\$productName-$productVersion.msi"),
-    (Join-Path $repoRoot "Installer\bin\x64\$Configuration\en-us\$productName-$productVersion.msi")
-)
-
-$msiPath = $candidateMsiPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-if (-not $msiPath) {
-    throw "MSI build completed but the expected MSI file was not found."
+# Only look in the platform folder: an older x86 build in Installer\bin\$Configuration is not cleaned
+# by the platform-specific clean above and must not be picked up by mistake.
+$msiPath = Join-Path $repoRoot "Installer\bin\$installerPlatform\$Configuration\en-us\$productName-$productVersion.msi"
+if (-not (Test-Path $msiPath)) {
+    throw "MSI build completed but the expected MSI file was not found: $msiPath"
 }
 
 Write-Host "MSI ready: $msiPath"
