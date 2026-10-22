@@ -39,7 +39,7 @@
           <TextBlock Text="Filter" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>
         <Button Width="64" Height="24" Padding="0" Command="{Binding ExportCommand}"
-                ToolTip.Tip="Export daily usage for this profile and date range as CSV or JSON">
+                ToolTip.Tip="Export daily usage for this profile and date range as CSV, JSON or an HTML report">
           <TextBlock Text="Export" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>
       </StackPanel>

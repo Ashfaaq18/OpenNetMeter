@@ -388,7 +388,7 @@
                   <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
                     <Button MinWidth="80" Padding="16,6" CornerRadius="6" HorizontalContentAlignment="Center"
                             Command="{Binding Summary.LastRecordingResults.ExportCommand}"
-                            ToolTip.Tip="Save this recording as CSV or JSON"
+                            ToolTip.Tip="Save this recording as CSV, JSON or an HTML report"
                             Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}"
                             BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
                       <TextBlock Text="Export"/>

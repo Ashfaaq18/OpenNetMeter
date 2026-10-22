@@ -1,15 +1,17 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using OpenNetMeter.Models;
+using OpenNetMeter.ViewModels;
 
 namespace OpenNetMeter.Services;
 
 /// <summary>
-/// Exports a finished (or running) traffic recording to CSV or JSON.
+/// Exports a finished (or running) traffic recording to CSV, JSON or a self-contained HTML report.
 /// </summary>
 internal static class RecordingExporter
 {
@@ -74,8 +76,28 @@ internal static class RecordingExporter
         writer.WriteEndObject();
     }
 
+    internal static void WriteHtml(TextWriter writer, TrafficRecording recording)
+    {
+        HtmlReport.WriteDocumentStart(writer, "OpenNetMeter recording");
+        HtmlReport.WriteMeta(writer,
+        [
+            ("Started", HtmlReport.FormatDateTime(recording.StartedAt)),
+            ("Ended", recording.StoppedAt is { } stoppedAt ? HtmlReport.FormatDateTime(stoppedAt) : "Still running"),
+            ("Duration", TrafficRecording.FormatElapsed(recording.GetDuration(DateTime.Now))),
+            ("Adapters", recording.Adapters.Count > 0 ? string.Join(", ", recording.Adapters) : "None"),
+            (HtmlReport.TotalDownloadLabel, ByteSizeFormatter.FormatBytes(recording.TotalDownload)),
+            (HtmlReport.TotalUploadLabel, ByteSizeFormatter.FormatBytes(recording.TotalUpload))
+        ]);
+
+        HtmlReport.WriteProcessTable(writer, recording.GetProcesses()
+            .Select(p => (p.Process, Download: p.DownloadBytes, Upload: p.UploadBytes)));
+
+        HtmlReport.WriteDocumentEnd(writer);
+    }
+
     /// <summary>
-    /// Writes the recording to <paramref name="outputPath"/>; JSON if the extension is .json, CSV otherwise.
+    /// Writes the recording to <paramref name="outputPath"/>; JSON if the extension is .json, an HTML report
+    /// for .html or .htm, CSV otherwise.
     /// </summary>
     public static Task ExportAsync(TrafficRecording recording, string outputPath)
     {
@@ -86,6 +108,12 @@ internal static class RecordingExporter
                 if (string.Equals(Path.GetExtension(outputPath), ".json", StringComparison.OrdinalIgnoreCase))
                 {
                     WriteJson(stream, recording);
+                }
+                else if (HtmlReport.IsHtmlPath(outputPath))
+                {
+                    // The page declares its charset, so no byte order mark is needed.
+                    using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                    WriteHtml(writer, recording);
                 }
                 else
                 {

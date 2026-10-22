@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Effective Date: October 21, 2026
+Effective Date: October 23, 2026
 
 OpenNetMeter ("the Application") is a Windows desktop utility designed to monitor and report local network usage statistics for the user's device. The Application is intended to provide visibility into how the system and installed applications consume network data over time, including daily and historical totals, per-process traffic summaries, and session-based usage information.
 
@@ -42,9 +42,11 @@ The Application never connects to the internet in the background. The following 
 - **Check for updates.** When the user clicks "Check for updates" in Settings, the Application requests information about the latest release from GitHub (`api.github.com`). As with any web request, GitHub receives the device's IP address and basic request details (including an "OpenNetMeter" user-agent). No usage data is sent. The request is subject to GitHub's privacy statement.
 - **Project page links.** The repository link in the About dialog, and the "Download Update" button shown after an update check finds a newer version, open GitHub pages in the user's default web browser.
 
-## 5. Data Export
+## 5. Traffic Recordings and Data Export
 
-Users can export stored usage history to a CSV or JSON file from Settings › Data Management or the History tab. Exported files contain dates, network adapter names, process names, and byte counts. They are saved only to the location the user chooses and are not transmitted anywhere by the Application. Once exported, the user is responsible for how those files are stored or shared.
+The Summary tab lets the user record per-process traffic between a start and stop of their choosing. A recording is kept only in memory while the Application is running: only the most recent recording is kept, and it is discarded when a new recording finishes or the Application closes. It is not written to the usage database.
+
+Users can export stored usage history to a CSV, JSON or HTML file from Settings › Data Management or the History tab, and can export a finished recording in the same formats from its results window. Exported files contain dates (or, for recordings, start and end times), network adapter names, process names, and byte counts. HTML reports are self-contained files that do not load any scripts or online content when opened. They are saved only to the location the user chooses and are not transmitted anywhere by the Application. Once exported, the user is responsible for how those files are stored or shared.
 
 ## 6. No Sale, Transfer, or Commercial Exploitation of Personal Data
 
@@ -73,7 +75,7 @@ The Application implements reasonable technical and organizational measures inte
 Users control locally stored usage history in Settings › Data Management, where they can:
 
 - choose how long history is kept (History retention);
-- export history to a CSV or JSON file; and
+- export history to a CSV, JSON or HTML file; and
 - permanently delete all stored usage history (Delete All).
 
 Users may also delete the local usage database files directly while the Application is closed.

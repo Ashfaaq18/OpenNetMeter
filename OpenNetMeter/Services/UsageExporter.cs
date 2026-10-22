@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -13,14 +14,15 @@ namespace OpenNetMeter.Services;
 internal sealed record UsageExportRow(DateOnly Date, string Adapter, string Process, long DownloadBytes, long UploadBytes);
 
 /// <summary>
-/// Exports per-day, per-process usage rows from the usage database to CSV or JSON.
+/// Exports per-day, per-process usage rows from the usage database to CSV, JSON or a self-contained HTML report.
 /// </summary>
 internal static class UsageExporter
 {
     public static readonly IReadOnlyList<FileTypeOption> FileTypes =
     [
         new FileTypeOption("CSV file", "csv"),
-        new FileTypeOption("JSON file", "json")
+        new FileTypeOption("JSON file", "json"),
+        new FileTypeOption("HTML report", "html")
     ];
 
     /// <summary>
@@ -117,8 +119,90 @@ internal static class UsageExporter
     }
 
     /// <summary>
-    /// Writes the matching rows to <paramref name="outputPath"/>; JSON if the extension is .json, CSV otherwise.
-    /// Returns the number of rows written.
+    /// Writes a summary page: totals, then per adapter a by-process table (each process expands to its days) and a
+    /// by-day table. The filter, start and end only describe the report header.
+    /// </summary>
+    internal static void WriteHtml(TextWriter writer, IReadOnlyList<UsageExportRow> rows, string? adapterFilter, DateTime? start, DateTime? end)
+    {
+        var byAdapter = rows
+            .GroupBy(r => r.Adapter)
+            .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var profiles = adapterFilter != null ? [adapterFilter] : byAdapter.Select(g => g.Key).ToList();
+        long totalDownload = rows.Sum(r => r.DownloadBytes);
+        long totalUpload = rows.Sum(r => r.UploadBytes);
+
+        HtmlReport.WriteDocumentStart(writer, "OpenNetMeter usage report");
+        HtmlReport.WriteMeta(writer,
+        [
+            (profiles.Count > 1 ? "Profiles" : "Profile", profiles.Count > 0 ? string.Join(", ", profiles) : "None"),
+            ("Period", FormatHtmlPeriod(rows, start, end)),
+            (HtmlReport.TotalDownloadLabel, ByteSizeFormatter.FormatBytes(totalDownload)),
+            (HtmlReport.TotalUploadLabel, ByteSizeFormatter.FormatBytes(totalUpload))
+        ]);
+
+        if (rows.Count == 0)
+            HtmlReport.WriteNoTraffic(writer);
+
+        foreach (var adapter in byAdapter)
+        {
+            writer.WriteLine("<section>");
+            writer.WriteLine($"<h2>{HtmlReport.Encode(adapter.Key)}</h2>");
+
+            writer.WriteLine("<h3>By process</h3>");
+            HtmlReport.WriteExpandableProcessTable(writer, SummarizeProcesses(adapter));
+
+            writer.WriteLine("<h3>By day</h3>");
+            HtmlReport.WriteDayTable(writer, adapter
+                .GroupBy(r => r.Date)
+                .Select(g => (Date: g.Key, Download: g.Sum(r => r.DownloadBytes), Upload: g.Sum(r => r.UploadBytes))));
+
+            writer.WriteLine("</section>");
+        }
+
+        HtmlReport.WriteDocumentEnd(writer);
+    }
+
+    // One entry per process with its whole-period totals and its per-day totals, for the expandable by-process table.
+    private static List<(string Process, long Download, long Upload, IReadOnlyList<(DateOnly Date, long Download, long Upload)> Days)> SummarizeProcesses(
+        IEnumerable<UsageExportRow> adapterRows)
+    {
+        return adapterRows
+            .GroupBy(r => r.Process)
+            .Select(g => (
+                Process: g.Key,
+                Download: g.Sum(r => r.DownloadBytes),
+                Upload: g.Sum(r => r.UploadBytes),
+                Days: (IReadOnlyList<(DateOnly Date, long Download, long Upload)>)g
+                    .GroupBy(r => r.Date)
+                    .Select(d => (Date: d.Key, Download: d.Sum(r => r.DownloadBytes), Upload: d.Sum(r => r.UploadBytes)))
+                    .ToList()))
+            .ToList();
+    }
+
+    // The requested range wins; an open end falls back to the first or last day that has data.
+    private static string FormatHtmlPeriod(IReadOnlyList<UsageExportRow> rows, DateTime? start, DateTime? end)
+    {
+        DateOnly? first = start != null ? DateOnly.FromDateTime(start.Value) : null;
+        DateOnly? last = end != null ? DateOnly.FromDateTime(end.Value) : null;
+        if (rows.Count > 0)
+        {
+            first ??= rows.Min(r => r.Date);
+            last ??= rows.Max(r => r.Date);
+        }
+
+        if (first == null || last == null)
+            return "No data";
+
+        return first == last
+            ? HtmlReport.FormatDate(first.Value)
+            : HtmlReport.FormatDate(first.Value) + " \u2013 " + HtmlReport.FormatDate(last.Value);
+    }
+
+    /// <summary>
+    /// Writes the matching rows to <paramref name="outputPath"/>; JSON if the extension is .json, an HTML report
+    /// for .html or .htm, CSV otherwise. Returns the number of rows written.
     /// </summary>
     public static Task<int> ExportAsync(string dbPath, string outputPath, string? adapter = null, DateTime? start = null, DateTime? end = null)
     {
@@ -131,6 +215,12 @@ internal static class UsageExporter
                 if (string.Equals(Path.GetExtension(outputPath), ".json", StringComparison.OrdinalIgnoreCase))
                 {
                     WriteJson(stream, rows);
+                }
+                else if (HtmlReport.IsHtmlPath(outputPath))
+                {
+                    // The page declares its charset, so no byte order mark is needed.
+                    using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                    WriteHtml(writer, rows, adapter, start, end);
                 }
                 else
                 {

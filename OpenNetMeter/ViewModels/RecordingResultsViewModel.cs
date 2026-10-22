@@ -12,7 +12,7 @@ using OpenNetMeter.Utilities;
 namespace OpenNetMeter.ViewModels;
 
 /// <summary>
-/// Read-only summary of a stopped traffic recording, shown in the results dialog, with CSV/JSON export.
+/// Read-only summary of a stopped traffic recording, shown in the results dialog, with CSV/JSON/HTML export.
 /// </summary>
 public sealed class RecordingResultsViewModel
 {

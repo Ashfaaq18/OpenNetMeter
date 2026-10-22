@@ -201,7 +201,7 @@
               <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                   <TextBlock Text="Export usage data" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
-                  <TextBlock Text="Save all stored history as CSV or JSON" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
+                  <TextBlock Text="Save all stored history as CSV, JSON or HTML" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
                 </StackPanel>
                 <Button Grid.Column="1" MinWidth="110" VerticalAlignment="Center" HorizontalContentAlignment="Center"
                         Command="{Binding ExportAllCommand}"
