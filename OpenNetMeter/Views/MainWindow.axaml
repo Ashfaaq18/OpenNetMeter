@@ -105,8 +105,22 @@
 
         <Border Grid.Row="2" Background="{DynamicResource BrushBgTitleBar}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="0,1,0,0">
           <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="10,0">
-            <TextBlock Grid.Column="0" Text="{Binding NetworkStatus}" FontSize="12"
-                       Foreground="{DynamicResource BrushTextUi}" VerticalAlignment="Center"/>
+            <Grid Grid.Column="0" ColumnDefinitions="Auto,Auto,Auto,*">
+              <Ellipse Grid.Column="0" Classes="statusDot" Classes.online="{Binding IsNetworkConnected}"
+                       Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0"
+                       ToolTip.Tip="{Binding NetworkStatusTooltip}"/>
+              <TextBlock Grid.Column="1" Text="{Binding NetworkStatus}" FontSize="12"
+                         Foreground="{DynamicResource BrushTextUi}" VerticalAlignment="Center"/>
+              <PathIcon Grid.Column="2" Width="12" Height="12" Margin="10,0,6,0" VerticalAlignment="Center"
+                        Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"
+                        Foreground="{DynamicResource BrushWarning}"
+                        IsVisible="{Binding HasPinnedAdapterWarning}"/>
+              <TextBlock Grid.Column="3" Text="{Binding PinnedAdapterWarning}" FontSize="12"
+                         Foreground="{DynamicResource BrushWarning}" VerticalAlignment="Center"
+                         TextTrimming="CharacterEllipsis"
+                         ToolTip.Tip="{Binding PinnedAdapterWarning}"
+                         IsVisible="{Binding HasPinnedAdapterWarning}"/>
+            </Grid>
 
             <TextBlock Grid.Column="1" Text="Download Speed :" FontSize="12"
                        Foreground="{DynamicResource BrushTextSecondaryAlt}" VerticalAlignment="Center" Margin="0,0,4,0"/>
@@ -423,6 +437,13 @@
       <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}"/>
     </Style>
     <StyleInclude Source="avares://OpenNetMeter/Views/Styles/DatePickerStyles.axaml"/>
+
+    <Style Selector="Ellipse.statusDot">
+      <Setter Property="Fill" Value="{DynamicResource BrushTextMuted}"/>
+    </Style>
+    <Style Selector="Ellipse.statusDot.online">
+      <Setter Property="Fill" Value="{DynamicResource BrushDownload}"/>
+    </Style>
 
     <Style Selector="Button.tab">
       <Setter Property="Background" Value="{DynamicResource BrushTransparent}"/>

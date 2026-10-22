@@ -54,6 +54,22 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
         }
     }
 
+    public IReadOnlyList<NetworkAdapterOption> GetAvailableAdapters()
+    {
+        return NetworkProcess.GetSelectableAdapters();
+    }
+
+    public void RefreshAdapterSelection()
+    {
+        NetworkProcess? current;
+        lock (syncLock)
+        {
+            current = networkProcess;
+        }
+
+        current?.RequestNetworkReevaluation();
+    }
+
     public void Dispose()
     {
         lock (syncLock)

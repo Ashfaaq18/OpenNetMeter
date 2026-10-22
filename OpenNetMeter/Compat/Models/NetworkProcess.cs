@@ -11,6 +11,7 @@ using Microsoft.Diagnostics.Tracing.Session;
 using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
 using OpenNetMeter.Properties;
 using System.Diagnostics.Eventing.Reader;
@@ -170,9 +171,50 @@ namespace OpenNetMeter.Models
         /// </summary>
         private NetworkSnapshot? GetCurrentNetworkSnapshot()
         {
-            var adapters = NetworkInterface.GetAllNetworkInterfaces();
+            var adapters = EnumerateUpAdapters();
+            var candidates = adapters.Select(a => a.Candidate).ToList();
 
-            foreach (var adapter in adapters)
+            // Pinned adapter (empty = automatic). A pinned adapter that isn't available
+            // yields no snapshot, so the state machine treats it as disconnected.
+            var pinnedAdapterId = SettingsManager.Current.NetworkAdapterId;
+
+            // The route lookup only matters for automatic selection.
+            int? bestRouteIndex = string.IsNullOrEmpty(pinnedAdapterId)
+                ? NetworkRoute.GetBestInterfaceIndex()
+                : null;
+
+            var chosen = NetworkAdapterSelector.Select(candidates, pinnedAdapterId, bestRouteIndex);
+            if (chosen == null)
+                return null; // No valid connection found
+
+            var info = adapters.First(a => ReferenceEquals(a.Candidate, chosen));
+
+            // Build display name (SSID lookup only for the chosen adapter)
+            var name = BuildDisplayName(info.Adapter);
+
+            Debug.WriteLine($"{info.Adapter.Name} is up, IP: {(info.IPv4 != null ? new IPAddress(info.IPv4) : new IPAddress(info.IPv6!))}");
+
+            return new NetworkSnapshot(
+                name,
+                info.Adapter.Id,
+                info.IPv4 ?? DefaultIPv4,
+                info.IPv6 ?? DefaultIPv6
+            );
+        }
+
+        /// <summary>
+        /// An Up, non-loopback adapter together with the addresses collected from it.
+        /// </summary>
+        private sealed record UpAdapter(AdapterCandidate Candidate, NetworkInterface Adapter, byte[]? IPv4, byte[]? IPv6);
+
+        /// <summary>
+        /// Lists adapters that are Up and not Loopback, with their usable IPv4/IPv6 addresses.
+        /// </summary>
+        private static List<UpAdapter> EnumerateUpAdapters()
+        {
+            var result = new List<UpAdapter>();
+
+            foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces())
             {
                 // Skip adapters that aren't connected
                 if (adapter.OperationalStatus != OperationalStatus.Up)
@@ -182,55 +224,114 @@ namespace OpenNetMeter.Models
                 if (adapter.NetworkInterfaceType == NetworkInterfaceType.Loopback)
                     continue;
 
-                var props = adapter.GetIPProperties();
-
-                // No gateway = not a real internet connection (e.g., virtual adapters)
-                if (props.GatewayAddresses.Count == 0)
-                    continue;
-
-                byte[]? ipv4 = null;
-                byte[]? ipv6 = null;
-
-                // Extract assigned IP addresses
-                foreach (var unicast in props.UnicastAddresses)
+                try
                 {
-                    var addr = unicast.Address;
+                    var props = adapter.GetIPProperties();
 
-                    if (addr.AddressFamily == AddressFamily.InterNetwork)
+                    byte[]? ipv4 = null;
+                    byte[]? ipv6 = null;
+
+                    // Extract assigned IP addresses
+                    foreach (var unicast in props.UnicastAddresses)
                     {
-                        ipv4 = addr.GetAddressBytes();
+                        var addr = unicast.Address;
+
+                        if (addr.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            // Skip unspecified and APIPA (169.254.x.x) addresses
+                            var bytes = addr.GetAddressBytes();
+                            if (NetworkAdapterSelector.IsUsableIPv4(bytes))
+                                ipv4 = bytes;
+                        }
+                        else if (addr.AddressFamily == AddressFamily.InterNetworkV6
+                                 && !addr.IsIPv6LinkLocal) // Skip link-local (fe80::) addresses
+                        {
+                            ipv6 = addr.GetAddressBytes();
+                        }
                     }
-                    else if (addr.AddressFamily == AddressFamily.InterNetworkV6
-                             && !addr.IsIPv6LinkLocal) // Skip link-local (fe80::) addresses
-                    {
-                        ipv6 = addr.GetAddressBytes();
-                    }
+
+                    var candidate = new AdapterCandidate(
+                        adapter.Id,
+                        adapter.Name,
+                        GetInterfaceIndex(props),
+                        HasGateway: props.GatewayAddresses.Count > 0,
+                        HasAddress: ipv4 != null || ipv6 != null);
+
+                    result.Add(new UpAdapter(candidate, adapter, ipv4, ipv6));
                 }
-
-                // Need at least one usable IP to consider this a valid connection
-                if (ipv4 == null && ipv6 == null)
-                    continue;
-
-                // Build display name (include SSID for Wi-Fi)
-                var name = adapter.Name;
-                if (adapter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                catch (Exception ex)
                 {
-                    var ssid = GetConnectedSsid(adapter.Id);
-                    if (!string.IsNullOrEmpty(ssid))
-                        name += $"({ssid})";
+                    EventLogger.Error($"Failed to read properties of adapter {adapter.Name}", ex);
                 }
-
-                Debug.WriteLine($"{adapter.Name} is up, IP: {(ipv4 != null ? new IPAddress(ipv4) : new IPAddress(ipv6!))}");
-
-                return new NetworkSnapshot(
-                    name,
-                    adapter.Id,
-                    ipv4 ?? DefaultIPv4,
-                    ipv6 ?? DefaultIPv6
-                );
             }
 
-            return null; // No valid connection found
+            return result;
+        }
+
+        /// <summary>
+        /// Windows interface index of the adapter (IPv4 first, then IPv6), or null if neither
+        /// protocol is bound. This is the index GetBestInterface reports.
+        /// </summary>
+        private static int? GetInterfaceIndex(IPInterfaceProperties props)
+        {
+            try
+            {
+                var index = props.GetIPv4Properties()?.Index;
+                if (index.HasValue)
+                    return index;
+            }
+            catch (NetworkInformationException)
+            {
+                // IPv4 isn't bound to this adapter
+            }
+
+            try
+            {
+                return props.GetIPv6Properties()?.Index;
+            }
+            catch (NetworkInformationException)
+            {
+                // IPv6 isn't bound to this adapter
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Display name for an adapter: its name, plus the SSID for Wi-Fi.
+        /// </summary>
+        private static string BuildDisplayName(NetworkInterface adapter)
+        {
+            var name = adapter.Name;
+            if (adapter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+            {
+                var ssid = GetConnectedSsid(adapter.Id);
+                if (!string.IsNullOrEmpty(ssid))
+                    name += $"({ssid})";
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Adapters the user can pin in Settings: Up, non-loopback and with a usable address,
+        /// sorted by display name. Returns an empty list if enumeration fails.
+        /// </summary>
+        internal static IReadOnlyList<NetworkAdapterOption> GetSelectableAdapters()
+        {
+            try
+            {
+                return EnumerateUpAdapters()
+                    .Where(a => a.Candidate.HasAddress)
+                    .Select(a => new NetworkAdapterOption(a.Adapter.Id, BuildDisplayName(a.Adapter)))
+                    .OrderBy(o => o.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                EventLogger.Error("Failed to list network adapters", ex);
+                return Array.Empty<NetworkAdapterOption>();
+            }
         }
 
         /// <summary>
@@ -272,6 +373,26 @@ namespace OpenNetMeter.Models
         }
 
         //---------- Network Change Handling ------------//
+
+        /// <summary>
+        /// Re-evaluates the network state right away (no debounce wait), e.g. after the user
+        /// changes the adapter selection in Settings. The state machine in HandleNetworkChange
+        /// then switches adapters or disconnects as needed.
+        /// </summary>
+        public void RequestNetworkReevaluation()
+        {
+            if (isDisposed)
+                return;
+
+            try
+            {
+                debounceTimer?.Change(0, Timeout.Infinite);
+            }
+            catch (ObjectDisposedException)
+            {
+                EventLogger.Warn("Debounce timer was disposed while requesting network re-evaluation");
+            }
+        }
 
         /// <summary>
         /// Event handler for NetworkChange.NetworkAddressChanged.

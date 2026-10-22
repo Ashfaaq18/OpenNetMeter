@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
 using OpenNetMeter.Models;
+using OpenNetMeter.Properties;
 using OpenNetMeter.Services;
 using OpenNetMeter.Utilities;
 using OpenNetMeter.Core.ViewModels;
@@ -20,6 +22,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private readonly IExternalLinkService externalLinkService;
     private readonly MiniWidgetViewModel miniWidget;
     private string networkStatus = "Disconnected";
+    private string connectedAdapterName = string.Empty;
+    private string pinnedAdapterWarning = string.Empty;
     private bool isAboutOpen;
 
     public MainWindowViewModel()
@@ -46,7 +50,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         Summary = new SummaryViewModel(this.networkCaptureService, processIconService, externalLinkService, fileSaveDialogService, fileRevealService);
         History = new HistoryViewModel(processIconService, externalLinkService, fileSaveDialogService, fileRevealService);
-        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService, fileSaveDialogService, fileRevealService);
+        Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService, fileSaveDialogService, fileRevealService, this.networkCaptureService);
         Settings.PropertyChanged += Settings_PropertyChanged;
         Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;
         Settings.RetentionShortened += Settings_RetentionShortened;
@@ -71,6 +75,10 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         this.networkCaptureService.Start();
         History.ReloadProfiles();
         SyncMiniWidgetFromSummary();
+
+        // Start() raises no NetworkChanged when nothing matches at launch (e.g. a pinned adapter that
+        // is unplugged), so evaluate the warning once after any queued connect event has run.
+        Dispatcher.UIThread.Post(UpdatePinnedAdapterWarning);
     }
 
     public SummaryViewModel Summary { get; }
@@ -99,8 +107,32 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
                 return;
             networkStatus = value;
             OnPropertyChanged(nameof(NetworkStatus));
+            OnPropertyChanged(nameof(IsNetworkConnected));
+            OnPropertyChanged(nameof(NetworkStatusTooltip));
         }
     }
+
+    public bool IsNetworkConnected => !string.Equals(NetworkStatus, "Disconnected", StringComparison.OrdinalIgnoreCase);
+
+    public string NetworkStatusTooltip => IsNetworkConnected ? $"Monitoring {connectedAdapterName}" : "No active adapter";
+
+    /// <summary>
+    /// Shown in the status bar while a pinned adapter is selected but not connected; empty otherwise.
+    /// </summary>
+    public string PinnedAdapterWarning
+    {
+        get => pinnedAdapterWarning;
+        private set
+        {
+            if (pinnedAdapterWarning == value)
+                return;
+            pinnedAdapterWarning = value;
+            OnPropertyChanged(nameof(PinnedAdapterWarning));
+            OnPropertyChanged(nameof(HasPinnedAdapterWarning));
+        }
+    }
+
+    public bool HasPinnedAdapterWarning => pinnedAdapterWarning.Length > 0;
 
     public bool IsAboutOpen
     {
@@ -154,7 +186,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             Dispatcher.UIThread.Post(() =>
             {
                 NetworkStatus = "Disconnected";
+                UpdatePinnedAdapterWarning();
                 Summary.ClearOnDisconnect();
+                Settings.RefreshAdapterChoices();
             });
             return;
         }
@@ -162,10 +196,23 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         var adapterName = e.AdapterName;
         Dispatcher.UIThread.Post(() =>
         {
+            connectedAdapterName = adapterName;
             NetworkStatus = $"Connected : {adapterName}";
+            UpdatePinnedAdapterWarning();
             Summary.SetActiveAdapter(adapterName);
             History.ReloadProfiles();
+            Settings.RefreshAdapterChoices();
         });
+    }
+
+    /// <summary>
+    /// Warns when a pinned adapter is selected but not connected (nothing is counted then).
+    /// Clears when connected or when selection is Automatic.
+    /// </summary>
+    private void UpdatePinnedAdapterWarning()
+    {
+        var settings = SettingsManager.Current;
+        PinnedAdapterWarning = PinnedAdapterStatus.GetWarningText(settings.NetworkAdapterId, settings.NetworkAdapterName, IsNetworkConnected);
     }
 
     private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -179,11 +226,17 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         {
             OnPropertyChanged(nameof(IsModalOpen));
         }
+        else if (e.PropertyName == nameof(SettingsViewModel.SelectedAdapterChoice))
+        {
+            // Automatic clears the warning immediately; a pinned adapter warns while disconnected.
+            // The re-evaluation the selection triggers updates it again through NetworkChanged.
+            UpdatePinnedAdapterWarning();
+        }
     }
 
     private void Settings_DeleteAllDataConfirmed()
     {
-        bool wasConnected = !string.Equals(NetworkStatus, "Disconnected", StringComparison.OrdinalIgnoreCase);
+        bool wasConnected = IsNetworkConnected;
 
         if (wasConnected)
         {
@@ -262,6 +315,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         public void Start() { }
         public void Stop() { }
+        public IReadOnlyList<NetworkAdapterOption> GetAvailableAdapters() => [];
+        public void RefreshAdapterSelection() { }
         public void Dispose() { }
     }
 

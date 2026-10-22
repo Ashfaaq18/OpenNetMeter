@@ -101,12 +101,12 @@
                   </TextBlock>
                 </Border>
                 <Slider Minimum="0" Maximum="100" Value="{Binding MiniWidgetTransparency, Mode=TwoWay}"
-                      IsEnabled="{Binding MiniWidgetVisible}" Margin="0,6,0,2" VerticalAlignment="Center"/>
+                        IsEnabled="{Binding MiniWidgetVisible}" Margin="0,6,0,2" VerticalAlignment="Center"/>
                 <Grid VerticalAlignment="Bottom">
                   <TextBlock HorizontalAlignment="Left" Text="Opaque" Foreground="{DynamicResource BrushTextFaint}" FontSize="9"/>
                   <TextBlock HorizontalAlignment="Right" Text="Transparent" Foreground="{DynamicResource BrushTextFaint}" FontSize="9"/>
                 </Grid>
-              </Grid>       
+              </Grid>
             </StackPanel>
           </StackPanel>
         </Border>
@@ -142,7 +142,7 @@
                              IsChecked="{Binding IsNetworkTargetBoth, Mode=TwoWay}">
                   <TextBlock Text="Both"/>
                 </RadioButton>
-            </StackPanel>
+              </StackPanel>
             </StackPanel>
             <Border Grid.Column="1" Width="1" Background="{DynamicResource BrushDivider}" Margin="24,0"/>
             <StackPanel Grid.Column="2" Spacing="0">
@@ -162,6 +162,29 @@
               </Grid>
             </StackPanel>
           </Grid>
+          <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="20,0"/>
+          <StackPanel Margin="20,16" Spacing="0">
+            <TextBlock Text="Network adapter" Foreground="{DynamicResource BrushTextBody}" FontSize="12" Margin="0,0,0,4"/>
+            <TextBlock Text="Automatic follows the connection Windows uses for internet traffic. Pin an adapter (for example a VPN) to measure only that one (nothing is counted while it is disconnected)."
+                       Foreground="{DynamicResource BrushTextMuted}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,14"/>
+            <ComboBox HorizontalAlignment="Left" MinWidth="260"
+                      ItemsSource="{Binding AdapterChoices}"
+                      SelectedItem="{Binding SelectedAdapterChoice, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:AdapterChoice">
+                  <TextBlock Text="{Binding Label}"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Margin="0,8,0,0"
+                  IsVisible="{Binding IsPinnedAdapterMissing}">
+              <PathIcon Grid.Column="0" Width="11" Height="11" VerticalAlignment="Top" Margin="0,1,0,0"
+                        Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"
+                        Foreground="{DynamicResource BrushWarning}"/>
+              <TextBlock Grid.Column="1" Text="Not connected. Nothing is being counted until it reconnects or you choose Automatic."
+                         FontSize="10" TextWrapping="Wrap" Foreground="{DynamicResource BrushWarning}"/>
+            </Grid>
+          </StackPanel>
         </StackPanel>
       </Border>
 

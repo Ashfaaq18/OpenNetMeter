@@ -49,6 +49,8 @@ internal static class SettingsManager
                 Current.NetworkType = GetInt(root, nameof(AppSettings.NetworkType), Current.NetworkType);
                 Current.NetworkSpeedFormat = GetInt(root, nameof(AppSettings.NetworkSpeedFormat), Current.NetworkSpeedFormat);
                 Current.NetworkSpeedMagnitude = GetInt(root, nameof(AppSettings.NetworkSpeedMagnitude), Current.NetworkSpeedMagnitude);
+                Current.NetworkAdapterId = GetString(root, nameof(AppSettings.NetworkAdapterId), Current.NetworkAdapterId);
+                Current.NetworkAdapterName = GetString(root, nameof(AppSettings.NetworkAdapterName), Current.NetworkAdapterName);
                 Current.HistoryRetentionDays = Models.HistoryRetention.Normalize(
                     GetInt(root, nameof(AppSettings.HistoryRetentionDays), Current.HistoryRetentionDays));
             }
@@ -98,6 +100,8 @@ internal static class SettingsManager
             root[nameof(AppSettings.NetworkType)] = Current.NetworkType;
             root[nameof(AppSettings.NetworkSpeedFormat)] = Current.NetworkSpeedFormat;
             root[nameof(AppSettings.NetworkSpeedMagnitude)] = Current.NetworkSpeedMagnitude;
+            root[nameof(AppSettings.NetworkAdapterId)] = Current.NetworkAdapterId;
+            root[nameof(AppSettings.NetworkAdapterName)] = Current.NetworkAdapterName;
             root[nameof(AppSettings.HistoryRetentionDays)] = Current.HistoryRetentionDays;
 
             var json = root.ToJsonString(new JsonSerializerOptions
@@ -136,6 +140,22 @@ internal static class SettingsManager
         catch (Exception ex)
         {
             EventLogger.Error($"Error reading int setting '{key}'", ex);
+            return fallback;
+        }
+    }
+
+    private static string GetString(JsonObject root, string key, string fallback)
+    {
+        if (!root.TryGetPropertyValue(key, out var node) || node == null)
+            return fallback;
+
+        try
+        {
+            return node.GetValue<string>() ?? fallback;
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error($"Error reading string setting '{key}'", ex);
             return fallback;
         }
     }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -6,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Threading;
 using OpenNetMeter.Models;
 using OpenNetMeter.Services;
 using OpenNetMeter.PlatformAbstractions;
@@ -21,6 +24,13 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private readonly IExternalLinkService externalLinkService;
     private readonly IThemeService themeService;
     private readonly IFileSaveDialogService fileSaveDialogService;
+    private readonly INetworkCaptureService networkCaptureService;
+    private readonly Dictionary<string, string> adapterNames = new(StringComparer.OrdinalIgnoreCase);
+    private AdapterChoice? selectedAdapterChoice;
+    private bool isRebuildingAdapterChoices;
+    private bool isPinnedAdapterMissing;
+    private string missingAdapterId = string.Empty;
+    private int adapterRefreshVersion;
     private bool startWithWindows;
     private bool minimizeOnStart;
     private bool darkMode;
@@ -40,7 +50,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private Action? pendingConfirm;
     private Action? pendingCancel;
 
-    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService, IThemeService themeService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
+    public SettingsViewModel(MiniWidgetViewModel miniWidgetViewModel, IMiniWidgetService miniWidgetService, IStartupRegistrationService startupRegistrationService, IExternalLinkService externalLinkService, IThemeService themeService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService, INetworkCaptureService networkCaptureService)
     {
         ExportStatus = new ExportStatusViewModel(fileRevealService);
         this.miniWidgetService = miniWidgetService;
@@ -48,6 +58,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         this.externalLinkService = externalLinkService;
         this.themeService = themeService;
         this.fileSaveDialogService = fileSaveDialogService;
+        this.networkCaptureService = networkCaptureService;
         var settings = SettingsManager.Current;
         startWithWindows = settings.StartWithWin;
         minimizeOnStart = settings.MinimizeOnStart;
@@ -69,10 +80,14 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         this.miniWidgetService.VisibilityChanged += SyncMiniWidgetVisibility;
         this.themeService.ApplyDarkMode(darkMode);
         this.miniWidgetService.RefreshAppearance(darkMode, (int)Math.Round(miniWidgetTransparency));
+
+        // Show Automatic (and any saved pinned adapter) right away; the real list follows asynchronously.
+        ApplyAdapterChoices([]);
+        RefreshAdapterChoices();
     }
 
     public SettingsViewModel()
-        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService(), new NoOpThemeService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
+        : this(new MiniWidgetViewModel(), new PlaceholderMiniWidgetService(), new PlaceholderStartupRegistrationService(), new NoOpExternalLinkService(), new NoOpThemeService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService(), new PlaceholderNetworkCaptureService())
     {
     }
 
@@ -237,6 +252,128 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             SettingsManager.Save();
             OnPropertyChanged(nameof(SelectedSpeedUnitIndex));
         }
+    }
+
+    public ObservableCollection<AdapterChoice> AdapterChoices { get; } = [];
+
+    public AdapterChoice? SelectedAdapterChoice
+    {
+        get => selectedAdapterChoice;
+        set
+        {
+            // The ComboBox clears its selection while the list is rebuilt; ApplyAdapterChoices restores it.
+            if (isRebuildingAdapterChoices)
+                return;
+
+            if (value == null)
+            {
+                // Nothing to save; snap the ComboBox back to the current choice.
+                OnPropertyChanged(nameof(SelectedAdapterChoice));
+                return;
+            }
+
+            if (Equals(selectedAdapterChoice, value))
+                return;
+
+            selectedAdapterChoice = value;
+
+            // An empty Id is Automatic. For a pinned adapter keep its real display name,
+            // not the "(not connected)" label, so it can be shown again later.
+            var settings = SettingsManager.Current;
+            settings.NetworkAdapterId = value.Id;
+            settings.NetworkAdapterName = value.Id.Length == 0
+                ? string.Empty
+                : adapterNames.GetValueOrDefault(value.Id, value.Label);
+            SettingsManager.Save();
+
+            IsPinnedAdapterMissing = value.Id.Length > 0 &&
+                string.Equals(value.Id, missingAdapterId, StringComparison.OrdinalIgnoreCase);
+            OnPropertyChanged(nameof(SelectedAdapterChoice));
+
+            // Takes effect immediately: the capture service switches adapters or disconnects.
+            networkCaptureService.RefreshAdapterSelection();
+        }
+    }
+
+    /// <summary>
+    /// True when a pinned adapter is saved but isn't currently available, i.e. the
+    /// "(not connected)" choice is the selected one. Nothing is counted in that state.
+    /// </summary>
+    public bool IsPinnedAdapterMissing
+    {
+        get => isPinnedAdapterMissing;
+        private set
+        {
+            if (isPinnedAdapterMissing == value)
+                return;
+            isPinnedAdapterMissing = value;
+            OnPropertyChanged(nameof(IsPinnedAdapterMissing));
+        }
+    }
+
+    /// <summary>
+    /// Reloads the adapter list. Enumeration runs off the UI thread; the collection is rebuilt on it.
+    /// </summary>
+    public async void RefreshAdapterChoices()
+    {
+        // Only the latest refresh may rebuild the list, so a slow earlier one can't overwrite it.
+        int version = ++adapterRefreshVersion;
+        try
+        {
+            var adapters = await Task.Run(networkCaptureService.GetAvailableAdapters);
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (version == adapterRefreshVersion)
+                    ApplyAdapterChoices(adapters);
+            });
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to refresh network adapter list", ex);
+        }
+    }
+
+    private void ApplyAdapterChoices(IReadOnlyList<NetworkAdapterOption> adapters)
+    {
+        var settings = SettingsManager.Current;
+        var savedId = settings.NetworkAdapterId ?? string.Empty;
+
+        var choices = new List<AdapterChoice> { new(string.Empty, "Automatic (recommended)") };
+        adapterNames.Clear();
+        foreach (var adapter in adapters)
+        {
+            choices.Add(new AdapterChoice(adapter.Id, adapter.DisplayName));
+            adapterNames[adapter.Id] = adapter.DisplayName;
+        }
+
+        // A pinned adapter that isn't available stays selectable so the saved choice isn't lost.
+        bool isMissing = savedId.Length > 0 && !adapterNames.ContainsKey(savedId);
+        missingAdapterId = isMissing ? savedId : string.Empty;
+        if (isMissing)
+        {
+            var name = string.IsNullOrWhiteSpace(settings.NetworkAdapterName) ? savedId : settings.NetworkAdapterName;
+            adapterNames[savedId] = name;
+            choices.Add(new AdapterChoice(savedId, $"{name} (not connected)"));
+        }
+
+        var selected = choices.FirstOrDefault(c => string.Equals(c.Id, savedId, StringComparison.OrdinalIgnoreCase)) ?? choices[0];
+
+        isRebuildingAdapterChoices = true;
+        try
+        {
+            AdapterChoices.Clear();
+            foreach (var choice in choices)
+                AdapterChoices.Add(choice);
+
+            selectedAdapterChoice = selected;
+        }
+        finally
+        {
+            isRebuildingAdapterChoices = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedAdapterChoice));
+        IsPinnedAdapterMissing = isMissing;
     }
 
     public string[] RetentionOptions { get; } = HistoryRetention.Options.Select(o => o.Label).ToArray();

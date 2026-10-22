@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using OpenNetMeter.PlatformAbstractions;
 
 namespace OpenNetMeter.Services;
@@ -26,6 +27,12 @@ public sealed class PlaceholderNetworkCaptureService : INetworkCaptureService
     public void Stop()
     {
         started = false;
+    }
+
+    public IReadOnlyList<NetworkAdapterOption> GetAvailableAdapters() => [];
+
+    public void RefreshAdapterSelection()
+    {
     }
 
     public void Dispose()
