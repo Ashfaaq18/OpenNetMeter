@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private string? currentSortColumn;
     private bool sortDescending;
     private bool isExporting;
+    private DateTime? lastFilteredAt;
+    private string? lastFilteredProfile;
 
     public HistoryViewModel()
         : this(new NoOpProcessIconService(), new NoOpExternalLinkService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
@@ -141,6 +144,20 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     public string TotalDownloadText => ByteSizeFormatter.FormatBytes(TotalDownload);
     public string TotalUploadText => ByteSizeFormatter.FormatBytes(TotalUpload);
 
+    /// <summary>
+    /// The profile the current results were loaded for; it can differ from <see cref="SelectedProfile"/> until the next filter.
+    /// </summary>
+    public string LastFilteredProfile => lastFilteredProfile ?? string.Empty;
+
+    /// <summary>
+    /// When the current results were loaded, e.g. "22 Oct 2026, 14:05"; empty until a filter has run.
+    /// </summary>
+    public string LastFilteredTimeText => lastFilteredAt is { } at
+        ? at.ToString("d MMM yyyy", CultureInfo.CurrentCulture) + ", " + at.ToString("t", CultureInfo.CurrentCulture)
+        : string.Empty;
+
+    public bool HasLastFiltered => lastFilteredAt != null;
+
     public ExportStatusViewModel ExportStatus { get; }
 
     public ICommand FilterCommand { get; }
@@ -190,6 +207,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             SelectedProfile = null;
             TotalDownload = 0;
             TotalUpload = 0;
+            SetLastFiltered(null, null);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -222,7 +240,9 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         TotalDownload = 0;
         TotalUpload = 0;
 
-        if (string.IsNullOrWhiteSpace(SelectedProfile) || !File.Exists(dbPath))
+        // Read once: the same profile feeds the query and the "Last filtered" line.
+        var profile = SelectedProfile;
+        if (string.IsNullOrWhiteSpace(profile) || !File.Exists(dbPath))
             return;
 
         var (start, end) = GetSelectedRange();
@@ -241,7 +261,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate " +
             "GROUP BY p.ID, p.Name " +
             "ORDER BY p.Name";
-        command.Parameters.AddWithValue("@AdapterName", SelectedProfile);
+        command.Parameters.AddWithValue("@AdapterName", profile);
         command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(start));
         command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(end));
 
@@ -257,6 +277,19 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             TotalDownload += download;
             TotalUpload += upload;
         }
+
+        SetLastFiltered(profile, DateTime.Now);
+    }
+
+    private void SetLastFiltered(string? profile, DateTime? at)
+    {
+        if (lastFilteredProfile == profile && lastFilteredAt == at)
+            return;
+        lastFilteredProfile = profile;
+        lastFilteredAt = at;
+        OnPropertyChanged(nameof(LastFilteredProfile));
+        OnPropertyChanged(nameof(LastFilteredTimeText));
+        OnPropertyChanged(nameof(HasLastFiltered));
     }
 
     private void SortRows(string column)

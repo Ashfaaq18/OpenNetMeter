@@ -19,6 +19,24 @@ public class ExportStatusViewModelTests
         Assert.Equal("Exported 19 rows to", status.Message);
         Assert.Equal("usage.csv", status.FileName);
         Assert.True(await WaitUntil(() => !status.IsVisible));
+        Assert.False(status.CanReveal);
+        Assert.False(status.RevealCommand.CanExecute(null));
+        // The text is kept so the view can fade it out rather than show it blank.
+        Assert.Equal("Exported 19 rows to", status.Message);
+        Assert.Equal("usage.csv", status.FileName);
+    }
+
+    [Fact]
+    public void Clear_HidesAndEmptiesMessage()
+    {
+        var status = new ExportStatusViewModel(new RecordingRevealService(), TimeSpan.FromMinutes(1));
+
+        status.ShowSuccess(2, @"C:\out\usage.csv");
+        // Also cancels the pending auto-hide; xUnit otherwise waits for the async void delay to finish.
+        status.Clear();
+
+        Assert.False(status.IsVisible);
+        Assert.Equal(string.Empty, status.Message);
         Assert.Null(status.FilePath);
     }
 

@@ -7,10 +7,24 @@
              x:Class="OpenNetMeter.Views.MainWindowTabs.HistoryView"
              x:DataType="vm:HistoryViewModel"
              mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="DockPanel.exportStatus">
+      <Setter Property="Opacity" Value="0"/>
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.35"/>
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="DockPanel.exportStatus.shown">
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+  </UserControl.Styles>
+
   <Grid Margin="12,8" RowDefinitions="Auto,*,Auto">
     <Border Padding="12" CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}">
-      <StackPanel Spacing="8">
-      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+      <StackPanel Spacing="8" HorizontalAlignment="Center">
+      <StackPanel x:Name="FilterControls" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
         <TextBlock VerticalAlignment="Center" Text="Usage of"/>
         <ComboBox Width="180"
                   ItemsSource="{Binding Profiles}"
@@ -30,30 +44,51 @@
         </Button>
       </StackPanel>
 
-      <!-- Export feedback: grows the filter bar by one line; success hides itself after a few seconds. -->
-      <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"
-                  IsVisible="{Binding ExportStatus.IsVisible}">
-        <PathIcon Width="12" Height="12" VerticalAlignment="Center"
-                  Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
-                  Foreground="{DynamicResource BrushDownload}"
-                  IsVisible="{Binding ExportStatus.IsSuccess}"/>
-        <PathIcon Width="12" Height="12" VerticalAlignment="Center"
-                  Data="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
-                  Foreground="{DynamicResource BrushDangerBright}"
-                  IsVisible="{Binding ExportStatus.IsError}"/>
-        <TextBlock Text="{Binding ExportStatus.Message}" VerticalAlignment="Center"
-                   Foreground="{DynamicResource BrushTextMuted}"/>
-        <TextBlock Text="{Binding ExportStatus.FileName}" VerticalAlignment="Center" MaxWidth="360"
-                   TextTrimming="PrefixCharacterEllipsis"
-                   Foreground="{DynamicResource BrushTextMuted}"
-                   ToolTip.Tip="{Binding ExportStatus.FilePath}"
-                   IsVisible="{Binding ExportStatus.IsSuccess}"/>
-        <Button Classes="linkBtn" VerticalAlignment="Center" Margin="4,0,0,0"
-                Command="{Binding ExportStatus.RevealCommand}"
-                IsVisible="{Binding ExportStatus.CanReveal}">
-          <TextBlock Text="Open folder" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
-        </Button>
-      </StackPanel>
+      <!-- Persistent status line, as wide as the controls row: when results were last loaded (left) and the
+           export feedback (right), which fades in and out so the filter bar never changes height. -->
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" MinHeight="16"
+            Width="{Binding #FilterControls.Bounds.Width}">
+        <!-- "Last filtered <profile> · <time>": the profile is the one the results were loaded for, which can differ
+             from the dropdown until the next filter. Its MaxWidth keeps the export area's space. -->
+        <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center"
+                    IsVisible="{Binding HasLastFiltered}">
+          <TextBlock Text="Last filtered" VerticalAlignment="Center"
+                     Foreground="{DynamicResource BrushTextMuted}"/>
+          <TextBlock Text="{Binding LastFilteredProfile}" Margin="4,0,0,0" MaxWidth="180" VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis"
+                     Foreground="{DynamicResource BrushTextBody}"
+                     ToolTip.Tip="{Binding LastFilteredProfile}"/>
+          <TextBlock Text="{Binding LastFilteredTimeText, StringFormat='· {0}'}" Margin="4,0,0,0" VerticalAlignment="Center"
+                     Foreground="{DynamicResource BrushTextMuted}"/>
+        </StackPanel>
+        <DockPanel Grid.Column="1" Classes="exportStatus" Classes.shown="{Binding ExportStatus.IsVisible}"
+                   IsHitTestVisible="{Binding ExportStatus.IsVisible}"
+                   HorizontalAlignment="Right" LastChildFill="True">
+          <PathIcon DockPanel.Dock="Left" Width="12" Height="12" VerticalAlignment="Center"
+                    Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                    Foreground="{DynamicResource BrushDownload}"
+                    IsVisible="{Binding ExportStatus.IsSuccess}"/>
+          <PathIcon DockPanel.Dock="Left" Width="12" Height="12" VerticalAlignment="Center"
+                    Data="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+                    Foreground="{DynamicResource BrushDangerBright}"
+                    IsVisible="{Binding ExportStatus.IsError}"/>
+          <TextBlock DockPanel.Dock="Left" Margin="6,0,0,0" VerticalAlignment="Center"
+                     Text="{Binding ExportStatus.Message}"
+                     Foreground="{DynamicResource BrushTextMuted}"/>
+          <!-- Bound to IsSuccess rather than CanReveal: CanReveal drops on hide and would collapse the link mid-fade. -->
+          <Button DockPanel.Dock="Right" Classes="linkBtn" VerticalAlignment="Center" Margin="6,0,0,0"
+                  Command="{Binding ExportStatus.RevealCommand}"
+                  IsVisible="{Binding ExportStatus.IsSuccess}">
+            <TextBlock Text="Open folder" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+          </Button>
+          <TextBlock Margin="6,0,0,0" VerticalAlignment="Center"
+                     TextTrimming="PrefixCharacterEllipsis"
+                     Text="{Binding ExportStatus.FileName}"
+                     Foreground="{DynamicResource BrushTextMuted}"
+                     ToolTip.Tip="{Binding ExportStatus.FilePath}"
+                     IsVisible="{Binding ExportStatus.IsSuccess}"/>
+        </DockPanel>
+      </Grid>
       </StackPanel>
     </Border>
 

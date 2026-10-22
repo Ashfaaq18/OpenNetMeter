@@ -22,6 +22,7 @@ public sealed class ExportStatusViewModel : INotifyPropertyChanged
     private CancellationTokenSource? hideCts;
     private string message = string.Empty;
     private bool isError;
+    private bool isShown;
     private string? filePath;
 
     public ExportStatusViewModel(IFileRevealService fileRevealService)
@@ -39,10 +40,11 @@ public sealed class ExportStatusViewModel : INotifyPropertyChanged
     public string Message => message;
     public bool IsError => isError;
     public bool IsSuccess => filePath != null && !isError;
-    public bool IsVisible => message.Length > 0;
+    // Cleared messages and the auto-hide both turn this off; the auto-hide keeps the text so the view can fade it out.
+    public bool IsVisible => isShown;
     public string? FilePath => filePath;
     public string FileName => filePath == null ? string.Empty : Path.GetFileName(filePath);
-    public bool CanReveal => IsSuccess;
+    public bool CanReveal => IsSuccess && isShown;
     public ICommand RevealCommand => revealCommand;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -80,7 +82,17 @@ public sealed class ExportStatusViewModel : INotifyPropertyChanged
         }
 
         if (ReferenceEquals(hideCts, cts))
-            Clear();
+            Hide();
+    }
+
+    private void Hide()
+    {
+        // Message and file path are kept so the text stays rendered while the view fades it out.
+        isShown = false;
+
+        OnPropertyChanged(nameof(IsVisible));
+        OnPropertyChanged(nameof(CanReveal));
+        revealCommand.RaiseCanExecuteChanged();
     }
 
     private void Set(string newMessage, bool isError, string? path)
@@ -92,6 +104,7 @@ public sealed class ExportStatusViewModel : INotifyPropertyChanged
         message = newMessage;
         this.isError = isError;
         filePath = path;
+        isShown = newMessage.Length > 0;
 
         OnPropertyChanged(nameof(Message));
         OnPropertyChanged(nameof(IsError));
