@@ -19,6 +19,9 @@ namespace OpenNetMeter.ViewModels;
 
 public sealed class SettingsViewModel : INotifyPropertyChanged
 {
+    private const string RepositoryUri = "https://github.com/Ashfaaq18/OpenNetMeter";
+    private const string PrivacyPolicyUri = "https://github.com/Ashfaaq18/OpenNetMeter/blob/main/PRIVACY.md";
+
     private readonly IMiniWidgetService miniWidgetService;
     private readonly IStartupRegistrationService startupRegistrationService;
     private readonly IExternalLinkService externalLinkService;
@@ -41,7 +44,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private int selectedSpeedUnitIndex;
     private bool isCheckingForUpdates;
     private bool isUpdateAvailable;
-    private string updateStatusMessage = "Click here to check for new updates";
+    private string updateStatusMessage = string.Empty;
     private string downloadUrl = string.Empty;
     private int selectedRetentionIndex;
     private bool isExporting;
@@ -74,6 +77,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         ExportAllCommand = new RelayCommand(async () => await ExportAllAsync());
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
         DownloadUpdateCommand = new RelayCommand(DownloadUpdate);
+        OpenRepositoryCommand = new RelayCommand(() => this.externalLinkService.Open(RepositoryUri));
+        OpenPrivacyPolicyCommand = new RelayCommand(() => this.externalLinkService.Open(PrivacyPolicyUri));
         ConfirmCommand = new RelayCommand(Confirm);
         CancelConfirmationCommand = new RelayCommand(CancelConfirmation);
 
@@ -428,6 +433,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     public ExportStatusViewModel ExportStatus { get; }
 
+    public string VersionText { get; } = FormatVersion(Assembly.GetExecutingAssembly().GetName().Version);
+
     public bool IsCheckingForUpdates
     {
         get => isCheckingForUpdates;
@@ -492,6 +499,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     public ICommand ExportAllCommand { get; }
     public ICommand CheckForUpdatesCommand { get; }
     public ICommand DownloadUpdateCommand { get; }
+    public ICommand OpenRepositoryCommand { get; }
+    public ICommand OpenPrivacyPolicyCommand { get; }
     public ICommand ConfirmCommand { get; }
     public ICommand CancelConfirmationCommand { get; }
 
@@ -526,6 +535,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsForeverRetentionSelected));
         OnPropertyChanged(nameof(ForeverRetentionWarning));
     }
+
+    private static string FormatVersion(Version? version) =>
+        version == null ? string.Empty : $"{version.Major}.{version.Minor}.{Math.Max(version.Build, 0)}";
 
     private static void SaveRetention(int days)
     {

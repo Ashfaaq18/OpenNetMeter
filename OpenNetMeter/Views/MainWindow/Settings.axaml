@@ -125,84 +125,88 @@
                          VerticalAlignment="Center"/>
             </StackPanel>
           </Border>
-          <Grid ColumnDefinitions="*,Auto,*" Margin="20,16">
-            <StackPanel Grid.Column="0" Spacing="0" VerticalAlignment="Top" HorizontalAlignment="Left">
-              <TextBlock Text="Monitor these networks" Foreground="{DynamicResource BrushTextBody}" FontSize="12" Margin="0,0,0,4"/>
-              <TextBlock Text="Choose Public for internet-only traffic" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,0,0,14"/>
-              <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
-                <RadioButton GroupName="NetTarget" Classes="pill"
-                             IsChecked="{Binding IsNetworkTargetPrivate, Mode=TwoWay}">
-                  <TextBlock Text="Private"/>
-                </RadioButton>
-                <RadioButton GroupName="NetTarget" Classes="pill"
-                             IsChecked="{Binding IsNetworkTargetPublic, Mode=TwoWay}">
-                  <TextBlock Text="Public"/>
-                </RadioButton>
-                <RadioButton GroupName="NetTarget" Classes="pill"
-                             IsChecked="{Binding IsNetworkTargetBoth, Mode=TwoWay}">
-                  <TextBlock Text="Both"/>
-                </RadioButton>
+          <StackPanel Margin="20,16" Spacing="0">
+            <Grid ColumnDefinitions="*,Auto,*">
+              <StackPanel Grid.Column="0" Spacing="0" VerticalAlignment="Top">
+                <TextBlock Text="Network adapter" Foreground="{DynamicResource BrushTextBody}" FontSize="12" Margin="0,0,0,4"/>
+                <TextBlock Text="Automatic follows the connection Windows uses for internet traffic. Pin an adapter (for example a VPN) to measure only that one (nothing is counted while it is disconnected)."
+                           Foreground="{DynamicResource BrushTextMuted}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                <ComboBox HorizontalAlignment="Left" MinWidth="260"
+                          ItemsSource="{Binding AdapterChoices}"
+                          SelectedItem="{Binding SelectedAdapterChoice, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AdapterChoice">
+                      <TextBlock Text="{Binding Label}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Margin="0,8,0,0"
+                      IsVisible="{Binding IsPinnedAdapterMissing}">
+                  <PathIcon Grid.Column="0" Width="11" Height="11" VerticalAlignment="Top" Margin="0,1,0,0"
+                            Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"
+                            Foreground="{DynamicResource BrushWarning}"/>
+                  <TextBlock Grid.Column="1" Text="Not connected. Nothing is being counted until it reconnects or you choose Automatic."
+                             FontSize="10" TextWrapping="Wrap" Foreground="{DynamicResource BrushWarning}"/>
+                </Grid>
               </StackPanel>
-            </StackPanel>
-            <Border Grid.Column="1" Width="1" Background="{DynamicResource BrushDivider}" Margin="24,0"/>
-            <StackPanel Grid.Column="2" Spacing="0">
-              <TextBlock Text="Speed display format" Foreground="{DynamicResource BrushTextBody}" FontSize="12" Margin="0,0,0,4"/>
-              <TextBlock Text="Choose how speeds are shown" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,0,0,14"/>
-              <Grid ColumnDefinitions="*,12,*">
-                <StackPanel Grid.Column="0" Spacing="6">
+              <Border Grid.Column="1" Width="1" Background="{DynamicResource BrushDivider}" Margin="24,0"/>
+              <StackPanel Grid.Column="2" Spacing="0" VerticalAlignment="Top">
+                <TextBlock Text="Monitor these networks" Foreground="{DynamicResource BrushTextBody}" FontSize="12" Margin="0,0,0,4"/>
+                <TextBlock Text="Choose Public for internet-only traffic" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,0,0,14"/>
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Left">
+                  <RadioButton GroupName="NetTarget" Classes="pill"
+                               IsChecked="{Binding IsNetworkTargetPrivate, Mode=TwoWay}">
+                    <TextBlock Text="Private"/>
+                  </RadioButton>
+                  <RadioButton GroupName="NetTarget" Classes="pill"
+                               IsChecked="{Binding IsNetworkTargetPublic, Mode=TwoWay}">
+                    <TextBlock Text="Public"/>
+                  </RadioButton>
+                  <RadioButton GroupName="NetTarget" Classes="pill"
+                               IsChecked="{Binding IsNetworkTargetBoth, Mode=TwoWay}">
+                    <TextBlock Text="Both"/>
+                  </RadioButton>
+                </StackPanel>
+              </StackPanel>
+            </Grid>
+            <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,16"/>
+            <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="32" HorizontalAlignment="Left">
+              <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Speed display format" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
+                <TextBlock Text="Choose how speeds are shown" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <StackPanel Spacing="6">
                   <TextBlock Text="Magnitude" Foreground="{DynamicResource BrushTextMuted}" FontSize="10"/>
-                  <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding SpeedMagnitudes}"
+                  <ComboBox Width="120" ItemsSource="{Binding SpeedMagnitudes}"
                             SelectedIndex="{Binding SelectedSpeedMagnitudeIndex, Mode=TwoWay}"/>
                 </StackPanel>
-                <StackPanel Grid.Column="2" Spacing="6">
+                <StackPanel Spacing="6">
                   <TextBlock Text="Unit" Foreground="{DynamicResource BrushTextMuted}" FontSize="10"/>
-                  <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding SpeedUnits}"
+                  <ComboBox Width="160" ItemsSource="{Binding SpeedUnits}"
                             SelectedIndex="{Binding SelectedSpeedUnitIndex, Mode=TwoWay}"/>
                 </StackPanel>
-              </Grid>
-            </StackPanel>
-          </Grid>
-          <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="20,0"/>
-          <StackPanel Margin="20,16" Spacing="0">
-            <TextBlock Text="Network adapter" Foreground="{DynamicResource BrushTextBody}" FontSize="12" Margin="0,0,0,4"/>
-            <TextBlock Text="Automatic follows the connection Windows uses for internet traffic. Pin an adapter (for example a VPN) to measure only that one (nothing is counted while it is disconnected)."
-                       Foreground="{DynamicResource BrushTextMuted}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,14"/>
-            <ComboBox HorizontalAlignment="Left" MinWidth="260"
-                      ItemsSource="{Binding AdapterChoices}"
-                      SelectedItem="{Binding SelectedAdapterChoice, Mode=TwoWay}">
-              <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:AdapterChoice">
-                  <TextBlock Text="{Binding Label}"/>
-                </DataTemplate>
-              </ComboBox.ItemTemplate>
-            </ComboBox>
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Margin="0,8,0,0"
-                  IsVisible="{Binding IsPinnedAdapterMissing}">
-              <PathIcon Grid.Column="0" Width="11" Height="11" VerticalAlignment="Top" Margin="0,1,0,0"
-                        Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"
-                        Foreground="{DynamicResource BrushWarning}"/>
-              <TextBlock Grid.Column="1" Text="Not connected. Nothing is being counted until it reconnects or you choose Automatic."
-                         FontSize="10" TextWrapping="Wrap" Foreground="{DynamicResource BrushWarning}"/>
+              </StackPanel>
             </Grid>
           </StackPanel>
         </StackPanel>
       </Border>
 
-      <Grid ColumnDefinitions="*,12,*">
-        <Border Grid.Column="0" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
-                BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
-          <StackPanel>
-            <Border Padding="16,12" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushDangerBright}">
-                  <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
-                            Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
-                </Border>
-                <TextBlock Text="Data Management" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="12"
-                           VerticalAlignment="Center"/>
-              </StackPanel>
-            </Border>
-            <StackPanel Margin="20,16" Spacing="0">
+      <Border CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+              BoxShadow="{DynamicResource ShadowSoft}">
+        <StackPanel>
+          <Border Padding="16,12" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushDangerBright}">
+                <PathIcon Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
+                          Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+              </Border>
+              <TextBlock Text="History &amp; Data" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="12"
+                         VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Grid ColumnDefinitions="*,24,*" Margin="20,16">
+            <StackPanel Grid.Column="0" Spacing="0" VerticalAlignment="Top">
               <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                   <TextBlock Text="History retention" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
@@ -221,7 +225,7 @@
                            Foreground="{DynamicResource BrushWarning}"/>
               </Grid>
               <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,8"/>
-              <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+              <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                   <TextBlock Text="Export usage data" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
                   <TextBlock Text="Save all stored history as CSV, JSON or HTML" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
@@ -233,7 +237,7 @@
                   <TextBlock Text="Export..."/>
                 </Button>
               </Grid>
-              <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="6" Margin="0,0,0,8"
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="6" Margin="0,8,0,0"
                     IsVisible="{Binding ExportStatus.IsVisible}">
                 <Panel Grid.Column="0" VerticalAlignment="Center">
                   <PathIcon Width="11" Height="11"
@@ -257,72 +261,83 @@
                   <TextBlock Text="Open folder" FontSize="10" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
                 </Button>
               </Grid>
-              <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,12"/>
-              <Border CornerRadius="8" BorderBrush="{DynamicResource BrushDangerBorderSoft}" BorderThickness="1" Background="{DynamicResource BrushDangerBgSoft}" Padding="16">
-                <StackPanel Spacing="12">
-                  <StackPanel>
-                    <TextBlock Text="Delete all saved profiles" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
-                    <TextBlock Text="Remove all network usage history. This cannot be undone." Foreground="{DynamicResource BrushDangerBright}" FontSize="10" Margin="0,3,0,0"/>
-                  </StackPanel>
-                  <Button Command="{Binding ResetDataCommand}"
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                          Background="{DynamicResource BrushDangerBright}" Foreground="{DynamicResource BrushWhite}" Padding="16,8" CornerRadius="6">
-                    <TextBlock Text="Delete All" FontWeight="SemiBold" FontSize="11"/>
-                  </Button>
-                </StackPanel>
-              </Border>
             </StackPanel>
-          </StackPanel>
-        </Border>
-
-        <Border Grid.Column="2" CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
-                BoxShadow="{DynamicResource ShadowSoft}" VerticalAlignment="Stretch">
-          <StackPanel>
-            <Border Padding="16,12" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushAccentPurple}">
-                  <PathIcon Data="M21,10.12H14.22L16.96,7.3C14.23,4.6 9.81,4.5 7.08,7.2C4.35,9.91 4.35,14.28 7.08,17C9.81,19.7 14.23,19.7 16.96,17C18.32,15.65 19,14.08 19,12.1H21C21,14.08 20.12,16.65 18.36,18.39C14.85,21.87 9.15,21.87 5.64,18.39C2.14,14.92 2.11,9.28 5.62,5.81C9.13,2.34 14.76,2.34 18.27,5.81L21,3V10.12M12.5,8V12.25L16,14.33L15.28,15.54L11,13V8H12.5Z"
-                            Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
-                </Border>
-                <TextBlock Text="Updates" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="12"
-                           VerticalAlignment="Center"/>
+            <Border Grid.Column="2" VerticalAlignment="Top" CornerRadius="8" BorderBrush="{DynamicResource BrushDangerBorderSoft}" BorderThickness="1" Background="{DynamicResource BrushDangerBgSoft}" Padding="16">
+              <StackPanel Spacing="12">
+                <StackPanel>
+                  <TextBlock Text="Delete all saved profiles" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
+                  <TextBlock Text="Remove all network usage history. This cannot be undone." Foreground="{DynamicResource BrushDangerBright}" FontSize="10" Margin="0,3,0,0"/>
+                </StackPanel>
+                <Button Command="{Binding ResetDataCommand}"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Background="{DynamicResource BrushDangerBright}" Foreground="{DynamicResource BrushWhite}" Padding="16,8" CornerRadius="6">
+                  <TextBlock Text="Delete All" FontWeight="SemiBold" FontSize="11"/>
+                </Button>
               </StackPanel>
             </Border>
-            <StackPanel Margin="20,16" Spacing="0">
-              <TextBlock Text="Keep OpenNetMeter up to date for the latest features and fixes"
-                         Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,0,0,16"/>
-              <TextBlock Text="{Binding UpdateStatusMessage}" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="11"
-                         HorizontalAlignment="Center" Margin="0,0,0,12"
-                         IsVisible="{Binding UpdateStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-              <ProgressBar IsVisible="{Binding IsCheckingForUpdates}" IsIndeterminate="True" Height="3"
-                           Margin="0,0,0,12"/>
-              <Grid>
-                <Button Command="{Binding CheckForUpdatesCommand}"
-                        IsVisible="{Binding !IsUpdateAvailable}"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                        Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}" Padding="16,10" CornerRadius="6"
-                        BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <PathIcon Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
-                              Foreground="{DynamicResource BrushTextSecondaryAlt}" Width="14" Height="14"/>
-                    <TextBlock Text="Check for updates"/>
-                  </StackPanel>
-                </Button>
-                <Button Command="{Binding DownloadUpdateCommand}"
-                        IsVisible="{Binding IsUpdateAvailable}"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                        Background="{DynamicResource BrushDownload}" Foreground="{DynamicResource BrushWhite}" Padding="16,10" CornerRadius="6">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
-                              Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
-                    <TextBlock Text="Download Update" FontWeight="SemiBold"/>
-                  </StackPanel>
-                </Button>
-              </Grid>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border CornerRadius="10" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True"
+              BoxShadow="{DynamicResource ShadowSoft}">
+        <StackPanel>
+          <Border Padding="16,12" Background="{DynamicResource BrushHeaderRow}" BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Border CornerRadius="6" Padding="4" Width="24" Height="24" Background="{DynamicResource BrushAccentPurple}">
+                <PathIcon Data="M21,10.12H14.22L16.96,7.3C14.23,4.6 9.81,4.5 7.08,7.2C4.35,9.91 4.35,14.28 7.08,17C9.81,19.7 14.23,19.7 16.96,17C18.32,15.65 19,14.08 19,12.1H21C21,14.08 20.12,16.65 18.36,18.39C14.85,21.87 9.15,21.87 5.64,18.39C2.14,14.92 2.11,9.28 5.62,5.81C9.13,2.34 14.76,2.34 18.27,5.81L21,3V10.12M12.5,8V12.25L16,14.33L15.28,15.54L11,13V8H12.5Z"
+                          Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+              </Border>
+              <TextBlock Text="About &amp; Updates" Foreground="{DynamicResource BrushTextHeader}" FontWeight="SemiBold" FontSize="12"
+                         VerticalAlignment="Center"/>
             </StackPanel>
-          </StackPanel>
-        </Border>
-      </Grid>
+          </Border>
+          <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="32" Margin="20,12">
+            <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Foreground="{DynamicResource BrushTextBody}" FontSize="12" FontWeight="SemiBold">
+                <Run Text="OpenNetMeter "/><Run Text="{Binding VersionText}"/>
+              </TextBlock>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Classes="linkBtn" Command="{Binding OpenRepositoryCommand}">
+                  <TextBlock Text="GitHub" FontSize="10" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+                </Button>
+                <Button Classes="linkBtn" Command="{Binding OpenPrivacyPolicyCommand}">
+                  <TextBlock Text="Privacy policy" FontSize="10" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+                </Button>
+              </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
+              <TextBlock Text="{Binding UpdateStatusMessage}" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="11"
+                         HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap"
+                         IsVisible="{Binding UpdateStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              <ProgressBar IsVisible="{Binding IsCheckingForUpdates}" IsIndeterminate="True" Height="3"/>
+            </StackPanel>
+            <Grid Grid.Column="1" VerticalAlignment="Center">
+              <Button Command="{Binding CheckForUpdatesCommand}"
+                      IsVisible="{Binding !IsUpdateAvailable}"
+                      HorizontalAlignment="Left" HorizontalContentAlignment="Center"
+                      Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}" Padding="16,8" CornerRadius="6"
+                      BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                            Foreground="{DynamicResource BrushTextSecondaryAlt}" Width="14" Height="14"/>
+                  <TextBlock Text="Check for updates"/>
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding DownloadUpdateCommand}"
+                      IsVisible="{Binding IsUpdateAvailable}"
+                      HorizontalAlignment="Left" HorizontalContentAlignment="Center"
+                      Background="{DynamicResource BrushDownload}" Foreground="{DynamicResource BrushWhite}" Padding="16,8" CornerRadius="6">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
+                            Foreground="{DynamicResource BrushWhite}" Width="14" Height="14"/>
+                  <TextBlock Text="Download Update" FontWeight="SemiBold"/>
+                </StackPanel>
+              </Button>
+            </Grid>
+          </Grid>
+        </StackPanel>
+      </Border>
     </StackPanel>
   </ScrollViewer>
 </UserControl>
