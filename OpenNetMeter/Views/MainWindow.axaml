@@ -246,6 +246,169 @@
         </Border>
       </Grid>
     </Border>
+
+    <Border x:Name="RecordingResultsOverlay" IsVisible="{Binding Summary.IsRecordingResultsOpen}"
+            KeyboardNavigation.TabNavigation="Cycle"
+            Background="{DynamicResource BrushOverlayScrim}">
+      <Border.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding Summary.CloseRecordingResultsCommand}"/>
+      </Border.KeyBindings>
+      <Grid>
+        <Border Width="520" HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1"
+                Background="{DynamicResource BrushBgWindow}">
+          <Grid RowDefinitions="Auto,*">
+
+            <Border Grid.Row="0" Background="{DynamicResource BrushBgTitleBar}">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Recording results" VerticalAlignment="Center"
+                           Margin="15,0" Foreground="{DynamicResource BrushTextPrimary}"/>
+
+                <Button x:Name="RecordingResultsCloseButton" Grid.Column="1" Classes="titleBtn closeBtn" HorizontalAlignment="Right"
+                        Command="{Binding Summary.CloseRecordingResultsCommand}">
+                  <Panel Width="10" Height="10">
+                    <Line StartPoint="0,0" EndPoint="10,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                    <Line StartPoint="10,0" EndPoint="0,10" Stroke="{DynamicResource BrushTextUi}" StrokeThickness="1.2"/>
+                  </Panel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="{DynamicResource BrushBgSubtle}" Padding="16,12,16,16">
+              <Grid RowDefinitions="Auto,Auto">
+
+                <!-- Body: bound to the recording's results. The title bar and the buttons row stay on the window's view model. -->
+                <Border Grid.Row="0" DataContext="{Binding Summary.LastRecordingResults}" x:DataType="vm:RecordingResultsViewModel">
+                  <StackPanel Spacing="10">
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource BrushTextMuted}">
+                      <Run Text="{Binding StartedText}"/>
+                      <Run Text=" &#x2192; "/>
+                      <Run Text="{Binding EndedText}"/>
+                      <Run Text=" &#xB7; "/>
+                      <Run Text="{Binding DurationText}"/>
+                      <Run Text=" &#xB7; "/>
+                      <Run Text="{Binding AdaptersText}"/>
+                    </TextBlock>
+
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                      <TextBlock FontSize="{DynamicResource FontSizeLg}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource BrushDownload}">
+                        <Run Text="&#x2193; "/>
+                        <Run Text="{Binding TotalDownloadText}"/>
+                      </TextBlock>
+                      <TextBlock FontSize="{DynamicResource FontSizeLg}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource BrushUpload}">
+                        <Run Text="&#x2191; "/>
+                        <Run Text="{Binding TotalUploadText}"/>
+                      </TextBlock>
+                    </StackPanel>
+
+                    <Border CornerRadius="8" Background="{DynamicResource BrushSurfacePanel}" ClipToBounds="True">
+                      <Grid RowDefinitions="Auto,Auto">
+                        <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource BrushHeaderRow}"
+                                BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="0,0,0,0.4">
+                          <Grid ColumnDefinitions="3*,1.5*,1.5*">
+                            <TextBlock Text="Process" Foreground="{DynamicResource BrushTextHeader}"
+                                       FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="Download" Foreground="{DynamicResource BrushTextHeader}"
+                                       FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Upload" Foreground="{DynamicResource BrushTextHeader}"
+                                       FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                          </Grid>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1" MaxHeight="260" Margin="0,0,0,6" IsVisible="{Binding HasRows}">
+                          <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="vm:HistoryRowViewModel">
+                                <Grid ColumnDefinitions="3*,1.5*,1.5*" Margin="10,4">
+                                  <Grid ColumnDefinitions="Auto,Auto,*" MinWidth="0">
+                                    <Button Command="{Binding SearchProcessCommand}"
+                                            Background="Transparent" BorderThickness="0"
+                                            Padding="2" Cursor="Hand"
+                                            ToolTip.Tip="Search online">
+                                      <PathIcon Data="{DynamicResource IconSearch}"
+                                                Width="12" Height="12"
+                                                Foreground="{DynamicResource BrushTextSecondary}"/>
+                                    </Button>
+                                    <Image Grid.Column="1" Source="{Binding Icon}" Width="16" Height="16" Margin="4,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ProcessName}"
+                                               Foreground="{DynamicResource BrushTextBody}"
+                                               FontSize="11" TextTrimming="CharacterEllipsis"
+                                               MinWidth="0" VerticalAlignment="Center" Margin="4,0,0,0"
+                                               ToolTip.Tip="{Binding ProcessName}"/>
+                                  </Grid>
+                                  <TextBlock Grid.Column="1" Text="{Binding DownloadText}"
+                                             Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Center"/>
+                                  <TextBlock Grid.Column="2" Text="{Binding UploadText}"
+                                             Foreground="{DynamicResource BrushTextBody}" FontSize="11" VerticalAlignment="Center"/>
+                                </Grid>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBlock Grid.Row="1" Text="No traffic was recorded." Margin="12,10"
+                                   Foreground="{DynamicResource BrushTextMuted}"
+                                   IsVisible="{Binding !HasRows}"/>
+                      </Grid>
+                    </Border>
+                  </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,12,0,0">
+                  <Border Grid.Column="0" VerticalAlignment="Center"
+                          DataContext="{Binding Summary.LastRecordingResults}" x:DataType="vm:RecordingResultsViewModel">
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="6"
+                          IsVisible="{Binding ExportStatus.IsVisible}">
+                      <Panel Grid.Column="0" VerticalAlignment="Center">
+                        <PathIcon Width="11" Height="11"
+                                  Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                  Foreground="{DynamicResource BrushDownload}"
+                                  IsVisible="{Binding ExportStatus.IsSuccess}"/>
+                        <PathIcon Width="11" Height="11"
+                                  Data="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+                                  Foreground="{DynamicResource BrushDangerBright}"
+                                  IsVisible="{Binding ExportStatus.IsError}"/>
+                      </Panel>
+                      <TextBlock Grid.Column="1" Text="{Binding ExportStatus.Message}" FontSize="10" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource BrushTextSecondaryAlt}"/>
+                      <TextBlock Grid.Column="2" Text="{Binding ExportStatus.FileName}" FontSize="10" VerticalAlignment="Center"
+                                 TextTrimming="PrefixCharacterEllipsis"
+                                 Foreground="{DynamicResource BrushTextSecondaryAlt}"
+                                 ToolTip.Tip="{Binding ExportStatus.FilePath}"/>
+                      <Button Grid.Column="3" Classes="linkBtn" VerticalAlignment="Center"
+                              Command="{Binding ExportStatus.RevealCommand}"
+                              IsVisible="{Binding ExportStatus.CanReveal}">
+                        <TextBlock Text="Open folder" FontSize="10" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+                      </Button>
+                    </Grid>
+                  </Border>
+
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button MinWidth="80" Padding="16,6" CornerRadius="6" HorizontalContentAlignment="Center"
+                            Command="{Binding Summary.LastRecordingResults.ExportCommand}"
+                            ToolTip.Tip="Save this recording as CSV or JSON"
+                            Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}"
+                            BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                      <TextBlock Text="Export"/>
+                    </Button>
+                    <Button MinWidth="80" Padding="16,6" CornerRadius="6" HorizontalContentAlignment="Center"
+                            Command="{Binding Summary.CloseRecordingResultsCommand}"
+                            Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}"
+                            BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                      <TextBlock Text="Close"/>
+                    </Button>
+                  </StackPanel>
+                </Grid>
+
+              </Grid>
+            </Border>
+
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
   </Grid>
 
   <Window.Styles>

@@ -36,6 +36,7 @@ public partial class MainWindow : Window
         // "No" is the safe default for confirmations.
         FocusWhenShown(ConfirmationOverlay, ConfirmNoButton);
         FocusWhenShown(AboutOverlay, AboutCloseButton);
+        FocusWhenShown(RecordingResultsOverlay, RecordingResultsCloseButton);
     }
 
     private static void FocusWhenShown(Control overlay, Control target)

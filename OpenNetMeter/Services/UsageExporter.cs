@@ -126,36 +126,46 @@ internal static class UsageExporter
         {
             var rows = ReadRows(dbPath, adapter, start, end);
 
-            // Write to a temp file first so a failed export never truncates an existing file.
-            string tempPath = outputPath + ".tmp";
-            try
+            WriteFileAtomically(outputPath, stream =>
             {
-                using (var stream = File.Create(tempPath))
+                if (string.Equals(Path.GetExtension(outputPath), ".json", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(Path.GetExtension(outputPath), ".json", StringComparison.OrdinalIgnoreCase))
-                    {
-                        WriteJson(stream, rows);
-                    }
-                    else
-                    {
-                        using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-                        WriteCsv(writer, rows);
-                    }
+                    WriteJson(stream, rows);
                 }
-
-                File.Move(tempPath, outputPath, overwrite: true);
-            }
-            catch
-            {
-                try { File.Delete(tempPath); } catch (IOException) { } catch (UnauthorizedAccessException) { }
-                throw;
-            }
+                else
+                {
+                    using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+                    WriteCsv(writer, rows);
+                }
+            });
 
             return rows.Count;
         });
     }
 
-    private static string EscapeCsv(string value)
+    /// <summary>
+    /// Writes through a temp file and moves it into place, so a failed export never truncates an existing file.
+    /// </summary>
+    internal static void WriteFileAtomically(string outputPath, Action<Stream> write)
+    {
+        string tempPath = outputPath + ".tmp";
+        try
+        {
+            using (var stream = File.Create(tempPath))
+            {
+                write(stream);
+            }
+
+            File.Move(tempPath, outputPath, overwrite: true);
+        }
+        catch
+        {
+            try { File.Delete(tempPath); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            throw;
+        }
+    }
+
+    internal static string EscapeCsv(string value)
     {
         // Adapter names are Wi-Fi SSIDs, which anyone nearby can choose; stop spreadsheets
         // from evaluating them as formulas (OWASP CSV injection guidance).

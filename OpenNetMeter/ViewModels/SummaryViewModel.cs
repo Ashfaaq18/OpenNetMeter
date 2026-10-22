@@ -19,6 +19,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IProcessIconService processIconService;
     private readonly IExternalLinkService externalLinkService;
+    private readonly IFileSaveDialogService fileSaveDialogService;
+    private readonly IFileRevealService fileRevealService;
     private readonly Dictionary<string, SummaryProcessRowViewModel> processIndex = new(StringComparer.OrdinalIgnoreCase);
     private readonly object pendingLock = new();
     private readonly Dictionary<string, PendingTraffic> pendingByProcess = new(StringComparer.OrdinalIgnoreCase);
@@ -40,14 +42,24 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long latestDownloadBytesPerSecond;
     private long latestUploadBytesPerSecond;
     private int weeklyTrendTickCounter;
+    private TrafficRecording? recording;
+    private RecordingResultsViewModel? lastRecordingResults;
+    private bool isRecordingResultsOpen;
 
     private readonly SpeedHistory speedHistory = new();
 
-    public SummaryViewModel(INetworkCaptureService networkCaptureService, IProcessIconService processIconService, IExternalLinkService externalLinkService)
+    public SummaryViewModel(
+        INetworkCaptureService networkCaptureService,
+        IProcessIconService processIconService,
+        IExternalLinkService externalLinkService,
+        IFileSaveDialogService fileSaveDialogService,
+        IFileRevealService fileRevealService)
     {
         this.networkCaptureService = networkCaptureService;
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
+        this.fileSaveDialogService = fileSaveDialogService;
+        this.fileRevealService = fileRevealService;
 
         ActiveProcesses = [];
         SortProcessesCommand = new ParameterRelayCommand(parameter =>
@@ -58,6 +70,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
             SortProcesses(column);
         });
+
+        StartRecordingCommand = new RelayCommand(StartRecording);
+        StopRecordingCommand = new RelayCommand(StopRecording);
+        ShowLastRecordingCommand = new RelayCommand(ShowLastRecording);
+        CloseRecordingResultsCommand = new RelayCommand(CloseRecordingResults);
 
         WeeklyTrend = new WeeklyUsageTrendViewModel();
 
@@ -74,6 +91,10 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     }
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
+    public ICommand StartRecordingCommand { get; }
+    public ICommand StopRecordingCommand { get; }
+    public ICommand ShowLastRecordingCommand { get; }
+    public ICommand CloseRecordingResultsCommand { get; }
     public WeeklyUsageTrendViewModel WeeklyTrend { get; }
 
     public SpeedHistory SpeedHistory => speedHistory;
@@ -91,6 +112,28 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public DateTime DateMin =>
         HistoryRetention.GetCutoff(DateMax, Properties.SettingsManager.Current.HistoryRetentionDays) ?? DateTime.MinValue;
     public DateTime DateMax { get; }
+
+    public bool IsRecording => recording is { IsRunning: true };
+    public bool IsNotRecording => !IsRecording;
+    public bool HasLastRecording => lastRecordingResults != null;
+    public string RecordingElapsedText => recording is { } running
+        ? TrafficRecording.FormatElapsed(running.GetDuration(DateTime.Now))
+        : TrafficRecording.FormatElapsed(TimeSpan.Zero);
+    public string RecordingDownloadText => ByteSizeFormatter.FormatBytes(recording?.TotalDownload ?? 0);
+    public string RecordingUploadText => ByteSizeFormatter.FormatBytes(recording?.TotalUpload ?? 0);
+    public RecordingResultsViewModel? LastRecordingResults => lastRecordingResults;
+
+    public bool IsRecordingResultsOpen
+    {
+        get => isRecordingResultsOpen;
+        private set
+        {
+            if (isRecordingResultsOpen == value)
+                return;
+            isRecordingResultsOpen = value;
+            OnPropertyChanged(nameof(IsRecordingResultsOpen));
+        }
+    }
 
     public static string FormatSpeed(long bytesPerSecond)
     {
@@ -183,8 +226,57 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             return;
 
         activeAdapterName = normalized;
+        if (recording is { IsRunning: true })
+            recording.NoteAdapter(activeAdapterName);
+
         RefreshSinceDateBaseline();
         RefreshWeeklyTrend();
+    }
+
+    private void StartRecording()
+    {
+        if (IsRecording)
+            return;
+
+        // A recording keeps running across disconnects and adapter switches, so it is deliberately
+        // not touched by ClearOnDisconnect; it only ends when the user presses Stop.
+        recording = new TrafficRecording(DateTime.Now);
+        recording.NoteAdapter(activeAdapterName);
+        NotifyRecordingChanged();
+    }
+
+    private void StopRecording()
+    {
+        if (recording is not { IsRunning: true } stopping)
+            return;
+
+        stopping.Stop(DateTime.Now);
+        lastRecordingResults = new RecordingResultsViewModel(stopping, processIconService, externalLinkService, fileSaveDialogService, fileRevealService);
+        recording = null;
+        IsRecordingResultsOpen = true;
+        NotifyRecordingChanged();
+    }
+
+    private void ShowLastRecording()
+    {
+        if (HasLastRecording)
+            IsRecordingResultsOpen = true;
+    }
+
+    private void CloseRecordingResults()
+    {
+        IsRecordingResultsOpen = false;
+    }
+
+    private void NotifyRecordingChanged()
+    {
+        OnPropertyChanged(nameof(IsRecording));
+        OnPropertyChanged(nameof(IsNotRecording));
+        OnPropertyChanged(nameof(HasLastRecording));
+        OnPropertyChanged(nameof(LastRecordingResults));
+        OnPropertyChanged(nameof(RecordingElapsedText));
+        OnPropertyChanged(nameof(RecordingDownloadText));
+        OnPropertyChanged(nameof(RecordingUploadText));
     }
 
     private void OnTrafficObserved(object? sender, NetworkTrafficEventArgs e)
@@ -235,6 +327,16 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         speedHistory.Append(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
         ApplyProcessTick(pendingSnapshot);
+
+        if (recording is { IsRunning: true })
+        {
+            foreach (var kvp in pendingSnapshot)
+                recording.Add(kvp.Key, kvp.Value.DownloadBytes, kvp.Value.UploadBytes);
+
+            OnPropertyChanged(nameof(RecordingElapsedText));
+            OnPropertyChanged(nameof(RecordingDownloadText));
+            OnPropertyChanged(nameof(RecordingUploadText));
+        }
 
         // The capture service pushes to the DB every 5s, so re-reading the week this often
         // keeps today's bar close to live without querying on every tick.

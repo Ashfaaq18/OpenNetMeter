@@ -157,11 +157,69 @@
                          FontSize="12" FontWeight="SemiBold"
                          VerticalAlignment="Center" Margin="8,0,0,0"/>
             </StackPanel>
-            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
-                       Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10">
-              <Run Text="{Binding ProcessCount}"/>
-              <Run Text=" processes"/>
-            </TextBlock>
+            <StackPanel Orientation="Horizontal" Spacing="10"
+                        HorizontalAlignment="Right" VerticalAlignment="Center">
+              <TextBlock VerticalAlignment="Center"
+                         Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="10">
+                <Run Text="{Binding ProcessCount}"/>
+                <Run Text=" processes"/>
+              </TextBlock>
+
+              <!-- Idle: open the last recording's results, or start a new recording. -->
+              <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                          IsVisible="{Binding IsNotRecording}">
+                <Button Classes="linkBtn" VerticalAlignment="Center"
+                        Command="{Binding ShowLastRecordingCommand}"
+                        IsVisible="{Binding HasLastRecording}"
+                        ToolTip.Tip="Show the results of the last recording">
+                  <TextBlock Text="Last result" FontSize="10"
+                             Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+                </Button>
+                <Button Height="22" Padding="8,0" VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Command="{Binding StartRecordingCommand}"
+                        ToolTip.Tip="Record per-process traffic until you press Stop"
+                        FontSize="10" CornerRadius="6"
+                        Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}"
+                        BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{DynamicResource BrushDangerBright}"/>
+                    <TextBlock Text="Record" FontSize="10" VerticalAlignment="Center"
+                               Foreground="{DynamicResource BrushTextUi}"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+
+              <!-- Recording: elapsed time and running totals update with the 1-second flush. -->
+              <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                          IsVisible="{Binding IsRecording}">
+                <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                         Fill="{DynamicResource BrushDangerBright}"/>
+                <TextBlock VerticalAlignment="Center" FontSize="10" FontWeight="SemiBold"
+                           Foreground="{DynamicResource BrushTextHeader}"
+                           Text="{Binding RecordingElapsedText, StringFormat='REC {0}'}"/>
+                <TextBlock VerticalAlignment="Center" FontSize="10"
+                           Foreground="{DynamicResource BrushTextSecondaryAlt}">
+                  <Run Text="&#x2193; "/>
+                  <Run Text="{Binding RecordingDownloadText}"/>
+                  <Run Text="  &#x2191; "/>
+                  <Run Text="{Binding RecordingUploadText}"/>
+                </TextBlock>
+                <Button Height="22" Padding="8,0" VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Command="{Binding StopRecordingCommand}"
+                        ToolTip.Tip="Stop recording and show the results"
+                        FontSize="10" CornerRadius="6"
+                        Background="{DynamicResource BrushHeaderRow}" Foreground="{DynamicResource BrushTextUi}"
+                        BorderBrush="{DynamicResource BrushBorderEmphasis}" BorderThickness="1">
+                  <TextBlock FontSize="10" Foreground="{DynamicResource BrushTextUi}">
+                    <Run Text="&#x25A0;" Foreground="{DynamicResource BrushDangerBright}"/>
+                    <Run Text=" Stop"/>
+                  </TextBlock>
+                </Button>
+              </StackPanel>
+            </StackPanel>
           </Grid>
         </Border>
 

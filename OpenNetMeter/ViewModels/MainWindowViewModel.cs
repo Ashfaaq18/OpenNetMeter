@@ -44,7 +44,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         this.externalLinkService = externalLinkService;
         this.miniWidget = miniWidget;
 
-        Summary = new SummaryViewModel(this.networkCaptureService, processIconService, externalLinkService);
+        Summary = new SummaryViewModel(this.networkCaptureService, processIconService, externalLinkService, fileSaveDialogService, fileRevealService);
         History = new HistoryViewModel(processIconService, externalLinkService, fileSaveDialogService, fileRevealService);
         Settings = new SettingsViewModel(miniWidget, miniWidgetService, startupRegistrationService, externalLinkService, themeService, fileSaveDialogService, fileRevealService);
         Settings.PropertyChanged += Settings_PropertyChanged;
@@ -119,7 +119,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     /// <summary>
     /// True while an in-window dialog is shown; the rest of the window is disabled so focus can't escape to it.
     /// </summary>
-    public bool IsModalOpen => IsAboutOpen || Settings.IsConfirmationOpen;
+    public bool IsModalOpen => IsAboutOpen || Settings.IsConfirmationOpen || Summary.IsRecordingResultsOpen;
 
     public override int SelectedTabIndex
     {
@@ -225,6 +225,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             case nameof(SummaryViewModel.CurrentSessionDownloadText):
             case nameof(SummaryViewModel.CurrentSessionUploadText):
                 SyncMiniWidgetFromSummary();
+                break;
+            case nameof(SummaryViewModel.IsRecordingResultsOpen):
+                OnPropertyChanged(nameof(IsModalOpen));
                 break;
         }
     }
