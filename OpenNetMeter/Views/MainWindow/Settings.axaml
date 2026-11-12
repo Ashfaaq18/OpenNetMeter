@@ -107,6 +107,27 @@
                   <TextBlock HorizontalAlignment="Right" Text="Transparent" Foreground="{DynamicResource BrushTextFaint}" FontSize="9"/>
                 </Grid>
               </Grid>
+              <Border Height="1" Background="{DynamicResource BrushDivider}" Margin="0,0,0,8"/>
+              <StackPanel Spacing="8">
+                <StackPanel>
+                  <TextBlock Text="Widget total" Foreground="{DynamicResource BrushTextBody}" FontSize="12"/>
+                  <TextBlock Text="Current session, or usage since a date" Foreground="{DynamicResource BrushTextMuted}" FontSize="10" Margin="0,3,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <RadioButton GroupName="WidgetTotal" Classes="pill"
+                               IsChecked="{Binding IsMiniWidgetTotalSession, Mode=TwoWay}">
+                    <TextBlock Text="Current session"/>
+                  </RadioButton>
+                  <RadioButton GroupName="WidgetTotal" Classes="pill"
+                               IsChecked="{Binding IsMiniWidgetTotalUsageFrom, Mode=TwoWay}">
+                    <TextBlock Text="Usage from"/>
+                  </RadioButton>
+                </StackPanel>
+                <DatePicker MinWidth="0" Height="30"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                            IsVisible="{Binding IsMiniWidgetTotalUsageFrom}"
+                            SelectedDate="{Binding MiniWidgetUsageFromDate, Mode=TwoWay}"/>
+              </StackPanel>
             </StackPanel>
           </StackPanel>
         </Border>

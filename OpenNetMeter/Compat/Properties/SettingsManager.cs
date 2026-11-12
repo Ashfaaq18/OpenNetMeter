@@ -46,6 +46,8 @@ internal static class SettingsManager
                 Current.MiniWidgetPosY = GetInt(root, nameof(AppSettings.MiniWidgetPosY), Current.MiniWidgetPosY);
                 Current.MiniWidgetPositionInitialized = GetBool(root, nameof(AppSettings.MiniWidgetPositionInitialized), Current.MiniWidgetPositionInitialized);
                 Current.MiniWidgetTransparentSlider = GetInt(root, nameof(AppSettings.MiniWidgetTransparentSlider), Current.MiniWidgetTransparentSlider);
+                Current.MiniWidgetTotalMode = GetInt(root, nameof(AppSettings.MiniWidgetTotalMode), Current.MiniWidgetTotalMode);
+                Current.MiniWidgetUsageFromDate = GetString(root, nameof(AppSettings.MiniWidgetUsageFromDate), Current.MiniWidgetUsageFromDate);
                 Current.NetworkType = GetInt(root, nameof(AppSettings.NetworkType), Current.NetworkType);
                 Current.NetworkSpeedFormat = GetInt(root, nameof(AppSettings.NetworkSpeedFormat), Current.NetworkSpeedFormat);
                 Current.NetworkSpeedMagnitude = GetInt(root, nameof(AppSettings.NetworkSpeedMagnitude), Current.NetworkSpeedMagnitude);
@@ -97,6 +99,8 @@ internal static class SettingsManager
             root[nameof(AppSettings.MiniWidgetPosY)] = Current.MiniWidgetPosY;
             root[nameof(AppSettings.MiniWidgetPositionInitialized)] = Current.MiniWidgetPositionInitialized;
             root[nameof(AppSettings.MiniWidgetTransparentSlider)] = Current.MiniWidgetTransparentSlider;
+            root[nameof(AppSettings.MiniWidgetTotalMode)] = Current.MiniWidgetTotalMode;
+            root[nameof(AppSettings.MiniWidgetUsageFromDate)] = Current.MiniWidgetUsageFromDate;
             root[nameof(AppSettings.NetworkType)] = Current.NetworkType;
             root[nameof(AppSettings.NetworkSpeedFormat)] = Current.NetworkSpeedFormat;
             root[nameof(AppSettings.NetworkSpeedMagnitude)] = Current.NetworkSpeedMagnitude;

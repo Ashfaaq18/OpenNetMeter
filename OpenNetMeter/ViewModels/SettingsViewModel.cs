@@ -39,6 +39,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private bool darkMode;
     private bool miniWidgetVisible = true;
     private double miniWidgetTransparency = 20;
+    private int miniWidgetTotalMode;
+    private string miniWidgetUsageFromStored = MiniWidgetUsageFrom.FollowToday;
     private int selectedNetworkTargetIndex = 2;
     private int selectedSpeedMagnitudeIndex;
     private int selectedSpeedUnitIndex;
@@ -68,6 +70,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         darkMode = settings.DarkMode;
         miniWidgetVisible = settings.MiniWidgetVisibility;
         miniWidgetTransparency = settings.MiniWidgetTransparentSlider;
+        miniWidgetTotalMode = MiniWidgetUsageFrom.NormalizeMode(settings.MiniWidgetTotalMode);
+        miniWidgetUsageFromStored = settings.MiniWidgetUsageFromDate ?? MiniWidgetUsageFrom.FollowToday;
         selectedNetworkTargetIndex = settings.NetworkType;
         selectedSpeedMagnitudeIndex = settings.NetworkSpeedMagnitude;
         selectedSpeedUnitIndex = settings.NetworkSpeedFormat;
@@ -176,6 +180,88 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             miniWidgetService.RefreshAppearance(DarkMode, (int)Math.Round(value));
             OnPropertyChanged(nameof(MiniWidgetTransparency));
         }
+    }
+
+    /// <summary><see cref="MiniWidgetUsageFrom.ModeSession"/> or <see cref="MiniWidgetUsageFrom.ModeUsageFrom"/>.</summary>
+    public int MiniWidgetTotalMode
+    {
+        get => miniWidgetTotalMode;
+        set
+        {
+            value = MiniWidgetUsageFrom.NormalizeMode(value);
+            if (miniWidgetTotalMode == value)
+                return;
+            miniWidgetTotalMode = value;
+            SettingsManager.Current.MiniWidgetTotalMode = value;
+            SettingsManager.Save();
+            OnPropertyChanged(nameof(MiniWidgetTotalMode));
+            OnPropertyChanged(nameof(IsMiniWidgetTotalSession));
+            OnPropertyChanged(nameof(IsMiniWidgetTotalUsageFrom));
+        }
+    }
+
+    public bool IsMiniWidgetTotalSession
+    {
+        get => MiniWidgetTotalMode == MiniWidgetUsageFrom.ModeSession;
+        set
+        {
+            if (value)
+                MiniWidgetTotalMode = MiniWidgetUsageFrom.ModeSession;
+        }
+    }
+
+    public bool IsMiniWidgetTotalUsageFrom
+    {
+        get => MiniWidgetTotalMode == MiniWidgetUsageFrom.ModeUsageFrom;
+        set
+        {
+            if (value)
+                MiniWidgetTotalMode = MiniWidgetUsageFrom.ModeUsageFrom;
+        }
+    }
+
+    /// <summary>
+    /// The date the widget's "Usage from" total counts from, independent of the Summary page.
+    /// Choosing today stores "follow today", so it rolls over at midnight.
+    /// </summary>
+    public DateTimeOffset? MiniWidgetUsageFromDate
+    {
+        get => EffectiveMiniWidgetUsageFromDate;
+        set
+        {
+            var today = DateTime.Today;
+            var chosen = MiniWidgetUsageFrom.Clamp((value ?? today).Date, today, SettingsManager.Current.HistoryRetentionDays);
+            SetMiniWidgetUsageFromStored(MiniWidgetUsageFrom.ToStored(chosen, today));
+        }
+    }
+
+    public DateTime EffectiveMiniWidgetUsageFromDate =>
+        MiniWidgetUsageFrom.Resolve(miniWidgetUsageFromStored, DateTime.Today, SettingsManager.Current.HistoryRetentionDays);
+
+    public bool MiniWidgetUsageFromFollowsToday => MiniWidgetUsageFrom.IsFollowToday(miniWidgetUsageFromStored);
+
+    private void SetMiniWidgetUsageFromStored(string stored)
+    {
+        if (string.Equals(miniWidgetUsageFromStored, stored, StringComparison.Ordinal))
+        {
+            // The DatePicker may hold an unclamped value; push the effective date back to it.
+            OnPropertyChanged(nameof(MiniWidgetUsageFromDate));
+            return;
+        }
+
+        miniWidgetUsageFromStored = stored;
+        SettingsManager.Current.MiniWidgetUsageFromDate = stored;
+        SettingsManager.Save();
+        OnPropertyChanged(nameof(MiniWidgetUsageFromDate));
+    }
+
+    /// <summary>Re-applies the retention limit to the widget's date after history was shortened.</summary>
+    private void ClampMiniWidgetUsageFromDate()
+    {
+        if (MiniWidgetUsageFromFollowsToday)
+            return;
+
+        SetMiniWidgetUsageFromStored(MiniWidgetUsageFrom.ToStored(EffectiveMiniWidgetUsageFromDate, DateTime.Today));
     }
 
     public string[] NetworkTargets { get; } = ["Private", "Public", "Both"];
@@ -413,6 +499,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
                 onConfirm: () =>
                 {
                     SaveRetention(newDays);
+                    ClampMiniWidgetUsageFromDate();
                     RetentionShortened?.Invoke();
                 },
                 onCancel: () =>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -55,6 +56,12 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;
         Settings.RetentionShortened += Settings_RetentionShortened;
         Summary.PropertyChanged += Summary_PropertyChanged;
+
+        Summary.SetWidgetUsageFrom(Settings.EffectiveMiniWidgetUsageFromDate, Settings.MiniWidgetUsageFromFollowsToday);
+        miniWidget.SetUsageFromTotal(Settings.IsMiniWidgetTotalUsageFrom);
+        miniWidget.SetTotalActions(
+            usageFrom => Settings.MiniWidgetTotalMode = usageFrom ? MiniWidgetUsageFrom.ModeUsageFrom : MiniWidgetUsageFrom.ModeSession,
+            ChooseWidgetUsageFromDate);
 
         SwitchTabCommand = new ParameterRelayCommand(parameter =>
         {
@@ -232,6 +239,24 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             // The re-evaluation the selection triggers updates it again through NetworkChanged.
             UpdatePinnedAdapterWarning();
         }
+        else if (e.PropertyName == nameof(SettingsViewModel.MiniWidgetTotalMode))
+        {
+            miniWidget.SetUsageFromTotal(Settings.IsMiniWidgetTotalUsageFrom);
+            SyncMiniWidgetFromSummary();
+        }
+        else if (e.PropertyName == nameof(SettingsViewModel.MiniWidgetUsageFromDate))
+        {
+            // Summary raises WidgetUsage* changes, which re-sync the widget.
+            Summary.SetWidgetUsageFrom(Settings.EffectiveMiniWidgetUsageFromDate, Settings.MiniWidgetUsageFromFollowsToday);
+        }
+    }
+
+    /// <summary>Widget menu "Choose date…": switch to usage-from mode and open Settings to pick the date.</summary>
+    private void ChooseWidgetUsageFromDate()
+    {
+        Settings.MiniWidgetTotalMode = MiniWidgetUsageFrom.ModeUsageFrom;
+        SelectedTabIndex = 2;
+        miniWidget.OpenMainWindowCommand.Execute(null);
     }
 
     private void Settings_DeleteAllDataConfirmed()
@@ -277,6 +302,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             case nameof(SummaryViewModel.UploadSpeedText):
             case nameof(SummaryViewModel.CurrentSessionDownloadText):
             case nameof(SummaryViewModel.CurrentSessionUploadText):
+            case nameof(SummaryViewModel.WidgetUsageDownloadText):
+            case nameof(SummaryViewModel.WidgetUsageUploadText):
+            case nameof(SummaryViewModel.WidgetUsageFromDate):
                 SyncMiniWidgetFromSummary();
                 break;
             case nameof(SummaryViewModel.IsRecordingResultsOpen):
@@ -289,8 +317,26 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     {
         miniWidget.DownloadSpeedText = Summary.DownloadSpeedText;
         miniWidget.UploadSpeedText = Summary.UploadSpeedText;
-        miniWidget.CurrentSessionDownloadText = Summary.CurrentSessionDownloadText;
-        miniWidget.CurrentSessionUploadText = Summary.CurrentSessionUploadText;
+
+        var fromDate = Summary.WidgetUsageFromDate;
+        var fromToday = fromDate == DateTime.Today;
+        var fromDateText = fromDate.ToString("d MMM yyyy", CultureInfo.CurrentCulture);
+        miniWidget.UsageFromMenuHeader = fromToday ? "Usage from today" : $"Usage from {fromDateText}";
+
+        if (Settings.IsMiniWidgetTotalUsageFrom)
+        {
+            miniWidget.TotalLabel = fromToday ? "Today:" : "Since:";
+            miniWidget.TotalToolTip = fromToday ? "Usage today, since midnight" : $"Usage since {fromDateText}";
+            miniWidget.TotalDownloadText = Summary.WidgetUsageDownloadText;
+            miniWidget.TotalUploadText = Summary.WidgetUsageUploadText;
+        }
+        else
+        {
+            miniWidget.TotalLabel = "Total:";
+            miniWidget.TotalToolTip = "Current session";
+            miniWidget.TotalDownloadText = Summary.CurrentSessionDownloadText;
+            miniWidget.TotalUploadText = Summary.CurrentSessionUploadText;
+        }
     }
 
     private sealed class NoOpWindowService : IWindowService

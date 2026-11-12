@@ -28,14 +28,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private string? currentSortColumn;
     private bool sortDescending;
     private string activeAdapterName = string.Empty;
-    private long sinceDateDbDownloadBaseline;
-    private long sinceDateDbUploadBaseline;
-    private long sinceDateSessionDownloadBaseline;
-    private long sinceDateSessionUploadBaseline;
     private long currentSessionDownload;
     private long currentSessionUpload;
-    private long totalFromDateDownload;
-    private long totalFromDateUpload;
+    // Summary page "Usage From" card.
+    private readonly UsageSinceTracker sinceDateUsage = new();
+    // Mini widget "Usage from" total; deliberately independent of the Summary card's date.
+    private readonly UsageSinceTracker widgetUsage = new();
+    private bool widgetUsageFollowsToday = true;
     private DateTimeOffset? sinceDate;
     private long pendingDownloadBytes;
     private long pendingUploadBytes;
@@ -104,8 +103,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public string CurrentSessionDownloadText => ByteSizeFormatter.FormatBytes(currentSessionDownload);
     public string CurrentSessionUploadText => ByteSizeFormatter.FormatBytes(currentSessionUpload);
-    public string TotalFromDateDownloadText => ByteSizeFormatter.FormatBytes(totalFromDateDownload);
-    public string TotalFromDateUploadText => ByteSizeFormatter.FormatBytes(totalFromDateUpload);
+    public string TotalFromDateDownloadText => ByteSizeFormatter.FormatBytes(sinceDateUsage.Download);
+    public string TotalFromDateUploadText => ByteSizeFormatter.FormatBytes(sinceDateUsage.Upload);
+    public string WidgetUsageDownloadText => ByteSizeFormatter.FormatBytes(widgetUsage.Download);
+    public string WidgetUsageUploadText => ByteSizeFormatter.FormatBytes(widgetUsage.Upload);
+    public DateTime WidgetUsageFromDate => widgetUsage.FromDate;
     public string DownloadSpeedText => FormatSpeed(latestDownloadBytesPerSecond) + "ps";
     public string UploadSpeedText => FormatSpeed(latestUploadBytesPerSecond) + "ps";
     public int ProcessCount => ActiveProcesses.Count;
@@ -180,12 +182,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         latestUploadBytesPerSecond = 0;
         currentSessionDownload = 0;
         currentSessionUpload = 0;
-        totalFromDateDownload = 0;
-        totalFromDateUpload = 0;
-        sinceDateDbDownloadBaseline = 0;
-        sinceDateDbUploadBaseline = 0;
-        sinceDateSessionDownloadBaseline = 0;
-        sinceDateSessionUploadBaseline = 0;
+        sinceDateUsage.Reset();
+        widgetUsage.Reset();
         activeAdapterName = string.Empty;
 
         speedHistory.Clear();
@@ -199,12 +197,15 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
+        OnPropertyChanged(nameof(WidgetUsageDownloadText));
+        OnPropertyChanged(nameof(WidgetUsageUploadText));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
 
     /// <summary>
     /// Re-reads DB-backed totals after old history was purged, clamping the "since" date to the new retention.
+    /// The widget's date is clamped by <see cref="SettingsViewModel"/>, which then calls <see cref="SetWidgetUsageFrom"/>.
     /// </summary>
     public void RefreshAfterHistoryPurge()
     {
@@ -216,7 +217,19 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         }
 
         RefreshSinceDateBaseline();
+        RefreshWidgetUsageBaseline();
         RefreshWeeklyTrend();
+    }
+
+    /// <summary>
+    /// Sets the date the mini widget's "usage from" total counts from. When <paramref name="followToday"/>
+    /// is set, the date moves to the new day at midnight.
+    /// </summary>
+    public void SetWidgetUsageFrom(DateTime fromDate, bool followToday)
+    {
+        widgetUsageFollowsToday = followToday;
+        widgetUsage.Rebase(activeAdapterName, followToday ? DateTime.Today : fromDate, currentSessionDownload, currentSessionUpload);
+        NotifyWidgetUsageChanged();
     }
 
     public void SetActiveAdapter(string adapterName)
@@ -230,6 +243,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             recording.NoteAdapter(activeAdapterName);
 
         RefreshSinceDateBaseline();
+        RefreshWidgetUsageBaseline();
         RefreshWeeklyTrend();
     }
 
@@ -323,7 +337,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         latestUploadBytesPerSecond = secondUploadBytes;
         currentSessionDownload += secondDownloadBytes;
         currentSessionUpload += secondUploadBytes;
-        UpdateTotalFromDateFromBaselines();
+        sinceDateUsage.Advance(currentSessionDownload, currentSessionUpload);
+
+        // A widget following "today" starts over at midnight; a fixed date keeps accumulating.
+        if (widgetUsageFollowsToday && widgetUsage.FromDate != DateTime.Today)
+            RefreshWidgetUsageBaseline();
+        else
+            widgetUsage.Advance(currentSessionDownload, currentSessionUpload);
 
         speedHistory.Append(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
         ApplyProcessTick(pendingSnapshot);
@@ -347,6 +367,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
+        OnPropertyChanged(nameof(WidgetUsageDownloadText));
+        OnPropertyChanged(nameof(WidgetUsageUploadText));
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
@@ -362,84 +384,25 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     private void RefreshSinceDateBaseline()
     {
-        sinceDateSessionDownloadBaseline = currentSessionDownload;
-        sinceDateSessionUploadBaseline = currentSessionUpload;
-
-        if (string.IsNullOrWhiteSpace(activeAdapterName))
-        {
-            sinceDateDbDownloadBaseline = 0;
-            sinceDateDbUploadBaseline = 0;
-            totalFromDateDownload = 0;
-            totalFromDateUpload = 0;
-        }
-        else
-        {
-            var fromDate = (sinceDate ?? DateTimeOffset.Now.Date).Date;
-            var totals = ReadDbTotals(activeAdapterName, fromDate, DateTime.Today);
-            sinceDateDbDownloadBaseline = totals.download;
-            sinceDateDbUploadBaseline = totals.upload;
-            UpdateTotalFromDateFromBaselines();
-        }
+        var fromDate = (sinceDate ?? DateTimeOffset.Now.Date).Date;
+        sinceDateUsage.Rebase(activeAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
 
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
     }
 
-    private void UpdateTotalFromDateFromBaselines()
+    private void RefreshWidgetUsageBaseline()
     {
-        var sessionDownloadDelta = currentSessionDownload - sinceDateSessionDownloadBaseline;
-        var sessionUploadDelta = currentSessionUpload - sinceDateSessionUploadBaseline;
-
-        if (sessionDownloadDelta < 0)
-            sessionDownloadDelta = 0;
-        if (sessionUploadDelta < 0)
-            sessionUploadDelta = 0;
-
-        totalFromDateDownload = sinceDateDbDownloadBaseline + sessionDownloadDelta;
-        totalFromDateUpload = sinceDateDbUploadBaseline + sessionUploadDelta;
+        var fromDate = widgetUsageFollowsToday ? DateTime.Today : widgetUsage.FromDate;
+        widgetUsage.Rebase(activeAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
+        NotifyWidgetUsageChanged();
     }
 
-    private static (long download, long upload) ReadDbTotals(string adapterName, DateTime startDate, DateTime endDate)
+    private void NotifyWidgetUsageChanged()
     {
-        try
-        {
-            var dbPath = UsageDatabase.ResolveDatabasePath();
-            if (!File.Exists(dbPath))
-                return (0, 0);
-
-            var fromDate = startDate.Date;
-            var toDate = endDate.Date;
-            if (toDate < fromDate)
-                (fromDate, toDate) = (toDate, fromDate);
-
-            using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
-            connection.Open();
-            using var command = connection.CreateCommand();
-            command.CommandText =
-                "SELECT SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
-                "FROM ProcessDate pd " +
-                "JOIN Adapter a ON a.ID = pd.AdapterID " +
-                "JOIN Date d ON d.ID = pd.DateID " +
-                "WHERE a.Name = @AdapterName " +
-                "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate";
-            command.Parameters.AddWithValue("@AdapterName", adapterName);
-            command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(fromDate));
-            command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(toDate));
-
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                var download = reader.IsDBNull(0) ? 0 : reader.GetInt64(0);
-                var upload = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
-                return (download, upload);
-            }
-        }
-        catch (Exception ex)
-        {
-            EventLogger.Error($"Failed to read summary totals from database for adapter '{adapterName}'", ex);
-        }
-
-        return (0, 0);
+        OnPropertyChanged(nameof(WidgetUsageFromDate));
+        OnPropertyChanged(nameof(WidgetUsageDownloadText));
+        OnPropertyChanged(nameof(WidgetUsageUploadText));
     }
 
     private DateTimeOffset NormalizeSinceDate(DateTimeOffset? value)

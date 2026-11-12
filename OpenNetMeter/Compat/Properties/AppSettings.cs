@@ -16,6 +16,10 @@ public class AppSettings
     public int MiniWidgetPosY { get; set; }
     public bool MiniWidgetPositionInitialized { get; set; }
     public int MiniWidgetTransparentSlider { get; set; } = 0;
+    // What the widget's total shows: 0 = current session, 1 = usage since MiniWidgetUsageFromDate.
+    public int MiniWidgetTotalMode { get; set; } = 0;
+    // yyyy-MM-dd; empty = follow today (rolls over at midnight). Independent of the Summary page's date.
+    public string MiniWidgetUsageFromDate { get; set; } = string.Empty;
 
     public int NetworkType { get; set; } = 2;
     public int NetworkSpeedFormat { get; set; } = 0;

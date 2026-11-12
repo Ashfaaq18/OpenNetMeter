@@ -18,8 +18,13 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
 
     private string downloadSpeedText = "35.2 Mbps";
     private string uploadSpeedText = "4.8 Mbps";
-    private string currentSessionDownloadText = "1.24 GB";
-    private string currentSessionUploadText = "98.4 MB";
+    private string totalDownloadText = "1.24 GB";
+    private string totalUploadText = "98.4 MB";
+    private string totalLabel = "Total:";
+    private string totalToolTip = "Current session";
+    private bool isUsageFromTotal;
+    private string usageFromMenuHeader = "Usage from today";
+    private Action<bool> selectUsageFromTotal = _ => { };
     private string backgroundColor = "#cc252525";
     private bool isPinned;
     private bool darkMode;
@@ -49,28 +54,102 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
         }
     }
 
-    public string CurrentSessionDownloadText
+    /// <summary>Download total: the current session, or usage since the widget's chosen date.</summary>
+    public string TotalDownloadText
     {
-        get => currentSessionDownloadText;
+        get => totalDownloadText;
         set
         {
-            if (currentSessionDownloadText == value)
+            if (totalDownloadText == value)
                 return;
-            currentSessionDownloadText = value;
-            OnPropertyChanged(nameof(CurrentSessionDownloadText));
+            totalDownloadText = value;
+            OnPropertyChanged(nameof(TotalDownloadText));
         }
     }
 
-    public string CurrentSessionUploadText
+    /// <summary>Upload total: the current session, or usage since the widget's chosen date.</summary>
+    public string TotalUploadText
     {
-        get => currentSessionUploadText;
+        get => totalUploadText;
         set
         {
-            if (currentSessionUploadText == value)
+            if (totalUploadText == value)
                 return;
-            currentSessionUploadText = value;
-            OnPropertyChanged(nameof(CurrentSessionUploadText));
+            totalUploadText = value;
+            OnPropertyChanged(nameof(TotalUploadText));
         }
+    }
+
+    public string TotalLabel
+    {
+        get => totalLabel;
+        set
+        {
+            if (totalLabel == value)
+                return;
+            totalLabel = value;
+            OnPropertyChanged(nameof(TotalLabel));
+        }
+    }
+
+    public string TotalToolTip
+    {
+        get => totalToolTip;
+        set
+        {
+            if (totalToolTip == value)
+                return;
+            totalToolTip = value;
+            OnPropertyChanged(nameof(TotalToolTip));
+        }
+    }
+
+    public string UsageFromMenuHeader
+    {
+        get => usageFromMenuHeader;
+        set
+        {
+            if (usageFromMenuHeader == value)
+                return;
+            usageFromMenuHeader = value;
+            OnPropertyChanged(nameof(UsageFromMenuHeader));
+        }
+    }
+
+    /// <summary>
+    /// Whether the totals show usage since a date (true) or the current session (false).
+    /// Setting it from the context menu asks the owner to change the saved mode, which then calls
+    /// <see cref="SetUsageFromTotal"/> to reflect it here.
+    /// </summary>
+    public bool IsUsageFromTotal
+    {
+        get => isUsageFromTotal;
+        set
+        {
+            if (isUsageFromTotal == value)
+                return;
+            selectUsageFromTotal(value);
+        }
+    }
+
+    public bool IsSessionTotal
+    {
+        get => !isUsageFromTotal;
+        set
+        {
+            if (isUsageFromTotal != value)
+                return;
+            selectUsageFromTotal(!value);
+        }
+    }
+
+    public void SetUsageFromTotal(bool value)
+    {
+        if (isUsageFromTotal == value)
+            return;
+        isUsageFromTotal = value;
+        OnPropertyChanged(nameof(IsUsageFromTotal));
+        OnPropertyChanged(nameof(IsSessionTotal));
     }
 
     public bool IsPinned
@@ -109,6 +188,7 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
 
     public ICommand OpenMainWindowCommand { get; private set; } = new RelayCommand(() => { });
     public ICommand HideWidgetCommand { get; private set; } = new RelayCommand(() => { });
+    public ICommand ChooseUsageFromDateCommand { get; private set; } = new RelayCommand(() => { });
     public ICommand TogglePinnedCommand => togglePinnedCommand;
 
     public MiniWidgetViewModel()
@@ -124,6 +204,14 @@ public sealed class MiniWidgetViewModel : INotifyPropertyChanged
         HideWidgetCommand = new RelayCommand(hideWidget);
         OnPropertyChanged(nameof(OpenMainWindowCommand));
         OnPropertyChanged(nameof(HideWidgetCommand));
+    }
+
+    /// <summary>Wires the context-menu total options to the owner that persists them.</summary>
+    public void SetTotalActions(Action<bool> selectUsageFromTotal, Action chooseUsageFromDate)
+    {
+        this.selectUsageFromTotal = selectUsageFromTotal;
+        ChooseUsageFromDateCommand = new RelayCommand(chooseUsageFromDate);
+        OnPropertyChanged(nameof(ChooseUsageFromDateCommand));
     }
 
     public void RefreshBackground(bool darkMode, int transparency)

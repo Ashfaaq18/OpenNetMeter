@@ -87,6 +87,17 @@
                   Command="{Binding OpenMainWindowCommand}"/>
         <MenuItem Header="Hide"
                   Command="{Binding HideWidgetCommand}"/>
+        <Separator/>
+        <MenuItem Header="Current session"
+                  ToggleType="Radio"
+                  GroupName="WidgetTotal"
+                  IsChecked="{Binding IsSessionTotal, Mode=TwoWay}"/>
+        <MenuItem Header="{Binding UsageFromMenuHeader}"
+                  ToggleType="Radio"
+                  GroupName="WidgetTotal"
+                  IsChecked="{Binding IsUsageFromTotal, Mode=TwoWay}"/>
+        <MenuItem Header="Choose date…"
+                  Command="{Binding ChooseUsageFromDateCommand}"/>
       </ContextMenu>
     </Border.ContextMenu>
 
@@ -113,12 +124,14 @@
           <TextBlock Classes="speedValue"
                      Text="{Binding DownloadSpeedText}"/>
           <StackPanel Orientation="Horizontal"
-                      Spacing="3">
+                      Spacing="3"
+                      Background="Transparent"
+                      ToolTip.Tip="{Binding TotalToolTip}">
             <TextBlock Classes="totalLabel"
-                       Text="Total:"
+                       Text="{Binding TotalLabel}"
                        Foreground="{DynamicResource BrushDownload}"/>
             <TextBlock Classes="totalValue"
-                       Text="{Binding CurrentSessionDownloadText}"/>
+                       Text="{Binding TotalDownloadText}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
@@ -145,12 +158,14 @@
           <TextBlock Classes="speedValue"
                      Text="{Binding UploadSpeedText}"/>
           <StackPanel Orientation="Horizontal"
-                      Spacing="3">
+                      Spacing="3"
+                      Background="Transparent"
+                      ToolTip.Tip="{Binding TotalToolTip}">
             <TextBlock Classes="totalLabel"
-                       Text="Total:"
+                       Text="{Binding TotalLabel}"
                        Foreground="{DynamicResource BrushUpload}"/>
             <TextBlock Classes="totalValue"
-                       Text="{Binding CurrentSessionUploadText}"/>
+                       Text="{Binding TotalUploadText}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
