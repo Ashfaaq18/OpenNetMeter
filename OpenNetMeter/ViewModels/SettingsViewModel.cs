@@ -77,6 +77,14 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         selectedSpeedUnitIndex = settings.NetworkSpeedFormat;
         selectedRetentionIndex = HistoryRetention.IndexOf(settings.HistoryRetentionDays);
 
+        // An upgrade can move the install folder (0.15.0 was x86 in Program Files (x86)), leaving the logon task pointing at a missing exe.
+        if (startWithWindows)
+        {
+            bool repairMinimized = minimizeOnStart;
+            IStartupRegistrationService startupService = startupRegistrationService;
+            _ = Task.Run(() => startupService.RepairIfStale(repairMinimized));
+        }
+
         ResetDataCommand = new RelayCommand(ResetData);
         ExportAllCommand = new RelayCommand(async () => await ExportAllAsync());
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
