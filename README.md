@@ -12,7 +12,9 @@ This program provides the following features,
 - current connection's session data usage.
 - Data usage for today.
 - retrieve detailed data usage for any date range within your chosen history retention (60 days by default, up to forever), and export it as CSV, JSON or an HTML report.
-- A mini widget to show the network speed (can be placed over the taskbar). 
+- record per-app data usage between Start and Stop (e.g. a game download or a video call), and export the result.
+- follows the network adapter Windows actually uses for internet traffic, so full-tunnel VPNs (WireGuard etc.) are counted per app. You can also pin a specific adapter.
+- A mini widget to show the network speed (can be placed over the taskbar), plus your usage for the session or since a date you choose.
 
 ## Installation
 
