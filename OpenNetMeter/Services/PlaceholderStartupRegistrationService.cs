@@ -9,5 +9,9 @@ public sealed class PlaceholderStartupRegistrationService : IStartupRegistration
     public void SetEnabled(bool enabled, bool startMinimized)
     {
     }
+
+    public void RepairIfStale(bool startMinimized)
+    {
+    }
 }
 

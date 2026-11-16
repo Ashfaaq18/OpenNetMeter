@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OpenNetMeter.PlatformAbstractions;
@@ -58,6 +59,50 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
         {
             RemoveONMStartupTask();
         }
+    }
+
+    public void RepairIfStale(bool startMinimized)
+    {
+        try
+        {
+            TaskScheduler.TaskFolder rootFolder = TaskScheduler.TaskService.Instance.RootFolder;
+            if (!rootFolder.SubFolders.Exists(TaskFolder))
+                return;
+
+            TaskScheduler.TaskFolder folder = rootFolder.SubFolders[TaskFolder];
+            if (!folder.Tasks.Exists(TaskName))
+                return;
+
+            TaskScheduler.Task task = folder.Tasks[TaskName];
+            TaskScheduler.ExecAction? action = task.Definition.Actions
+                .OfType<TaskScheduler.ExecAction>()
+                .FirstOrDefault();
+            if (action is null)
+                return;
+
+            string actionPath = Environment.ExpandEnvironmentVariables(action.Path ?? string.Empty);
+            if (!IsActionPathStale(actionPath, File.Exists))
+                return;
+
+            EventLogger.Info($"Startup task pointed at a missing path '{actionPath}'; re-registering it for the current install.");
+            CreateONMStartupTask(startMinimized);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Error repairing startup task", ex);
+        }
+    }
+
+    /// <summary>
+    /// True only for an absolute action path whose file is gone. Bare commands such as "dotnet"
+    /// (dev runs via the managed entry point) are never considered stale.
+    /// </summary>
+    internal static bool IsActionPathStale(string? actionPath, Func<string, bool> fileExists)
+    {
+        if (string.IsNullOrWhiteSpace(actionPath))
+            return false;
+
+        return Path.IsPathRooted(actionPath) && !fileExists(actionPath);
     }
 
     private static void CreateONMStartupTask(bool startMinimized)
