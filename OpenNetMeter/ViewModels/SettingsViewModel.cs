@@ -77,7 +77,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         selectedSpeedUnitIndex = settings.NetworkSpeedFormat;
         selectedRetentionIndex = HistoryRetention.IndexOf(settings.HistoryRetentionDays);
 
-        // An upgrade can move the install folder (0.15.0 was x86 in Program Files (x86)), leaving the logon task pointing at a missing exe.
+        // Self-heal the logon task if its exe no longer exists (the install folder moved).
+        // First needed for 0.15.0 -> 0.16.0, where the x86 install in Program Files (x86) is removed.
         if (startWithWindows)
         {
             bool repairMinimized = minimizeOnStart;
