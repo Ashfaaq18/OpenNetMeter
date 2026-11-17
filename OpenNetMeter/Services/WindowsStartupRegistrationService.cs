@@ -15,6 +15,10 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
     private const string TaskFolder = "OpenNetMeter";
     private const string TaskName = "OpenNetMeterLogon";
 
+    // RepairIfStale runs on a thread-pool thread and can overlap a user toggling SetEnabled; without
+    // this a repair could recreate a task the user just removed.
+    private static readonly object RegistrationLock = new();
+
     public bool IsEnabled()
     {
         try
@@ -51,45 +55,51 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
 
     public void SetEnabled(bool enabled, bool startMinimized)
     {
-        if (enabled)
+        lock (RegistrationLock)
         {
-            CreateONMStartupTask(startMinimized);
-        }
-        else
-        {
-            RemoveONMStartupTask();
+            if (enabled)
+            {
+                CreateONMStartupTask(startMinimized);
+            }
+            else
+            {
+                RemoveONMStartupTask();
+            }
         }
     }
 
     public void RepairIfStale(bool startMinimized)
     {
-        try
+        lock (RegistrationLock)
         {
-            TaskScheduler.TaskFolder rootFolder = TaskScheduler.TaskService.Instance.RootFolder;
-            if (!rootFolder.SubFolders.Exists(TaskFolder))
-                return;
+            try
+            {
+                TaskScheduler.TaskFolder rootFolder = TaskScheduler.TaskService.Instance.RootFolder;
+                if (!rootFolder.SubFolders.Exists(TaskFolder))
+                    return;
 
-            TaskScheduler.TaskFolder folder = rootFolder.SubFolders[TaskFolder];
-            if (!folder.Tasks.Exists(TaskName))
-                return;
+                TaskScheduler.TaskFolder folder = rootFolder.SubFolders[TaskFolder];
+                if (!folder.Tasks.Exists(TaskName))
+                    return;
 
-            TaskScheduler.Task task = folder.Tasks[TaskName];
-            TaskScheduler.ExecAction? action = task.Definition.Actions
-                .OfType<TaskScheduler.ExecAction>()
-                .FirstOrDefault();
-            if (action is null)
-                return;
+                TaskScheduler.Task task = folder.Tasks[TaskName];
+                TaskScheduler.ExecAction? action = task.Definition.Actions
+                    .OfType<TaskScheduler.ExecAction>()
+                    .FirstOrDefault();
+                if (action is null)
+                    return;
 
-            string actionPath = Environment.ExpandEnvironmentVariables(action.Path ?? string.Empty);
-            if (!IsActionPathStale(actionPath, File.Exists))
-                return;
+                string actionPath = Environment.ExpandEnvironmentVariables(action.Path ?? string.Empty);
+                if (!IsActionPathStale(actionPath, File.Exists))
+                    return;
 
-            EventLogger.Info($"Startup task pointed at a missing path '{actionPath}'; re-registering it for the current install.");
-            CreateONMStartupTask(startMinimized);
-        }
-        catch (Exception ex)
-        {
-            EventLogger.Error("Error repairing startup task", ex);
+                EventLogger.Info($"Startup task pointed at a missing path '{actionPath}'; re-registering it for the current install.");
+                CreateONMStartupTask(startMinimized);
+            }
+            catch (Exception ex)
+            {
+                EventLogger.Error("Error repairing startup task", ex);
+            }
         }
     }
 

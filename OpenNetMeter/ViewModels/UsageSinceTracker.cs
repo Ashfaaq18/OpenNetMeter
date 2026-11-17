@@ -56,15 +56,16 @@ internal sealed class UsageSinceTracker
         Upload = dbUploadBaseline + Math.Max(0, sessionUpload - sessionUploadBaseline);
     }
 
-    /// <summary>Zeroes the total (e.g. on disconnect), keeping <see cref="FromDate"/>.</summary>
-    public void Reset()
+    /// <summary>
+    /// Folds the session's contribution into the baseline so the total holds while session counters
+    /// restart at 0, e.g. on disconnect.
+    /// </summary>
+    public void FreezeSession()
     {
-        dbDownloadBaseline = 0;
-        dbUploadBaseline = 0;
+        dbDownloadBaseline = Download;
+        dbUploadBaseline = Upload;
         sessionDownloadBaseline = 0;
         sessionUploadBaseline = 0;
-        Download = 0;
-        Upload = 0;
     }
 
     internal static (long download, long upload) ReadDbTotals(string dbPath, string adapterName, DateTime startDate, DateTime endDate)

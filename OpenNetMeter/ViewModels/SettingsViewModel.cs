@@ -49,6 +49,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private string updateStatusMessage = string.Empty;
     private string downloadUrl = string.Empty;
     private int selectedRetentionIndex;
+    private string foreverRetentionWarning = string.Empty;
     private bool isExporting;
     private bool isConfirmationOpen;
     private string confirmationMessage = string.Empty;
@@ -76,6 +77,8 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         selectedSpeedMagnitudeIndex = settings.NetworkSpeedMagnitude;
         selectedSpeedUnitIndex = settings.NetworkSpeedFormat;
         selectedRetentionIndex = HistoryRetention.IndexOf(settings.HistoryRetentionDays);
+        if (IsForeverRetentionSelected)
+            foreverRetentionWarning = BuildForeverRetentionWarning();
 
         // Self-heal the logon task if its exe no longer exists (the install folder moved).
         // First needed for 0.15.0 -> 0.16.0, where the x86 install in Program Files (x86) is removed.
@@ -458,21 +461,34 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
         var selected = choices.FirstOrDefault(c => string.Equals(c.Id, savedId, StringComparison.OrdinalIgnoreCase)) ?? choices[0];
 
-        isRebuildingAdapterChoices = true;
-        try
+        if (AdapterChoices.SequenceEqual(choices))
         {
-            AdapterChoices.Clear();
-            foreach (var choice in choices)
-                AdapterChoices.Add(choice);
-
+            // Same Ids and labels: leave the collection alone, because rebuilding it closes an open dropdown.
+            selected = AdapterChoices[choices.IndexOf(selected)];
+            bool selectionChanged = !ReferenceEquals(selectedAdapterChoice, selected);
             selectedAdapterChoice = selected;
+            if (selectionChanged)
+                OnPropertyChanged(nameof(SelectedAdapterChoice));
         }
-        finally
+        else
         {
-            isRebuildingAdapterChoices = false;
+            isRebuildingAdapterChoices = true;
+            try
+            {
+                AdapterChoices.Clear();
+                foreach (var choice in choices)
+                    AdapterChoices.Add(choice);
+
+                selectedAdapterChoice = selected;
+            }
+            finally
+            {
+                isRebuildingAdapterChoices = false;
+            }
+
+            OnPropertyChanged(nameof(SelectedAdapterChoice));
         }
 
-        OnPropertyChanged(nameof(SelectedAdapterChoice));
         IsPinnedAdapterMissing = isMissing;
     }
 
@@ -522,7 +538,10 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     public bool IsForeverRetentionSelected =>
         HistoryRetention.Options[selectedRetentionIndex].Days == HistoryRetention.Forever;
 
-    public string ForeverRetentionWarning =>
+    public string ForeverRetentionWarning => foreverRetentionWarning;
+
+    // Stats the database files, so it is computed when the selection changes rather than on every read.
+    private static string BuildForeverRetentionWarning() =>
         "History is never deleted, so the database keeps growing " +
         $"(currently {ByteSizeFormatter.FormatBytes(UsageDatabase.GetDatabaseSizeBytes())}). " +
         "Export or pick a shorter period if it gets large.";
@@ -627,6 +646,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     private void NotifyRetentionSelectionChanged()
     {
+        if (IsForeverRetentionSelected)
+            foreverRetentionWarning = BuildForeverRetentionWarning();
+
         OnPropertyChanged(nameof(SelectedRetentionIndex));
         OnPropertyChanged(nameof(IsForeverRetentionSelected));
         OnPropertyChanged(nameof(ForeverRetentionWarning));

@@ -102,5 +102,5 @@ public sealed class RecordingResultsViewModel
     }
 
     private static string FormatDateTime(DateTime value) =>
-        value.ToString("d MMM yyyy", CultureInfo.CurrentCulture) + ", " + value.ToString("t", CultureInfo.CurrentCulture);
+        DisplayDateFormat.DateTime(value);
 }
