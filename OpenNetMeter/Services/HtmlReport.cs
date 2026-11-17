@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using OpenNetMeter.Utilities;
 using OpenNetMeter.ViewModels;
 
 namespace OpenNetMeter.Services;
@@ -88,10 +89,10 @@ internal static class HtmlReport
     }
 
     public static string FormatDate(DateOnly date) =>
-        date.ToString("d MMM yyyy", CultureInfo.CurrentCulture);
+        DisplayDateFormat.Date(date.ToDateTime(TimeOnly.MinValue));
 
     public static string FormatDateTime(DateTime value) =>
-        value.ToString("d MMM yyyy", CultureInfo.CurrentCulture) + ", " + value.ToString("t", CultureInfo.CurrentCulture);
+        DisplayDateFormat.DateTime(value);
 
     public static void WriteDocumentStart(TextWriter w, string title)
     {

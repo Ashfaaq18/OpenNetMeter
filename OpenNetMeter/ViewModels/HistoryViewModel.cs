@@ -153,7 +153,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     /// When the current results were loaded, e.g. "22 Oct 2026, 14:05"; empty until a filter has run.
     /// </summary>
     public string LastFilteredTimeText => lastFilteredAt is { } at
-        ? at.ToString("d MMM yyyy", CultureInfo.CurrentCulture) + ", " + at.ToString("t", CultureInfo.CurrentCulture)
+        ? DisplayDateFormat.DateTime(at)
         : string.Empty;
 
     public bool HasLastFiltered => lastFilteredAt != null;

@@ -16,7 +16,7 @@ using OpenNetMeter.Utilities;
 using OpenNetMeter.Properties;
 using System.Diagnostics.Eventing.Reader;
 using System.Runtime.Versioning;
-using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace OpenNetMeter.Models
 {
@@ -58,6 +58,9 @@ namespace OpenNetMeter.Models
         // When it finally fires (after DebounceDelayMs of silence), HandleNetworkChange runs.
         private Timer? debounceTimer;
         private volatile bool isDisposed;
+
+        // Routing table change notifications (automatic adapter selection depends on the routes)
+        private IDisposable? routeChangeSubscription;
 
         // Lock to ensure only one HandleNetworkChange runs at a time
         private readonly object networkChangeLock = new object();
@@ -155,6 +158,10 @@ namespace OpenNetMeter.Models
 
             // Subscribe to network address changes (fires on connect/disconnect/IP change)
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+
+            // Route changes (e.g. a VPN adding its default route) don't always change an address,
+            // so they re-trigger the same debounced evaluation.
+            routeChangeSubscription = NetworkRoute.SubscribeRouteChanges(() => OnNetworkAddressChanged(null, null));
 
             // Check current connection state on startup
             HandleNetworkChange();
@@ -334,10 +341,13 @@ namespace OpenNetMeter.Models
             }
         }
 
+        // How many recent "connected" events to scan for the requested adapter's SSID.
+        private const int MaxWlanEventsToScan = 50;
+
         /// <summary>
-        /// Gets the SSID of the currently connected Wi-Fi network by reading
-        /// from the Windows WLAN AutoConfig event log.
-        /// 
+        /// Gets the SSID of the Wi-Fi network the given adapter is connected to by reading
+        /// the Windows WLAN AutoConfig event log (most recent connection event for that adapter).
+        ///
         /// This is more reliable than the WinRT API on Windows 11 which requires
         /// location permissions to retrieve SSID.
         /// </summary>
@@ -345,6 +355,9 @@ namespace OpenNetMeter.Models
         {
             try
             {
+                if (!Guid.TryParse(adapterGuid, out Guid wantedGuid))
+                    return null;
+
                 // Query for EventID 8001 (successful connection) in WLAN-AutoConfig log
                 var query = new EventLogQuery(
                     "Microsoft-Windows-WLAN-AutoConfig/Operational",
@@ -356,12 +369,16 @@ namespace OpenNetMeter.Models
                 };
 
                 using var reader = new EventLogReader(query);
-                if (reader.ReadEvent() is EventRecord evt)
+                for (int i = 0; i < MaxWlanEventsToScan; i++)
                 {
-                    var message = evt.FormatDescription();
-                    var match = Regex.Match(message, @"^SSID:\s*(.+)$", RegexOptions.Multiline);
-                    if (match.Success)
-                        return match.Groups[1].Value.Trim();
+                    using EventRecord? evt = reader.ReadEvent();
+                    if (evt == null)
+                        break;
+
+                    // The named event fields are locale-independent, unlike the formatted message.
+                    if (TryReadWlanConnection(evt.ToXml(), out Guid interfaceGuid, out string ssid) &&
+                        interfaceGuid == wantedGuid)
+                        return ssid;
                 }
             }
             catch (Exception ex)
@@ -370,6 +387,47 @@ namespace OpenNetMeter.Models
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Reads the interface GUID and SSID from the XML of a WLAN AutoConfig "connected" (8001) event.
+        /// Returns false if either field is missing or malformed.
+        /// </summary>
+        internal static bool TryReadWlanConnection(string eventXml, out Guid interfaceGuid, out string ssid)
+        {
+            interfaceGuid = Guid.Empty;
+            ssid = string.Empty;
+
+            try
+            {
+                string? guidText = null;
+                string? ssidText = null;
+
+                // Match on local names so the event namespace doesn't matter.
+                foreach (var data in XDocument.Parse(eventXml).Descendants().Where(e => e.Name.LocalName == "Data"))
+                {
+                    switch ((string?)data.Attribute("Name"))
+                    {
+                        case "InterfaceGuid":
+                            guidText = data.Value;
+                            break;
+                        case "SSID":
+                            ssidText = data.Value;
+                            break;
+                    }
+                }
+
+                if (!Guid.TryParse(guidText?.Trim(), out Guid parsedGuid) || string.IsNullOrWhiteSpace(ssidText))
+                    return false;
+
+                interfaceGuid = parsedGuid;
+                ssid = ssidText.Trim();
+                return true;
+            }
+            catch (System.Xml.XmlException)
+            {
+                return false;
+            }
         }
 
         //---------- Network Change Handling ------------//
@@ -956,6 +1014,8 @@ namespace OpenNetMeter.Models
 
             // Unsubscribe from network change events
             NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            routeChangeSubscription?.Dispose();
+            routeChangeSubscription = null;
 
             // Dispose the debounce timer (prevents any pending callback from firing)
             debounceTimer?.Dispose();

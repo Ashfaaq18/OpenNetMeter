@@ -131,6 +131,9 @@ public class UsageExporterTests
     [InlineData(@"C:\out\usage.v2", "JSON file", @"C:\out\usage.v2.json")]
     [InlineData(@"C:\out\usage", "HTML report", @"C:\out\usage.html")]
     [InlineData(@"C:\out\usage.HTML", "CSV file", @"C:\out\usage.HTML")]
+    [InlineData(@"C:\out\report.htm", "HTML report", @"C:\out\report.htm")]
+    [InlineData(@"C:\out\REPORT.HTM", "CSV file", @"C:\out\REPORT.HTM")]
+    [InlineData(@"C:\out\report", "HTML report", @"C:\out\report.html")]
     public void ResolvePath_KeepsTypedExtensionOtherwiseUsesSelectedType(string path, string? selectedName, string expected)
     {
         var selected = UsageExporter.FileTypes.FirstOrDefault(t => t.Name == selectedName);

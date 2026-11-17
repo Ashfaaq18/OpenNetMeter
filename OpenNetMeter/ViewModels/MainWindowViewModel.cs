@@ -172,6 +172,10 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             OnPropertyChanged(nameof(IsSummaryTab));
             OnPropertyChanged(nameof(IsHistoryTab));
             OnPropertyChanged(nameof(IsSettingsTab));
+
+            // Network changes only refresh the adapter list while Settings is open, so catch up on arrival.
+            if (IsSettingsTab)
+                Settings.RefreshAdapterChoices();
         }
     }
 
@@ -195,7 +199,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
                 NetworkStatus = "Disconnected";
                 UpdatePinnedAdapterWarning();
                 Summary.ClearOnDisconnect();
-                Settings.RefreshAdapterChoices();
+                RefreshAdapterChoicesIfVisible();
             });
             return;
         }
@@ -208,8 +212,18 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             UpdatePinnedAdapterWarning();
             Summary.SetActiveAdapter(adapterName);
             History.ReloadProfiles();
-            Settings.RefreshAdapterChoices();
+            RefreshAdapterChoicesIfVisible();
         });
+    }
+
+    /// <summary>
+    /// Enumerating adapters reads the event log and rebuilding the list closes an open dropdown,
+    /// so it is only done while the Settings tab is showing (and again when switching to it).
+    /// </summary>
+    private void RefreshAdapterChoicesIfVisible()
+    {
+        if (IsSettingsTab)
+            Settings.RefreshAdapterChoices();
     }
 
     /// <summary>
@@ -272,6 +286,9 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         History.DeleteAllDbFiles();
 
+        // Disconnected totals are held rather than zeroed, so re-read the now-empty DB explicitly.
+        Summary.RefreshAfterHistoryPurge();
+
         if (wasConnected)
         {
             networkCaptureService.Start();
@@ -320,7 +337,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
         var fromDate = Summary.WidgetUsageFromDate;
         var fromToday = fromDate == DateTime.Today;
-        var fromDateText = fromDate.ToString("d MMM yyyy", CultureInfo.CurrentCulture);
+        var fromDateText = DisplayDateFormat.Date(fromDate);
         miniWidget.UsageFromMenuHeader = fromToday ? "Usage from today" : $"Usage from {fromDateText}";
 
         if (Settings.IsMiniWidgetTotalUsageFrom)

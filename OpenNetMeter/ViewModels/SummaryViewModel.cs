@@ -28,6 +28,10 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private string? currentSortColumn;
     private bool sortDescending;
     private string activeAdapterName = string.Empty;
+    // The adapter whose history the Usage From card, widget total and weekly trend show. Unlike
+    // activeAdapterName it survives a disconnect, so those totals keep showing the last adapter's usage.
+    private string usageAdapterName = string.Empty;
+    private DateTime lastSeenDay = DateTime.Today;
     private long currentSessionDownload;
     private long currentSessionUpload;
     // Summary page "Usage From" card.
@@ -77,8 +81,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         WeeklyTrend = new WeeklyUsageTrendViewModel();
 
-        DateMax = DateTime.Today;
-        sinceDate = DateMax;
+        sinceDate = DateTime.Today;
         this.networkCaptureService.TrafficObserved += OnTrafficObserved;
 
         flushTimer = new DispatcherTimer
@@ -113,7 +116,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public int ProcessCount => ActiveProcesses.Count;
     public DateTime DateMin =>
         HistoryRetention.GetCutoff(DateMax, Properties.SettingsManager.Current.HistoryRetentionDays) ?? DateTime.MinValue;
-    public DateTime DateMax { get; }
+    public DateTime DateMax => DateTime.Today;
 
     public bool IsRecording => recording is { IsRunning: true };
     public bool IsNotRecording => !IsRecording;
@@ -182,13 +185,14 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         latestUploadBytesPerSecond = 0;
         currentSessionDownload = 0;
         currentSessionUpload = 0;
-        sinceDateUsage.Reset();
-        widgetUsage.Reset();
+        // The DB-backed totals (Usage From card, widget total, weekly trend) keep showing the last
+        // adapter's usage while disconnected; only the session counters restart.
+        sinceDateUsage.FreezeSession();
+        widgetUsage.FreezeSession();
         activeAdapterName = string.Empty;
 
         speedHistory.Clear();
         weeklyTrendTickCounter = 0;
-        WeeklyTrend.Reset();
 
         ActiveProcesses.Clear();
         processIndex.Clear();
@@ -204,7 +208,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Re-reads DB-backed totals after old history was purged, clamping the "since" date to the new retention.
+    /// Re-reads DB-backed totals after history was purged or deleted, clamping the "since" date to the new retention.
     /// The widget's date is clamped by <see cref="SettingsViewModel"/>, which then calls <see cref="SetWidgetUsageFrom"/>.
     /// </summary>
     public void RefreshAfterHistoryPurge()
@@ -228,7 +232,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public void SetWidgetUsageFrom(DateTime fromDate, bool followToday)
     {
         widgetUsageFollowsToday = followToday;
-        widgetUsage.Rebase(activeAdapterName, followToday ? DateTime.Today : fromDate, currentSessionDownload, currentSessionUpload);
+        widgetUsage.Rebase(usageAdapterName, followToday ? DateTime.Today : fromDate, currentSessionDownload, currentSessionUpload);
         NotifyWidgetUsageChanged();
     }
 
@@ -239,6 +243,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             return;
 
         activeAdapterName = normalized;
+        usageAdapterName = normalized;
         if (recording is { IsRunning: true })
             recording.NoteAdapter(activeAdapterName);
 
@@ -333,6 +338,15 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             pendingByProcess.Clear();
         }
 
+        // Date bounds follow the calendar, so tell listeners when the day rolls over (any widget mode).
+        var today = DateTime.Today;
+        if (today != lastSeenDay)
+        {
+            lastSeenDay = today;
+            OnPropertyChanged(nameof(DateMax));
+            OnPropertyChanged(nameof(DateMin));
+        }
+
         latestDownloadBytesPerSecond = secondDownloadBytes;
         latestUploadBytesPerSecond = secondUploadBytes;
         currentSessionDownload += secondDownloadBytes;
@@ -379,13 +393,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private void RefreshWeeklyTrend()
     {
         weeklyTrendTickCounter = 0;
-        WeeklyTrend.Refresh(activeAdapterName);
+        WeeklyTrend.Refresh(usageAdapterName);
     }
 
     private void RefreshSinceDateBaseline()
     {
         var fromDate = (sinceDate ?? DateTimeOffset.Now.Date).Date;
-        sinceDateUsage.Rebase(activeAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
+        sinceDateUsage.Rebase(usageAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
 
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
@@ -394,7 +408,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private void RefreshWidgetUsageBaseline()
     {
         var fromDate = widgetUsageFollowsToday ? DateTime.Today : widgetUsage.FromDate;
-        widgetUsage.Rebase(activeAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
+        widgetUsage.Rebase(usageAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
         NotifyWidgetUsageChanged();
     }
 

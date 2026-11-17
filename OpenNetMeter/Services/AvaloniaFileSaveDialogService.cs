@@ -38,13 +38,16 @@ public sealed class AvaloniaFileSaveDialogService : IFileSaveDialogService
     }
 
     /// <summary>
-    /// Keeps an extension the user typed if it is one of <paramref name="fileTypes"/>;
-    /// otherwise appends the extension of the file type chosen in the dialog.
+    /// Keeps an extension the user typed if it is one of <paramref name="fileTypes"/>
+    /// (".htm" counts when an "html" type is offered); otherwise appends the extension
+    /// of the file type chosen in the dialog.
     /// </summary>
     internal static string ResolvePath(string path, FileTypeOption? selectedType, IReadOnlyList<FileTypeOption> fileTypes)
     {
         string extension = Path.GetExtension(path).TrimStart('.');
-        if (fileTypes.Any(t => string.Equals(t.Extension, extension, StringComparison.OrdinalIgnoreCase)))
+        bool offersHtml = fileTypes.Any(t => string.Equals(t.Extension, "html", StringComparison.OrdinalIgnoreCase));
+        if (fileTypes.Any(t => string.Equals(t.Extension, extension, StringComparison.OrdinalIgnoreCase)) ||
+            (offersHtml && string.Equals(extension, "htm", StringComparison.OrdinalIgnoreCase)))
             return path;
 
         var type = selectedType ?? (fileTypes.Count > 0 ? fileTypes[0] : null);

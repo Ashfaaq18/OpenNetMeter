@@ -59,16 +59,56 @@ public class UsageSinceTrackerTests
     }
 
     [Fact]
-    public void Reset_ZeroesTotalsButKeepsFromDate()
+    public void FreezeSession_KeepsTotalWhenSessionCountersRestartAtZero()
+    {
+        var tracker = new UsageSinceTracker((_, _, _) => (1_000, 200));
+        tracker.Rebase("Wi-Fi", DateTime.Today, sessionDownload: 500, sessionUpload: 50);
+        tracker.Advance(sessionDownload: 800, sessionUpload: 70);
+        Assert.Equal(1_300, tracker.Download);
+        Assert.Equal(220, tracker.Upload);
+
+        tracker.FreezeSession();
+        tracker.Advance(0, 0);
+
+        Assert.Equal(1_300, tracker.Download);
+        Assert.Equal(220, tracker.Upload);
+
+        tracker.Advance(100, 10);
+
+        Assert.Equal(1_400, tracker.Download);
+        Assert.Equal(230, tracker.Upload);
+    }
+
+    [Fact]
+    public void Rebase_AfterFreezeSessionReplacesFrozenTotalWithFreshDbTotals()
+    {
+        var dbTotals = (download: 1_000L, upload: 200L);
+        var tracker = new UsageSinceTracker((_, _, _) => dbTotals);
+        tracker.Rebase("Wi-Fi", DateTime.Today, 500, 50);
+        tracker.Advance(800, 70);
+        tracker.FreezeSession();
+
+        dbTotals = (1_350, 230);
+        tracker.Rebase("Wi-Fi", DateTime.Today, 0, 0);
+
+        Assert.Equal(1_350, tracker.Download);
+        Assert.Equal(230, tracker.Upload);
+
+        tracker.Advance(50, 5);
+
+        Assert.Equal(1_400, tracker.Download);
+        Assert.Equal(235, tracker.Upload);
+    }
+
+    [Fact]
+    public void FreezeSession_KeepsFromDate()
     {
         var tracker = new UsageSinceTracker((_, _, _) => (1_000, 200));
         var start = DateTime.Today.AddDays(-3);
         tracker.Rebase("Wi-Fi", start, 0, 0);
 
-        tracker.Reset();
+        tracker.FreezeSession();
 
-        Assert.Equal(0, tracker.Download);
-        Assert.Equal(0, tracker.Upload);
         Assert.Equal(start, tracker.FromDate);
     }
 
