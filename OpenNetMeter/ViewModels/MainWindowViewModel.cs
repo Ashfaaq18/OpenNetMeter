@@ -75,6 +75,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         AboutCommand = new RelayCommand(() => IsAboutOpen = true);
         CloseAboutCommand = new RelayCommand(() => IsAboutOpen = false);
         OpenAboutRepositoryCommand = new RelayCommand(() => this.externalLinkService.Open(AboutRepositoryUri));
+        OpenAboutSupportCommand = new RelayCommand(() => this.externalLinkService.Open(ExternalLinks.SupportUri));
         MinimizeWindowCommand = new RelayCommand(() => this.windowService.MinimizeMainWindow());
         CloseWindowCommand = new RelayCommand(() => this.windowService.CloseMainWindow());
 
@@ -93,6 +94,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     public ICommand AboutCommand { get; }
     public ICommand CloseAboutCommand { get; }
     public ICommand OpenAboutRepositoryCommand { get; }
+    public ICommand OpenAboutSupportCommand { get; }
     public ICommand MinimizeWindowCommand { get; }
     public ICommand CloseWindowCommand { get; }
 

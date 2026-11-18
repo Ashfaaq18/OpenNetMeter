@@ -41,6 +41,7 @@ The Application never connects to the internet in the background. The following 
 - **Search about a process.** The Summary and History tabs include a search action for each listed process. When the user clicks it, the Application opens a Google search for that process name in the user's default web browser. No usage or traffic data accompanies the process name. The search is handled by the browser and is subject to Google's privacy policy.
 - **Check for updates.** When the user clicks "Check for updates" in Settings, the Application requests information about the latest release from GitHub (`api.github.com`). As with any web request, GitHub receives the device's IP address and basic request details (including an "OpenNetMeter" user-agent). No usage data is sent. The request is subject to GitHub's privacy statement.
 - **Project page links.** The repository link in the About dialog, and the "Download Update" button shown after an update check finds a newer version, open GitHub pages in the user's default web browser.
+- **Support link.** The "Support OpenNetMeter" links in Settings and the About dialog open the project's Buy Me a Coffee page (`buymeacoffee.com`) in the user's default web browser. The Application itself sends nothing to that site; the page is handled by the browser and is subject to Buy Me a Coffee's privacy policy.
 
 ## 5. Traffic Recordings and Data Export
 

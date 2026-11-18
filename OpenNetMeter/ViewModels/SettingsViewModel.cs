@@ -95,6 +95,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         DownloadUpdateCommand = new RelayCommand(DownloadUpdate);
         OpenRepositoryCommand = new RelayCommand(() => this.externalLinkService.Open(RepositoryUri));
         OpenPrivacyPolicyCommand = new RelayCommand(() => this.externalLinkService.Open(PrivacyPolicyUri));
+        OpenSupportCommand = new RelayCommand(() => this.externalLinkService.Open(ExternalLinks.SupportUri));
         ConfirmCommand = new RelayCommand(Confirm);
         CancelConfirmationCommand = new RelayCommand(CancelConfirmation);
 
@@ -616,6 +617,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     public ICommand DownloadUpdateCommand { get; }
     public ICommand OpenRepositoryCommand { get; }
     public ICommand OpenPrivacyPolicyCommand { get; }
+    public ICommand OpenSupportCommand { get; }
     public ICommand ConfirmCommand { get; }
     public ICommand CancelConfirmationCommand { get; }
 

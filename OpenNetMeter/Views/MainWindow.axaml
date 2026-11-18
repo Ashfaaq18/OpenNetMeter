@@ -203,6 +203,13 @@
                                Foreground="{DynamicResource BrushLink}"
                                TextDecorations="Underline"/>
                   </Button>
+                  <Button Classes="linkBtn"
+                          Command="{Binding OpenAboutSupportCommand}"
+                          HorizontalAlignment="Left">
+                    <TextBlock Text="Support OpenNetMeter &#x2615;"
+                               Foreground="{DynamicResource BrushLink}"
+                               TextDecorations="Underline"/>
+                  </Button>
                 </StackPanel>
               </Border>
             </Border>

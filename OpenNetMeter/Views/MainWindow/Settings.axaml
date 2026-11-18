@@ -345,6 +345,9 @@
             <Button Classes="linkBtn" Command="{Binding OpenPrivacyPolicyCommand}">
               <TextBlock Text="Privacy policy" FontSize="11" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
             </Button>
+            <Button Classes="linkBtn" Command="{Binding OpenSupportCommand}">
+              <TextBlock Text="Support OpenNetMeter &#x2615;" FontSize="11" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
+            </Button>
           </StackPanel>
           <StackPanel Grid.Column="3" Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Right">
             <TextBlock Text="{Binding UpdateStatusMessage}" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="11"
