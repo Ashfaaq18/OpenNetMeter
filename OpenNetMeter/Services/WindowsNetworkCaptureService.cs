@@ -10,7 +10,8 @@ namespace OpenNetMeter.Services;
 [SupportedOSPlatform("windows")]
 public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 {
-    private NetworkProcess? networkProcess;
+    // Volatile so RefreshAdapterSelection can read it without syncLock (see there).
+    private volatile NetworkProcess? networkProcess;
     private readonly object syncLock = new();
     private bool disposed;
 
@@ -61,13 +62,10 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 
     public void RefreshAdapterSelection()
     {
-        NetworkProcess? current;
-        lock (syncLock)
-        {
-            current = networkProcess;
-        }
-
-        current?.RequestNetworkReevaluation();
+        // Deliberately not under syncLock: the background Start() holds it for its whole duration and this is
+        // called from the UI thread. If the start hasn't created the process yet there is nothing to
+        // re-evaluate, because Start reads the saved selection itself.
+        networkProcess?.RequestNetworkReevaluation();
     }
 
     public void Dispose()

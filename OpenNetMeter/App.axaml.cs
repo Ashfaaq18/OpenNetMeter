@@ -87,7 +87,11 @@ public partial class App : Application
                 : new PlaceholderTrayService();
 
             if (OperatingSystem.IsWindows() && SettingsManager.Current.MiniWidgetVisibility)
+            {
                 miniWidgetService.Show();
+                // Loaded priority runs after the widget's first layout and render, so this is when it is on screen.
+                Dispatcher.UIThread.Post(StartupTiming.LogWidgetShown, DispatcherPriority.Loaded);
+            }
 
             // A second launch (shortcut, Start menu) exits and asks this copy to show its window instead.
             Program.InstanceGuard?.ListenForActivation(() => Dispatcher.UIThread.Post(mainWindow.OpenFromTray));

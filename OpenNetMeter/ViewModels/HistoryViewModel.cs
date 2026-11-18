@@ -32,6 +32,12 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private bool isExporting;
     private DateTime? lastFilteredAt;
     private string? lastFilteredProfile;
+    // History is only read while its tab is showing. Until the first Activate nothing is loaded, and
+    // refreshes requested while it is hidden are remembered here and applied on the next Activate.
+    private bool isActive;
+    private bool hasLoaded;
+    private bool profilesStale;
+    private bool filterStale;
 
     public HistoryViewModel()
         : this(new NoOpProcessIconService(), new NoOpExternalLinkService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
@@ -39,12 +45,18 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     }
 
     public HistoryViewModel(IProcessIconService processIconService, IExternalLinkService externalLinkService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
+        : this(UsageDatabase.ResolveDatabasePath(), processIconService, externalLinkService, fileSaveDialogService, fileRevealService)
+    {
+    }
+
+    // Tests point this at a temporary database.
+    internal HistoryViewModel(string dbPath, IProcessIconService processIconService, IExternalLinkService externalLinkService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
     {
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
         this.fileSaveDialogService = fileSaveDialogService;
         ExportStatus = new ExportStatusViewModel(fileRevealService);
-        dbPath = UsageDatabase.ResolveDatabasePath();
+        this.dbPath = dbPath;
 
         Profiles = [];
         Rows = [];
@@ -59,18 +71,17 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             SortRows(column);
         });
 
-        DateStart = DateTimeOffset.Now.Date.AddDays(-7);
-        DateEnd = DateTimeOffset.Now.Date;
-
-        LoadProfiles();
-        if (Profiles.Count > 0)
-        {
-            SelectedProfile = Profiles[0];
-            ApplyFilter();
-        }
+        // Initial values so the date pickers bind to something; refreshed on the first Activate.
+        ResetDateRange();
     }
 
     public ObservableCollection<string> Profiles { get; }
+
+    /// <summary>
+    /// The profile to select on the first <see cref="Activate"/> (the connected adapter, set by the main view model)
+    /// when it has history; otherwise the first profile. Later activations keep the user's selection.
+    /// </summary>
+    public string? PreferredProfile { get; set; }
 
     public string? SelectedProfile
     {
@@ -167,15 +178,85 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
+    /// Called when the History tab becomes visible. The first call loads the profiles and the default
+    /// filter (this used to run in the constructor, delaying startup for a tab nobody had opened);
+    /// later calls only catch up on refreshes that were requested while the tab was hidden.
+    /// </summary>
+    public void Activate()
+    {
+        isActive = true;
+
+        if (!hasLoaded)
+        {
+            hasLoaded = true;
+            profilesStale = false;
+            filterStale = false;
+
+            // The app may have been running for days before History was first opened.
+            ResetDateRange();
+
+            LoadProfiles();
+            if (Profiles.Count > 0)
+            {
+                SelectedProfile = PreferredProfile is { } preferred && Profiles.Contains(preferred)
+                    ? preferred
+                    : Profiles[0];
+                ApplyFilter();
+            }
+
+            return;
+        }
+
+        var reloadProfiles = profilesStale;
+        var reapplyFilter = filterStale;
+        profilesStale = false;
+        filterStale = false;
+
+        if (reloadProfiles)
+            ReloadProfilesNow();
+        if (reapplyFilter)
+            ApplyFilter();
+    }
+
+    /// <summary>Called when the History tab is left; refreshes are deferred until the next <see cref="Activate"/>.</summary>
+    public void Deactivate()
+    {
+        isActive = false;
+    }
+
+    /// <summary>
     /// Re-reads profiles and the current filter, e.g. after old history was purged.
+    /// While History is hidden this only marks it stale; the next <see cref="Activate"/> does the work.
     /// </summary>
     public void Refresh()
     {
-        ReloadProfiles();
+        if (!isActive)
+        {
+            profilesStale = true;
+            filterStale = true;
+            return;
+        }
+
+        ReloadProfilesNow();
         ApplyFilter();
     }
 
+    /// <summary>
+    /// Re-reads the profile list, keeping the selection when it still exists. While History is hidden this only
+    /// marks it stale; the next <see cref="Activate"/> does the work.
+    /// </summary>
     public void ReloadProfiles()
+    {
+        if (!isActive)
+        {
+            profilesStale = true;
+            return;
+        }
+
+        ReloadProfilesNow();
+    }
+
+    private void ReloadProfilesNow()
     {
         string? previousSelection = SelectedProfile;
         LoadProfiles();
@@ -272,13 +353,21 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             var download = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
             var upload = reader.IsDBNull(2) ? 0 : reader.GetInt64(2);
 
-            var icon = processIconService.GetProcessIcon(processName) as IImage;
-            Rows.Add(new HistoryRowViewModel(processName, download, upload, externalLinkService, icon));
+            // The cached/default icon keeps this loop off the process-snapshot path; real icons arrive in the background.
+            var row = new HistoryRowViewModel(processName, download, upload, externalLinkService, processIconService.GetCachedIcon(processName) as IImage);
+            ProcessIconLoader.Attach(processIconService, processName, icon => row.Icon = icon);
+            Rows.Add(row);
             TotalDownload += download;
             TotalUpload += upload;
         }
 
         SetLastFiltered(profile, DateTime.Now);
+    }
+
+    private void ResetDateRange()
+    {
+        DateStart = DateTimeOffset.Now.Date.AddDays(-7);
+        DateEnd = DateTimeOffset.Now.Date;
     }
 
     private void SetLastFiltered(string? profile, DateTime? at)
@@ -379,7 +468,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
 
     private sealed class NoOpProcessIconService : IProcessIconService
     {
-        public object? GetProcessIcon(string processName) => null;
+        public object? GetCachedIcon(string processName) => null;
+        public Task<object?> LoadIconAsync(string processName) => Task.FromResult<object?>(null);
     }
 
     private sealed class NoOpExternalLinkService : IExternalLinkService
@@ -388,9 +478,10 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed class HistoryRowViewModel
+public sealed class HistoryRowViewModel : INotifyPropertyChanged
 {
     private readonly IExternalLinkService externalLinkService;
+    private IImage? icon;
 
     public HistoryRowViewModel(string processName, long downloadBytes, long uploadBytes, IExternalLinkService externalLinkService, IImage? icon = null)
     {
@@ -398,7 +489,7 @@ public sealed class HistoryRowViewModel
         DownloadBytes = downloadBytes;
         UploadBytes = uploadBytes;
         this.externalLinkService = externalLinkService;
-        Icon = icon;
+        this.icon = icon;
         SearchProcessCommand = new RelayCommand(() =>
         {
             var encodedName = Uri.EscapeDataString(ProcessName);
@@ -406,12 +497,25 @@ public sealed class HistoryRowViewModel
         });
     }
 
-    public IImage? Icon { get; }
+    public IImage? Icon
+    {
+        get => icon;
+        set
+        {
+            if (ReferenceEquals(icon, value))
+                return;
+            icon = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
+        }
+    }
+
     public string ProcessName { get; }
     public long DownloadBytes { get; }
     public long UploadBytes { get; }
     public ICommand SearchProcessCommand { get; }
     public string DownloadText => ByteSizeFormatter.FormatBytes(DownloadBytes);
     public string UploadText => ByteSizeFormatter.FormatBytes(UploadBytes);
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
