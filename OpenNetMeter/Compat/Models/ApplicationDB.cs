@@ -12,6 +12,18 @@ internal sealed class ApplicationDB : IDisposable
     private static SqliteConnection? sharedConnection;
     private static int refCount;
 
+    // The day whose Date row (and retention purge) has been taken care of. Static because every flush
+    // creates a new ApplicationDB; guarded by DbLock; cleared when the shared connection is closed.
+    private static DateTime? ensuredDate;
+    // Day for which the "Date row still missing" error was already logged, so it is logged once per day.
+    private static DateTime? missingDateLoggedFor;
+
+    /// <summary>Clock used for all date-dependent logic. Tests replace it to simulate midnight.</summary>
+    internal static Func<DateTime> Today { get; set; } = () => DateTime.Today;
+
+    /// <summary>Test seam: when set, the database lives at this path instead of the per-user app folder.</summary>
+    internal static string? DatabasePathOverride { get; set; }
+
     private readonly string adapterName;
     private readonly SqliteConnection? countedConnection;
     private bool disposed;
@@ -90,7 +102,7 @@ internal sealed class ApplicationDB : IDisposable
 
     public static string GetUnifiedDBFullPath()
     {
-        return Path.Combine(Properties.Global.GetFilePath(), UnifiedDBFileName + ".sqlite");
+        return DatabasePathOverride ?? Path.Combine(Properties.Global.GetFilePath(), UnifiedDBFileName + ".sqlite");
     }
 
     public static void CloseSharedConnection()
@@ -100,6 +112,8 @@ internal sealed class ApplicationDB : IDisposable
             sharedConnection?.Dispose();
             sharedConnection = null;
             refCount = 0;
+            // The database file may be deleted and recreated next, so today's Date row must be inserted again.
+            ensuredDate = null;
         }
     }
 
@@ -131,11 +145,22 @@ internal sealed class ApplicationDB : IDisposable
     {
         lock (DbLock)
         {
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] UpdateDatesInDB adapter='{adapterName}' today='{DateTime.Today:yyyy-MM-dd}' retentionDays={Properties.SettingsManager.Current.HistoryRetentionDays}");
-            InsertUniqueRow_DateTable(DateTime.Today);
-            RemoveOldDate();
-            RemoveOldProcess();
+            var today = Today();
+            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] UpdateDatesInDB adapter='{adapterName}' today='{today:yyyy-MM-dd}' retentionDays={Properties.SettingsManager.Current.HistoryRetentionDays}");
+            EnsureDate(today);
         }
+    }
+
+    /// <summary>
+    /// Inserts <paramref name="day"/>'s Date row and purges expired history. Caller must hold DbLock.
+    /// Must run before a push creates its Process row, or RemoveOldProcess would delete that fresh row.
+    /// </summary>
+    private void EnsureDate(DateTime day)
+    {
+        InsertUniqueRow_DateTable(day);
+        RemoveOldDate();
+        RemoveOldProcess();
+        ensuredDate = day;
     }
 
     /// <summary>
@@ -186,10 +211,28 @@ internal sealed class ApplicationDB : IDisposable
         {
             Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] PushToDB adapter='{adapterName}' process='{processName}' recv={totalDataRecv} sent={totalDataSend}");
 
+            // A session that runs past midnight has no Date row for the new day until one is inserted here.
+            var today = Today();
+            if (ensuredDate != today)
+                EnsureDate(today);
+
+            long dateID = GetID_DateTable(today);
+            if (dateID < 1)
+            {
+                if (missingDateLoggedFor != today)
+                {
+                    missingDateLoggedFor = today;
+                    EventLogger.Error($"SQLite push skipped: no Date row for {today:yyyy-MM-dd}; usage for this day cannot be saved");
+                }
+
+                // The Date insert failed; forget that today was set up so the next push retries it.
+                ensuredDate = null;
+                return;
+            }
+
             InsertUniqueRow_ProcessTable(processName);
             InsertUniqueRow_AdapterTable(adapterName);
 
-            long dateID = GetID_DateTable(DateTime.Today);
             long processID = GetID_ProcessTable(processName);
             long adapterID = GetID_AdapterTable_Internal(adapterName);
 
@@ -260,15 +303,16 @@ internal sealed class ApplicationDB : IDisposable
     {
         lock (DbLock)
         {
+            var today = Today();
             var sum = GetMultipleCellData(
                 "SELECT SUM(DataReceived), SUM(DataSent) FROM ProcessDate " +
                 "WHERE DateID IN " +
                 "(SELECT ID FROM Date " +
                 "WHERE (Year * 10000 + Month * 100 + Day) = (@Year * 10000 + @Month * 100 + @Day)) " +
                 "AND AdapterID = @AdapterID",
-                ("@Year", DateTime.Today.Year.ToString()),
-                ("@Month", DateTime.Today.Month.ToString()),
-                ("@Day", DateTime.Today.Day.ToString()),
+                ("@Year", today.Year.ToString()),
+                ("@Month", today.Month.ToString()),
+                ("@Day", today.Day.ToString()),
                 ("@AdapterID", GetID_AdapterTable_Internal(adapterName).ToString()));
 
             if (sum.Count == 1 && sum[0].Count == 2 &&
@@ -375,7 +419,7 @@ internal sealed class ApplicationDB : IDisposable
 
     private void RemoveOldDate()
     {
-        var cutoff = HistoryRetention.GetCutoff(DateTime.Today, Properties.SettingsManager.Current.HistoryRetentionDays);
+        var cutoff = HistoryRetention.GetCutoff(Today(), Properties.SettingsManager.Current.HistoryRetentionDays);
         if (cutoff == null)
         {
             Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] RemoveOldDate skipped (retention=forever)");
