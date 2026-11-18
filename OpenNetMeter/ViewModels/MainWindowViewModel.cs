@@ -79,13 +79,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         CloseWindowCommand = new RelayCommand(() => this.windowService.CloseMainWindow());
 
         this.networkCaptureService.NetworkChanged += OnNetworkChanged;
-        this.networkCaptureService.Start();
-        History.ReloadProfiles();
         SyncMiniWidgetFromSummary();
-
-        // Start() raises no NetworkChanged when nothing matches at launch (e.g. a pinned adapter that
-        // is unplugged), so evaluate the warning once after any queued connect event has run.
-        Dispatcher.UIThread.Post(UpdatePinnedAdapterWarning);
+        StartCaptureInBackground();
     }
 
     public SummaryViewModel Summary { get; }
@@ -168,15 +163,54 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             if (base.SelectedTabIndex == value)
                 return;
 
+            var wasHistoryTab = IsHistoryTab;
             base.SelectedTabIndex = value;
             OnPropertyChanged(nameof(IsSummaryTab));
             OnPropertyChanged(nameof(IsHistoryTab));
             OnPropertyChanged(nameof(IsSettingsTab));
 
+            // History only reads the database while it is showing; network changes and purges that happen
+            // meanwhile are applied when the tab is next opened.
+            if (wasHistoryTab)
+                History.Deactivate();
+            if (IsHistoryTab)
+                History.Activate();
+
             // Network changes only refresh the adapter list while Settings is open, so catch up on arrival.
             if (IsSettingsTab)
                 Settings.RefreshAdapterChoices();
         }
+    }
+
+    /// <summary>
+    /// Start() enumerates adapters, reads the WLAN event log, starts the ETW session and opens the database.
+    /// On the UI thread that kept the widget from appearing for seconds, so it runs in the background. The
+    /// capture service serialises Start/Stop and raises its events from worker threads anyway, and every
+    /// subscriber (OnNetworkChanged, SummaryViewModel.OnTrafficObserved) is safe to call off the UI thread.
+    /// </summary>
+    private void StartCaptureInBackground()
+    {
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                networkCaptureService.Start();
+                StartupTiming.LogCaptureStarted();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The app is exiting; the service was disposed before the start ran.
+                return;
+            }
+            catch (Exception ex)
+            {
+                EventLogger.Error("Failed to start network capture", ex);
+            }
+
+            // Start() raises no NetworkChanged when nothing matches at launch (e.g. a pinned adapter that
+            // is unplugged), so evaluate the warning once after any queued connect event has run.
+            Dispatcher.UIThread.Post(UpdatePinnedAdapterWarning);
+        });
     }
 
     public void Dispose()
@@ -211,6 +245,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             NetworkStatus = $"Connected : {adapterName}";
             UpdatePinnedAdapterWarning();
             Summary.SetActiveAdapter(adapterName);
+            // History opens on the connected adapter's profile the first time it is shown.
+            History.PreferredProfile = adapterName;
             History.ReloadProfiles();
             RefreshAdapterChoicesIfVisible();
         });
@@ -385,7 +421,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
     private sealed class NoOpProcessIconService : IProcessIconService
     {
-        public object? GetProcessIcon(string processName) => null;
+        public object? GetCachedIcon(string processName) => null;
+        public Task<object?> LoadIconAsync(string processName) => Task.FromResult<object?>(null);
     }
 
     private sealed class NoOpExternalLinkService : IExternalLinkService

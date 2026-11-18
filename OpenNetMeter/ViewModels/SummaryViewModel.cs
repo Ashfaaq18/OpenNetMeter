@@ -439,7 +439,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
             if (!processIndex.TryGetValue(kvp.Key, out var row))
             {
-                row = new SummaryProcessRowViewModel(kvp.Key, externalLinkService, processIconService.GetProcessIcon(kvp.Key) as IImage);
+                // Resolving a process icon can take a full process snapshot, so never do it on the flush tick:
+                // the row starts with the cached/default icon and gets the real one when the background load ends.
+                var newRow = new SummaryProcessRowViewModel(kvp.Key, externalLinkService, processIconService.GetCachedIcon(kvp.Key) as IImage);
+                ProcessIconLoader.Attach(processIconService, kvp.Key, icon => newRow.Icon = icon);
+                row = newRow;
                 processIndex[kvp.Key] = row;
                 ActiveProcesses.Add(row);
                 OnPropertyChanged(nameof(ProcessCount));
@@ -510,6 +514,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
 {
     private readonly IExternalLinkService externalLinkService;
+    private IImage? icon;
     private long currentDownloadBytes;
     private long currentUploadBytes;
     private long totalDownloadBytes;
@@ -519,7 +524,7 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
     {
         ProcessName = processName;
         this.externalLinkService = externalLinkService;
-        Icon = icon;
+        this.icon = icon;
         SearchProcessCommand = new RelayCommand(() =>
         {
             var encodedName = Uri.EscapeDataString(ProcessName);
@@ -527,7 +532,18 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
         });
     }
 
-    public IImage? Icon { get; }
+    public IImage? Icon
+    {
+        get => icon;
+        set
+        {
+            if (ReferenceEquals(icon, value))
+                return;
+            icon = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
+
     public string ProcessName { get; }
     public ICommand SearchProcessCommand { get; }
     public long CurrentDownloadBytes => currentDownloadBytes;

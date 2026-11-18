@@ -23,6 +23,7 @@ dotnet publish $project `
   --self-contained true `
   -p:PublishSingleFile=true `
   -p:IncludeNativeLibrariesForSelfExtract=true `
+  -p:PublishReadyToRun=true `
   --output $output
 
 Write-Host "Done. RC files are in $output"

@@ -48,8 +48,9 @@ public sealed class RecordingResultsViewModel
         Rows = [];
         foreach (var process in recording.GetProcesses())
         {
-            var icon = processIconService.GetProcessIcon(process.Process) as IImage;
-            Rows.Add(new HistoryRowViewModel(process.Process, process.DownloadBytes, process.UploadBytes, externalLinkService, icon));
+            var row = new HistoryRowViewModel(process.Process, process.DownloadBytes, process.UploadBytes, externalLinkService, processIconService.GetCachedIcon(process.Process) as IImage);
+            ProcessIconLoader.Attach(processIconService, process.Process, icon => row.Icon = icon);
+            Rows.Add(row);
         }
 
         exportCommand = new RelayCommand(async () => await ExportAsync(), () => !isExporting);

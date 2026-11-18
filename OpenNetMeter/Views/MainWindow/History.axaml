@@ -136,6 +136,12 @@
 
         <ScrollViewer Grid.Row="1" Margin="0,0,0,6">
           <ItemsControl ItemsSource="{Binding Rows}">
+            <!-- Virtualized: only the rows in view are realized (works inside the ancestor ScrollViewer). -->
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <VirtualizingStackPanel/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Grid ColumnDefinitions="3*,1.5*,1.5*" Margin="10,4">
