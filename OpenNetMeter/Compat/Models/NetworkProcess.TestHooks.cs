@@ -11,6 +11,12 @@ namespace OpenNetMeter.Models
             localIPv6 = ipv6;
         }
 
+        internal void TestSetNetworkOnline(string isNetworkOnline, string adapterId = "")
+        {
+            currentAdapterId = adapterId;
+            IsNetworkOnline = isNetworkOnline;
+        }
+
         internal void TestInvokeRecvProcess(IPAddress src, IPAddress dest, int size, string name)
         {
             ProcessPacket(src, dest, size, name, isRecv: true);

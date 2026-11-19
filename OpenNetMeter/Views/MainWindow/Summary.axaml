@@ -256,7 +256,7 @@
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="vm:SummaryProcessRowViewModel">
                   <Grid ColumnDefinitions="3*,1.2*,1.2*,1.2*,1.2*" Margin="10,4">
                     <Grid ColumnDefinitions="Auto,Auto,*" MinWidth="0">
                       <Button Command="{Binding SearchProcessCommand}"

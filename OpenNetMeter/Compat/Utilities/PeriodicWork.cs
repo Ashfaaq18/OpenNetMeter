@@ -43,7 +43,8 @@ namespace OpenNetMeter.Utilities
                     }
                     catch (OperationCanceledException)
                     {
-                        EventLogger.Warn($"{name} tick cancelled");
+                        // Normal on stop; not worth an Event Log entry.
+                        Debug.WriteLine($"{name} tick cancelled");
                         throw;
                     }
                     catch (Exception ex)
@@ -55,7 +56,6 @@ namespace OpenNetMeter.Utilities
             catch (OperationCanceledException)
             {
                 Debug.WriteLine($"{name} task cancelled");
-                EventLogger.Warn($"{name} task cancelled");
             }
         }
 
@@ -74,7 +74,7 @@ namespace OpenNetMeter.Utilities
                 }
                 catch (OperationCanceledException)
                 {
-                    EventLogger.Warn($"{name} stop cancelled");
+                    Debug.WriteLine($"{name} stop cancelled");
                 }
             }
             finally

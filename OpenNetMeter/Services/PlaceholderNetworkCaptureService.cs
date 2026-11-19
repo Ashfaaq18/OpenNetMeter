@@ -15,6 +15,8 @@ public sealed class PlaceholderNetworkCaptureService : INetworkCaptureService
         remove { }
     }
 
+    public NetworkSnapshotChangedEventArgs? CurrentSnapshot => null;
+
     public void Start()
     {
         if (started)

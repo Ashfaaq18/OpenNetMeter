@@ -10,7 +10,8 @@ namespace OpenNetMeter.Services;
 
 public sealed class WindowsMiniWidgetService : IMiniWidgetService
 {
-    private readonly Window mainWindow;
+    // The widget appears before the main window is built, so it asks for the window only when it needs it.
+    private readonly Func<MainWindow> getMainWindow;
     private readonly MiniWidgetViewModel viewModel;
     private readonly MiniWidgetWindow window;
     private readonly WindowsWidgetZOrderHelper zOrderHelper;
@@ -19,9 +20,9 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
 
     public event Action<bool>? VisibilityChanged;
 
-    public WindowsMiniWidgetService(MiniWidgetViewModel viewModel, Window mainWindow)
+    public WindowsMiniWidgetService(MiniWidgetViewModel viewModel, Func<MainWindow> getMainWindow)
     {
-        this.mainWindow = mainWindow;
+        this.getMainWindow = getMainWindow;
         this.viewModel = viewModel;
         window = new MiniWidgetWindow
         {
@@ -39,9 +40,15 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         try
         {
             if (!window.IsVisible)
+            {
+                // Position first, so the widget is never on screen at the default spot and then moved.
+                RestoreSavedPosition();
                 window.Show();
+            }
             else
+            {
                 window.Activate();
+            }
 
             zOrderHelper.Start();
             VisibilityChanged?.Invoke(true);
@@ -130,6 +137,7 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
     {
         try
         {
+            var mainWindow = getMainWindow();
             if (!mainWindow.IsVisible)
                 mainWindow.Show();
 
@@ -144,27 +152,39 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
         }
     }
 
+    private void RestoreSavedPosition()
+    {
+        if (!SettingsManager.Current.MiniWidgetPositionInitialized)
+            return;
+
+        try
+        {
+            restoringPosition = true;
+            window.Position = new PixelPoint(SettingsManager.Current.MiniWidgetPosX, SettingsManager.Current.MiniWidgetPosY);
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to restore mini widget window position", ex);
+        }
+        finally
+        {
+            restoringPosition = false;
+        }
+    }
+
     private void Window_Opened(object? sender, EventArgs e)
     {
         try
         {
-            if (SettingsManager.Current.MiniWidgetPositionInitialized)
-            {
-                restoringPosition = true;
-                window.Position = new PixelPoint(SettingsManager.Current.MiniWidgetPosX, SettingsManager.Current.MiniWidgetPosY);
-                restoringPosition = false;
-            }
-            else
-            {
+            // Nothing saved yet (first run): record where the window opened. A saved position was applied before Show.
+            if (!SettingsManager.Current.MiniWidgetPositionInitialized)
                 SaveWindowPosition();
-            }
 
             positionTrackingEnabled = true;
         }
         catch (Exception ex)
         {
-            restoringPosition = false;
-            EventLogger.Error("Failed to restore mini widget window position", ex);
+            EventLogger.Error("Failed to record mini widget window position", ex);
         }
     }
 

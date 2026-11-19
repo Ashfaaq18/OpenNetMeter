@@ -11,12 +11,21 @@ public static class EventLogger
     private const string EventSourceName = "OpenNetMeter";
     private const int MaxEventLogMessageLength = 31839;
 
+    // Far more than a burst of errors produces; only a stuck Event Log can fill it, and then dropping beats blocking.
+    private const int MaxQueuedEntries = 1024;
+
     private enum LogLevel
     {
         Information,
         Warning,
         Error
     }
+
+    private readonly record struct LogEntry(string Message, LogLevel Level, int EventId, short Category);
+
+    // Created on the first Windows write (so nothing starts for a process that never logs).
+    private static readonly object writeQueueLock = new();
+    private static volatile BackgroundWriteQueue<LogEntry>? writeQueue;
 
     public static void Info(string message, int eventId = 1000, short category = 0)
     {
@@ -74,6 +83,16 @@ public static class EventLogger
         return $"[{fileName}:{lineNumber} in {memberName}] {message}";
     }
 
+    /// <summary>
+    /// Waits (up to <paramref name="timeout"/>) for queued Event Log entries to be written. Entries are written on a
+    /// background thread, so call this before the process exits or it may drop the last few. Returns false on timeout.
+    /// </summary>
+    public static bool Flush(TimeSpan timeout)
+    {
+        var queue = writeQueue;
+        return queue == null || queue.Flush(timeout);
+    }
+
     private static void WriteEntrySafe(string message, LogLevel level, int eventId, short category)
     {
         string safeMessage = Truncate(message);
@@ -84,25 +103,61 @@ public static class EventLogger
 
         try
         {
-            WriteEntryWindows(safeMessage, level, eventId, category);
+            // Never blocks: the Event Log write happens on the writer thread.
+            if (!GetWriteQueue().TryEnqueue(new LogEntry(safeMessage, level, eventId, category)))
+                Debug.WriteLine("[EventLogger fallback] Event Log queue is full; entry was not written to the Event Log.");
         }
         catch (Exception writeEx)
         {
-            Debug.WriteLine($"[EventLogger fallback] Failed to write to Windows Event Log: {writeEx}");
+            Debug.WriteLine($"[EventLogger fallback] Failed to queue Windows Event Log entry: {writeEx}");
         }
     }
 
     [SupportedOSPlatform("windows")]
-    private static void WriteEntryWindows(string message, LogLevel level, int eventId, short category)
+    private static BackgroundWriteQueue<LogEntry> GetWriteQueue()
     {
-        var entryType = level switch
-        {
-            LogLevel.Information => EventLogEntryType.Information,
-            LogLevel.Warning => EventLogEntryType.Warning,
-            _ => EventLogEntryType.Error
-        };
+        var queue = writeQueue;
+        if (queue != null)
+            return queue;
 
-        EventLog.WriteEntry(EventSourceName, message, entryType, eventId, category);
+        lock (writeQueueLock)
+        {
+            return writeQueue ??= new BackgroundWriteQueue<LogEntry>(new EventLogSink().Write, MaxQueuedEntries, "EventLogger");
+        }
+    }
+
+    /// <summary>
+    /// Runs on the writer thread only. Holds one <see cref="EventLog"/> for its lifetime: the static
+    /// <c>EventLog.WriteEntry(source, ...)</c> re-checks the source in the registry on every call, whereas an
+    /// instance verifies (and, as before, registers a missing source) once on its first write.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    private sealed class EventLogSink
+    {
+        private EventLog? eventLog;
+
+        public void Write(LogEntry entry)
+        {
+            try
+            {
+                var entryType = entry.Level switch
+                {
+                    LogLevel.Information => EventLogEntryType.Information,
+                    LogLevel.Warning => EventLogEntryType.Warning,
+                    _ => EventLogEntryType.Error
+                };
+
+                eventLog ??= new EventLog { Source = EventSourceName };
+                eventLog.WriteEntry(entry.Message, entryType, entry.EventId, entry.Category);
+            }
+            catch (Exception writeEx)
+            {
+                // Start over with a fresh instance (and source check) on the next entry.
+                eventLog?.Dispose();
+                eventLog = null;
+                Debug.WriteLine($"[EventLogger fallback] Failed to write to Windows Event Log: {writeEx}");
+            }
+        }
     }
 
     private static string Truncate(string message)

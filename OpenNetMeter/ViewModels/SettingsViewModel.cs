@@ -80,15 +80,6 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         if (IsForeverRetentionSelected)
             foreverRetentionWarning = BuildForeverRetentionWarning();
 
-        // Self-heal the logon task if its exe no longer exists (the install folder moved).
-        // First needed for 0.15.0 -> 0.16.0, where the x86 install in Program Files (x86) is removed.
-        if (startWithWindows)
-        {
-            bool repairMinimized = minimizeOnStart;
-            IStartupRegistrationService startupService = startupRegistrationService;
-            _ = Task.Run(() => startupService.RepairIfStale(repairMinimized));
-        }
-
         ResetDataCommand = new RelayCommand(ResetData);
         ExportAllCommand = new RelayCommand(async () => await ExportAllAsync());
         CheckForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync());
@@ -99,13 +90,29 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         ConfirmCommand = new RelayCommand(Confirm);
         CancelConfirmationCommand = new RelayCommand(CancelConfirmation);
 
+        // The saved theme is applied before any window exists (see App), so only changes are applied here.
         this.miniWidgetService.VisibilityChanged += SyncMiniWidgetVisibility;
-        this.themeService.ApplyDarkMode(darkMode);
         this.miniWidgetService.RefreshAppearance(darkMode, (int)Math.Round(miniWidgetTransparency));
 
-        // Show Automatic (and any saved pinned adapter) right away; the real list follows asynchronously.
-        ApplyAdapterChoices([]);
-        RefreshAdapterChoices();
+        // Show Automatic (and any saved pinned adapter) right away. Enumerating adapters reads the WLAN event log,
+        // so the real list is loaded when the Settings tab is first opened (MainWindowViewModel.SelectedTabIndex).
+        ApplyAdapterChoices([], listIsKnown: false);
+    }
+
+    /// <summary>
+    /// Startup work that has to wait until network capture is running so it doesn't compete with it. Call once,
+    /// on the UI thread, after the capture start has completed.
+    /// </summary>
+    public void RunDeferredStartupWork()
+    {
+        // Self-heal the logon task if its exe no longer exists (the install folder moved).
+        // First needed for 0.15.0 -> 0.16.0, where the x86 install in Program Files (x86) is removed.
+        if (startWithWindows)
+        {
+            bool repairMinimized = minimizeOnStart;
+            IStartupRegistrationService startupService = startupRegistrationService;
+            _ = Task.Run(() => startupService.RepairIfStale(repairMinimized));
+        }
     }
 
     public SettingsViewModel()
@@ -428,7 +435,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
             Dispatcher.UIThread.Post(() =>
             {
                 if (version == adapterRefreshVersion)
-                    ApplyAdapterChoices(adapters);
+                    ApplyAdapterChoices(adapters, listIsKnown: true);
             });
         }
         catch (Exception ex)
@@ -437,7 +444,11 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyAdapterChoices(IReadOnlyList<NetworkAdapterOption> adapters)
+    /// <param name="listIsKnown">
+    /// False for the placeholder list shown before the adapters were enumerated. A saved pinned adapter is then
+    /// listed under its saved name rather than flagged "(not connected)", which isn't known yet.
+    /// </param>
+    private void ApplyAdapterChoices(IReadOnlyList<NetworkAdapterOption> adapters, bool listIsKnown)
     {
         var settings = SettingsManager.Current;
         var savedId = settings.NetworkAdapterId ?? string.Empty;
@@ -451,13 +462,14 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
 
         // A pinned adapter that isn't available stays selectable so the saved choice isn't lost.
-        bool isMissing = savedId.Length > 0 && !adapterNames.ContainsKey(savedId);
+        bool isPinnedAdapterListed = savedId.Length > 0 && adapterNames.ContainsKey(savedId);
+        bool isMissing = listIsKnown && savedId.Length > 0 && !isPinnedAdapterListed;
         missingAdapterId = isMissing ? savedId : string.Empty;
-        if (isMissing)
+        if (savedId.Length > 0 && !isPinnedAdapterListed)
         {
             var name = string.IsNullOrWhiteSpace(settings.NetworkAdapterName) ? savedId : settings.NetworkAdapterName;
             adapterNames[savedId] = name;
-            choices.Add(new AdapterChoice(savedId, $"{name} (not connected)"));
+            choices.Add(new AdapterChoice(savedId, isMissing ? $"{name} (not connected)" : name));
         }
 
         var selected = choices.FirstOrDefault(c => string.Equals(c.Id, savedId, StringComparison.OrdinalIgnoreCase)) ?? choices[0];

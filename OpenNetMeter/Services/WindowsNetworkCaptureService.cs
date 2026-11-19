@@ -14,9 +14,14 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
     private volatile NetworkProcess? networkProcess;
     private readonly object syncLock = new();
     private bool disposed;
+    // Written before NetworkChanged is raised and read by late subscribers; a reference write is atomic,
+    // volatile makes it visible across threads without a lock.
+    private volatile NetworkSnapshotChangedEventArgs? currentSnapshot;
 
     public event EventHandler<NetworkSnapshotChangedEventArgs>? NetworkChanged;
     public event EventHandler<NetworkTrafficEventArgs>? TrafficObserved;
+
+    public NetworkSnapshotChangedEventArgs? CurrentSnapshot => currentSnapshot;
 
     public WindowsNetworkCaptureService()
     {
@@ -93,11 +98,14 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
                     "Disconnected",
                     StringComparison.OrdinalIgnoreCase);
 
-                NetworkChanged?.Invoke(
-                    this,
-                    new NetworkSnapshotChangedEventArgs(
-                        isDisconnected ? string.Empty : networkProcess.IsNetworkOnline,
-                        isDisconnected ? string.Empty : networkProcess.CurrentAdapterId));
+                var snapshot = new NetworkSnapshotChangedEventArgs(
+                    isDisconnected ? string.Empty : networkProcess.IsNetworkOnline,
+                    isDisconnected ? string.Empty : networkProcess.CurrentAdapterId);
+
+                // Store before raising so a subscriber that attaches (and then reads CurrentSnapshot) while this
+                // runs sees this snapshot at the latest.
+                currentSnapshot = snapshot;
+                NetworkChanged?.Invoke(this, snapshot);
                 break;
             case nameof(NetworkProcess.DownloadSpeed):
                 EmitProcessTraffic();

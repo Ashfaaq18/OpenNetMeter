@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenNetMeter.Models;
+using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Properties;
 using OpenNetMeter.Services;
 using Xunit;
@@ -122,6 +123,55 @@ public class WindowsNetworkCaptureServiceTests
         using var service = new WindowsNetworkCaptureService();
 
         service.RefreshAdapterSelection();
+    }
+
+    [Fact]
+    public void CurrentSnapshot_IsNullBeforeAnyNetworkChange()
+    {
+        using var netProc = CreateNetworkProcess();
+        using var service = new WindowsNetworkCaptureService(netProc);
+
+        Assert.Null(service.CurrentSnapshot);
+    }
+
+    [Fact]
+    public void CurrentSnapshot_HoldsTheLastRaisedSnapshot()
+    {
+        using var netProc = CreateNetworkProcess();
+        using var service = new WindowsNetworkCaptureService(netProc);
+
+        netProc.TestSetNetworkOnline("Wi-Fi : Home", "adapter-1");
+
+        Assert.NotNull(service.CurrentSnapshot);
+        Assert.Equal("Wi-Fi : Home", service.CurrentSnapshot!.AdapterName);
+        Assert.Equal("adapter-1", service.CurrentSnapshot.AdapterId);
+
+        netProc.TestSetNetworkOnline("Disconnected");
+
+        // A disconnect is the latest snapshot too (empty name and id), not a reason to keep the old one.
+        Assert.NotNull(service.CurrentSnapshot);
+        Assert.Equal(string.Empty, service.CurrentSnapshot!.AdapterName);
+        Assert.Equal(string.Empty, service.CurrentSnapshot.AdapterId);
+    }
+
+    [Fact]
+    public void CurrentSnapshot_IsStoredBeforeNetworkChangedIsRaised()
+    {
+        using var netProc = CreateNetworkProcess();
+        using var service = new WindowsNetworkCaptureService(netProc);
+
+        NetworkSnapshotChangedEventArgs? raised = null;
+        NetworkSnapshotChangedEventArgs? currentDuringEvent = null;
+        service.NetworkChanged += (_, e) =>
+        {
+            raised = e;
+            currentDuringEvent = service.CurrentSnapshot;
+        };
+
+        netProc.TestSetNetworkOnline("Ethernet", "adapter-2");
+
+        Assert.NotNull(raised);
+        Assert.Same(raised, currentDuringEvent);
     }
 
     private static NetworkProcess CreateNetworkProcess()

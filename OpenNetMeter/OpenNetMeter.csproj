@@ -7,11 +7,12 @@
     <AssemblyName>$(ProductName)</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\Resources\AppIcon.ico</ApplicationIcon>
+    <!-- Compiled bindings: checked at build time and no reflection at run time (which cost startup). -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.12" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0" />
