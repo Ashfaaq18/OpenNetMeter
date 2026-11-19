@@ -3,6 +3,9 @@
 	  <ProductVersion>0.16.1</ProductVersion>
 	  <ProductName>OpenNetMeter</ProductName>
 	  <Manufacturer>Ashfaaq18</Manufacturer>
+	  <Copyright>Copyright © 2021-2026 Ashfaaq Riphque</Copyright>
+	  <!-- Show "0.16.1" as the exe's product version, not "0.16.1+<commit hash>". -->
+	  <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <Target Name="ValidateProductVersionForMsi" BeforeTargets="Build">
