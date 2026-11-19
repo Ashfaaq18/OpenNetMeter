@@ -802,6 +802,7 @@ namespace OpenNetMeter.Models
                     // Create kernel trace session (requires admin)
                     kernelSession = new TraceEventSession(KernelSessionName);
                     kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+                    StartupTiming.LogEtwEnabled();
 
                     // Subscribe to all TCP/UDP send/receive events
                     // All events funnel through ProcessPacket for unified handling

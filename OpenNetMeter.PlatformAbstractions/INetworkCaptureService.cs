@@ -8,6 +8,12 @@ public interface INetworkCaptureService : IDisposable
     event EventHandler<NetworkSnapshotChangedEventArgs>? NetworkChanged;
     event EventHandler<NetworkTrafficEventArgs>? TrafficObserved;
 
+    /// <summary>
+    /// The last snapshot raised through <see cref="NetworkChanged"/>, or null before the first change. Capture
+    /// starts before its subscribers exist, so a late subscriber reads this to catch up on what it missed.
+    /// </summary>
+    NetworkSnapshotChangedEventArgs? CurrentSnapshot { get; }
+
     void Start();
     void Stop();
 

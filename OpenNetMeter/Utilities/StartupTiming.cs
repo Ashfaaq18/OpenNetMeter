@@ -10,11 +10,26 @@ namespace OpenNetMeter.Utilities;
 /// </summary>
 internal static class StartupTiming
 {
+    private static int captureBegunLogged;
+    private static int etwEnabledLogged;
     private static int widgetShownLogged;
+    private static int mainWindowBuiltLogged;
     private static int captureStartedLogged;
+
+    /// <summary>The background capture start has begun, before any window or view model exists.</summary>
+    public static void LogCaptureBegun() =>
+        LogOnce(ref captureBegunLogged, "Startup: capture begun");
+
+    /// <summary>The ETW kernel provider is enabled, so packets are being traced from here on.</summary>
+    public static void LogEtwEnabled() =>
+        LogOnce(ref etwEnabledLogged, "Startup: ETW enabled");
 
     public static void LogWidgetShown() =>
         LogOnce(ref widgetShownLogged, "Startup: widget shown");
+
+    /// <summary>The deferred step that builds the main window, view bindings and tray icon has finished.</summary>
+    public static void LogMainWindowBuilt() =>
+        LogOnce(ref mainWindowBuiltLogged, "Startup: main window built");
 
     public static void LogCaptureStarted() =>
         LogOnce(ref captureStartedLogged, "Startup: capture started");

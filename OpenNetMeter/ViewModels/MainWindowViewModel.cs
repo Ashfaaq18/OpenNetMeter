@@ -80,8 +80,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         CloseWindowCommand = new RelayCommand(() => this.windowService.CloseMainWindow());
 
         this.networkCaptureService.NetworkChanged += OnNetworkChanged;
+        CatchUpWithCaptureSnapshot();
         SyncMiniWidgetFromSummary();
-        StartCaptureInBackground();
     }
 
     public SummaryViewModel Summary { get; }
@@ -185,34 +185,16 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     }
 
     /// <summary>
-    /// Start() enumerates adapters, reads the WLAN event log, starts the ETW session and opens the database.
-    /// On the UI thread that kept the widget from appearing for seconds, so it runs in the background. The
-    /// capture service serialises Start/Stop and raises its events from worker threads anyway, and every
-    /// subscriber (OnNetworkChanged, SummaryViewModel.OnTrafficObserved) is safe to call off the UI thread.
+    /// Called on the UI thread once the capture start that App began in the background has returned, whether or
+    /// not it succeeded.
     /// </summary>
-    private void StartCaptureInBackground()
+    public void OnCaptureStartCompleted()
     {
-        _ = Task.Run(() =>
-        {
-            try
-            {
-                networkCaptureService.Start();
-                StartupTiming.LogCaptureStarted();
-            }
-            catch (ObjectDisposedException)
-            {
-                // The app is exiting; the service was disposed before the start ran.
-                return;
-            }
-            catch (Exception ex)
-            {
-                EventLogger.Error("Failed to start network capture", ex);
-            }
+        // Start() raises no NetworkChanged when nothing matches at launch (e.g. a pinned adapter that
+        // is unplugged), so evaluate the warning once after any queued connect event has run.
+        UpdatePinnedAdapterWarning();
 
-            // Start() raises no NetworkChanged when nothing matches at launch (e.g. a pinned adapter that
-            // is unplugged), so evaluate the warning once after any queued connect event has run.
-            Dispatcher.UIThread.Post(UpdatePinnedAdapterWarning);
-        });
+        Settings.RunDeferredStartupWork();
     }
 
     public void Dispose()
@@ -228,30 +210,44 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
     private void OnNetworkChanged(object? sender, NetworkSnapshotChangedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(e.AdapterName))
+        var adapterName = e.AdapterName;
+        Dispatcher.UIThread.Post(() => ApplyNetworkSnapshot(adapterName));
+    }
+
+    /// <summary>
+    /// Capture starts before this view model exists, so NetworkChanged may already have fired. The same snapshot can
+    /// then arrive twice (here and through the event); applying it again changes nothing.
+    /// </summary>
+    private void CatchUpWithCaptureSnapshot()
+    {
+        // Read when the post runs, not now: a newer event posted in between would otherwise be overwritten by this
+        // older snapshot. The latest event's own post always runs last, so the final state is the latest snapshot.
+        Dispatcher.UIThread.Post(() =>
         {
-            Dispatcher.UIThread.Post(() =>
-            {
-                NetworkStatus = "Disconnected";
-                UpdatePinnedAdapterWarning();
-                Summary.ClearOnDisconnect();
-                RefreshAdapterChoicesIfVisible();
-            });
+            if (networkCaptureService.CurrentSnapshot is { } snapshot)
+                ApplyNetworkSnapshot(snapshot.AdapterName);
+        });
+    }
+
+    private void ApplyNetworkSnapshot(string adapterName)
+    {
+        if (string.IsNullOrWhiteSpace(adapterName))
+        {
+            NetworkStatus = "Disconnected";
+            UpdatePinnedAdapterWarning();
+            Summary.ClearOnDisconnect();
+            RefreshAdapterChoicesIfVisible();
             return;
         }
 
-        var adapterName = e.AdapterName;
-        Dispatcher.UIThread.Post(() =>
-        {
-            connectedAdapterName = adapterName;
-            NetworkStatus = $"Connected : {adapterName}";
-            UpdatePinnedAdapterWarning();
-            Summary.SetActiveAdapter(adapterName);
-            // History opens on the connected adapter's profile the first time it is shown.
-            History.PreferredProfile = adapterName;
-            History.ReloadProfiles();
-            RefreshAdapterChoicesIfVisible();
-        });
+        connectedAdapterName = adapterName;
+        NetworkStatus = $"Connected : {adapterName}";
+        UpdatePinnedAdapterWarning();
+        Summary.SetActiveAdapter(adapterName);
+        // History opens on the connected adapter's profile the first time it is shown.
+        History.PreferredProfile = adapterName;
+        History.ReloadProfiles();
+        RefreshAdapterChoicesIfVisible();
     }
 
     /// <summary>
@@ -413,6 +409,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             add { }
             remove { }
         }
+
+        public NetworkSnapshotChangedEventArgs? CurrentSnapshot => null;
 
         public void Start() { }
         public void Stop() { }

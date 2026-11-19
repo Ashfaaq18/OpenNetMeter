@@ -19,9 +19,6 @@
 
   <Window.Resources>
     <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://OpenNetMeter/Views/Themes.axaml"/>
-      </ResourceDictionary.MergedDictionaries>
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="BrushWidgetBorder" Color="#616161"/>

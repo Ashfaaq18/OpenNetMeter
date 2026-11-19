@@ -26,14 +26,6 @@
     <KeyBinding Gesture="Escape" Command="{Binding CloseAboutCommand}"/>
   </Window.KeyBindings>
 
-  <Window.Resources>
-    <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://OpenNetMeter/Views/Themes.axaml"/>
-      </ResourceDictionary.MergedDictionaries>
-    </ResourceDictionary>
-  </Window.Resources>
-
   <Grid>
     <!-- Disabled while a dialog is open so Tab/arrow keys can't reach anything behind the overlay. -->
     <Border Background="{DynamicResource BrushBgWindow}" BorderBrush="{DynamicResource BrushBorderMain}" BorderThickness="1" CornerRadius="0"
