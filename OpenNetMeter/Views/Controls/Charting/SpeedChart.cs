@@ -73,13 +73,14 @@ public sealed class SpeedChart : Control
     private double maxAtTransitionStart;
     private double targetMaxBytes;
     private long maxTransitionStartMs;
+    private long lastDrawMs = ChartFramePacer.NeverDrawnMs;
     private double[] tickBytesCache = Array.Empty<double>();
     private string[] labelsCache = Array.Empty<string>();
     private IBrush? downloadFillBrush;
     private IBrush? uploadFillBrush;
 
-    // Render runs every frame while the chart is on screen, so what doesn't change between frames is kept: the shaped
-    // axis labels, the pens and the point buffer. (The stroke and fill geometries are rebuilt each frame because they
+    // Render runs about 30 times a second while the chart is moving, so what doesn't change between frames is kept: the
+    // shaped axis labels, the pens and the point buffer. (The stroke and fill geometries are rebuilt each frame because they
     // depend on the data and the scroll position.)
     private const int GridPenSlot = 0;
     private const int DownloadPenSlot = 1;
@@ -187,6 +188,7 @@ public sealed class SpeedChart : Control
             }
 
             ResetAnimationState();
+            RequestFrame();
         }
         else if (change.Property == IsVisibleProperty)
         {
@@ -270,6 +272,10 @@ public sealed class SpeedChart : Control
             maxAtTransitionStart = renderedMaxBytes;
             targetMaxBytes = topBytes;
             maxTransitionStartMs = Environment.TickCount64;
+
+            // The frame loop stops once nothing is moving, and a new scale doesn't always come with a new sample (the
+            // speed format changing, for one), so the easing to it has to be able to start the loop again.
+            RequestFrame();
         }
 
         tickBytesCache = tickBytes;
@@ -323,8 +329,19 @@ public sealed class SpeedChart : Control
         if (!CanAnimate())
             return;
 
-        InvalidateVisual();
-        RequestFrame();
+        // Software rendering makes every redraw cost CPU, so the chart redraws at about 30 fps rather than on every
+        // display refresh, and the loop stops once the slide and the max easing are over. The next sample, attaching,
+        // showing/restoring the window or a new scale starts it again.
+        long now = Environment.TickCount64;
+        var decision = ChartFramePacer.Decide(now, lastSampleTimestampMs, maxTransitionStartMs, lastDrawMs, TickIntervalMs, MaxEaseDurationMs);
+        if (decision.ShouldDraw)
+        {
+            lastDrawMs = now;
+            InvalidateVisual();
+        }
+
+        if (decision.KeepRunning)
+            RequestFrame();
     }
 
     private bool CanAnimate() =>
