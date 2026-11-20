@@ -12,7 +12,7 @@ public interface IProcessIconService
 
     /// <summary>
     /// Loads the icon on a background thread and caches it (the default icon if the executable can't be found).
-    /// Concurrent requests for the same process share one load, and loads run one at a time.
+    /// Concurrent requests for the same process share one load, and requests made together are resolved together.
     /// </summary>
     Task<object?> LoadIconAsync(string processName);
 }

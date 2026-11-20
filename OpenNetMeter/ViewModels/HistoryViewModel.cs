@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.Data.Sqlite;
 using OpenNetMeter.Models;
 using OpenNetMeter.PlatformAbstractions;
@@ -38,6 +40,31 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     private bool hasLoaded;
     private bool profilesStale;
     private bool filterStale;
+    private readonly Action<Action> postToUi;
+    // The database is read on a background task and the result applied on the UI thread (see RequestLoad). A request
+    // made while an earlier one hasn't been applied yet restarts the load with everything asked for so far, and the
+    // version drops the results of the earlier reads that finish late.
+    private HistoryLoads loadsRequested;
+    private int loadVersion;
+    private Task pendingLoad = Task.CompletedTask;
+
+    [Flags]
+    private enum HistoryLoads
+    {
+        None = 0,
+        // Re-read the profile list, keeping the selection when it still exists.
+        Profiles = 1,
+        // Re-run the process totals query for the selected profile and date range.
+        Filter = 2,
+        // The first load: selects the preferred profile (or the first) instead of keeping a selection.
+        FirstLoad = 4
+    }
+
+    private sealed record LoadRequest(int Version, HistoryLoads Loads, string? SelectedProfile, string? PreferredProfile, DateTime Start, DateTime End);
+    private sealed record ProcessUsage(string Name, long Download, long Upload);
+    // Rows is null when there was nothing to query (no profile selected, or no database).
+    private sealed record FilterResult(string? Profile, List<ProcessUsage>? Rows, DateTime At);
+    private sealed record LoadResult(List<string>? Profiles, string? SelectedProfile, FilterResult? Filter);
 
     public HistoryViewModel()
         : this(new NoOpProcessIconService(), new NoOpExternalLinkService(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService())
@@ -45,13 +72,20 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
     }
 
     public HistoryViewModel(IProcessIconService processIconService, IExternalLinkService externalLinkService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
-        : this(UsageDatabase.ResolveDatabasePath(), processIconService, externalLinkService, fileSaveDialogService, fileRevealService)
+        : this(
+            UsageDatabase.ResolveDatabasePath(),
+            processIconService,
+            externalLinkService,
+            fileSaveDialogService,
+            fileRevealService,
+            action => Dispatcher.UIThread.Post(action, DispatcherPriority.Default))
     {
     }
 
-    // Tests point this at a temporary database.
-    internal HistoryViewModel(string dbPath, IProcessIconService processIconService, IExternalLinkService externalLinkService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService)
+    // Tests point this at a temporary database and run the "UI thread" by hand.
+    internal HistoryViewModel(string dbPath, IProcessIconService processIconService, IExternalLinkService externalLinkService, IFileSaveDialogService fileSaveDialogService, IFileRevealService fileRevealService, Action<Action> postToUi)
     {
+        this.postToUi = postToUi;
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
         this.fileSaveDialogService = fileSaveDialogService;
@@ -195,27 +229,21 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             // The app may have been running for days before History was first opened.
             ResetDateRange();
 
-            LoadProfiles();
-            if (Profiles.Count > 0)
-            {
-                SelectedProfile = PreferredProfile is { } preferred && Profiles.Contains(preferred)
-                    ? preferred
-                    : Profiles[0];
-                ApplyFilter();
-            }
-
+            // Selects the preferred profile (or the first) and filters it, once the profiles are read.
+            RequestLoad(HistoryLoads.FirstLoad | HistoryLoads.Profiles | HistoryLoads.Filter);
             return;
         }
 
-        var reloadProfiles = profilesStale;
-        var reapplyFilter = filterStale;
+        var loads = HistoryLoads.None;
+        if (profilesStale)
+            loads |= HistoryLoads.Profiles;
+        if (filterStale)
+            loads |= HistoryLoads.Filter;
         profilesStale = false;
         filterStale = false;
 
-        if (reloadProfiles)
-            ReloadProfilesNow();
-        if (reapplyFilter)
-            ApplyFilter();
+        if (loads != HistoryLoads.None)
+            RequestLoad(loads);
     }
 
     /// <summary>Called when the History tab is left; refreshes are deferred until the next <see cref="Activate"/>.</summary>
@@ -237,8 +265,8 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             return;
         }
 
-        ReloadProfilesNow();
-        ApplyFilter();
+        // One load for both, so the filter runs for the profile that is selected once the list is reloaded.
+        RequestLoad(HistoryLoads.Profiles | HistoryLoads.Filter);
     }
 
     /// <summary>
@@ -253,26 +281,15 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             return;
         }
 
-        ReloadProfilesNow();
-    }
-
-    private void ReloadProfilesNow()
-    {
-        string? previousSelection = SelectedProfile;
-        LoadProfiles();
-
-        if (!string.IsNullOrWhiteSpace(previousSelection) && Profiles.Contains(previousSelection))
-        {
-            SelectedProfile = previousSelection;
-        }
-        else
-        {
-            SelectedProfile = Profiles.Count > 0 ? Profiles[0] : null;
-        }
+        RequestLoad(HistoryLoads.Profiles);
     }
 
     public void DeleteAllDbFiles()
     {
+        // Whatever is being read belongs to the data that is about to go; its result must not bring it back.
+        loadVersion++;
+        loadsRequested = HistoryLoads.None;
+
         try
         {
             ApplicationDB.CloseSharedConnection();
@@ -296,12 +313,109 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         }
     }
 
-    private void LoadProfiles()
-    {
-        Profiles.Clear();
+    /// <summary>
+    /// Completes once the latest request's result has been handed to the UI thread (immediately when nothing is
+    /// loading). Lets tests wait for the background part.
+    /// </summary>
+    internal Task PendingLoad => pendingLoad;
 
-        if (!File.Exists(dbPath))
+    /// <summary>
+    /// Starts reading what <paramref name="loads"/> asks for on a background task; the result is applied on the UI
+    /// thread. The request captures what it needs (selection, date range) here, on the UI thread. A request while an
+    /// earlier one hasn't been applied yet takes over its work too (<see cref="loadsRequested"/>) and makes the earlier
+    /// result stale, so a first load is never lost to a Filter click that overtook it and the user never sees an older
+    /// query overwrite a newer one.
+    /// </summary>
+    private void RequestLoad(HistoryLoads loads)
+    {
+        loadsRequested |= loads;
+        var (start, end) = GetSelectedRange();
+        var request = new LoadRequest(++loadVersion, loadsRequested, SelectedProfile, PreferredProfile, start, end);
+        pendingLoad = RunLoadAsync(request);
+    }
+
+    private async Task RunLoadAsync(LoadRequest request)
+    {
+        LoadResult result;
+        try
+        {
+            result = await Task.Run(() => ReadHistory(request)).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // What was asked for stays requested, so the next request retries it as well.
+            EventLogger.Error("Failed to read usage history", ex);
             return;
+        }
+
+        postToUi(() => ApplyLoad(request, result));
+    }
+
+    /// <summary>The database part of a load. Runs on a background thread and touches no view model state.</summary>
+    private LoadResult ReadHistory(LoadRequest request)
+    {
+        var firstLoad = request.Loads.HasFlag(HistoryLoads.FirstLoad);
+        List<string>? profiles = null;
+        var selected = request.SelectedProfile;
+
+        if (request.Loads.HasFlag(HistoryLoads.Profiles))
+        {
+            profiles = ReadProfiles();
+
+            // The first load goes to the connected adapter's profile; a later one keeps the user's selection.
+            var wanted = firstLoad ? request.PreferredProfile : request.SelectedProfile;
+            selected = !string.IsNullOrWhiteSpace(wanted) && profiles.Contains(wanted)
+                ? wanted
+                : profiles.FirstOrDefault();
+        }
+
+        // A first load with no profile at all has nothing to select, so nothing to filter.
+        FilterResult? filter = null;
+        if (request.Loads.HasFlag(HistoryLoads.Filter) && !(firstLoad && profiles is { Count: 0 }))
+            filter = ReadProcessTotals(selected, request.Start, request.End);
+
+        return new LoadResult(profiles, selected, filter);
+    }
+
+    /// <summary>The UI-thread part of a load: shows what <see cref="ReadHistory"/> found, unless a newer request has taken over.</summary>
+    private void ApplyLoad(LoadRequest request, LoadResult result)
+    {
+        if (request.Version != loadVersion)
+            return;
+
+        loadsRequested = HistoryLoads.None;
+
+        if (result.Profiles is { } profiles)
+        {
+            // Read before the list is rebuilt: clearing it makes the ComboBox write null back to SelectedProfile.
+            var current = SelectedProfile;
+            Profiles.Clear();
+            foreach (var profile in profiles)
+                Profiles.Add(profile);
+
+            if (request.Loads.HasFlag(HistoryLoads.FirstLoad))
+            {
+                if (profiles.Count > 0)
+                    SelectedProfile = result.SelectedProfile;
+            }
+            else
+            {
+                // The user may have picked another profile while this was loading; that choice stays if it still exists.
+                SelectedProfile = !string.IsNullOrWhiteSpace(current) && profiles.Contains(current)
+                    ? current
+                    : result.SelectedProfile;
+            }
+        }
+
+        if (result.Filter is { } filter)
+            ApplyFilterResult(filter);
+    }
+
+    private List<string> ReadProfiles()
+    {
+        var profiles = new List<string>();
+        if (!File.Exists(dbPath))
+            return profiles;
 
         using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
         connection.Open();
@@ -311,8 +425,10 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         while (reader.Read())
         {
             if (!reader.IsDBNull(0))
-                Profiles.Add(reader.GetString(0));
+                profiles.Add(reader.GetString(0));
         }
+
+        return profiles;
     }
 
     // Filters ProcessDate by adapter id and date ids so it can use IX_ProcessDate_AdapterID_DateID instead of
@@ -327,18 +443,15 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         "GROUP BY p.ID, p.Name " +
         "ORDER BY p.Name";
 
-    private void ApplyFilter()
+    private void ApplyFilter() => RequestLoad(HistoryLoads.Filter);
+
+    /// <summary>The per-process totals of one profile over a date range; Rows is null when there is nothing to query.</summary>
+    private FilterResult ReadProcessTotals(string? profile, DateTime start, DateTime end)
     {
-        Rows.Clear();
-        TotalDownload = 0;
-        TotalUpload = 0;
-
-        // Read once: the same profile feeds the query and the "Last filtered" line.
-        var profile = SelectedProfile;
         if (string.IsNullOrWhiteSpace(profile) || !File.Exists(dbPath))
-            return;
+            return new FilterResult(profile, null, default);
 
-        var (start, end) = GetSelectedRange();
+        var rows = new List<ProcessUsage>();
 
         using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
         connection.Open();
@@ -355,16 +468,39 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
             var processName = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
             var download = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
             var upload = reader.IsDBNull(2) ? 0 : reader.GetInt64(2);
-
-            // The cached/default icon keeps this loop off the process-snapshot path; real icons arrive in the background.
-            var row = new HistoryRowViewModel(processName, download, upload, externalLinkService, processIconService.GetCachedIcon(processName) as IImage);
-            ProcessIconLoader.Attach(processIconService, processName, icon => row.Icon = icon);
-            Rows.Add(row);
-            TotalDownload += download;
-            TotalUpload += upload;
+            rows.Add(new ProcessUsage(processName, download, upload));
         }
 
-        SetLastFiltered(profile, DateTime.Now);
+        return new FilterResult(profile, rows, DateTime.Now);
+    }
+
+    private void ApplyFilterResult(FilterResult filter)
+    {
+        Rows.Clear();
+
+        if (filter.Rows is not { } usage)
+        {
+            // No profile selected, or no database: nothing to show, and the "Last filtered" line stays as it was.
+            TotalDownload = 0;
+            TotalUpload = 0;
+            return;
+        }
+
+        long download = 0;
+        long upload = 0;
+        foreach (var item in usage)
+        {
+            // The cached/default icon keeps this loop off the process-snapshot path; real icons arrive in the background.
+            var row = new HistoryRowViewModel(item.Name, item.Download, item.Upload, externalLinkService, processIconService.GetCachedIcon(item.Name) as IImage);
+            ProcessIconLoader.Attach(processIconService, item.Name, icon => row.Icon = icon, postToUi);
+            Rows.Add(row);
+            download += item.Download;
+            upload += item.Upload;
+        }
+
+        TotalDownload = download;
+        TotalUpload = upload;
+        SetLastFiltered(filter.Profile, filter.At);
     }
 
     private void ResetDateRange()
