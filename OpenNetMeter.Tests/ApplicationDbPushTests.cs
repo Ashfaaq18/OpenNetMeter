@@ -1,6 +1,4 @@
-using Microsoft.Data.Sqlite;
 using OpenNetMeter.Models;
-using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Tests;
 
@@ -17,7 +15,7 @@ public class ApplicationDbCollection
 [Collection(ApplicationDbCollection.Name)]
 public class ApplicationDbPushTests
 {
-    private const string Adapter = "WiFi";
+    private const string Adapter = ApplicationDbScope.Adapter;
     private static readonly DateTime Day1 = new(2026, 11, 17);
     private static readonly DateTime Day2 = new(2026, 11, 18);
 
@@ -114,86 +112,5 @@ public class ApplicationDbPushTests
 
         Assert.Equal(1, scope.DateRows(Day1));
         Assert.Equal((50L, 5L), scope.Usage(Day1, "proc"));
-    }
-
-    /// <summary>
-    /// Points ApplicationDB at a temporary database and restores every piece of static state on dispose.
-    /// </summary>
-    private sealed class ApplicationDbScope : IDisposable
-    {
-        private readonly string path = Path.Combine(Path.GetTempPath(), $"onm-test-{Guid.NewGuid():N}.sqlite");
-        private readonly Func<DateTime> originalToday = ApplicationDB.Today;
-        private readonly string? originalPathOverride = ApplicationDB.DatabasePathOverride;
-        private readonly int originalRetentionDays = SettingsManager.Current.HistoryRetentionDays;
-
-        public ApplicationDbScope(int retentionDays)
-        {
-            // Also clears the "today is set up" marker left by another test.
-            ApplicationDB.CloseSharedConnection();
-            ApplicationDB.DatabasePathOverride = path;
-            SettingsManager.Current.HistoryRetentionDays = retentionDays;
-        }
-
-        /// <summary>Runs <paramref name="work"/> on a fresh ApplicationDB, like one flush does, with the clock at <paramref name="day"/>.</summary>
-        public void AtDay(DateTime day, Action<ApplicationDB> work)
-        {
-            ApplicationDB.Today = () => day;
-            using var db = new ApplicationDB(Adapter);
-            work(db);
-        }
-
-        public long Scalar(string sql)
-        {
-            using var connection = OpenConnection();
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            return Convert.ToInt64(command.ExecuteScalar());
-        }
-
-        public void Execute(string sql)
-        {
-            using var connection = OpenConnection();
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            command.ExecuteNonQuery();
-        }
-
-        public long DateRows(DateTime day) =>
-            Scalar($"SELECT COUNT(*) FROM Date WHERE Year = {day.Year} AND Month = {day.Month} AND Day = {day.Day}");
-
-        public (long Received, long Sent) Usage(DateTime day, string process)
-        {
-            using var connection = OpenConnection();
-            using var command = connection.CreateCommand();
-            command.CommandText =
-                "SELECT pd.DataReceived, pd.DataSent FROM ProcessDate pd " +
-                "JOIN Process p ON p.ID = pd.ProcessID " +
-                "JOIN Date d ON d.ID = pd.DateID " +
-                $"WHERE p.Name = '{process}' AND d.Year = {day.Year} AND d.Month = {day.Month} AND d.Day = {day.Day}";
-            using var reader = command.ExecuteReader();
-            Assert.True(reader.Read(), $"no usage row for '{process}' on {day:yyyy-MM-dd}");
-            return (reader.GetInt64(0), reader.GetInt64(1));
-        }
-
-        public void Dispose()
-        {
-            ApplicationDB.CloseSharedConnection();
-            ApplicationDB.Today = originalToday;
-            ApplicationDB.DatabasePathOverride = originalPathOverride;
-            SettingsManager.Current.HistoryRetentionDays = originalRetentionDays;
-
-            SqliteConnection.ClearAllPools();
-            foreach (var suffix in new[] { "", "-wal", "-shm", "-journal" })
-            {
-                try { File.Delete(path + suffix); } catch (IOException) { }
-            }
-        }
-
-        private SqliteConnection OpenConnection()
-        {
-            var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path }.ToString());
-            connection.Open();
-            return connection;
-        }
     }
 }

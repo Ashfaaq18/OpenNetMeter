@@ -117,27 +117,34 @@ public sealed class WeeklyUsageTrendViewModel : INotifyPropertyChanged
 
     private static DateTime DateForSlot(DateTime today, int slot) => today.AddDays(slot - (DayCount - 1));
 
-    private static Dictionary<int, (long download, long upload)> ReadDailyTotals(string adapterName, DateTime startDate, DateTime endDate)
+    // Filters ProcessDate by adapter id and date ids so it can use IX_ProcessDate_AdapterID_DateID instead of
+    // joining (and scanning) every row. Adapter.Name is unique, so the subquery yields at most one id.
+    internal const string DailyTotalsSql =
+        "SELECT d.Year, d.Month, d.Day, SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
+        "FROM ProcessDate pd " +
+        "JOIN Date d ON d.ID = pd.DateID " +
+        "WHERE pd.AdapterID = (SELECT ID FROM Adapter WHERE Name = @AdapterName) " +
+        "AND pd.DateID IN (SELECT ID FROM Date " +
+        "WHERE (Year * 10000 + Month * 100 + Day) BETWEEN @StartDate AND @EndDate) " +
+        "GROUP BY d.Year, d.Month, d.Day";
+
+    private static Dictionary<int, (long download, long upload)> ReadDailyTotals(string adapterName, DateTime startDate, DateTime endDate) =>
+        ReadDailyTotals(UsageDatabase.ResolveDatabasePath(), adapterName, startDate, endDate);
+
+    // The path overload lets tests read a temporary database.
+    internal static Dictionary<int, (long download, long upload)> ReadDailyTotals(string dbPath, string adapterName, DateTime startDate, DateTime endDate)
     {
         var totals = new Dictionary<int, (long download, long upload)>();
 
         try
         {
-            var dbPath = UsageDatabase.ResolveDatabasePath();
             if (!File.Exists(dbPath))
                 return totals;
 
             using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
             connection.Open();
             using var command = connection.CreateCommand();
-            command.CommandText =
-                "SELECT d.Year, d.Month, d.Day, SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
-                "FROM ProcessDate pd " +
-                "JOIN Adapter a ON a.ID = pd.AdapterID " +
-                "JOIN Date d ON d.ID = pd.DateID " +
-                "WHERE a.Name = @AdapterName " +
-                "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate " +
-                "GROUP BY d.Year, d.Month, d.Day";
+            command.CommandText = DailyTotalsSql;
             command.Parameters.AddWithValue("@AdapterName", adapterName);
             command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(startDate));
             command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(endDate));

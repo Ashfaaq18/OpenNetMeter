@@ -12,11 +12,17 @@ internal sealed class ApplicationDB : IDisposable
     private static SqliteConnection? sharedConnection;
     private static int refCount;
 
-    // The day whose Date row (and retention purge) has been taken care of. Static because every flush
-    // creates a new ApplicationDB; guarded by DbLock; cleared when the shared connection is closed.
+    // The day whose Date row (and retention purge) has been taken care of. Static because instances come and go
+    // (each ApplyRetention call, each capture session); guarded by DbLock; cleared when the shared connection is
+    // closed with CloseSharedConnection.
     private static DateTime? ensuredDate;
-    // Day for which the "Date row still missing" error was already logged, so it is logged once per day.
-    private static DateTime? missingDateLoggedFor;
+
+    // Row ids PushBatch has already resolved, so a flush doesn't look them up again. Guarded by DbLock and cleared
+    // whenever the connection closes or anything that could have deleted those rows runs (see ClearIdCachesLocked).
+    // Ordinal: the UNIQUE(Name) columns compare case-sensitively, so "Chrome" and "chrome" are different rows.
+    private static readonly Dictionary<string, long> adapterIds = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, long> processIds = new(StringComparer.Ordinal);
+    private static (DateTime Day, long Id)? cachedDateId;
 
     /// <summary>Clock used for all date-dependent logic. Tests replace it to simulate midnight.</summary>
     internal static Func<DateTime> Today { get; set; } = () => DateTime.Today;
@@ -25,10 +31,8 @@ internal sealed class ApplicationDB : IDisposable
     internal static string? DatabasePathOverride { get; set; }
 
     private readonly string adapterName;
-    private readonly SqliteConnection? countedConnection;
+    private SqliteConnection? countedConnection;
     private bool disposed;
-
-    private static string LogTime() => DateTime.Now.ToString("HH:mm:ss.fff");
 
     public const string UnifiedDBFileName = "OpenNetMeter";
 
@@ -67,37 +71,42 @@ internal sealed class ApplicationDB : IDisposable
     private const string CreateProcessDateDateIndexSql =
         "CREATE INDEX IF NOT EXISTS IX_ProcessDate_DateID ON ProcessDate(DateID)";
 
+    // The history, summary and trend reads filter by adapter and date range; without this they scan ProcessDate.
+    private const string CreateProcessDateAdapterDateIndexSql =
+        "CREATE INDEX IF NOT EXISTS IX_ProcessDate_AdapterID_DateID ON ProcessDate(AdapterID, DateID)";
+
+    /// <summary>
+    /// Adds a flush's usage to the (process, day, adapter) row, creating it when missing. The table's
+    /// UNIQUE(ProcessID, DateID, AdapterID) is declared ON CONFLICT IGNORE; naming the conflict target here makes
+    /// this statement's DO UPDATE take precedence over that clause.
+    /// </summary>
+    internal const string UpsertProcessDateSql =
+        "INSERT INTO ProcessDate(ProcessID, DateID, AdapterID, DataReceived, DataSent) " +
+        "VALUES(@ProcessID, @DateID, @AdapterID, @DataReceived, @DataSent) " +
+        "ON CONFLICT(ProcessID, DateID, AdapterID) DO UPDATE SET " +
+        "DataReceived = DataReceived + excluded.DataReceived, " +
+        "DataSent = DataSent + excluded.DataSent";
+
     public ApplicationDB(string dBFileName)
     {
         adapterName = dBFileName;
 
         lock (DbLock)
         {
-            if (sharedConnection == null)
-            {
-                Directory.CreateDirectory(Properties.Global.GetFilePath());
-
-                var builder = new SqliteConnectionStringBuilder
-                {
-                    DataSource = GetUnifiedDBFullPath(),
-                    Mode = SqliteOpenMode.ReadWriteCreate,
-                    Cache = SqliteCacheMode.Shared
-                };
-
-                sharedConnection = new SqliteConnection(builder.ToString());
-                sharedConnection.Open();
-
-                RunNonQuery(sharedConnection, "PRAGMA journal_mode=WAL;");
-                RunNonQuery(sharedConnection, "PRAGMA busy_timeout=5000;");
-                RunNonQuery(sharedConnection, "PRAGMA synchronous=NORMAL;");
-                RunNonQuery(sharedConnection, "PRAGMA foreign_keys=ON;");
-            }
-
-            refCount++;
-            countedConnection = sharedConnection;
+            AcquireLocked();
         }
+    }
 
-        Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] ApplicationDB created adapter='{dBFileName}'");
+    /// <summary>Whether the shared connection is open right now. Tests use it to check it outlives a flush.</summary>
+    internal static bool IsConnectionOpen
+    {
+        get
+        {
+            lock (DbLock)
+            {
+                return sharedConnection != null;
+            }
+        }
     }
 
     public static string GetUnifiedDBFullPath()
@@ -114,6 +123,7 @@ internal sealed class ApplicationDB : IDisposable
             refCount = 0;
             // The database file may be deleted and recreated next, so today's Date row must be inserted again.
             ensuredDate = null;
+            ClearIdCachesLocked();
         }
     }
 
@@ -121,12 +131,7 @@ internal sealed class ApplicationDB : IDisposable
     {
         lock (DbLock)
         {
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] CreateTable adapter='{adapterName}' db='{GetUnifiedDBFullPath()}'");
-            return CreateAdapterTable() >> 31 |
-                   CreateProcessTable() >> 31 |
-                   CreateDateTable() >> 31 |
-                   CreateProcessDateTable() >> 31 |
-                   RunNonQuery(CreateProcessDateDateIndexSql) >> 31;
+            return CreateSchemaLocked();
         }
     }
 
@@ -134,7 +139,6 @@ internal sealed class ApplicationDB : IDisposable
     {
         lock (DbLock)
         {
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] InsertUniqueRow_AdapterTable adapter='{adapter}'");
             return RunNonQuery(
                 "INSERT OR IGNORE INTO Adapter(Name) VALUES(@Name)",
                 ("@Name", adapter));
@@ -145,8 +149,11 @@ internal sealed class ApplicationDB : IDisposable
     {
         lock (DbLock)
         {
+            // Today's Date row is in place and the purge already ran for today: nothing to do on a reconnect.
             var today = Today();
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] UpdateDatesInDB adapter='{adapterName}' today='{today:yyyy-MM-dd}' retentionDays={Properties.SettingsManager.Current.HistoryRetentionDays}");
+            if (ensuredDate == today)
+                return;
+
             EnsureDate(today);
         }
     }
@@ -158,8 +165,10 @@ internal sealed class ApplicationDB : IDisposable
     private void EnsureDate(DateTime day)
     {
         InsertUniqueRow_DateTable(day);
-        RemoveOldDate();
-        RemoveOldProcess();
+        // Process rows only become orphans when their last ProcessDate row goes, so the (scanning) orphan
+        // cleanup is only worth running when the retention purge actually deleted something.
+        if (RemoveOldDate() > 0)
+            RemoveOldProcess();
         ensuredDate = day;
     }
 
@@ -175,8 +184,9 @@ internal sealed class ApplicationDB : IDisposable
         lock (DbLock)
         {
             using var db = new ApplicationDB(string.Empty);
-            RunNonQuery(CreateProcessDateDateIndexSql);
+            CreateIndexes();
             db.RemoveOldDate();
+            // Unconditional here: this is the explicit purge, so also sweep up orphans left by anything else.
             db.RemoveOldProcess();
         }
     }
@@ -191,6 +201,7 @@ internal sealed class ApplicationDB : IDisposable
         RunNonQuery(connection, CreateDateTableSql);
         RunNonQuery(connection, CreateProcessDateTableSql);
         RunNonQuery(connection, CreateProcessDateDateIndexSql);
+        RunNonQuery(connection, CreateProcessDateAdapterDateIndexSql);
     }
 
     /// <summary>
@@ -205,40 +216,88 @@ internal sealed class ApplicationDB : IDisposable
         return command.ExecuteNonQuery();
     }
 
+    /// <summary>
+    /// Adds one process's usage for today. Kept for callers that have a single row; flushes use
+    /// <see cref="PushBatch"/> directly. Throws if the write fails.
+    /// </summary>
     public void PushToDB(string processName, long totalDataRecv, long totalDataSend)
     {
+        PushBatch(adapterName, [(processName, totalDataRecv, totalDataSend)]);
+    }
+
+    /// <summary>
+    /// Adds a whole flush's usage for today to the database in one transaction: either every row is written or,
+    /// if anything throws, none is (and the caller can retry the same batch without double counting).
+    /// </summary>
+    /// <param name="adapter">The adapter the usage was observed on; its row is created when missing.</param>
+    /// <param name="batch">Bytes received and sent per process since the previous flush.</param>
+    public void PushBatch(string adapter, IReadOnlyCollection<(string Name, long Received, long Sent)> batch)
+    {
+        ArgumentNullException.ThrowIfNull(batch);
+        if (batch.Count == 0)
+            return;
+
         lock (DbLock)
         {
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] PushToDB adapter='{adapterName}' process='{processName}' recv={totalDataRecv} sent={totalDataSend}");
+            ObjectDisposedException.ThrowIf(disposed, this);
+            EnsureConnectedLocked();
 
             // A session that runs past midnight has no Date row for the new day until one is inserted here.
             var today = Today();
             if (ensuredDate != today)
                 EnsureDate(today);
 
-            long dateID = GetID_DateTable(today);
-            if (dateID < 1)
+            long dateId = GetDateIdLocked(today);
+            if (dateId < 1)
             {
-                if (missingDateLoggedFor != today)
-                {
-                    missingDateLoggedFor = today;
-                    EventLogger.Error($"SQLite push skipped: no Date row for {today:yyyy-MM-dd}; usage for this day cannot be saved");
-                }
-
-                // The Date insert failed; forget that today was set up so the next push retries it.
-                ensuredDate = null;
-                return;
+                // Today was set up but its row is gone (the database was replaced underneath us): insert it again.
+                InsertUniqueRow_DateTable(today);
+                dateId = GetDateIdLocked(today);
             }
 
-            InsertUniqueRow_ProcessTable(processName);
-            InsertUniqueRow_AdapterTable(adapterName);
-
-            long processID = GetID_ProcessTable(processName);
-            long adapterID = GetID_AdapterTable_Internal(adapterName);
-
-            if (InsertUniqueRow_ProcessDateTable(processID, dateID, adapterID, totalDataRecv, totalDataSend) < 1)
+            if (dateId < 1)
             {
-                UpdateRow_ProcessDateTable(processID, dateID, adapterID, totalDataRecv, totalDataSend);
+                // The Date insert failed; forget that today was set up so the next push retries it.
+                ensuredDate = null;
+                throw new InvalidOperationException(
+                    $"SQLite push skipped: no Date row for {today:yyyy-MM-dd}; usage for this day cannot be saved yet");
+            }
+
+            var connection = Connection;
+            try
+            {
+                // IMMEDIATE takes the write lock up front, so busy_timeout applies from the start of the batch.
+                using var transaction = connection.BeginTransaction(deferred: false);
+
+                long adapterId = ResolveId(adapterIds, "Adapter", adapter, connection, transaction);
+
+                using var upsert = connection.CreateCommand();
+                upsert.Transaction = transaction;
+                upsert.CommandText = UpsertProcessDateSql;
+                var processParameter = upsert.Parameters.Add("@ProcessID", SqliteType.Integer);
+                var dateParameter = upsert.Parameters.Add("@DateID", SqliteType.Integer);
+                var adapterParameter = upsert.Parameters.Add("@AdapterID", SqliteType.Integer);
+                var receivedParameter = upsert.Parameters.Add("@DataReceived", SqliteType.Integer);
+                var sentParameter = upsert.Parameters.Add("@DataSent", SqliteType.Integer);
+                upsert.Prepare();
+
+                dateParameter.Value = dateId;
+                adapterParameter.Value = adapterId;
+                foreach (var (name, received, sent) in batch)
+                {
+                    processParameter.Value = ResolveId(processIds, "Process", name, connection, transaction);
+                    receivedParameter.Value = received;
+                    sentParameter.Value = sent;
+                    upsert.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                // Ids resolved inside the rolled-back transaction may belong to rows that were never committed.
+                ClearIdCachesLocked();
+                throw;
             }
         }
     }
@@ -374,12 +433,136 @@ internal sealed class ApplicationDB : IDisposable
             {
                 sharedConnection.Dispose();
                 sharedConnection = null;
+                ClearIdCachesLocked();
             }
         }
     }
 
     private static SqliteConnection Connection =>
         sharedConnection ?? throw new InvalidOperationException("Database not initialized");
+
+    /// <summary>
+    /// Counts this instance against the shared connection, opening it first when nobody has it open. Caller must hold DbLock.
+    /// </summary>
+    private void AcquireLocked()
+    {
+        sharedConnection ??= OpenSharedConnection();
+        refCount++;
+        countedConnection = sharedConnection;
+    }
+
+    private static SqliteConnection OpenSharedConnection()
+    {
+        var path = GetUnifiedDBFullPath();
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(directory))
+            Directory.CreateDirectory(directory);
+
+        var builder = new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadWriteCreate
+        };
+
+        var connection = new SqliteConnection(builder.ToString());
+        try
+        {
+            connection.Open();
+
+            RunNonQuery(connection, "PRAGMA journal_mode=WAL;");
+            RunNonQuery(connection, "PRAGMA busy_timeout=5000;");
+            RunNonQuery(connection, "PRAGMA synchronous=NORMAL;");
+            RunNonQuery(connection, "PRAGMA foreign_keys=ON;");
+        }
+        catch
+        {
+            connection.Dispose();
+            throw;
+        }
+
+        return connection;
+    }
+
+    /// <summary>
+    /// A long-lived instance (a capture session holds one) outlives CloseSharedConnection when Delete All runs.
+    /// Counts it against a fresh connection and rebuilds the schema, since the file was probably deleted.
+    /// Caller must hold DbLock.
+    /// </summary>
+    private void EnsureConnectedLocked()
+    {
+        if (sharedConnection != null && ReferenceEquals(sharedConnection, countedConnection))
+            return;
+
+        AcquireLocked();
+        CreateSchemaLocked();
+    }
+
+    private int CreateSchemaLocked()
+    {
+        return CreateAdapterTable() >> 31 |
+               CreateProcessTable() >> 31 |
+               CreateDateTable() >> 31 |
+               CreateProcessDateTable() >> 31 |
+               CreateIndexes();
+    }
+
+    private static int CreateIndexes()
+    {
+        return RunNonQuery(CreateProcessDateDateIndexSql) >> 31 |
+               RunNonQuery(CreateProcessDateAdapterDateIndexSql) >> 31;
+    }
+
+    /// <summary>
+    /// Forgets the resolved ids. Caller must hold DbLock. Run whenever the connection closes (the file may be
+    /// replaced) and whenever rows that may be cached are deleted or a transaction that created them rolls back.
+    /// </summary>
+    private static void ClearIdCachesLocked()
+    {
+        adapterIds.Clear();
+        processIds.Clear();
+        cachedDateId = null;
+    }
+
+    private long GetDateIdLocked(DateTime day)
+    {
+        if (cachedDateId is { } cached && cached.Day == day)
+            return cached.Id;
+
+        long id = GetID_DateTable(day);
+        if (id > 0)
+            cachedDateId = (day, id);
+
+        return id;
+    }
+
+    /// <summary>
+    /// The id of the <paramref name="table"/> row named <paramref name="name"/>, inserting the row when it is missing.
+    /// Cached after the first lookup. <paramref name="table"/> is always a literal, never user input.
+    /// </summary>
+    private static long ResolveId(
+        Dictionary<string, long> cache, string table, string name, SqliteConnection connection, SqliteTransaction transaction)
+    {
+        if (cache.TryGetValue(name, out long cached))
+            return cached;
+
+        using (var insert = connection.CreateCommand())
+        {
+            insert.Transaction = transaction;
+            insert.CommandText = $"INSERT OR IGNORE INTO {table}(Name) VALUES(@Name)";
+            insert.Parameters.AddWithValue("@Name", name);
+            insert.ExecuteNonQuery();
+        }
+
+        using var select = connection.CreateCommand();
+        select.Transaction = transaction;
+        select.CommandText = $"SELECT ID FROM {table} WHERE Name = @Name";
+        select.Parameters.AddWithValue("@Name", name);
+        long id = Convert.ToInt64(select.ExecuteScalar()
+            ?? throw new InvalidOperationException($"SQLite {table} row '{name}' is missing after insert"));
+
+        cache[name] = id;
+        return id;
+    }
 
     private int CreateProcessTable()
     {
@@ -401,13 +584,6 @@ internal sealed class ApplicationDB : IDisposable
         return RunNonQuery(CreateAdapterTableSql);
     }
 
-    private int InsertUniqueRow_ProcessTable(string appName)
-    {
-        return RunNonQuery(
-            "INSERT OR IGNORE INTO Process(Name) VALUES(@Name)",
-            ("@Name", appName));
-    }
-
     private int InsertUniqueRow_DateTable(DateTime date)
     {
         return RunNonQuery(
@@ -417,58 +593,37 @@ internal sealed class ApplicationDB : IDisposable
             ("@Day", date.Day.ToString()));
     }
 
-    private void RemoveOldDate()
+    /// <returns>How many Date rows the retention purge deleted (0 when retention is forever or the purge failed).</returns>
+    private int RemoveOldDate()
     {
         var cutoff = HistoryRetention.GetCutoff(Today(), Properties.SettingsManager.Current.HistoryRetentionDays);
         if (cutoff == null)
-        {
-            Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] RemoveOldDate skipped (retention=forever)");
-            return;
-        }
+            return 0;
 
-        Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] RemoveOldDate cutoff='{cutoff:yyyy-MM-dd}'");
         try
         {
-            DeleteDatesBefore(Connection, cutoff.Value);
+            int deleted = DeleteDatesBefore(Connection, cutoff.Value);
+            if (deleted > 0)
+                cachedDateId = null;
+
+            return deleted;
         }
         catch (Exception ex)
         {
             EventLogger.Error("SQLite retention purge failed", ex);
+            return 0;
         }
     }
 
     private void RemoveOldProcess()
     {
-        Console.WriteLine($"[{LogTime()}] [SQLite][Avalonia] RemoveOldProcess");
-        RunNonQuery(
-            "DELETE FROM Process WHERE ID NOT IN " +
-            "(SELECT DISTINCT ProcessID FROM ProcessDate)");
-    }
+        int deleted = RunNonQuery(
+            "DELETE FROM Process WHERE NOT EXISTS " +
+            "(SELECT 1 FROM ProcessDate WHERE ProcessDate.ProcessID = Process.ID)");
 
-    private int InsertUniqueRow_ProcessDateTable(long processID, long dateID, long adapterID, long dataReceived, long dataSent)
-    {
-        return RunNonQuery(
-            "INSERT OR IGNORE INTO ProcessDate(ProcessID, DateID, AdapterID, DataReceived, DataSent) " +
-            "VALUES(@ProcessID, @DateID, @AdapterID, @DataReceived, @DataSent)",
-            ("@ProcessID", processID.ToString()),
-            ("@DateID", dateID.ToString()),
-            ("@AdapterID", adapterID.ToString()),
-            ("@DataReceived", dataReceived.ToString()),
-            ("@DataSent", dataSent.ToString()));
-    }
-
-    private int UpdateRow_ProcessDateTable(long processID, long dateID, long adapterID, long dataReceived, long dataSent)
-    {
-        return RunNonQuery(
-            "UPDATE ProcessDate SET " +
-            "DataReceived = DataReceived + @DataReceived, " +
-            "DataSent = DataSent + @DataSent " +
-            "WHERE ProcessID = @ProcessID AND DateID = @DateID AND AdapterID = @AdapterID",
-            ("@DataReceived", dataReceived.ToString()),
-            ("@DataSent", dataSent.ToString()),
-            ("@ProcessID", processID.ToString()),
-            ("@DateID", dateID.ToString()),
-            ("@AdapterID", adapterID.ToString()));
+        // A cached process id may belong to a row that was just deleted.
+        if (deleted > 0)
+            processIds.Clear();
     }
 
     private long GetID_DateTable(DateTime time)
@@ -478,15 +633,6 @@ internal sealed class ApplicationDB : IDisposable
             ("@Year", time.Year.ToString()),
             ("@Month", time.Month.ToString()),
             ("@Day", time.Day.ToString()));
-
-        return Convert.ToInt64(result ?? -1);
-    }
-
-    private long GetID_ProcessTable(string appName)
-    {
-        var result = GetSingleCellData(
-            "SELECT ID FROM Process WHERE Name = @Name",
-            ("@Name", appName));
 
         return Convert.ToInt64(result ?? -1);
     }
