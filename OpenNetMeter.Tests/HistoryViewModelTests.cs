@@ -8,8 +8,9 @@ namespace OpenNetMeter.Tests;
 
 /// <summary>
 /// History is loaded lazily: the constructor must not touch the database, and refreshes requested
-/// while the tab is hidden are deferred until it is shown. DeleteAllDbFiles closes ApplicationDB's shared
-/// connection, so these run in the serial ApplicationDB collection.
+/// while the tab is hidden are deferred until it is shown. The reads run on a background task and are applied
+/// by a post to the UI thread; most tests post inline, the ones about ordering run the posts by hand.
+/// DeleteAllDbFiles closes ApplicationDB's shared connection, so these run in the serial ApplicationDB collection.
 /// </summary>
 [Collection(ApplicationDbCollection.Name)]
 public class HistoryViewModelTests
@@ -40,8 +41,39 @@ public class HistoryViewModelTests
         }
     }
 
-    private static HistoryViewModel Create(TestUsageDb db, IProcessIconService? icons = null) =>
-        new(db.Path, icons ?? new PlaceholderProcessIconService(), new NoLinks(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService());
+    /// <summary>A stand-in for the UI thread: posts queue up until the test runs them.</summary>
+    private sealed class UiQueue
+    {
+        private readonly List<Action> posted = [];
+
+        public int Count
+        {
+            get { lock (posted) return posted.Count; }
+        }
+
+        public void Post(Action action)
+        {
+            lock (posted)
+                posted.Add(action);
+        }
+
+        public void Run(int index)
+        {
+            Action action;
+            lock (posted)
+                action = posted[index];
+            action();
+        }
+
+        public void RunAll()
+        {
+            for (var i = 0; i < Count; i++)
+                Run(i);
+        }
+    }
+
+    private static HistoryViewModel Create(TestUsageDb db, IProcessIconService? icons = null, Action<Action>? postToUi = null) =>
+        new(db.Path, icons ?? new PlaceholderProcessIconService(), new NoLinks(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService(), postToUi ?? (action => action()));
 
     [Fact]
     public void Constructor_DoesNotReadTheDatabase()
@@ -58,7 +90,7 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void Activate_FirstTimeLoadsProfilesSelectsTheFirstAndFilters()
+    public async Task Activate_FirstTimeLoadsProfilesSelectsTheFirstAndFilters()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
@@ -66,6 +98,7 @@ public class HistoryViewModelTests
         var history = Create(db);
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
         Assert.Equal("Ethernet", history.SelectedProfile);
@@ -78,7 +111,38 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void Activate_FirstTime_RefreshesTheDefaultDateRangeToToday()
+    public async Task Activate_ReadsInTheBackgroundAndAppliesOnTheUiPost()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+
+        history.Activate();
+
+        // Nothing is read or shown on the calling thread.
+        Assert.Empty(history.Profiles);
+        Assert.Empty(history.Rows);
+
+        await history.PendingLoad;
+
+        // The read is done, but the result only reaches the view model when the UI thread runs the post.
+        Assert.Equal(1, ui.Count);
+        Assert.Empty(history.Profiles);
+        Assert.Empty(history.Rows);
+        Assert.False(history.HasLastFiltered);
+
+        ui.RunAll();
+
+        Assert.Equal(["Wi-Fi"], history.Profiles);
+        Assert.Equal("Wi-Fi", history.SelectedProfile);
+        Assert.Single(history.Rows);
+        Assert.Equal(100, history.TotalDownload);
+        Assert.Equal("Wi-Fi", history.LastFilteredProfile);
+    }
+
+    [Fact]
+    public async Task Activate_FirstTime_RefreshesTheDefaultDateRangeToToday()
     {
         using var db = new TestUsageDb();
         var history = Create(db);
@@ -87,13 +151,14 @@ public class HistoryViewModelTests
         history.DateEnd = DateTimeOffset.Now.Date.AddDays(-13);
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal(DateTimeOffset.Now.Date.AddDays(-7), history.DateStart);
         Assert.Equal(DateTimeOffset.Now.Date, history.DateEnd);
     }
 
     [Fact]
-    public void Activate_FirstTime_SelectsThePreferredProfileWhenItHasHistory()
+    public async Task Activate_FirstTime_SelectsThePreferredProfileWhenItHasHistory()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
@@ -102,6 +167,7 @@ public class HistoryViewModelTests
         history.PreferredProfile = "Wi-Fi";
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal("Wi-Fi", history.SelectedProfile);
         var row = Assert.Single(history.Rows);
@@ -110,7 +176,7 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void Activate_FirstTime_FallsBackToTheFirstProfileWhenThePreferredOneHasNoHistory()
+    public async Task Activate_FirstTime_FallsBackToTheFirstProfileWhenThePreferredOneHasNoHistory()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
@@ -119,12 +185,13 @@ public class HistoryViewModelTests
         history.PreferredProfile = "Cellular";
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal("Ethernet", history.SelectedProfile);
     }
 
     [Fact]
-    public void Activate_LaterActivationsKeepTheUsersSelectionRegardlessOfPreferredProfile()
+    public async Task Activate_LaterActivationsKeepTheUsersSelectionRegardlessOfPreferredProfile()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
@@ -132,6 +199,7 @@ public class HistoryViewModelTests
         var history = Create(db);
         history.PreferredProfile = "Wi-Fi";
         history.Activate();
+        await history.PendingLoad;
         history.SelectedProfile = "Ethernet";
         history.Deactivate();
 
@@ -139,17 +207,19 @@ public class HistoryViewModelTests
         history.PreferredProfile = "Wi-Fi";
         history.ReloadProfiles();
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal("Ethernet", history.SelectedProfile);
     }
 
     [Fact]
-    public void Activate_WithNoDatabaseLeavesHistoryEmpty()
+    public async Task Activate_WithNoDatabaseLeavesHistoryEmpty()
     {
         using var db = new TestUsageDb();
-        var missing = new HistoryViewModel(db.Path + ".missing", new PlaceholderProcessIconService(), new NoLinks(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService());
+        var missing = new HistoryViewModel(db.Path + ".missing", new PlaceholderProcessIconService(), new NoLinks(), new PlaceholderFileSaveDialogService(), new PlaceholderFileRevealService(), action => action());
 
         missing.Activate();
+        await missing.PendingLoad;
 
         Assert.Empty(missing.Profiles);
         Assert.Empty(missing.Rows);
@@ -157,20 +227,23 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void ReloadProfiles_WhileHidden_OnlyMarksStaleUntilActivated()
+    public async Task ReloadProfiles_WhileHidden_OnlyMarksStaleUntilActivated()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
         var history = Create(db);
         history.Activate();
+        await history.PendingLoad;
         history.Deactivate();
 
         db.AddUsage(DateTime.Today, "Ethernet", "teams", 300, 30);
         history.ReloadProfiles();
+        await history.PendingLoad;
 
         Assert.Equal(["Wi-Fi"], history.Profiles);
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
         // The selection survives the reload, as it did when this ran on every network change.
@@ -178,83 +251,142 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void ReloadProfiles_BeforeFirstActivate_DoesNotLoadAnything()
+    public async Task ReloadProfiles_BeforeFirstActivate_DoesNotLoadAnything()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
         var history = Create(db);
 
         history.ReloadProfiles();
+        await history.PendingLoad;
 
         Assert.Empty(history.Profiles);
         Assert.Empty(history.Rows);
     }
 
     [Fact]
-    public void ReloadProfiles_WhileActive_ReloadsImmediately()
+    public async Task ReloadProfiles_WhileActive_ReloadsImmediately()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
         var history = Create(db);
         history.Activate();
+        await history.PendingLoad;
 
         db.AddUsage(DateTime.Today, "Ethernet", "teams", 300, 30);
         history.ReloadProfiles();
+        await history.PendingLoad;
 
         Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
     }
 
     [Fact]
-    public void Refresh_WhileHidden_DefersProfilesAndFilterToTheNextActivate()
+    public async Task ReloadProfiles_KeepsTheChoiceTheUserMadeWhileItWasLoading()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        db.AddUsage(DateTime.Today, "Ethernet", "teams", 300, 30);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.PreferredProfile = "Wi-Fi";
+        history.Activate();
+        await history.PendingLoad;
+        ui.RunAll();
+        Assert.Equal("Wi-Fi", history.SelectedProfile);
+
+        history.ReloadProfiles();
+        // The request has captured "Wi-Fi"; the user picks another profile before the result arrives.
+        history.SelectedProfile = "Ethernet";
+        await history.PendingLoad;
+        ui.Run(1);
+
+        Assert.Equal("Ethernet", history.SelectedProfile);
+        Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
+    }
+
+    [Fact]
+    public async Task Refresh_WhileHidden_DefersProfilesAndFilterToTheNextActivate()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
         var history = Create(db);
         history.Activate();
+        await history.PendingLoad;
         history.Deactivate();
         Assert.Equal(100, history.TotalDownload);
 
         db.AddUsage(DateTime.Today, "Wi-Fi", "firefox", 50, 5);
         history.Refresh();
+        await history.PendingLoad;
 
         Assert.Single(history.Rows);
         Assert.Equal(100, history.TotalDownload);
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal(2, history.Rows.Count);
         Assert.Equal(150, history.TotalDownload);
     }
 
     [Fact]
-    public void Activate_WithNothingStale_LeavesLoadedRowsAlone()
+    public async Task Refresh_WhileActive_ReloadsProfilesAndFiltersInOneLoad()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.Activate();
+        await history.PendingLoad;
+        ui.RunAll();
+
+        db.AddUsage(DateTime.Today, "Ethernet", "teams", 300, 30);
+        db.AddUsage(DateTime.Today, "Wi-Fi", "firefox", 50, 5);
+        history.Refresh();
+        await history.PendingLoad;
+
+        Assert.Equal(2, ui.Count);
+        ui.Run(1);
+
+        Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
+        Assert.Equal("Wi-Fi", history.SelectedProfile);
+        Assert.Equal(2, history.Rows.Count);
+        Assert.Equal(150, history.TotalDownload);
+    }
+
+    [Fact]
+    public async Task Activate_WithNothingStale_LeavesLoadedRowsAlone()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
         var history = Create(db);
         history.Activate();
+        await history.PendingLoad;
         var firstRow = history.Rows[0];
         history.Deactivate();
 
         // Not marked stale, so reopening the tab must not re-query (this row would be replaced by a new instance).
         db.AddUsage(DateTime.Today, "Wi-Fi", "firefox", 50, 5);
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Same(firstRow, Assert.Single(history.Rows));
     }
 
     [Fact]
-    public void DeleteAllDbFiles_ClearsLoadedHistoryAndASubsequentReloadStaysEmpty()
+    public async Task DeleteAllDbFiles_ClearsLoadedHistoryAndASubsequentReloadStaysEmpty()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
         var history = Create(db);
         history.Activate();
+        await history.PendingLoad;
         Assert.NotEmpty(history.Rows);
         db.Dispose();
 
         history.DeleteAllDbFiles();
         history.ReloadProfiles();
+        await history.PendingLoad;
 
         Assert.Empty(history.Profiles);
         Assert.Empty(history.Rows);
@@ -264,11 +396,33 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void Filter_ReturnsTheSameRowsAsTheJoinedQueryItReplaced()
+    public async Task DeleteAllDbFiles_DropsAReadThatWasStillWaitingToBeApplied()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.Activate();
+        await history.PendingLoad;
+        db.Dispose();
+
+        history.DeleteAllDbFiles();
+        // The read finished before the delete; its result must not bring the deleted history back.
+        ui.RunAll();
+
+        Assert.Empty(history.Profiles);
+        Assert.Empty(history.Rows);
+        Assert.Null(history.SelectedProfile);
+        Assert.False(history.HasLastFiltered);
+    }
+
+    [Fact]
+    public async Task Filter_ReturnsTheSameRowsAsTheJoinedQueryItReplaced()
     {
         using var db = UsageReadQueryTests.SeededDb();
         var history = Create(db);
         history.Activate();
+        await history.PendingLoad;
         var start = new DateTime(2025, 12, 31);
         var end = new DateTime(2026, 2, 1);
 
@@ -276,6 +430,7 @@ public class HistoryViewModelTests
         history.DateStart = new DateTimeOffset(start);
         history.DateEnd = new DateTimeOffset(end);
         history.FilterCommand.Execute(null);
+        await history.PendingLoad;
 
         var expected = UsageReadQueryTests.Rows(db.Connection, UsageReadQueryTests.OldProcessTotalsSql, "WiFi", start, end);
         Assert.Equal(3, expected.Count);
@@ -285,7 +440,127 @@ public class HistoryViewModelTests
     }
 
     [Fact]
-    public void Rows_StartWithTheCachedIconAndRequestTheRealOne()
+    public async Task Filter_AnOlderQueryThatFinishesLateNeverOverwritesANewerOne()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.Activate();
+        await history.PendingLoad;
+        ui.RunAll();
+
+        db.AddUsage(DateTime.Today, "Wi-Fi", "firefox", 50, 5);
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+        db.AddUsage(DateTime.Today, "Wi-Fi", "teams", 25, 2);
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+        Assert.Equal(3, ui.Count);
+
+        // The newer result is applied first, then the older one arrives (the order a slow read could produce).
+        ui.Run(2);
+        Assert.Equal(3, history.Rows.Count);
+        ui.Run(1);
+
+        Assert.Equal(3, history.Rows.Count);
+        Assert.Equal(175, history.TotalDownload);
+    }
+
+    [Fact]
+    public async Task Filter_AnOlderQueryIsDroppedEvenWhenItArrivesFirst()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.Activate();
+        await history.PendingLoad;
+        ui.RunAll();
+
+        db.AddUsage(DateTime.Today, "Wi-Fi", "firefox", 50, 5);
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+
+        // A newer filter was asked for after this one, so showing this one would only flash stale rows.
+        ui.Run(1);
+        Assert.Single(history.Rows);
+
+        ui.Run(2);
+        Assert.Equal(2, history.Rows.Count);
+    }
+
+    [Fact]
+    public async Task Filter_ThatOvertakesTheFirstLoad_DoesNotLoseTheSelectionOrTheProfiles()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        db.AddUsage(DateTime.Today, "Ethernet", "teams", 300, 30);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.PreferredProfile = "Wi-Fi";
+
+        history.Activate();
+        await history.PendingLoad;
+        // The Filter button is pressed while the first load is still in flight (nothing is selected yet).
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+        ui.RunAll();
+
+        Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
+        Assert.Equal("Wi-Fi", history.SelectedProfile);
+        var row = Assert.Single(history.Rows);
+        Assert.Equal("chrome", row.ProcessName);
+        Assert.Equal("Wi-Fi", history.LastFilteredProfile);
+    }
+
+    [Fact]
+    public async Task Filter_ThatOvertakesAProfileReload_StillReloadsTheProfiles()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var ui = new UiQueue();
+        var history = Create(db, postToUi: ui.Post);
+        history.Activate();
+        await history.PendingLoad;
+        ui.RunAll();
+
+        db.AddUsage(DateTime.Today, "Ethernet", "teams", 300, 30);
+        history.ReloadProfiles();
+        await history.PendingLoad;
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+        ui.RunAll();
+
+        Assert.Equal(["Ethernet", "Wi-Fi"], history.Profiles);
+        Assert.Equal("Wi-Fi", history.SelectedProfile);
+    }
+
+    [Fact]
+    public async Task Filter_WithoutAProfile_ClearsTheRowsAndKeepsTheLastFilteredLine()
+    {
+        using var db = new TestUsageDb();
+        db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
+        var history = Create(db);
+        history.Activate();
+        await history.PendingLoad;
+        Assert.Single(history.Rows);
+
+        history.SelectedProfile = null;
+        history.FilterCommand.Execute(null);
+        await history.PendingLoad;
+
+        Assert.Empty(history.Rows);
+        Assert.Equal(0, history.TotalDownload);
+        Assert.Equal(0, history.TotalUpload);
+        // Nothing was queried, so the line still describes the results that were last loaded.
+        Assert.Equal("Wi-Fi", history.LastFilteredProfile);
+    }
+
+    [Fact]
+    public async Task Rows_StartWithTheCachedIconAndRequestTheRealOne()
     {
         using var db = new TestUsageDb();
         db.AddUsage(DateTime.Today, "Wi-Fi", "chrome", 100, 10);
@@ -293,6 +568,7 @@ public class HistoryViewModelTests
         var history = Create(db, icons);
 
         history.Activate();
+        await history.PendingLoad;
 
         Assert.Equal(["chrome"], icons.Requested);
         // The fake completes synchronously (as a cache hit does), so the loaded icon is already applied.

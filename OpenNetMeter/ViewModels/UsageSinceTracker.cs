@@ -35,16 +35,28 @@ internal sealed class UsageSinceTracker
     /// Re-reads the persisted totals from <paramref name="fromDate"/> to today and restarts counting
     /// session traffic from the given session counters.
     /// </summary>
-    public void Rebase(string adapterName, DateTime fromDate, long sessionDownload, long sessionUpload)
+    public void Rebase(string adapterName, DateTime fromDate, long sessionDownload, long sessionUpload) =>
+        Rebase(fromDate, sessionDownload, sessionUpload, ReadTotals(adapterName, fromDate));
+
+    /// <summary>
+    /// Reads the persisted totals from <paramref name="fromDate"/> to today, to be applied by the <c>Rebase</c> overload that takes them.
+    /// Touches no tracker state, so it can run on a background thread while the UI thread keeps advancing the total.
+    /// </summary>
+    public (long download, long upload) ReadTotals(string adapterName, DateTime fromDate) =>
+        string.IsNullOrWhiteSpace(adapterName)
+            ? (0, 0)
+            : readTotals(adapterName, fromDate.Date, DateTime.Today);
+
+    /// <summary>
+    /// Applies totals returned by <see cref="ReadTotals"/> (nothing is read here). The session counters must be the ones from the moment that
+    /// read began: the total is then the persisted usage plus what the session counted since, however long the read took.
+    /// </summary>
+    public void Rebase(DateTime fromDate, long sessionDownload, long sessionUpload, (long download, long upload) dbTotals)
     {
         FromDate = fromDate.Date;
         sessionDownloadBaseline = sessionDownload;
         sessionUploadBaseline = sessionUpload;
-
-        if (string.IsNullOrWhiteSpace(adapterName))
-            (dbDownloadBaseline, dbUploadBaseline) = (0, 0);
-        else
-            (dbDownloadBaseline, dbUploadBaseline) = readTotals(adapterName, FromDate, DateTime.Today);
+        (dbDownloadBaseline, dbUploadBaseline) = dbTotals;
 
         Advance(sessionDownload, sessionUpload);
     }

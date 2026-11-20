@@ -63,16 +63,23 @@ public sealed class WeeklyUsageTrendViewModel : INotifyPropertyChanged
         NotifyTotalsChanged();
     }
 
-    public void Refresh(string? adapterName)
-    {
-        if (string.IsNullOrWhiteSpace(adapterName))
-        {
-            Reset();
-            return;
-        }
+    /// <summary>
+    /// Reads the last fourteen days for an adapter. Touches no view model state, so it can run on a background
+    /// thread; the result is shown by <see cref="Apply"/> on the UI thread.
+    /// </summary>
+    internal static WeeklyTrendData Read(string adapterName) => Read(adapterName, ReadDailyTotals);
 
+    // The reader overload lets tests supply the totals.
+    internal static WeeklyTrendData Read(string adapterName, Func<string, DateTime, DateTime, Dictionary<int, (long download, long upload)>> readDailyTotals)
+    {
         var today = DateTime.Today;
-        var dailyTotals = ReadDailyTotals(adapterName, today.AddDays(-((DayCount * 2) - 1)), today);
+        return new WeeklyTrendData(today, readDailyTotals(adapterName, today.AddDays(-((DayCount * 2) - 1)), today));
+    }
+
+    internal void Apply(WeeklyTrendData data)
+    {
+        var today = data.Today;
+        var dailyTotals = data.DailyTotals;
 
         weekDownload = 0;
         weekUpload = 0;
@@ -181,6 +188,9 @@ public sealed class WeeklyUsageTrendViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
+/// <summary>The daily totals a read of the weekly trend returned, and the day it was read for.</summary>
+internal sealed record WeeklyTrendData(DateTime Today, Dictionary<int, (long download, long upload)> DailyTotals);
 
 /// <summary>
 /// A single day column of the weekly trend card. Bar heights are pre-scaled to pixels here so

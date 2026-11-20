@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
 using OpenNetMeter.Properties;
-using System.Diagnostics.Eventing.Reader;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
 
@@ -277,7 +276,7 @@ namespace OpenNetMeter.Models
             var info = adapters.First(a => ReferenceEquals(a.Candidate, chosen));
 
             // Build display name (SSID lookup only for the chosen adapter)
-            var name = BuildDisplayName(info.Adapter);
+            var name = BuildDisplayName(info);
 
             Debug.WriteLine($"{info.Adapter.Name} is up, IP: {(info.IPv4 != null ? new IPAddress(info.IPv4) : new IPAddress(info.IPv6!))}");
 
@@ -352,6 +351,10 @@ namespace OpenNetMeter.Models
                 }
             }
 
+            // An adapter that is no longer up (or has lost its addresses) was disconnected, so its cached SSID must not
+            // survive a reconnect that comes back with the same address.
+            SsidLookup.Retain(result.Where(a => a.Candidate.HasAddress).Select(a => a.Adapter.Id));
+
             return result;
         }
 
@@ -387,18 +390,23 @@ namespace OpenNetMeter.Models
         /// <summary>
         /// Display name for an adapter: its name, plus the SSID for Wi-Fi.
         /// </summary>
-        private static string BuildDisplayName(NetworkInterface adapter)
+        private static string BuildDisplayName(UpAdapter adapter)
         {
-            var name = adapter.Name;
-            if (adapter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-            {
-                var ssid = GetConnectedSsid(adapter.Id);
-                if (!string.IsNullOrEmpty(ssid))
-                    name += $"({ssid})";
-            }
+            var ssid = IsWifi(adapter)
+                ? SsidLookup.GetSsid(adapter.Adapter.Id, SsidAddressKey(adapter))
+                : null;
 
-            return name;
+            return FormatDisplayName(adapter.Adapter.Name, ssid);
         }
+
+        private static string FormatDisplayName(string name, string? ssid) =>
+            string.IsNullOrEmpty(ssid) ? name : $"{name}({ssid})";
+
+        private static bool IsWifi(UpAdapter adapter) =>
+            adapter.Adapter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211;
+
+        private static string SsidAddressKey(UpAdapter adapter) =>
+            WlanSsidLookup.AddressKey(adapter.IPv4, adapter.IPv6);
 
         /// <summary>
         /// Adapters the user can pin in Settings: Up, non-loopback and with a usable address,
@@ -408,9 +416,16 @@ namespace OpenNetMeter.Models
         {
             try
             {
-                return EnumerateUpAdapters()
-                    .Where(a => a.Candidate.HasAddress)
-                    .Select(a => new NetworkAdapterOption(a.Adapter.Id, BuildDisplayName(a.Adapter)))
+                var adapters = EnumerateUpAdapters().Where(a => a.Candidate.HasAddress).ToList();
+
+                // One pass over the event log covers every Wi-Fi adapter that isn't cached yet.
+                var ssids = SsidLookup.GetSsids(adapters
+                    .Where(IsWifi)
+                    .Select(a => (a.Adapter.Id, SsidAddressKey(a)))
+                    .ToList());
+
+                return adapters
+                    .Select(a => new NetworkAdapterOption(a.Adapter.Id, FormatDisplayName(a.Adapter.Name, ssids.GetValueOrDefault(a.Adapter.Id))))
                     .OrderBy(o => o.DisplayName, StringComparer.CurrentCultureIgnoreCase)
                     .ToList();
             }
@@ -421,53 +436,9 @@ namespace OpenNetMeter.Models
             }
         }
 
-        // How many recent "connected" events to scan for the requested adapter's SSID.
-        private const int MaxWlanEventsToScan = 50;
-
-        /// <summary>
-        /// Gets the SSID of the Wi-Fi network the given adapter is connected to by reading
-        /// the Windows WLAN AutoConfig event log (most recent connection event for that adapter).
-        ///
-        /// This is more reliable than the WinRT API on Windows 11 which requires
-        /// location permissions to retrieve SSID.
-        /// </summary>
-        private static string? GetConnectedSsid(string adapterGuid)
-        {
-            try
-            {
-                if (!Guid.TryParse(adapterGuid, out Guid wantedGuid))
-                    return null;
-
-                // Query for EventID 8001 (successful connection) in WLAN-AutoConfig log
-                var query = new EventLogQuery(
-                    "Microsoft-Windows-WLAN-AutoConfig/Operational",
-                    PathType.LogName,
-                    "*[System[EventID=8001]]"
-                )
-                {
-                    ReverseDirection = true // Get most recent first
-                };
-
-                using var reader = new EventLogReader(query);
-                for (int i = 0; i < MaxWlanEventsToScan; i++)
-                {
-                    using EventRecord? evt = reader.ReadEvent();
-                    if (evt == null)
-                        break;
-
-                    // The named event fields are locale-independent, unlike the formatted message.
-                    if (TryReadWlanConnection(evt.ToXml(), out Guid interfaceGuid, out string ssid) &&
-                        interfaceGuid == wantedGuid)
-                        return ssid;
-                }
-            }
-            catch (Exception ex)
-            {
-                EventLogger.Error("Failed to read connected SSID", ex);
-            }
-
-            return null;
-        }
+        // SSIDs by adapter, kept while an adapter's addresses are unchanged and read from the event log in one pass
+        // when several are needed (see WlanSsidLookup). Shared, so the adapter list reuses what a network change found.
+        private static readonly WlanSsidLookup SsidLookup = new(WlanSsidLookup.ReadFromEventLog);
 
         /// <summary>
         /// Reads the interface GUID and SSID from the XML of a WLAN AutoConfig "connected" (8001) event.

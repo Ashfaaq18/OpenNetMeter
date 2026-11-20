@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
 using Avalonia.Media;
@@ -49,11 +50,24 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private long currentSessionDownload;
     private long currentSessionUpload;
     // Summary page "Usage From" card.
-    private readonly UsageSinceTracker sinceDateUsage = new();
+    private readonly UsageSinceTracker sinceDateUsage;
     // Mini widget "Usage from" total; deliberately independent of the Summary card's date.
-    private readonly UsageSinceTracker widgetUsage = new();
+    private readonly UsageSinceTracker widgetUsage;
     private bool widgetUsageFollowsToday = true;
+    // The date the widget total was last asked to count from (the tracker's own date follows once the read lands).
+    private DateTime widgetFromDate = DateTime.Today;
     private DateTimeOffset? sinceDate;
+    // The database reads behind the Usage From card, the widget total and the weekly trend run on background tasks and
+    // their results are applied on the UI thread (see StartUsageReads). Each card has a stamp that every request for it
+    // bumps; a result is applied only if its stamp is still the latest, so an older read that finishes late is dropped.
+    private int sinceReadStamp;
+    private int widgetReadStamp;
+    private int weeklyReadStamp;
+    // A widget read was started and its result isn't applied yet. Keeps the midnight rollover from starting another
+    // one on every tick (each would supersede the last, and none might ever land).
+    private bool widgetReadPending;
+    private Task pendingUsageReads = Task.CompletedTask;
+    private readonly Func<string, DateTime, DateTime, Dictionary<int, (long download, long upload)>>? readDailyTotals;
     private long pendingDownloadBytes;
     private long pendingUploadBytes;
     private long latestDownloadBytesPerSecond;
@@ -84,7 +98,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// The UI thread and the clock are injected so tests can run flushes and the fallback by hand.
+    /// The UI thread and the clock are injected so tests can run flushes and the fallback by hand, and the database
+    /// readers so tests never touch the real database.
     /// </summary>
     internal SummaryViewModel(
         INetworkCaptureService networkCaptureService,
@@ -94,11 +109,16 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         IFileRevealService fileRevealService,
         Action<Action> postToUi,
         Func<long> clockMilliseconds,
-        bool startFallbackTimer)
+        bool startFallbackTimer,
+        Func<string, DateTime, DateTime, (long download, long upload)>? readUsageTotals = null,
+        Func<string, DateTime, DateTime, Dictionary<int, (long download, long upload)>>? readDailyTotals = null)
     {
         this.networkCaptureService = networkCaptureService;
         this.postToUi = postToUi;
         this.clockMilliseconds = clockMilliseconds;
+        this.readDailyTotals = readDailyTotals;
+        sinceDateUsage = readUsageTotals == null ? new UsageSinceTracker() : new UsageSinceTracker(readUsageTotals);
+        widgetUsage = readUsageTotals == null ? new UsageSinceTracker() : new UsageSinceTracker(readUsageTotals);
         lastBatchMilliseconds = clockMilliseconds();
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
@@ -203,7 +223,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
                 return;
 
             sinceDate = normalized;
-            RefreshSinceDateBaseline();
+            StartUsageReads(UsageReads.SinceDateCard);
             OnPropertyChanged(nameof(SinceDate));
         }
     }
@@ -236,6 +256,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         widgetUsage.FreezeSession();
         activeAdapterName = string.Empty;
 
+        // A read that began before this was paired with session counters that have just restarted, so its result
+        // would rebase the totals against a session that no longer exists. (The weekly trend doesn't depend on the
+        // session, so an in-flight read of it is still good.)
+        sinceReadStamp++;
+        widgetReadStamp++;
+        widgetReadPending = false;
+
         speedHistory.Clear();
         weeklyTrendTickCounter = 0;
 
@@ -265,9 +292,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(SinceDate));
         }
 
-        RefreshSinceDateBaseline();
-        RefreshWidgetUsageBaseline();
-        RefreshWeeklyTrend();
+        StartUsageReads(UsageReads.All);
     }
 
     /// <summary>
@@ -277,8 +302,8 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public void SetWidgetUsageFrom(DateTime fromDate, bool followToday)
     {
         widgetUsageFollowsToday = followToday;
-        widgetUsage.Rebase(usageAdapterName, followToday ? DateTime.Today : fromDate, currentSessionDownload, currentSessionUpload);
-        NotifyWidgetUsageChanged();
+        widgetFromDate = fromDate.Date;
+        StartUsageReads(UsageReads.Widget);
     }
 
     public void SetActiveAdapter(string adapterName)
@@ -292,9 +317,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         if (recording is { IsRunning: true })
             recording.NoteAdapter(activeAdapterName);
 
-        RefreshSinceDateBaseline();
-        RefreshWidgetUsageBaseline();
-        RefreshWeeklyTrend();
+        StartUsageReads(UsageReads.All);
     }
 
     private void StartRecording()
@@ -437,11 +460,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         currentSessionUpload += secondUploadBytes;
         sinceDateUsage.Advance(currentSessionDownload, currentSessionUpload);
 
-        // A widget following "today" starts over at midnight; a fixed date keeps accumulating.
-        if (widgetUsageFollowsToday && widgetUsage.FromDate != DateTime.Today)
-            RefreshWidgetUsageBaseline();
-        else
-            widgetUsage.Advance(currentSessionDownload, currentSessionUpload);
+        // A widget following "today" starts over at midnight (the new baseline lands when its read finishes); a fixed
+        // date keeps accumulating.
+        if (widgetUsageFollowsToday && widgetUsage.FromDate != DateTime.Today && !widgetReadPending)
+            StartUsageReads(UsageReads.Widget);
+        widgetUsage.Advance(currentSessionDownload, currentSessionUpload);
 
         speedHistory.Append(latestDownloadBytesPerSecond, latestUploadBytesPerSecond);
         ApplyProcessTick(pendingSnapshot);
@@ -459,7 +482,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         // The capture service pushes to the DB every 5s, so re-reading the week this often
         // keeps today's bar close to live without querying on every tick.
         if (++weeklyTrendTickCounter >= WeeklyTrendRefreshTicks)
-            RefreshWeeklyTrend();
+            StartUsageReads(UsageReads.WeeklyTrend);
 
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
         OnPropertyChanged(nameof(CurrentSessionUploadText));
@@ -474,26 +497,146 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>Flush ticks (one per second) between reloads of the weekly trend card.</summary>
     private const int WeeklyTrendRefreshTicks = 15;
 
-    private void RefreshWeeklyTrend()
+    [Flags]
+    private enum UsageReads
     {
-        weeklyTrendTickCounter = 0;
-        WeeklyTrend.Refresh(usageAdapterName);
+        SinceDateCard = 1,
+        Widget = 2,
+        WeeklyTrend = 4,
+        All = SinceDateCard | Widget | WeeklyTrend
     }
 
-    private void RefreshSinceDateBaseline()
+    /// <summary>
+    /// Completes once the results of the latest <see cref="StartUsageReads"/> have been handed to the UI thread
+    /// (immediately when there was nothing to read). Lets tests wait for the background part.
+    /// </summary>
+    internal Task PendingUsageReads => pendingUsageReads;
+
+    /// <summary>
+    /// Starts the database reads behind the chosen cards on background tasks, all at once (each opens its own read-only
+    /// connection), and applies every result in ONE UI-thread post when the last one is in. A rebase pairs the persisted
+    /// totals with the session counters of the same moment, so the counters are captured here, as the reads start, and
+    /// the result is rebased against those; whatever the session counted while the read ran is then added by Advance,
+    /// as on every tick. A result is dropped if a newer request for the same card started after it (see the stamps), or
+    /// if the session restarted meanwhile (ClearOnDisconnect). With no adapter there is nothing to read and the (empty)
+    /// results are applied right here, as they were before the reads moved off the UI thread.
+    /// </summary>
+    private void StartUsageReads(UsageReads which)
     {
-        var fromDate = (sinceDate ?? DateTimeOffset.Now.Date).Date;
-        sinceDateUsage.Rebase(usageAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
+        var adapter = usageAdapterName;
+        var sessionDownload = currentSessionDownload;
+        var sessionUpload = currentSessionUpload;
+        var inline = string.IsNullOrWhiteSpace(adapter);
+        var reads = new List<Task<Action>>(3);
+
+        if (which.HasFlag(UsageReads.SinceDateCard))
+        {
+            var stamp = ++sinceReadStamp;
+            var fromDate = (sinceDate ?? DateTimeOffset.Now.Date).Date;
+            reads.Add(RunRead(inline, () =>
+            {
+                var totals = sinceDateUsage.ReadTotals(adapter, fromDate);
+                return () => ApplySinceDateBaseline(stamp, fromDate, sessionDownload, sessionUpload, totals);
+            }));
+        }
+
+        if (which.HasFlag(UsageReads.Widget))
+        {
+            var stamp = ++widgetReadStamp;
+            var fromDate = widgetUsageFollowsToday ? DateTime.Today : widgetFromDate;
+            widgetReadPending = true;
+            reads.Add(RunRead(inline, () =>
+            {
+                var totals = widgetUsage.ReadTotals(adapter, fromDate);
+                return () => ApplyWidgetBaseline(stamp, fromDate, sessionDownload, sessionUpload, totals);
+            }));
+        }
+
+        if (which.HasFlag(UsageReads.WeeklyTrend))
+        {
+            var stamp = ++weeklyReadStamp;
+            weeklyTrendTickCounter = 0;
+            reads.Add(RunRead(inline, () =>
+            {
+                var data = string.IsNullOrWhiteSpace(adapter) ? null
+                    : readDailyTotals == null ? WeeklyUsageTrendViewModel.Read(adapter)
+                    : WeeklyUsageTrendViewModel.Read(adapter, readDailyTotals);
+                return () => ApplyWeeklyTrend(stamp, data);
+            }));
+        }
+
+        if (inline)
+        {
+            foreach (var read in reads)
+                read.Result();
+            pendingUsageReads = Task.CompletedTask;
+            return;
+        }
+
+        pendingUsageReads = PostUsageReadsAsync(reads);
+    }
+
+    // Runs the read (which returns the action that applies its result) on a background thread, or right here.
+    private static Task<Action> RunRead(bool inline, Func<Action> read) =>
+        inline ? Task.FromResult(read()) : Task.Run(read);
+
+    private async Task PostUsageReadsAsync(List<Task<Action>> reads)
+    {
+        Action[] applies;
+        try
+        {
+            applies = await Task.WhenAll(reads).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // The readers log their own failures, so this isn't expected; keep the midnight rollover from waiting for it.
+            EventLogger.Error("Failed to read usage totals", ex);
+            postToUi(() => widgetReadPending = false);
+            return;
+        }
+
+        postToUi(() =>
+        {
+            if (disposed)
+                return;
+
+            foreach (var apply in applies)
+                apply();
+        });
+    }
+
+    private void ApplySinceDateBaseline(int stamp, DateTime fromDate, long sessionDownload, long sessionUpload, (long download, long upload) totals)
+    {
+        if (stamp != sinceReadStamp)
+            return;
+
+        sinceDateUsage.Rebase(fromDate, sessionDownload, sessionUpload, totals);
+        sinceDateUsage.Advance(currentSessionDownload, currentSessionUpload);
 
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
     }
 
-    private void RefreshWidgetUsageBaseline()
+    private void ApplyWidgetBaseline(int stamp, DateTime fromDate, long sessionDownload, long sessionUpload, (long download, long upload) totals)
     {
-        var fromDate = widgetUsageFollowsToday ? DateTime.Today : widgetUsage.FromDate;
-        widgetUsage.Rebase(usageAdapterName, fromDate, currentSessionDownload, currentSessionUpload);
+        if (stamp != widgetReadStamp)
+            return;
+
+        widgetReadPending = false;
+        widgetUsage.Rebase(fromDate, sessionDownload, sessionUpload, totals);
+        widgetUsage.Advance(currentSessionDownload, currentSessionUpload);
         NotifyWidgetUsageChanged();
+    }
+
+    private void ApplyWeeklyTrend(int stamp, WeeklyTrendData? data)
+    {
+        if (stamp != weeklyReadStamp)
+            return;
+
+        if (data == null)
+            WeeklyTrend.Reset();
+        else
+            WeeklyTrend.Apply(data);
     }
 
     private void NotifyWidgetUsageChanged()
