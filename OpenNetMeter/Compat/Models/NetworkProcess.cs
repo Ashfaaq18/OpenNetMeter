@@ -5,9 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using Microsoft.Diagnostics.Tracing.Parsers;
-using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
-using Microsoft.Diagnostics.Tracing.Session;
 using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
@@ -52,6 +49,15 @@ namespace OpenNetMeter.Models
         private byte[] localIPv4 = DefaultIPv4;
         private byte[] localIPv6 = DefaultIPv6;
 
+        // Serialises the one-second speed tick (which raises the traffic batch) against an adapter switch, so a
+        // tick can never stage the new adapter's traffic into the old adapter's database buffer, or the other way
+        // round. Held while events are raised; subscribers only post to their own threads.
+        private readonly object tickLock = new object();
+
+        // The speed tick's baseline: the session totals at the previous tick. Guarded by tickLock.
+        private long speedBaselineDownload;
+        private long speedBaselineUpload;
+
         //---------- Debounce & Synchronization ------------//
 
         // Timer-based debounce: each network change event resets the timer.
@@ -75,13 +81,50 @@ namespace OpenNetMeter.Models
 
         //---------- ETW Session ------------//
 
-        // ETW kernel session for capturing network packets
-        private TraceEventSession? kernelSession;
+        // ETW kernel session for capturing network packets. It lives from StartNetworkProcess to EndNetworkProcess
+        // and is deliberately kept across adapter switches; it only filters by local IP, which a switch changes.
+        private IKernelCaptureSession? kernelSession;
 
         private const string KernelSessionName = "OpenNetMeter-Kernel";
 
         // Task running the ETW packet capture loop
         public Task? PacketTask;
+
+        // Guards kernelSession, PacketTask and the health-check state below. Not held while waiting for the task.
+        private readonly object captureLock = new object();
+
+        // True from the start of capture until StopKernelSession asks it to stop: a capture task that ends while
+        // this is set ended on its own.
+        private bool captureWanted;
+
+        // Health check (see CheckCaptureHealth). Guarded by captureLock.
+        private const int CaptureRestartCooldownTicks = 5;      // seconds between restart attempts
+        private const int CaptureHealthyTicksToRearmLog = 60;   // healthy seconds before a new failure is logged again
+        private int captureRestartCooldown;
+        private int captureHealthyTicks;
+        private bool captureFailureLogged;
+
+        // Creates the capture session and starts tracing, handing it the packet handler. Tests replace it so no
+        // real ETW session is started.
+        private Func<PacketHandler, IKernelCaptureSession> kernelCaptureFactory =
+            handler => new EtwKernelCaptureSession(KernelSessionName, handler);
+
+        // Where capture, session and database-setup errors are reported (a null exception is a plain error message).
+        // Tests replace it so they don't write to the Windows Event Log.
+        internal Action<string, Exception?> ErrorLogger { get; set; } = (message, ex) =>
+        {
+            if (ex == null)
+                EventLogger.Error(message);
+            else
+                EventLogger.Error(message, ex);
+        };
+
+        /// <summary>
+        /// Asks the owner to hand over, synchronously, everything counted since the last tick (to the UI and to
+        /// <see cref="PushToDBBuffer"/>). Raised while the adapter switches so the old adapter's last partial
+        /// second is not carried over to the new one.
+        /// </summary>
+        internal event Action? TrafficFlushRequested;
 
         //---------- Public State ------------//
 
@@ -112,9 +155,29 @@ namespace OpenNetMeter.Models
         /// </summary>
         public Dictionary<string, MyProcess_Small?> PushToDBBuffer { get; } = new();
 
-        // Held from StartNetworkProcess to EndNetworkProcess so the shared SQLite connection stays open between
-        // flushes instead of being reopened (and its pragmas re-run) every few seconds.
+        // Held from the end of the background database setup to EndNetworkProcess so the shared SQLite connection
+        // stays open between flushes instead of being reopened (and its pragmas re-run) every few seconds. It only
+        // holds that connection: PushBatch is told the adapter per call, so it needs no change when the adapter does.
+        // Null while the setup is still running; pushes then keep the data buffered. Written under sessionDbLock.
         private volatile ApplicationDB? sessionDb;
+
+        // Serialises publishing/releasing sessionDb against the cancellation of the setup that would publish it, so
+        // a stop that races the setup either releases the database or stops it being published; never leaks it.
+        private readonly object sessionDbLock = new object();
+        private CancellationTokenSource? dbSetupCts;
+        private Task? dbSetupTask;
+
+        // A setup attempt that threw is retried by the DB push, at most this often. State below: guarded by sessionDbLock.
+        private const long DbSetupRetryIntervalMs = 30_000;
+        private bool dbSetupFailed;
+        private long dbSetupFailedAtMs;
+        private bool dbSetupFailureLogged;   // logged once per failure streak, like a failing write
+
+        // Milliseconds clock for the retry interval; tests replace it.
+        private Func<long> clockMilliseconds = () => Environment.TickCount64;
+
+        // Opens the database session; tests replace it to hold the setup at a known point.
+        private Func<string, ApplicationDB> createSessionDb = adapter => new ApplicationDB(adapter);
 
         // True while database writes are failing; the error is logged once per failure streak, not every push.
         private bool dbWriteFailing;
@@ -498,7 +561,7 @@ namespace OpenNetMeter.Models
         /// State transitions:
         /// - Disconnected -> Connected: Start monitoring
         /// - Connected -> Disconnected: Stop monitoring  
-        /// - Connected -> Different adapter: Stop then start monitoring
+        /// - Connected -> Different adapter: Switch in place (the ETW session keeps running, see SwitchAdapter)
         /// - Connected -> Same adapter:
         ///   - IP/name changed: Refresh tracked snapshot (no restart)
         ///   - No meaningful change: Ignore transient event
@@ -541,9 +604,7 @@ namespace OpenNetMeter.Models
                     // Was connected to different adapter (e.g., switched Wi-Fi networks)
                     // Compare by ID, not name, because SSID retrieval can race with event log
                     Debug.WriteLine("Ash: Network adapter changed");
-                    EndNetworkProcess();
-                    ApplySnapshot(snapshot);
-                    StartNetworkProcess();
+                    SwitchAdapter(snapshot);
                 }
                 else
                 {
@@ -580,46 +641,34 @@ namespace OpenNetMeter.Models
         /// </summary>
         private void ApplySnapshot(NetworkSnapshot snapshot)
         {
+            // One critical section: the packet filter and the adapter's identity change together.
             lock (stateLock)
             {
                 localIPv4 = snapshot.IPv4;
                 localIPv6 = snapshot.IPv6;
+                currentAdapterId = snapshot.AdapterId;
+                AdapterName = snapshot.AdapterName;
             }
-            currentAdapterId = snapshot.AdapterId;
-            AdapterName = snapshot.AdapterName;
         }
 
         //---------- Start/Stop Network Monitoring ------------//
 
         /// <summary>
         /// Starts all network monitoring components:
-        /// - Database table setup
         /// - ETW packet capture
         /// - Speed monitoring periodic task
         /// - Database push periodic task
+        /// - Database setup, in the background
+        /// Capture comes first and nothing waits for the database: until its session exists a push returns early and
+        /// the traffic stays buffered.
         /// </summary>
         public void StartNetworkProcess()
         {
-            // Ensure database table exists for this adapter. The instance is kept for the whole session (it is
-            // disposed in EndNetworkProcess) so the connection it holds stays open between flushes.
-            sessionDb?.Dispose();
-            var db = new ApplicationDB(AdapterName);
-            sessionDb = db;
-            if (db.CreateTable() < 0)
-            {
-                EventLogger.Error("Error: Create table");
-            }
-            else
-            {
-                db.InsertUniqueRow_AdapterTable(AdapterName);
-                db.UpdateDatesInDB();
-            }
-
-            TraceEventSession.GetActiveSession(KernelSessionName)?.Stop();
             // Start packet capture and periodic tasks
             CaptureNetworkPackets();
             StartSpeedMonitoring();
             StartDbPush();
+            StartDatabaseSetup(AdapterName);
 
             // Update connection status (triggers UI update via PropertyChanged)
             IsNetworkOnline = AdapterName;
@@ -627,7 +676,7 @@ namespace OpenNetMeter.Models
 
         /// <summary>
         /// Stops all network monitoring components and resets state.
-        /// Called on disconnect or before switching to a different adapter.
+        /// Called on disconnect and on exit; an adapter switch uses <see cref="SwitchAdapter"/> instead.
         /// </summary>
         public void EndNetworkProcess()
         {
@@ -637,6 +686,16 @@ namespace OpenNetMeter.Models
             // Stop periodic tasks
             StopPeriodicWork(ref networkSpeedWork, "Network speed");
             StopPeriodicWork(ref dbPushWork, "DB push");
+
+            // Nothing counts or ticks any more: hand over the last partial second (counted since the final tick) to
+            // the UI and the database buffer, under the current adapter, so the final flush below writes it. It runs
+            // after the stops on purpose: stopping the speed work waits for an in-flight tick, and that tick needs
+            // tickLock, so this must not hold it earlier; and the stopped session can't add anything behind it.
+            lock (tickLock)
+                RequestTrafficFlush();
+
+            // From here no setup may publish a session; one that already did is flushed to and released below.
+            CancelDatabaseSetup();
 
             FlushPendingDbWrites();
 
@@ -649,10 +708,8 @@ namespace OpenNetMeter.Models
             lock (MyProcessesBuffer) MyProcessesBuffer.Clear();
 
             // Reset speed counters
-            CurrentSessionDownloadData = 0;
-            CurrentSessionUploadData = 0;
-            UploadSpeed = 0;
-            DownloadSpeed = 0;
+            lock (tickLock)
+                ResetSessionCounters();
 
             // Reset adapter tracking
             currentAdapterId = "";
@@ -660,15 +717,101 @@ namespace OpenNetMeter.Models
         }
 
         /// <summary>
+        /// Moves monitoring to another adapter without stopping capture: the ETW session, the periodic tasks and
+        /// the database session all keep running. The session only filters by local IP, so the switch is a change
+        /// of that filter plus a clean hand-over of what the old adapter counted. Runs under networkChangeLock.
+        ///
+        /// Everything happens under tickLock, so the speed tick can't run in between:
+        /// (a) the old adapter's tail (counted since the last tick) is flushed to the UI and staged for the
+        ///     database, and everything staged is taken out together with the old adapter's name;
+        /// (b) the new snapshot (local IPs, adapter id, name) is applied atomically;
+        /// (c) the session counters and the speed tick's baseline restart at zero, so the first tick afterwards
+        ///     doesn't see the old totals and report a negative speed;
+        /// (d) the status goes "Disconnected" then to the new name, so the UI clears the old adapter's session
+        ///     and rebases on the new one exactly as it did when a switch restarted capture.
+        /// Afterwards, outside tickLock, (e) the tail is written under the OLD adapter's name and the new adapter's
+        /// row is made sure of. A packet counted between (a) and (b) is the only thing that can end up on the wrong
+        /// adapter, and only by the few microseconds that gap lasts.
+        /// </summary>
+        private void SwitchAdapter(NetworkSnapshot snapshot)
+        {
+            string oldAdapter;
+            List<(string Name, long Received, long Sent)> tail;
+
+            lock (tickLock)
+            {
+                // (a)
+                RequestTrafficFlush();
+                (oldAdapter, tail) = TakePending();
+
+                // (b)
+                ApplySnapshot(snapshot);
+
+                // (c)
+                ResetSessionCounters();
+
+                // (d)
+                IsNetworkOnline = "Disconnected";
+                IsNetworkOnline = AdapterName;
+            }
+
+            // (e)
+            WriteSwitchTail(oldAdapter, tail);
+            EnsureAdapterRow(snapshot.AdapterName);
+        }
+
+        /// <summary>
+        /// Has the owner hand over what was counted since the last tick (see <see cref="TrafficFlushRequested"/>).
+        /// A subscriber that throws must not derail the switch or the stop that asked: the flush stages the traffic
+        /// for the database before it raises anything, so that part has happened by then.
+        /// </summary>
+        private void RequestTrafficFlush()
+        {
+            try
+            {
+                TrafficFlushRequested?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger("Failed to hand over the traffic counted since the last tick", ex);
+            }
+        }
+
+        /// <summary>
+        /// Zeroes the session totals and speeds and the speed tick's baseline. Caller holds tickLock.
+        /// </summary>
+        private void ResetSessionCounters()
+        {
+            Interlocked.Exchange(ref CurrentSessionDownloadData, 0);
+            Interlocked.Exchange(ref CurrentSessionUploadData, 0);
+            speedBaselineDownload = 0;
+            speedBaselineUpload = 0;
+
+            // The backing field, not the property: assigning DownloadSpeed announces a tick.
+            downloadSpeed = 0;
+            UploadSpeed = 0;
+        }
+
+        /// <summary>
         /// Stops the ETW kernel session and waits for the capture task to complete.
         /// </summary>
         private void StopKernelSession()
         {
-            // Disposing the session causes Source.Process() to return
-            kernelSession?.Dispose();
-            kernelSession = null;
+            IKernelCaptureSession? session;
+            Task? task;
 
-            var task = PacketTask;
+            lock (captureLock)
+            {
+                // Under the lock so the health check can't restart the session that is being stopped.
+                captureWanted = false;
+                session = kernelSession;
+                kernelSession = null;
+                task = PacketTask;
+            }
+
+            // Disposing the session causes Source.Process() to return
+            session?.Dispose();
+
             if (task != null)
             {
                 try
@@ -677,7 +820,7 @@ namespace OpenNetMeter.Models
                 }
                 catch (AggregateException ex)
                 {
-                    EventLogger.Error("Packet capture stop error", ex);
+                    ErrorLogger("Packet capture stop error", ex);
                 }
                 finally
                 {
@@ -686,7 +829,8 @@ namespace OpenNetMeter.Models
                     else
                         task.ContinueWith(t => t.Dispose(), TaskScheduler.Default);
 
-                    PacketTask = null;
+                    lock (captureLock)
+                        PacketTask = null;
                 }
             }
         }
@@ -710,19 +854,170 @@ namespace OpenNetMeter.Models
             }
         }
 
+        /// <summary>
+        /// Creates the tables, the adapter row and today's rows and opens the session connection on a worker thread,
+        /// so starting capture doesn't wait for SQLite. The finished session is published to <see cref="sessionDb"/>
+        /// only if the setup wasn't cancelled meanwhile (see <see cref="CancelDatabaseSetup"/>). A setup that throws
+        /// is retried by <see cref="PushPendingToDb"/> (<paramref name="retry"/>), at most every
+        /// <see cref="DbSetupRetryIntervalMs"/>, for as long as the session lasts.
+        /// </summary>
+        private void StartDatabaseSetup(string adapter, bool retry = false)
+        {
+            CancellationTokenSource cts;
+            ApplicationDB? leftover;
+
+            lock (sessionDbLock)
+            {
+                // Checked under the same lock that starts the attempt, so a stop (which clears dbSetupCts under it)
+                // can never be followed by a retry that nobody would cancel.
+                if (retry && (!dbSetupFailed || dbSetupCts == null ||
+                              clockMilliseconds() - dbSetupFailedAtMs < DbSetupRetryIntervalMs))
+                    return;
+
+                // A start without a stop in between must not leave the earlier session behind.
+                dbSetupCts?.Cancel();
+                cts = new CancellationTokenSource();
+                dbSetupCts = cts;
+                leftover = sessionDb;
+                sessionDb = null;
+                dbSetupFailed = false;
+                if (!retry)
+                    dbSetupFailureLogged = false;
+            }
+
+            leftover?.Dispose();
+
+            var token = cts.Token;
+            dbSetupTask = Task.Run(() => SetUpDatabase(adapter, token));
+        }
+
+        private void SetUpDatabase(string adapter, CancellationToken token)
+        {
+            ApplicationDB? db = null;
+
+            try
+            {
+                if (token.IsCancellationRequested)
+                    return;
+
+                // Ensure database table exists for this adapter. The instance is kept for the whole session (it is
+                // disposed in EndNetworkProcess) so the connection it holds stays open between flushes.
+                db = createSessionDb(adapter);
+                if (db.CreateTable() < 0)
+                {
+                    ErrorLogger("Error: Create table", null);
+                }
+                else
+                {
+                    db.InsertUniqueRow_AdapterTable(adapter);
+                    db.UpdateDatesInDB();
+                }
+
+                lock (sessionDbLock)
+                {
+                    // Stopped (or restarted) while this ran: nobody will release the session, so don't publish it.
+                    // The finally below disposes it.
+                    if (token.IsCancellationRequested)
+                        return;
+
+                    sessionDb = db;
+                    db = null;
+                    dbSetupFailed = false;
+                    dbSetupFailureLogged = false;
+                }
+
+                // The adapter may have switched while the setup ran; the switch found no session to prepare.
+                var current = AdapterName;
+                if (!string.Equals(current, adapter, StringComparison.Ordinal))
+                    EnsureAdapterRow(current);
+            }
+            catch (Exception ex)
+            {
+                bool log;
+                lock (sessionDbLock)
+                {
+                    // A cancelled attempt (stopped, or replaced by a newer one) has nothing left to retry.
+                    if (token.IsCancellationRequested)
+                        return;
+
+                    // Pushes keep the data buffered or queued until a retry gets a session.
+                    dbSetupFailed = true;
+                    dbSetupFailedAtMs = clockMilliseconds();
+                    log = !dbSetupFailureLogged;
+                    dbSetupFailureLogged = true;
+                }
+
+                if (log)
+                    ErrorLogger("Database setup error; usage stays buffered and the setup is retried every 30 seconds", ex);
+            }
+            finally
+            {
+                db?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Stops a running database setup (or a pending retry) from publishing its session. A session published
+        /// before this call is not touched; <see cref="ReleaseSessionDb"/> disposes it. Both take sessionDbLock, so
+        /// a setup that races a stop either published first (and is released) or finds itself cancelled (and
+        /// disposes its own session).
+        /// </summary>
+        private void CancelDatabaseSetup()
+        {
+            lock (sessionDbLock)
+            {
+                dbSetupCts?.Cancel();
+                dbSetupCts = null;
+                dbSetupFailed = false;
+            }
+        }
+
         private void ReleaseSessionDb()
         {
-            var db = sessionDb;
-            sessionDb = null;
+            ApplicationDB? db;
+            lock (sessionDbLock)
+            {
+                db = sessionDb;
+                sessionDb = null;
+            }
+
             db?.Dispose();
+        }
+
+        /// <summary>Makes sure the adapter has its row (History lists adapters from it) and today's Date row exists.</summary>
+        private void EnsureAdapterRow(string adapter)
+        {
+            var db = sessionDb;
+            if (db == null)
+                return;
+
+            try
+            {
+                db.InsertUniqueRow_AdapterTable(adapter);
+                db.UpdateDatesInDB();
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger("Failed to add the adapter to the database", ex);
+            }
         }
 
         private void FlushPendingDbWrites()
         {
-            if (sessionDb == null || string.IsNullOrWhiteSpace(AdapterName))
+            if (string.IsNullOrWhiteSpace(AdapterName))
             {
                 lock (PushToDBBuffer)
                     PushToDBBuffer.Clear();
+                return;
+            }
+
+            if (sessionDb == null)
+            {
+                // Stopped before the database setup finished: keep what was counted, with its adapter, for the next
+                // session's first push instead of dropping it.
+                var (adapter, rows) = TakePending();
+                if (rows.Count > 0)
+                    QueueFailedBatch(adapter, rows);
                 return;
             }
 
@@ -730,17 +1025,39 @@ namespace OpenNetMeter.Models
         }
 
         /// <summary>
+        /// Writes the old adapter's tail (see <see cref="SwitchAdapter"/>) under that adapter's name. Without a
+        /// database session yet it is queued with its adapter, like a failed write, for the first push.
+        /// </summary>
+        private void WriteSwitchTail(string adapter, List<(string Name, long Received, long Sent)> rows)
+        {
+            if (rows.Count == 0)
+                return;
+
+            var db = sessionDb;
+            if (db == null)
+                QueueFailedBatch(adapter, rows);
+            else
+                TryWriteBatch(db, adapter, rows);
+        }
+
+        /// <summary>
         /// Writes usage to the database: first the batches that failed earlier, each under the adapter it was observed
-        /// on, then everything staged in <see cref="PushToDBBuffer"/> under the current adapter. Each batch is one
-        /// transaction. The buffer is copied out and cleared under its lock and written outside it, so a slow write
-        /// never delays the per-second staging of traffic. A batch that fails is queued for the next push.
-        /// With no database session (between sessions) nothing is written and the queue simply waits.
+        /// on, then everything staged in <see cref="PushToDBBuffer"/> under the adapter that was current when it was
+        /// taken. Each batch is one transaction. The buffer is copied out and cleared under its lock and written
+        /// outside it, so a slow write never delays the per-second staging of traffic. A batch that fails is queued
+        /// for the next push.
+        /// With no database session (between sessions, or while the setup still runs) nothing is written, the
+        /// staged traffic stays buffered and the queue simply waits.
         /// </summary>
         private void PushPendingToDb()
         {
             var db = sessionDb;
             if (db == null)
+            {
+                // No session: the traffic stays buffered. If the setup failed, this is also where it is retried.
+                StartDatabaseSetup(AdapterName, retry: true);
                 return;
+            }
 
             bool attempted = false;
             bool failed = false;
@@ -751,8 +1068,7 @@ namespace OpenNetMeter.Models
                 failed |= !TryWriteBatch(db, adapter, rows);
             }
 
-            var currentAdapter = AdapterName;
-            var batch = TakePending();
+            var (currentAdapter, batch) = TakePending();
             if (batch.Count > 0)
             {
                 attempted = true;
@@ -763,7 +1079,12 @@ namespace OpenNetMeter.Models
                 dbWriteFailing = false;
         }
 
-        private List<(string Name, long Received, long Sent)> TakePending()
+        /// <summary>
+        /// Copies <see cref="PushToDBBuffer"/> out and clears it, together with the adapter it belongs to. The name is
+        /// read under the same lock: the buffer is only filled under tickLock and an adapter switch takes it out
+        /// before changing the name, so whatever is in the buffer was counted on the adapter named here.
+        /// </summary>
+        private (string Adapter, List<(string Name, long Received, long Sent)> Rows) TakePending()
         {
             lock (PushToDBBuffer)
             {
@@ -775,7 +1096,7 @@ namespace OpenNetMeter.Models
                 }
 
                 PushToDBBuffer.Clear();
-                return batch;
+                return (AdapterName, batch);
             }
         }
 
@@ -847,40 +1168,44 @@ namespace OpenNetMeter.Models
 
         /// <summary>
         /// Starts the periodic task that calculates current network speed.
-        /// Runs every second and computes speed as delta from previous totals.
+        /// Runs every second and computes speed as delta from previous totals. Every tick also raises the traffic
+        /// batch (the DownloadSpeed assignment is the announcement), which makes this the app's one-second clock.
         /// </summary>
         private void StartSpeedMonitoring()
         {
-            long tempDownload = 0;
-            long tempUpload = 0;
-
             networkSpeedWork = new PeriodicWork("Network speed", TimeSpan.FromSeconds(1));
             networkSpeedWork.Start(_ =>
+            {
+                SpeedTick();
+                return Task.CompletedTask;
+            });
+        }
+
+        private void SpeedTick()
+        {
+            // Under tickLock so an adapter switch can't reset the counters and baseline halfway through a tick.
+            lock (tickLock)
             {
                 // Read current totals (atomic reads)
                 long currentDown = Interlocked.Read(ref CurrentSessionDownloadData);
                 long currentUp = Interlocked.Read(ref CurrentSessionUploadData);
 
-                // Calculate speed based on user's preferred format
-                if (SettingsManager.Current.NetworkSpeedFormat == 0)
-                {
-                    // Bits per second
-                    DownloadSpeed = (currentDown - tempDownload) * 8;
-                    UploadSpeed = (currentUp - tempUpload) * 8;
-                }
-                else
-                {
-                    // Bytes per second
-                    DownloadSpeed = currentDown - tempDownload;
-                    UploadSpeed = currentUp - tempUpload;
-                }
+                long downloadDelta = currentDown - speedBaselineDownload;
+                long uploadDelta = currentUp - speedBaselineUpload;
 
-                // Store for next iteration's delta calculation
-                tempDownload = currentDown;
-                tempUpload = currentUp;
+                // Store for next iteration's delta calculation. Before the tick is announced, so a subscriber that
+                // throws can't make the next tick count this second again.
+                speedBaselineDownload = currentDown;
+                speedBaselineUpload = currentUp;
 
-                return Task.CompletedTask;
-            });
+                // Calculate speed based on user's preferred format: bits per second, or bytes per second
+                long unit = SettingsManager.Current.NetworkSpeedFormat == 0 ? 8 : 1;
+                UploadSpeed = uploadDelta * unit;
+                DownloadSpeed = downloadDelta * unit;
+            }
+
+            // After the batch has gone out, so a (rare, slow) session restart never delays it.
+            CheckCaptureHealth();
         }
 
         /// <summary>
@@ -915,41 +1240,121 @@ namespace OpenNetMeter.Models
         /// </summary>
         private void CaptureNetworkPackets()
         {
-            PacketTask = Task.Run(() =>
+            lock (captureLock)
             {
-                if (kernelSession != null) return;
+                captureWanted = true;
+                captureRestartCooldown = 0;
+                captureHealthyTicks = 0;
+                captureFailureLogged = false;
+                StartKernelSessionLocked();
+            }
+        }
+
+        /// <summary>
+        /// Creates the kernel session on the calling thread and starts the task that consumes it. The session is
+        /// created and enabled synchronously, so when this returns tracing has started and kernelSession is set;
+        /// the task only runs <see cref="IKernelCaptureSession.Process"/>. Previously the session was created inside
+        /// the task, so a stop that came right after the start could miss it and leave the session running.
+        /// Caller holds captureLock.
+        /// </summary>
+        private void StartKernelSessionLocked()
+        {
+            if (kernelSession != null)
+                return;
+
+            IKernelCaptureSession session;
+            try
+            {
+                // Create kernel trace session (requires admin)
+                session = kernelCaptureFactory(ProcessPacket);
+            }
+            catch (Exception ex)
+            {
+                // Logged once per failure streak; the health check keeps retrying quietly.
+                if (!captureFailureLogged)
+                {
+                    captureFailureLogged = true;
+                    ErrorLogger("Packet capture start error", ex);
+                }
+
+                return;
+            }
+
+            kernelSession = session;
+            PacketTask = Task.Run(() => RunCapture(session));
+        }
+
+        private void RunCapture(IKernelCaptureSession session)
+        {
+            try
+            {
+                // Blocks until session is disposed
+                session.Process();
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger("Packet capture loop error", ex);
+            }
+        }
+
+        /// <summary>
+        /// Runs every tick. Switching adapters no longer restarts capture, so nothing else would notice a capture
+        /// task that ended on its own (the session was stopped from outside, or the loop failed): if the capture
+        /// task is gone while capture is wanted, log it once and restart the kernel session. Restarts are at most
+        /// <see cref="CaptureRestartCooldownTicks"/> seconds apart and a failure streak is logged only once.
+        /// </summary>
+        private void CheckCaptureHealth()
+        {
+            lock (captureLock)
+            {
+                if (!captureWanted)
+                    return;
+
+                if (captureRestartCooldown > 0)
+                    captureRestartCooldown--;
+
+                var task = PacketTask;
+                if (task is { IsCompleted: false })
+                {
+                    // Running. Once it has for a while the streak is over, so a later failure is logged again.
+                    if (++captureHealthyTicks >= CaptureHealthyTicksToRearmLog)
+                    {
+                        captureHealthyTicks = 0;
+                        captureFailureLogged = false;
+                    }
+
+                    return;
+                }
+
+                captureHealthyTicks = 0;
+                if (captureRestartCooldown > 0)
+                    return;
+
+                captureRestartCooldown = CaptureRestartCooldownTicks;
+
+                if (!captureFailureLogged)
+                {
+                    captureFailureLogged = true;
+                    ErrorLogger("Packet capture stopped unexpectedly; restarting the kernel session", null);
+                }
 
                 try
                 {
-                    // Create kernel trace session (requires admin)
-                    kernelSession = new TraceEventSession(KernelSessionName);
-                    kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
-                    StartupTiming.LogEtwEnabled();
-
-                    // Subscribe to all TCP/UDP send/receive events
-                    // All events funnel through ProcessPacket for unified handling
-                    var kernel = kernelSession.Source.Kernel;
-
-                    // Receive events (download)
-                    kernel.TcpIpRecv += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: true);
-                    kernel.TcpIpRecvIPV6 += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: true);
-                    kernel.UdpIpRecv += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: true);
-                    kernel.UdpIpRecvIPV6 += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: true);
-
-                    // Send events (upload)
-                    kernel.TcpIpSend += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: false);
-                    kernel.TcpIpSendIPV6 += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: false);
-                    kernel.UdpIpSend += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: false);
-                    kernel.UdpIpSendIPV6 += data => ProcessPacket(data.saddr, data.daddr, data.size, data.ProcessName, isRecv: false);
-
-                    // Blocks until session is disposed
-                    kernelSession.Source.Process();
+                    // The dead session still owns the session name; let go of it before creating the next one.
+                    kernelSession?.Dispose();
                 }
                 catch (Exception ex)
                 {
-                    EventLogger.Error("Packet capture loop error", ex);
+                    Debug.WriteLine($"Disposing the stopped kernel session failed: {ex.Message}");
                 }
-            });
+
+                kernelSession = null;
+                if (task is { IsCompleted: true })
+                    task.Dispose();
+                PacketTask = null;
+
+                StartKernelSessionLocked();
+            }
         }
 
         /// <summary>
@@ -1144,14 +1549,16 @@ namespace OpenNetMeter.Models
             debounceTimer?.Dispose();
             debounceTimer = null;
 
-            // Stop monitoring if active
-            if (IsNetworkOnline != "Disconnected")
+            // Stop monitoring if active. An adapter switch reports "Disconnected" for a moment while capture keeps
+            // running, so the capture flag counts too.
+            if (IsNetworkOnline != "Disconnected" || captureWanted)
                 EndNetworkProcess();
 
             // Flush any remaining buffered data to database
             FlushPendingDbWrites();
 
             // Normally released by EndNetworkProcess; this covers a start that failed before the network came online.
+            CancelDatabaseSetup();
             ReleaseSessionDb();
         }
     }

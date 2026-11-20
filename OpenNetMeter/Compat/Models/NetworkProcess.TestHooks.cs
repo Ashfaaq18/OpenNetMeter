@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace OpenNetMeter.Models
 {
@@ -49,6 +51,48 @@ namespace OpenNetMeter.Models
         internal void TestInvokeSendProcess(IPAddress src, IPAddress dest, int size, string name)
         {
             ProcessPacket(src, dest, size, name, isRecv: false);
+        }
+
+        // Makes the process track an adapter the way HandleNetworkChange does after finding one.
+        internal void TestApplySnapshot(string adapterName, string adapterId, byte[] ipv4, byte[] ipv6)
+        {
+            ApplySnapshot(new NetworkSnapshot(adapterName, adapterId, ipv4, ipv6));
+        }
+
+        // The "different adapter" branch of HandleNetworkChange, with the snapshot supplied instead of read from the system.
+        internal void TestSwitchAdapter(string adapterName, string adapterId, byte[] ipv4, byte[] ipv6)
+        {
+            SwitchAdapter(new NetworkSnapshot(adapterName, adapterId, ipv4, ipv6));
+        }
+
+        // One run of the one-second speed tick, including the capture health check.
+        internal void TestSpeedTick() => SpeedTick();
+
+        internal void TestCheckCaptureHealth() => CheckCaptureHealth();
+
+        // Starts capture alone, without the periodic tasks (and so without their background health checks).
+        internal void TestStartCapture() => CaptureNetworkPackets();
+
+        // Replaces the real ETW session with a fake one, so no ETW session is started.
+        internal void TestUseKernelCapture(Func<PacketHandler, IKernelCaptureSession> factory)
+        {
+            kernelCaptureFactory = factory;
+        }
+
+        internal object? TestKernelSession => kernelSession;
+
+        // Replaces how the session database is opened, so a test can hold the background setup at a known point.
+        internal void TestUseDatabaseFactory(Func<string, ApplicationDB> factory)
+        {
+            createSessionDb = factory;
+        }
+
+        internal Task? TestDatabaseSetupTask => dbSetupTask;
+
+        // Replaces the millisecond clock the database-setup retry interval is measured with.
+        internal void TestUseClock(Func<long> clock)
+        {
+            clockMilliseconds = clock;
         }
     }
 }

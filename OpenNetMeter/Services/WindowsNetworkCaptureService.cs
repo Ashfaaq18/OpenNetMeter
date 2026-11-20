@@ -19,7 +19,7 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
     private volatile NetworkSnapshotChangedEventArgs? currentSnapshot;
 
     public event EventHandler<NetworkSnapshotChangedEventArgs>? NetworkChanged;
-    public event EventHandler<NetworkTrafficEventArgs>? TrafficObserved;
+    public event EventHandler<NetworkTrafficBatchEventArgs>? TrafficBatchObserved;
 
     public NetworkSnapshotChangedEventArgs? CurrentSnapshot => currentSnapshot;
 
@@ -31,6 +31,7 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
     {
         this.networkProcess = networkProcess;
         this.networkProcess.PropertyChanged += NetworkProcess_PropertyChanged;
+        this.networkProcess.TrafficFlushRequested += NetworkProcess_TrafficFlushRequested;
     }
 
     public void Start()
@@ -43,6 +44,7 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 
             networkProcess = new NetworkProcess();
             networkProcess.PropertyChanged += NetworkProcess_PropertyChanged;
+            networkProcess.TrafficFlushRequested += NetworkProcess_TrafficFlushRequested;
             networkProcess.Initialize();
         }
     }
@@ -55,7 +57,9 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
                 return;
 
             networkProcess.PropertyChanged -= NetworkProcess_PropertyChanged;
+            // Still subscribed while it disposes: stopping hands over the last partial second through this event.
             networkProcess.Dispose();
+            networkProcess.TrafficFlushRequested -= NetworkProcess_TrafficFlushRequested;
             networkProcess = null;
         }
     }
@@ -108,87 +112,108 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
                 NetworkChanged?.Invoke(this, snapshot);
                 break;
             case nameof(NetworkProcess.DownloadSpeed):
-                EmitProcessTraffic();
+                // The speed tick: always one batch, empty or not, because subscribers clock on it.
+                EmitProcessTraffic(raiseWhenEmpty: true);
                 break;
         }
     }
 
-    private void EmitProcessTraffic()
+    // An adapter switch: hand over what the old adapter counted since the last tick. It isn't a tick, so an empty
+    // batch would only add a spurious sample for subscribers that clock on batches.
+    private void NetworkProcess_TrafficFlushRequested()
     {
-        if (networkProcess == null)
+        EmitProcessTraffic(raiseWhenEmpty: false);
+    }
+
+    private void EmitProcessTraffic(bool raiseWhenEmpty)
+    {
+        var process = networkProcess;
+        if (process == null)
             return;
 
-        // Snapshot both buffers while their locks are held, flip the active
+        // Build the batch and clear both buffers while their locks are held, flipping the active
         // write buffer, then release the locks before doing any expensive work
         // (event dispatch, DB staging). Keeping the locks only for the copy
         // and clear prevents the ETW capture thread from being blocked by slow
         // UI or DB operations during sustained high-throughput traffic.
-        Dictionary<string, MyProcess_Small?> mainSnapshot;
-        Dictionary<string, MyProcess_Small?> bufferSnapshot;
+        List<ProcessTraffic> batch;
 
-        lock (networkProcess.MyProcesses)
-        lock (networkProcess.MyProcessesBuffer)
+        lock (process.MyProcesses)
+        lock (process.MyProcessesBuffer)
         {
-            networkProcess.IsBufferTime = !networkProcess.IsBufferTime;
+            process.IsBufferTime = !process.IsBufferTime;
 
-            mainSnapshot = new Dictionary<string, MyProcess_Small?>(networkProcess.MyProcesses, StringComparer.OrdinalIgnoreCase);
-            bufferSnapshot = new Dictionary<string, MyProcess_Small?>(networkProcess.MyProcessesBuffer, StringComparer.OrdinalIgnoreCase);
-
-            networkProcess.MyProcesses.Clear();
-            networkProcess.MyProcessesBuffer.Clear();
+            try
+            {
+                batch = BuildBatch(process.MyProcesses, process.MyProcessesBuffer);
+            }
+            finally
+            {
+                // Whatever happens above, never leave a tick's traffic in the buffers: it would be counted again.
+                process.MyProcesses.Clear();
+                process.MyProcessesBuffer.Clear();
+            }
         }
 
-        // Staged before the events: the whole tick is merged under one short lock, and a throwing subscriber
-        // then can't keep the tick's traffic out of the database.
-        StageForDatabase(mainSnapshot, bufferSnapshot);
+        if (batch.Count == 0 && !raiseWhenEmpty)
+            return;
 
-        EmitSnapshot(mainSnapshot);
-        EmitSnapshot(bufferSnapshot);
+        // Staged before the event: the whole tick is merged under one short lock, and a throwing subscriber
+        // then can't keep the tick's traffic out of the database.
+        StageForDatabase(process, batch);
+
+        TrafficBatchObserved?.Invoke(this, new NetworkTrafficBatchEventArgs(batch));
     }
 
-    private void EmitSnapshot(Dictionary<string, MyProcess_Small?> snapshot)
+    /// <summary>
+    /// One entry per process that moved data, summed across the buffers. Names that differ only by case are one
+    /// process (the UI keys them case-insensitively), so they are added together rather than copied into a
+    /// case-insensitive dictionary, which would throw on the duplicate.
+    /// </summary>
+    internal static List<ProcessTraffic> BuildBatch(params Dictionary<string, MyProcess_Small?>[] sources)
     {
-        foreach (var app in snapshot)
+        var merged = new Dictionary<string, (long Received, long Sent)>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var source in sources)
         {
-            if (app.Value == null)
-                continue;
+            foreach (var (name, usage) in source)
+            {
+                if (usage == null || (usage.CurrentDataRecv <= 0 && usage.CurrentDataSend <= 0))
+                    continue;
 
-            if (app.Value.CurrentDataRecv > 0)
-                TrafficObserved?.Invoke(this, new NetworkTrafficEventArgs(app.Key, app.Value.CurrentDataRecv, isReceive: true));
-
-            if (app.Value.CurrentDataSend > 0)
-                TrafficObserved?.Invoke(this, new NetworkTrafficEventArgs(app.Key, app.Value.CurrentDataSend, isReceive: false));
+                merged.TryGetValue(name, out var total);
+                merged[name] = (total.Received + usage.CurrentDataRecv, total.Sent + usage.CurrentDataSend);
+            }
         }
+
+        var batch = new List<ProcessTraffic>(merged.Count);
+        foreach (var (name, total) in merged)
+            batch.Add(new ProcessTraffic(name, total.Received, total.Sent));
+
+        return batch;
     }
 
     /// <summary>
     /// Adds a tick's per-process deltas to the buffer the next database push writes. One lock acquisition for the
     /// whole tick rather than one per process, so a push copying the buffer out waits for at most one short merge.
     /// </summary>
-    private void StageForDatabase(params Dictionary<string, MyProcess_Small?>[] snapshots)
+    private static void StageForDatabase(NetworkProcess process, IReadOnlyList<ProcessTraffic> batch)
     {
-        var process = networkProcess;
-        if (process == null)
+        if (batch.Count == 0)
             return;
 
         lock (process.PushToDBBuffer)
         {
-            foreach (var snapshot in snapshots)
+            foreach (var traffic in batch)
             {
-                foreach (var (processName, usage) in snapshot)
+                if (!process.PushToDBBuffer.TryGetValue(traffic.Name, out var pending) || pending == null)
                 {
-                    if (usage == null || (usage.CurrentDataRecv <= 0 && usage.CurrentDataSend <= 0))
-                        continue;
-
-                    if (!process.PushToDBBuffer.TryGetValue(processName, out var pending) || pending == null)
-                    {
-                        pending = new MyProcess_Small(processName, 0, 0);
-                        process.PushToDBBuffer[processName] = pending;
-                    }
-
-                    pending.CurrentDataRecv += usage.CurrentDataRecv;
-                    pending.CurrentDataSend += usage.CurrentDataSend;
+                    pending = new MyProcess_Small(traffic.Name, 0, 0);
+                    process.PushToDBBuffer[traffic.Name] = pending;
                 }
+
+                pending.CurrentDataRecv += traffic.Received;
+                pending.CurrentDataSend += traffic.Sent;
             }
         }
     }
