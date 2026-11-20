@@ -30,6 +30,14 @@ internal sealed class Program
     {
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // Software rendering skips loading ANGLE/Direct3D. Measured on Windows 11: same startup and CPU (also with
+            // the speed chart animating), widget transparency unchanged, and ~90 MB (widget only) to ~190 MB (main
+            // window open) less memory than the default GPU path.
+            .With(new Win32PlatformOptions
+            {
+                RenderingMode = new[] { Win32RenderingMode.Software },
+                CompositionMode = new[] { Win32CompositionMode.RedirectionSurface },
+            })
             .LogToTrace();
     }
 }
