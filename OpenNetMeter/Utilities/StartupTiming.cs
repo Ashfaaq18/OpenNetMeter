@@ -14,6 +14,7 @@ internal static class StartupTiming
     private static int etwEnabledLogged;
     private static int widgetShownLogged;
     private static int mainWindowBuiltLogged;
+    private static int mainWindowPreWarmedLogged;
     private static int captureStartedLogged;
 
     /// <summary>The background capture start has begun, before any window or view model exists.</summary>
@@ -30,6 +31,10 @@ internal static class StartupTiming
     /// <summary>The deferred step that builds the main window, view bindings and tray icon has finished.</summary>
     public static void LogMainWindowBuilt() =>
         LogOnce(ref mainWindowBuiltLogged, "Startup: main window built");
+
+    /// <summary>The invisible show-and-hide of the main window (see MainWindowPreWarm) has finished.</summary>
+    public static void LogMainWindowPreWarmed() =>
+        LogOnce(ref mainWindowPreWarmedLogged, "Startup: main window pre-warmed");
 
     public static void LogCaptureStarted() =>
         LogOnce(ref captureStartedLogged, "Startup: capture started");

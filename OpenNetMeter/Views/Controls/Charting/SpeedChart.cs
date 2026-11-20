@@ -78,6 +78,22 @@ public sealed class SpeedChart : Control
     private IBrush? downloadFillBrush;
     private IBrush? uploadFillBrush;
 
+    // Render runs every frame while the chart is on screen, so what doesn't change between frames is kept: the shaped
+    // axis labels, the pens and the point buffer. (The stroke and fill geometries are rebuilt each frame because they
+    // depend on the data and the scroll position.)
+    private const int GridPenSlot = 0;
+    private const int DownloadPenSlot = 1;
+    private const int UploadPenSlot = 2;
+    private static readonly Func<string, LabelStyle, FormattedText> CreateLabel = static (text, style) =>
+        new FormattedText(text, style.Culture, FlowDirection.LeftToRight, style.Typeface, style.FontSize, style.Brush);
+    private readonly LabelCache<LabelStyle, FormattedText> axisLabelCache = new(CreateLabel);
+    private readonly LabelCache<LabelStyle, FormattedText> axisNameCache = new(CreateLabel);
+    private readonly PenCache penCache = new(3);
+    private Point[] pointBuffer = [];
+
+    /// <summary>What a shaped label depends on besides its text; the caches rebuild when any of it changes.</summary>
+    private readonly record struct LabelStyle(Typeface Typeface, double FontSize, IBrush? Brush, CultureInfo Culture);
+
     public SpeedHistory? History
     {
         get => GetValue(HistoryProperty);
@@ -172,13 +188,18 @@ public sealed class SpeedChart : Control
 
             ResetAnimationState();
         }
-        else if (change.Property == DownloadBrushProperty || change.Property == FillOpacityProperty)
+        else if (change.Property == IsVisibleProperty)
         {
-            downloadFillBrush = null;
+            // The frame loop stops while the chart is hidden; start it again as soon as it can be seen.
+            if (change.GetNewValue<bool>())
+                RequestFrame();
         }
-        else if (change.Property == UploadBrushProperty || change.Property == FillOpacityProperty)
+        else
         {
-            uploadFillBrush = null;
+            if (change.Property == DownloadBrushProperty || change.Property == FillOpacityProperty)
+                downloadFillBrush = null;
+            if (change.Property == UploadBrushProperty || change.Property == FillOpacityProperty)
+                uploadFillBrush = null;
         }
     }
 
@@ -207,7 +228,9 @@ public sealed class SpeedChart : Control
 
     private void OnHostWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == Window.WindowStateProperty)
+        // Restoring from minimized, or showing a window that was hidden to the tray, makes the chart visible again
+        // without any data arriving, so these (not just the next sample) restart the frame loop.
+        if (e.Property == Window.WindowStateProperty || e.Property == Window.IsVisibleProperty)
             RequestFrame();
     }
 
@@ -324,13 +347,15 @@ public sealed class SpeedChart : Control
         var gridBrush = GridLineBrush;
         var labelBrush = LabelBrush;
         var typeface = Typeface.Default;
-        double labelFontSize = LabelFontSize;
+        var culture = CultureInfo.CurrentCulture;
+        var labelStyle = new LabelStyle(typeface, LabelFontSize, labelBrush, culture);
+        var gridPen = gridBrush is null ? null : penCache.Get(GridPenSlot, gridBrush, 1);
 
         FormattedText? nameText = null;
         double nameBandHeight = 0;
         if (labelBrush is not null && !string.IsNullOrEmpty(AxisName))
         {
-            nameText = new FormattedText(AxisName, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, AxisNameFontSize, labelBrush);
+            nameText = axisNameCache.Get(0, AxisName, new LabelStyle(typeface, AxisNameFontSize, labelBrush, culture));
             nameBandHeight = nameText.Height + 2;
         }
 
@@ -356,12 +381,12 @@ public sealed class SpeedChart : Control
         {
             double y = ValueToY(tickBytesCache[i], plotRect);
 
-            if (gridBrush is not null)
-                context.DrawLine(new Pen(gridBrush, 1), new Point(plotRect.X, y), new Point(plotRect.Right, y));
+            if (gridPen is not null)
+                context.DrawLine(gridPen, new Point(plotRect.X, y), new Point(plotRect.Right, y));
 
             if (labelBrush is not null && i < labelsCache.Length)
             {
-                var text = new FormattedText(labelsCache[i], CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, labelFontSize, labelBrush);
+                var text = axisLabelCache.Get(i, labelsCache[i], labelStyle);
                 double textY = Math.Clamp(y - text.Height / 2, bounds.Y, Math.Max(bounds.Y, bounds.Bottom - text.Height));
                 context.DrawText(text, new Point(GutterWidth - 6 - text.Width, textY));
             }
@@ -410,7 +435,10 @@ public sealed class SpeedChart : Control
         int windowSize = Math.Min(history.Count, SpeedHistory.VisibleSamples + 1);
         int startIndex = history.Count - windowSize;
 
-        var points = new Point[windowSize];
+        // Reused between frames and between the two series: the geometries copy the points as they are built.
+        if (pointBuffer.Length != windowSize)
+            pointBuffer = new Point[windowSize];
+        var points = pointBuffer;
         for (int i = 0; i < windowSize; i++)
         {
             var sample = history[startIndex + i];
@@ -430,7 +458,7 @@ public sealed class SpeedChart : Control
         }
 
         var strokeGeometry = CurveBuilder.BuildStroke(points, CurveSmoothness);
-        var pen = new Pen(strokeBrush, 2, null, PenLineCap.Round, PenLineJoin.Round);
+        var pen = penCache.Get(isDownload ? DownloadPenSlot : UploadPenSlot, strokeBrush, 2, PenLineCap.Round, PenLineJoin.Round);
         context.DrawGeometry(null, pen, strokeGeometry);
     }
 

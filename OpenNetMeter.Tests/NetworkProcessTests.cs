@@ -5,6 +5,8 @@ using OpenNetMeter.Properties;
 
 namespace OpenNetMeter.Tests;
 
+// Changes SettingsManager.Current.NetworkType, which AdapterSwitchTests and others also change: run serially with them.
+[Collection(ApplicationDbCollection.Name)]
 public class NetworkProcessTests
 {
     private static readonly byte[] LocalIPv4 = IPAddress.Parse("192.168.1.50").GetAddressBytes();

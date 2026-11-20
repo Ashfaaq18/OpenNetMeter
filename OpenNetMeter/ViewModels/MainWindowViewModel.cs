@@ -22,6 +22,8 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
     private readonly INetworkCaptureService networkCaptureService;
     private readonly IExternalLinkService externalLinkService;
     private readonly MiniWidgetViewModel miniWidget;
+    private readonly MiniWidgetSync miniWidgetSync;
+    private readonly SummaryActivityGate summaryActivity;
     private string networkStatus = "Disconnected";
     private string connectedAdapterName = string.Empty;
     private string pinnedAdapterWarning = string.Empty;
@@ -56,6 +58,11 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         Settings.DeleteAllDataConfirmed += Settings_DeleteAllDataConfirmed;
         Settings.RetentionShortened += Settings_RetentionShortened;
         Summary.PropertyChanged += Summary_PropertyChanged;
+        // The widget follows the Summary's per-flush event, not its property changes (which are held back while the
+        // window is hidden), so it keeps updating every second whatever the window is doing.
+        miniWidgetSync = new MiniWidgetSync(Summary, () => Settings.IsMiniWidgetTotalUsageFrom, ApplyToMiniWidget);
+        // The window usually isn't showing at startup, so the Summary starts out inactive; MainWindow reports changes.
+        summaryActivity = new SummaryActivityGate(Summary);
 
         Summary.SetWidgetUsageFrom(Settings.EffectiveMiniWidgetUsageFromDate, Settings.MiniWidgetUsageFromFollowsToday);
         miniWidget.SetUsageFromTotal(Settings.IsMiniWidgetTotalUsageFrom);
@@ -170,6 +177,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             OnPropertyChanged(nameof(IsSummaryTab));
             OnPropertyChanged(nameof(IsHistoryTab));
             OnPropertyChanged(nameof(IsSettingsTab));
+            summaryActivity.SetSummaryTabSelected(IsSummaryTab);
 
             // History only reads the database while it is showing; network changes and purges that happen
             // meanwhile are applied when the tab is next opened.
@@ -183,6 +191,13 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
                 Settings.RefreshAdapterChoices();
         }
     }
+
+    /// <summary>
+    /// Called by the main window when it becomes visible or hidden, minimized or restored. While it isn't showing,
+    /// the Summary holds back the notifications nothing is displaying (and the widget, which doesn't depend on the
+    /// window, keeps updating from the per-flush event).
+    /// </summary>
+    public void SetWindowActive(bool active) => summaryActivity.SetWindowActive(active);
 
     /// <summary>
     /// Called on the UI thread once the capture start that App began in the background has returned, whether or
@@ -203,6 +218,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         Settings.DeleteAllDataConfirmed -= Settings_DeleteAllDataConfirmed;
         Settings.RetentionShortened -= Settings_RetentionShortened;
         Summary.PropertyChanged -= Summary_PropertyChanged;
+        miniWidgetSync.Dispose();
         Summary.Dispose();
         networkCaptureService.NetworkChanged -= OnNetworkChanged;
         networkCaptureService.Dispose();
@@ -294,7 +310,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
         }
         else if (e.PropertyName == nameof(SettingsViewModel.MiniWidgetUsageFromDate))
         {
-            // Summary raises WidgetUsage* changes, which re-sync the widget.
+            // Summary raises WidgetStateChanged once the read lands, which re-syncs the widget.
             Summary.SetWidgetUsageFrom(Settings.EffectiveMiniWidgetUsageFromDate, Settings.MiniWidgetUsageFromFollowsToday);
         }
     }
@@ -347,47 +363,22 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
 
     private void Summary_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        switch (e.PropertyName)
-        {
-            case nameof(SummaryViewModel.DownloadSpeedText):
-            case nameof(SummaryViewModel.UploadSpeedText):
-            case nameof(SummaryViewModel.CurrentSessionDownloadText):
-            case nameof(SummaryViewModel.CurrentSessionUploadText):
-            case nameof(SummaryViewModel.WidgetUsageDownloadText):
-            case nameof(SummaryViewModel.WidgetUsageUploadText):
-            case nameof(SummaryViewModel.WidgetUsageFromDate):
-                SyncMiniWidgetFromSummary();
-                break;
-            case nameof(SummaryViewModel.IsRecordingResultsOpen):
-                OnPropertyChanged(nameof(IsModalOpen));
-                break;
-        }
+        // The widget's texts are not synced from here: see miniWidgetSync.
+        if (e.PropertyName == nameof(SummaryViewModel.IsRecordingResultsOpen))
+            OnPropertyChanged(nameof(IsModalOpen));
     }
 
-    private void SyncMiniWidgetFromSummary()
+    private void SyncMiniWidgetFromSummary() => miniWidgetSync.Sync();
+
+    private void ApplyToMiniWidget(MiniWidgetTexts texts)
     {
-        miniWidget.DownloadSpeedText = Summary.DownloadSpeedText;
-        miniWidget.UploadSpeedText = Summary.UploadSpeedText;
-
-        var fromDate = Summary.WidgetUsageFromDate;
-        var fromToday = fromDate == DateTime.Today;
-        var fromDateText = DisplayDateFormat.Date(fromDate);
-        miniWidget.UsageFromMenuHeader = fromToday ? "Usage from today" : $"Usage from {fromDateText}";
-
-        if (Settings.IsMiniWidgetTotalUsageFrom)
-        {
-            miniWidget.TotalLabel = fromToday ? "Today:" : "Since:";
-            miniWidget.TotalToolTip = fromToday ? "Usage today, since midnight" : $"Usage since {fromDateText}";
-            miniWidget.TotalDownloadText = Summary.WidgetUsageDownloadText;
-            miniWidget.TotalUploadText = Summary.WidgetUsageUploadText;
-        }
-        else
-        {
-            miniWidget.TotalLabel = "Total:";
-            miniWidget.TotalToolTip = "Current session";
-            miniWidget.TotalDownloadText = Summary.CurrentSessionDownloadText;
-            miniWidget.TotalUploadText = Summary.CurrentSessionUploadText;
-        }
+        miniWidget.DownloadSpeedText = texts.DownloadSpeedText;
+        miniWidget.UploadSpeedText = texts.UploadSpeedText;
+        miniWidget.UsageFromMenuHeader = texts.UsageFromMenuHeader;
+        miniWidget.TotalLabel = texts.TotalLabel;
+        miniWidget.TotalToolTip = texts.TotalToolTip;
+        miniWidget.TotalDownloadText = texts.TotalDownloadText;
+        miniWidget.TotalUploadText = texts.TotalUploadText;
     }
 
     private sealed class NoOpWindowService : IWindowService

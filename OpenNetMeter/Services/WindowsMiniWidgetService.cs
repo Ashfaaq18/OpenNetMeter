@@ -137,14 +137,8 @@ public sealed class WindowsMiniWidgetService : IMiniWidgetService
     {
         try
         {
-            var mainWindow = getMainWindow();
-            if (!mainWindow.IsVisible)
-                mainWindow.Show();
-
-            if (mainWindow.WindowState == WindowState.Minimized)
-                mainWindow.WindowState = WindowState.Normal;
-
-            mainWindow.Activate();
+            // The same open as the tray's, which also copes with the main window being pre-warmed at that moment.
+            getMainWindow().OpenFromTray();
         }
         catch (Exception ex)
         {
