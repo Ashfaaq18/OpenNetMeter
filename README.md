@@ -4,6 +4,8 @@
 A simple program to monitor your network/data usage. Made for the average windows user.
 https://opennetmeter.com
 
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-support%20OpenNetMeter-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/ashfaaq18)
+
 ## Description
 
 This program provides the following features,
@@ -34,6 +36,10 @@ This program provides the following features,
 ## Usage/Examples
 
 see https://opennetmeter.com/features for a full product tour
+
+## Support
+
+OpenNetMeter is free and built by one person. If it's useful to you, you can support it at https://buymeacoffee.com/ashfaaq18 ☕
 
 
 
