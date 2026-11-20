@@ -159,7 +159,7 @@ public partial class App : Application
     /// Start() enumerates adapters, reads the WLAN event log, starts the ETW session and opens the database.
     /// On the UI thread that kept the widget from appearing for seconds, so it runs in the background. The
     /// capture service serialises Start/Stop and raises its events from worker threads anyway, and every
-    /// subscriber (MainWindowViewModel, SummaryViewModel.OnTrafficObserved) is safe to call off the UI thread.
+    /// subscriber (MainWindowViewModel, SummaryViewModel.OnTrafficBatch) is safe to call off the UI thread.
     /// Subscribers that attach after NetworkChanged has already fired catch up through CurrentSnapshot.
     /// </summary>
     /// <returns>False if the service was disposed before the start ran (the app is exiting); true otherwise,

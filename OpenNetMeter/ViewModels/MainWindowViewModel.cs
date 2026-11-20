@@ -404,7 +404,7 @@ public sealed class MainWindowViewModel : MainShellTabsViewModel, IDisposable
             add { }
             remove { }
         }
-        public event EventHandler<NetworkTrafficEventArgs>? TrafficObserved
+        public event EventHandler<NetworkTrafficBatchEventArgs>? TrafficBatchObserved
         {
             add { }
             remove { }

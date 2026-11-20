@@ -26,7 +26,7 @@ public class WindowsNetworkCaptureServiceTests
         bool eventFired = false;
         bool locksReleasedDuringEvent = false;
 
-        service.TrafficObserved += (_, _) =>
+        service.TrafficBatchObserved += (_, _) =>
         {
             eventFired = true;
             // If EmitProcessTraffic is correctly implemented, both buffer locks
@@ -46,8 +46,8 @@ public class WindowsNetworkCaptureServiceTests
 
         netProc.DownloadSpeed = 1;
 
-        Assert.True(eventFired, "TrafficObserved was not raised");
-        Assert.True(locksReleasedDuringEvent, "Buffer locks were still held while TrafficObserved was raised");
+        Assert.True(eventFired, "TrafficBatchObserved was not raised");
+        Assert.True(locksReleasedDuringEvent, "Buffer locks were still held while TrafficBatchObserved was raised");
     }
 
     [Fact]
@@ -58,10 +58,10 @@ public class WindowsNetworkCaptureServiceTests
         using var service = new WindowsNetworkCaptureService(netProc);
 
         long observedDownload = 0;
-        service.TrafficObserved += (_, e) =>
+        service.TrafficBatchObserved += (_, e) =>
         {
-            if (e.IsReceive)
-                observedDownload += e.Bytes;
+            foreach (var traffic in e.Traffic)
+                observedDownload += traffic.Received;
         };
 
         netProc.TestInvokeRecvProcess(
@@ -88,7 +88,7 @@ public class WindowsNetworkCaptureServiceTests
         using var service = new WindowsNetworkCaptureService(netProc);
 
         bool pendingLockHeldDuringEvent = false;
-        service.TrafficObserved += (_, _) => pendingLockHeldDuringEvent |= Monitor.IsEntered(netProc.PushToDBBuffer);
+        service.TrafficBatchObserved += (_, _) => pendingLockHeldDuringEvent |= Monitor.IsEntered(netProc.PushToDBBuffer);
 
         var remote = IPAddress.Parse("93.184.216.34");
         var local = IPAddress.Parse("192.168.1.50");
@@ -117,7 +117,108 @@ public class WindowsNetworkCaptureServiceTests
             Assert.Equal((0L, 7L), (netProc.PushToDBBuffer["code"]!.CurrentDataRecv, netProc.PushToDBBuffer["code"]!.CurrentDataSend));
         }
 
-        Assert.False(pendingLockHeldDuringEvent, "The pending-write buffer was locked while TrafficObserved was raised");
+        Assert.False(pendingLockHeldDuringEvent, "The pending-write buffer was locked while TrafficBatchObserved was raised");
+    }
+
+    [Fact]
+    public void EmitProcessTraffic_RaisesOneBatchPerTickCarryingEveryProcess()
+    {
+        using var networkType = new NetworkTypeScope(2);
+        using var netProc = CreateNetworkProcess();
+        using var service = new WindowsNetworkCaptureService(netProc);
+
+        var batches = new List<IReadOnlyList<ProcessTraffic>>();
+        service.TrafficBatchObserved += (_, e) => batches.Add(e.Traffic);
+
+        var remote = IPAddress.Parse("93.184.216.34");
+        var local = IPAddress.Parse("192.168.1.50");
+        netProc.TestInvokeRecvProcess(remote, local, 400, "chrome");
+        netProc.TestInvokeSendProcess(local, remote, 50, "chrome");
+        netProc.TestInvokeRecvProcess(remote, local, 200, "teams");
+        netProc.TestInvokeSendProcess(local, remote, 7, "code");
+        netProc.DownloadSpeed = 1;
+
+        // Every process and both directions in a single event, not one event per process and direction.
+        var first = Assert.Single(batches);
+        Assert.Equal(3, first.Count);
+        Assert.Contains(new ProcessTraffic("chrome", 400, 50), first);
+        Assert.Contains(new ProcessTraffic("teams", 200, 0), first);
+        Assert.Contains(new ProcessTraffic("code", 0, 7), first);
+
+        // An idle tick still raises its batch (empty): subscribers use it as their clock.
+        netProc.DownloadSpeed = 2;
+        Assert.Equal(2, batches.Count);
+        Assert.Empty(batches[1]);
+
+        netProc.TestInvokeRecvProcess(remote, local, 100, "chrome");
+        netProc.DownloadSpeed = 3;
+        Assert.Equal(3, batches.Count);
+        Assert.Equal(new ProcessTraffic("chrome", 100, 0), Assert.Single(batches[2]));
+    }
+
+    [Fact]
+    public void EmitProcessTraffic_SumsNamesThatDifferOnlyByCaseAndClearsTheBuffers()
+    {
+        using var networkType = new NetworkTypeScope(2);
+        using var netProc = CreateNetworkProcess();
+        using var service = new WindowsNetworkCaptureService(netProc);
+
+        var batches = new List<IReadOnlyList<ProcessTraffic>>();
+        service.TrafficBatchObserved += (_, e) => batches.Add(e.Traffic);
+
+        var remote = IPAddress.Parse("93.184.216.34");
+        var local = IPAddress.Parse("192.168.1.50");
+
+        // Both spellings in the same buffer, and a third in the other buffer.
+        netProc.TestInvokeRecvProcess(remote, local, 100, "Chrome");
+        netProc.TestInvokeRecvProcess(remote, local, 50, "chrome");
+        netProc.TestInvokeSendProcess(local, remote, 5, "chrome");
+        netProc.IsBufferTime = true;
+        netProc.TestInvokeRecvProcess(remote, local, 25, "CHROME");
+
+        netProc.DownloadSpeed = 1;
+
+        // Case-insensitively one process; the bytes are added, nothing is thrown or dropped.
+        var batch = Assert.Single(batches);
+        var chrome = Assert.Single(batch);
+        Assert.Equal("chrome", chrome.Name, ignoreCase: true);
+        Assert.Equal((175L, 5L), (chrome.Received, chrome.Sent));
+
+        // What the tick took is gone from both buffers, so the next tick doesn't count it again.
+        Assert.Empty(netProc.MyProcesses);
+        Assert.Empty(netProc.MyProcessesBuffer);
+        netProc.DownloadSpeed = 2;
+        Assert.Empty(batches[1]);
+
+        // The database buffer got the summed row as well.
+        lock (netProc.PushToDBBuffer)
+        {
+            var staged = Assert.Single(netProc.PushToDBBuffer);
+            Assert.Equal((175L, 5L), (staged.Value!.CurrentDataRecv, staged.Value.CurrentDataSend));
+        }
+    }
+
+    [Fact]
+    public void BuildBatch_SumsDuplicatesAcrossBuffersAndSkipsEmptyEntries()
+    {
+        var main = new Dictionary<string, MyProcess_Small?>
+        {
+            ["Chrome"] = new MyProcess_Small("Chrome", 100, 10),
+            ["idle"] = new MyProcess_Small("idle", 0, 0),
+            ["gone"] = null,
+        };
+        var buffer = new Dictionary<string, MyProcess_Small?>
+        {
+            ["chrome"] = new MyProcess_Small("chrome", 1, 2),
+            ["teams"] = new MyProcess_Small("teams", 0, 3),
+        };
+
+        var batch = WindowsNetworkCaptureService.BuildBatch(main, buffer);
+
+        Assert.Equal(2, batch.Count);
+        var chrome = Assert.Single(batch, t => string.Equals(t.Name, "chrome", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal((101L, 12L), (chrome.Received, chrome.Sent));
+        Assert.Contains(new ProcessTraffic("teams", 0, 3), batch);
     }
 
     [Fact]

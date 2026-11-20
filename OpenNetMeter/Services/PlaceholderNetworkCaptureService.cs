@@ -9,7 +9,7 @@ public sealed class PlaceholderNetworkCaptureService : INetworkCaptureService
     private bool started;
 
     public event EventHandler<NetworkSnapshotChangedEventArgs>? NetworkChanged;
-    public event EventHandler<NetworkTrafficEventArgs>? TrafficObserved
+    public event EventHandler<NetworkTrafficBatchEventArgs>? TrafficBatchObserved
     {
         add { }
         remove { }

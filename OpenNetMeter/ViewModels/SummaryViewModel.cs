@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Input;
 using Avalonia.Threading;
 using Avalonia.Media;
@@ -24,7 +25,20 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private readonly Dictionary<string, SummaryProcessRowViewModel> processIndex = new(StringComparer.OrdinalIgnoreCase);
     private readonly object pendingLock = new();
     private readonly Dictionary<string, PendingTraffic> pendingByProcess = new(StringComparer.OrdinalIgnoreCase);
-    private readonly DispatcherTimer flushTimer;
+    // The capture tick is the app's one clock: every batch it raises drives one UI flush. This timer is only a
+    // fallback for when no batch arrives (disconnected), so the chart still decays and the recording still ticks.
+    private readonly DispatcherTimer? fallbackTimer;
+    private readonly Action<Action> postToUi;
+    private readonly Func<long> clockMilliseconds;
+    private int flushQueued;
+    private long lastBatchMilliseconds;
+    private bool disposed;
+
+    /// <summary>
+    /// How long without a batch before the fallback flushes. Longer than the capture tick's one second, so a
+    /// late tick isn't answered with an extra (zero, then double) sample.
+    /// </summary>
+    internal const long FallbackIdleMilliseconds = 1500;
     private string? currentSortColumn;
     private bool sortDescending;
     private string activeAdapterName = string.Empty;
@@ -57,8 +71,35 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         IExternalLinkService externalLinkService,
         IFileSaveDialogService fileSaveDialogService,
         IFileRevealService fileRevealService)
+        : this(
+            networkCaptureService,
+            processIconService,
+            externalLinkService,
+            fileSaveDialogService,
+            fileRevealService,
+            action => Dispatcher.UIThread.Post(action, DispatcherPriority.Default),
+            () => Environment.TickCount64,
+            startFallbackTimer: true)
+    {
+    }
+
+    /// <summary>
+    /// The UI thread and the clock are injected so tests can run flushes and the fallback by hand.
+    /// </summary>
+    internal SummaryViewModel(
+        INetworkCaptureService networkCaptureService,
+        IProcessIconService processIconService,
+        IExternalLinkService externalLinkService,
+        IFileSaveDialogService fileSaveDialogService,
+        IFileRevealService fileRevealService,
+        Action<Action> postToUi,
+        Func<long> clockMilliseconds,
+        bool startFallbackTimer)
     {
         this.networkCaptureService = networkCaptureService;
+        this.postToUi = postToUi;
+        this.clockMilliseconds = clockMilliseconds;
+        lastBatchMilliseconds = clockMilliseconds();
         this.processIconService = processIconService;
         this.externalLinkService = externalLinkService;
         this.fileSaveDialogService = fileSaveDialogService;
@@ -82,14 +123,17 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         WeeklyTrend = new WeeklyUsageTrendViewModel();
 
         sinceDate = DateTime.Today;
-        this.networkCaptureService.TrafficObserved += OnTrafficObserved;
+        this.networkCaptureService.TrafficBatchObserved += OnTrafficBatch;
 
-        flushTimer = new DispatcherTimer
+        if (startFallbackTimer)
         {
-            Interval = TimeSpan.FromSeconds(1)
-        };
-        flushTimer.Tick += (_, _) => FlushPendingTraffic();
-        flushTimer.Start();
+            fallbackTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            fallbackTimer.Tick += (_, _) => RunFallbackTick();
+            fallbackTimer.Start();
+        }
     }
     public ObservableCollection<SummaryProcessRowViewModel> ActiveProcesses { get; }
     public ICommand SortProcessesCommand { get; }
@@ -168,8 +212,9 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
-        networkCaptureService.TrafficObserved -= OnTrafficObserved;
-        flushTimer.Stop();
+        disposed = true;
+        networkCaptureService.TrafficBatchObserved -= OnTrafficBatch;
+        fallbackTimer?.Stop();
     }
 
     public void ClearOnDisconnect()
@@ -298,27 +343,66 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(RecordingUploadText));
     }
 
-    private void OnTrafficObserved(object? sender, NetworkTrafficEventArgs e)
+    /// <summary>
+    /// A capture tick's traffic. Merged into the pending totals here (on the capture thread), then ONE UI flush is
+    /// posted for it; a batch that arrives while a flush is still queued is simply drained by that flush.
+    /// </summary>
+    private void OnTrafficBatch(object? sender, NetworkTrafficBatchEventArgs e)
     {
+        if (disposed)
+            return;
+
         lock (pendingLock)
         {
-            if (!pendingByProcess.TryGetValue(e.ProcessName, out var pending))
+            foreach (var traffic in e.Traffic)
             {
-                pending = new PendingTraffic();
-                pendingByProcess[e.ProcessName] = pending;
-            }
+                if (traffic.Received <= 0 && traffic.Sent <= 0)
+                    continue;
 
-            if (e.IsReceive)
-            {
-                pending.DownloadBytes += e.Bytes;
-                pendingDownloadBytes += e.Bytes;
-            }
-            else
-            {
-                pending.UploadBytes += e.Bytes;
-                pendingUploadBytes += e.Bytes;
+                if (!pendingByProcess.TryGetValue(traffic.Name, out var pending))
+                {
+                    pending = new PendingTraffic();
+                    pendingByProcess[traffic.Name] = pending;
+                }
+
+                pending.DownloadBytes += traffic.Received;
+                pendingDownloadBytes += traffic.Received;
+                pending.UploadBytes += traffic.Sent;
+                pendingUploadBytes += traffic.Sent;
             }
         }
+
+        Volatile.Write(ref lastBatchMilliseconds, clockMilliseconds());
+        QueueFlush();
+    }
+
+    private void QueueFlush()
+    {
+        if (Interlocked.Exchange(ref flushQueued, 1) == 0)
+            postToUi(RunQueuedFlush);
+    }
+
+    private void RunQueuedFlush()
+    {
+        // Cleared first: a batch that arrives while this flush runs queues the next one.
+        Volatile.Write(ref flushQueued, 0);
+        if (disposed)
+            return;
+
+        FlushPendingTraffic();
+    }
+
+    /// <summary>
+    /// What the fallback timer does every second: flush only if the capture tick has gone quiet (not running, or
+    /// the adapter is disconnected). While batches arrive they are the only thing that flushes.
+    /// </summary>
+    internal void RunFallbackTick()
+    {
+        if (disposed)
+            return;
+
+        if (clockMilliseconds() - Volatile.Read(ref lastBatchMilliseconds) >= FallbackIdleMilliseconds)
+            FlushPendingTraffic();
     }
 
     private void FlushPendingTraffic()

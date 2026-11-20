@@ -6,7 +6,14 @@ namespace OpenNetMeter.PlatformAbstractions;
 public interface INetworkCaptureService : IDisposable
 {
     event EventHandler<NetworkSnapshotChangedEventArgs>? NetworkChanged;
-    event EventHandler<NetworkTrafficEventArgs>? TrafficObserved;
+
+    /// <summary>
+    /// Raised once per capture tick (about once a second) with every process's traffic since the previous tick. A
+    /// tick that moved nothing raises an empty batch, so subscribers can use the event as their one-second clock.
+    /// An adapter switch raises one extra batch, only when non-empty, with the old adapter's last partial second.
+    /// Raised on a worker thread.
+    /// </summary>
+    event EventHandler<NetworkTrafficBatchEventArgs>? TrafficBatchObserved;
 
     /// <summary>
     /// The last snapshot raised through <see cref="NetworkChanged"/>, or null before the first change. Capture
@@ -38,16 +45,16 @@ public sealed class NetworkSnapshotChangedEventArgs : EventArgs
     public string AdapterId { get; }
 }
 
-public sealed class NetworkTrafficEventArgs : EventArgs
+/// <summary>One process's traffic during one capture tick. Names are unique ignoring case within a batch.</summary>
+public readonly record struct ProcessTraffic(string Name, long Received, long Sent);
+
+public sealed class NetworkTrafficBatchEventArgs : EventArgs
 {
-    public NetworkTrafficEventArgs(string processName, long bytes, bool isReceive)
+    public NetworkTrafficBatchEventArgs(IReadOnlyList<ProcessTraffic> traffic)
     {
-        ProcessName = processName;
-        Bytes = bytes;
-        IsReceive = isReceive;
+        Traffic = traffic;
     }
 
-    public string ProcessName { get; }
-    public long Bytes { get; }
-    public bool IsReceive { get; }
+    /// <summary>Bytes received and sent per process since the previous batch; only processes that moved data.</summary>
+    public IReadOnlyList<ProcessTraffic> Traffic { get; }
 }
