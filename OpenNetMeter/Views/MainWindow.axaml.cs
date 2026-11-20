@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using OpenNetMeter.Services;
 using OpenNetMeter.ViewModels;
 using OpenNetMeter.Properties;
+using OpenNetMeter.Utilities;
 
 namespace OpenNetMeter.Views;
 
@@ -17,6 +18,16 @@ public partial class MainWindow : Window
     private IMiniWidgetService? miniWidgetService;
     private ITrayNotificationService? trayNotificationService;
     private bool allowClose;
+    // True from the first show to the end of a startup pre-warm (see StartPreWarm): the window is shown invisibly, so
+    // the handlers that react to the user opening or moving it (position init, geometry saves, widget reset,
+    // the tray hint, activity reports) must not run for it.
+    private bool isWarmingUp;
+    // The window has been shown to the user (not just pre-warmed).
+    private bool hasBeenShown;
+    // Opened was raised during the pre-warm and ignored. Normally the user's first show raises it again; if it
+    // doesn't (the event might be once per window), ShowForUser does what it would have done.
+    private bool openedWhilePreWarming;
+    private MainWindowPreWarm? preWarm;
 
     public MainWindow()
     {
@@ -65,10 +76,37 @@ public partial class MainWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
+    /// <summary>
+    /// For a /StartMinimized launch, pays the window's first-show cost while nobody is looking: shows it invisibly for
+    /// a couple of frames and hides it again, so the user's first open is as quick as the later ones. Does nothing for a
+    /// normal launch, or if the window has been opened already. Call once, on the UI thread, some time after startup.
+    /// </summary>
+    public void StartPreWarm(bool startMinimized)
+    {
+        preWarm ??= new MainWindowPreWarm(new PreWarmHost(this));
+        preWarm.TryStart(startMinimized);
+    }
+
     public void OpenFromTray()
+    {
+        // Opened while the pre-warm runs: it finishes first (a frame or two), then this opens the window normally.
+        if (preWarm is { IsWarmingUp: true })
+        {
+            preWarm.OpenForUser();
+            return;
+        }
+
+        ShowForUser();
+    }
+
+    private void ShowForUser()
     {
         if (!IsVisible)
             Show();
+
+        // Show raises Opened synchronously, which clears this; still set means it didn't.
+        if (openedWhilePreWarming)
+            HandleOpenedByUser();
 
         if (WindowState == WindowState.Minimized)
             WindowState = WindowState.Normal;
@@ -83,6 +121,12 @@ public partial class MainWindow : Window
 
     public void ResetWindowPositions()
     {
+        if (preWarm is { IsWarmingUp: true })
+        {
+            preWarm.RunWhenIdle(ResetWindowPositions);
+            return;
+        }
+
         CenterOnPrimaryScreen();
         SaveWindowGeometry();
         miniWidgetService?.ResetPosition(this);
@@ -108,6 +152,33 @@ public partial class MainWindow : Window
             BeginResizeDrag(edge, e);
     }
 
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == IsVisibleProperty || change.Property == WindowStateProperty)
+            ReportActivity();
+    }
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        ReportActivity();
+    }
+
+    /// <summary>
+    /// Tells the view model whether anything of the window can be seen (shown and not minimized), so it can hold back
+    /// the notifications nothing would display.
+    /// </summary>
+    private void ReportActivity()
+    {
+        if (isWarmingUp)
+            return;
+
+        if (DataContext is MainWindowViewModel vm)
+            vm.SetWindowActive(IsVisible && WindowState != WindowState.Minimized);
+    }
+
     protected override void OnClosed(System.EventArgs e)
     {
         resizeTimer.Stop();
@@ -125,12 +196,27 @@ public partial class MainWindow : Window
             return;
 
         e.Cancel = true;
-        trayNotificationService?.ShowMinimizedToTrayOnce(this);
+        if (!isWarmingUp)
+            trayNotificationService?.ShowMinimizedToTrayOnce(this);
         Hide();
     }
 
     private void MainWindow_Opened(object? sender, EventArgs e)
     {
+        if (isWarmingUp)
+        {
+            openedWhilePreWarming = true;
+            return;
+        }
+
+        HandleOpenedByUser();
+    }
+
+    private void HandleOpenedByUser()
+    {
+        openedWhilePreWarming = false;
+        hasBeenShown = true;
+
         if (!SettingsManager.Current.MainWindowPositionInitialized)
         {
             SaveWindowGeometry();
@@ -149,7 +235,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_PositionChanged(object? sender, PixelPointEventArgs e)
     {
-        if (WindowState != WindowState.Normal)
+        if (isWarmingUp || WindowState != WindowState.Normal)
             return;
 
         RestartTimer(relocationTimer);
@@ -157,7 +243,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        if (WindowState != WindowState.Normal)
+        if (isWarmingUp || WindowState != WindowState.Normal)
             return;
 
         RestartTimer(resizeTimer);
@@ -177,15 +263,17 @@ public partial class MainWindow : Window
 
     private void SaveWindowGeometry()
     {
-        if (WindowState != WindowState.Normal)
+        if (isWarmingUp || WindowState != WindowState.Normal)
             return;
 
+        // The values are taken here, on the UI thread; the file is read, merged and written on a background task, so
+        // dragging or resizing the window never waits on the disk.
         SettingsManager.Current.WinPosX = Position.X;
         SettingsManager.Current.WinPosY = Position.Y;
         SettingsManager.Current.WinWidth = Math.Max((int)MinWidth, (int)Math.Round(Bounds.Width > 0 ? Bounds.Width : Width));
         SettingsManager.Current.WinHeight = Math.Max((int)MinHeight, (int)Math.Round(Bounds.Height > 0 ? Bounds.Height : Height));
         SettingsManager.Current.MainWindowPositionInitialized = true;
-        SettingsManager.Save();
+        SettingsManager.SaveInBackground();
     }
 
     private void CenterOnPrimaryScreen()
@@ -237,6 +325,118 @@ public partial class MainWindow : Window
         }
 
         return false;
+    }
+
+    /// <summary>Carries out the pre-warm steps on this window.</summary>
+    private sealed class PreWarmHost(MainWindow window) : IPreWarmHost
+    {
+        private bool savedShowActivated;
+        private bool savedShowInTaskbar;
+        private WindowStartupLocation savedStartupLocation;
+        private PixelPoint savedPosition;
+
+        public bool HasBeenShown => window.hasBeenShown;
+
+        public bool IsVisible => window.IsVisible;
+
+        public void BeginWarmUp()
+        {
+            window.isWarmingUp = true;
+            savedShowActivated = window.ShowActivated;
+            savedShowInTaskbar = window.ShowInTaskbar;
+            // No focus steal and no taskbar button flashing up for a window the user can't see.
+            window.ShowActivated = false;
+            window.ShowInTaskbar = false;
+        }
+
+        public bool TryCloak() =>
+            window.TryGetPlatformHandle() is { } handle && WindowsDwmCloak.TrySetCloaked(handle.Handle, true);
+
+        public bool TryMoveOffScreen()
+        {
+            var screens = window.Screens?.All;
+            if (screens is null || screens.Count == 0)
+                return false;
+
+            var right = int.MinValue;
+            var bottom = int.MinValue;
+            foreach (var screen in screens)
+            {
+                right = Math.Max(right, screen.Bounds.Right);
+                bottom = Math.Max(bottom, screen.Bounds.Bottom);
+            }
+
+            savedStartupLocation = window.WindowStartupLocation;
+            savedPosition = window.Position;
+            window.WindowStartupLocation = WindowStartupLocation.Manual;
+            window.Position = new PixelPoint(right + 200, bottom + 200);
+            return true;
+        }
+
+        public void Show() => window.Show();
+
+        public void WaitForFrames(int count, Action then)
+        {
+            void Step(int remaining)
+            {
+                if (remaining <= 0)
+                {
+                    // Not from inside the frame callback: hiding the window stops its rendering, which shouldn't
+                    // happen in the middle of a render pass.
+                    Dispatcher.UIThread.Post(then, DispatcherPriority.Background);
+                    return;
+                }
+
+                window.RequestAnimationFrame(_ => Step(remaining - 1));
+            }
+
+            Step(count);
+        }
+
+        public void ScheduleTimeout(TimeSpan delay, Action then) => DispatcherTimer.RunOnce(then, delay);
+
+        public void Hide()
+        {
+            if (window.IsVisible)
+                window.Hide();
+        }
+
+        public void Uncloak()
+        {
+            // A window that stayed cloaked would never be seen again, so check it took and try a couple more times.
+            var hwnd = window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                WindowsDwmCloak.TrySetCloaked(hwnd, false);
+                if (!WindowsDwmCloak.IsCloakedByApp(hwnd))
+                    return;
+            }
+
+            EventLogger.Error("The pre-warmed main window is still cloaked after uncloaking it");
+        }
+
+        public void RestorePosition()
+        {
+            window.WindowStartupLocation = savedStartupLocation;
+            if (SettingsManager.Current.MainWindowPositionInitialized)
+                window.Position = savedPosition;
+            else
+                window.CenterOnPrimaryScreen();
+        }
+
+        public void EndWarmUp()
+        {
+            window.ShowActivated = savedShowActivated;
+            window.ShowInTaskbar = savedShowInTaskbar;
+            window.isWarmingUp = false;
+            window.ReportActivity();
+        }
+
+        public void Completed() => StartupTiming.LogMainWindowPreWarmed();
+
+        public void ShowNormally() => window.ShowForUser();
+
+        public void LogFailure(string message, Exception ex) => EventLogger.Error(message, ex);
     }
 }
 

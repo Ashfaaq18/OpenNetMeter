@@ -12,6 +12,19 @@ internal static class SettingsManager
     private static readonly object sync = new();
     public static AppSettings Current { get; } = new();
 
+    // Saves requested from the UI thread (see SaveInBackground): serialised, and a burst collapses into one more write.
+    private static readonly LatestWinsRunner backgroundSave = new(() =>
+    {
+        try
+        {
+            Save();
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Error saving settings in the background", ex);
+        }
+    });
+
     static SettingsManager()
     {
         filePath = Path.Combine(Global.GetFilePath(), "settings.json");
@@ -63,16 +76,26 @@ internal static class SettingsManager
         }
     }
 
-    public static void Save()
+    public static void Save() => Save(filePath);
+
+    /// <summary>
+    /// Writes <see cref="Current"/> without making the caller wait for the file: the values are read when the write
+    /// runs (on a background task), so a burst of calls ends with the newest values on disk. Saves never overlap with
+    /// each other or with <see cref="Save()"/> (all take <c>sync</c>).
+    /// </summary>
+    public static void SaveInBackground() => backgroundSave.Request();
+
+    /// <summary>The write behind <see cref="Save()"/>, with the path injectable so tests never touch the real file.</summary>
+    internal static void Save(string path)
     {
         lock (sync)
         {
             JsonObject root;
-            if (File.Exists(filePath))
+            if (File.Exists(path))
             {
                 try
                 {
-                    root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject ?? [];
+                    root = JsonNode.Parse(File.ReadAllText(path)) as JsonObject ?? [];
                 }
                 catch (Exception ex)
                 {
@@ -112,7 +135,7 @@ internal static class SettingsManager
             {
                 WriteIndented = true
             });
-            File.WriteAllText(filePath, json);
+            File.WriteAllText(path, json);
         }
     }
 

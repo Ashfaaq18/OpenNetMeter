@@ -34,6 +34,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     private int flushQueued;
     private long lastBatchMilliseconds;
     private bool disposed;
+    // While the main window is hidden or minimized, or another tab is showing, nothing displays the Summary page's
+    // values. They are still kept up to date (counters, speed history, recording, row values) but their change
+    // notifications are held back until the page is shown again (see SetUiActive). The status bar's speed texts
+    // follow the window rather than the tab (see SetSpeedActive). Both default to on: a view model that nobody
+    // has told otherwise notifies as it always did.
+    private bool uiActive = true;
+    private bool speedActive = true;
 
     /// <summary>
     /// How long without a batch before the fallback flushes. Longer than the capture tick's one second, so a
@@ -230,6 +237,56 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>
+    /// Raised once at the end of every flush (once per capture tick, or per fallback tick while no batch arrives),
+    /// whether or not the page is showing. The mini widget follows this instead of the individual property changes,
+    /// which are held back while the window is hidden.
+    /// </summary>
+    public event EventHandler? Flushed;
+
+    /// <summary>
+    /// Raised when something the mini widget shows changed outside a flush: a database read rebased the widget's
+    /// total, the session counters restarted, or the speed display format changed.
+    /// </summary>
+    public event EventHandler? WidgetStateChanged;
+
+    /// <summary>
+    /// Tells the view model whether the Summary page is on screen (main window visible, not minimized, Summary tab
+    /// selected). While it isn't, the card, process-row and recording notifications are held back and the weekly
+    /// trend's periodic database refresh is skipped; going back to active raises one refresh of everything that
+    /// changed meanwhile and re-reads the weekly trend if it went stale.
+    /// </summary>
+    public void SetUiActive(bool active)
+    {
+        if (uiActive == active)
+            return;
+
+        uiActive = active;
+        foreach (var row in ActiveProcesses)
+            row.SetUiActive(active);
+
+        if (!active)
+            return;
+
+        NotifyPageValuesChanged();
+        if (weeklyTrendTickCounter >= WeeklyTrendRefreshTicks)
+            StartUsageReads(UsageReads.WeeklyTrend);
+    }
+
+    /// <summary>
+    /// Tells the view model whether the status bar's speed texts are on screen (main window visible, not minimized,
+    /// on any tab). Going back to active raises one refresh of them.
+    /// </summary>
+    public void SetSpeedActive(bool active)
+    {
+        if (speedActive == active)
+            return;
+
+        speedActive = active;
+        if (active)
+            NotifySpeedTextsChanged();
+    }
+
     public void Dispose()
     {
         disposed = true;
@@ -268,15 +325,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
 
         ActiveProcesses.Clear();
         processIndex.Clear();
-        OnPropertyChanged(nameof(ProcessCount));
-        OnPropertyChanged(nameof(CurrentSessionDownloadText));
-        OnPropertyChanged(nameof(CurrentSessionUploadText));
-        OnPropertyChanged(nameof(TotalFromDateDownloadText));
-        OnPropertyChanged(nameof(TotalFromDateUploadText));
-        OnPropertyChanged(nameof(WidgetUsageDownloadText));
-        OnPropertyChanged(nameof(WidgetUsageUploadText));
-        OnPropertyChanged(nameof(DownloadSpeedText));
-        OnPropertyChanged(nameof(UploadSpeedText));
+        if (uiActive)
+            NotifyPageValuesChanged();
+        if (speedActive)
+            NotifySpeedTextsChanged();
+        NotifyWidgetUsageChanged();
     }
 
     /// <summary>
@@ -474,22 +527,50 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
             foreach (var kvp in pendingSnapshot)
                 recording.Add(kvp.Key, kvp.Value.DownloadBytes, kvp.Value.UploadBytes);
 
-            OnPropertyChanged(nameof(RecordingElapsedText));
-            OnPropertyChanged(nameof(RecordingDownloadText));
-            OnPropertyChanged(nameof(RecordingUploadText));
+            if (uiActive)
+            {
+                OnPropertyChanged(nameof(RecordingElapsedText));
+                OnPropertyChanged(nameof(RecordingDownloadText));
+                OnPropertyChanged(nameof(RecordingUploadText));
+            }
         }
 
         // The capture service pushes to the DB every 5s, so re-reading the week this often
-        // keeps today's bar close to live without querying on every tick.
-        if (++weeklyTrendTickCounter >= WeeklyTrendRefreshTicks)
+        // keeps today's bar close to live without querying on every tick. Only while the card is on screen: the
+        // counter keeps running meanwhile, so a stale trend is re-read as soon as the page is shown again.
+        weeklyTrendTickCounter = Math.Min(weeklyTrendTickCounter + 1, WeeklyTrendRefreshTicks);
+        if (uiActive && weeklyTrendTickCounter >= WeeklyTrendRefreshTicks)
             StartUsageReads(UsageReads.WeeklyTrend);
 
+        if (uiActive)
+        {
+            OnPropertyChanged(nameof(CurrentSessionDownloadText));
+            OnPropertyChanged(nameof(CurrentSessionUploadText));
+            OnPropertyChanged(nameof(TotalFromDateDownloadText));
+            OnPropertyChanged(nameof(TotalFromDateUploadText));
+        }
+
+        if (speedActive)
+            NotifySpeedTextsChanged();
+
+        Flushed?.Invoke(this, EventArgs.Empty);
+    }
+
+    // Everything the Summary page binds that a flush changes (the row values refresh themselves, see SetUiActive).
+    private void NotifyPageValuesChanged()
+    {
+        OnPropertyChanged(nameof(ProcessCount));
         OnPropertyChanged(nameof(CurrentSessionDownloadText));
         OnPropertyChanged(nameof(CurrentSessionUploadText));
         OnPropertyChanged(nameof(TotalFromDateDownloadText));
         OnPropertyChanged(nameof(TotalFromDateUploadText));
-        OnPropertyChanged(nameof(WidgetUsageDownloadText));
-        OnPropertyChanged(nameof(WidgetUsageUploadText));
+        OnPropertyChanged(nameof(RecordingElapsedText));
+        OnPropertyChanged(nameof(RecordingDownloadText));
+        OnPropertyChanged(nameof(RecordingUploadText));
+    }
+
+    private void NotifySpeedTextsChanged()
+    {
         OnPropertyChanged(nameof(DownloadSpeedText));
         OnPropertyChanged(nameof(UploadSpeedText));
     }
@@ -613,8 +694,11 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         sinceDateUsage.Rebase(fromDate, sessionDownload, sessionUpload, totals);
         sinceDateUsage.Advance(currentSessionDownload, currentSessionUpload);
 
-        OnPropertyChanged(nameof(TotalFromDateDownloadText));
-        OnPropertyChanged(nameof(TotalFromDateUploadText));
+        if (uiActive)
+        {
+            OnPropertyChanged(nameof(TotalFromDateDownloadText));
+            OnPropertyChanged(nameof(TotalFromDateUploadText));
+        }
     }
 
     private void ApplyWidgetBaseline(int stamp, DateTime fromDate, long sessionDownload, long sessionUpload, (long download, long upload) totals)
@@ -644,6 +728,7 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(WidgetUsageFromDate));
         OnPropertyChanged(nameof(WidgetUsageDownloadText));
         OnPropertyChanged(nameof(WidgetUsageUploadText));
+        WidgetStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private DateTimeOffset NormalizeSinceDate(DateTimeOffset? value)
@@ -670,10 +755,13 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
                 // the row starts with the cached/default icon and gets the real one when the background load ends.
                 var newRow = new SummaryProcessRowViewModel(kvp.Key, externalLinkService, processIconService.GetCachedIcon(kvp.Key) as IImage);
                 ProcessIconLoader.Attach(processIconService, kvp.Key, icon => newRow.Icon = icon);
+                if (!uiActive)
+                    newRow.SetUiActive(false);
                 row = newRow;
                 processIndex[kvp.Key] = row;
                 ActiveProcesses.Add(row);
-                OnPropertyChanged(nameof(ProcessCount));
+                if (uiActive)
+                    OnPropertyChanged(nameof(ProcessCount));
             }
 
             row.ApplyTick(kvp.Value.DownloadBytes, kvp.Value.UploadBytes);
@@ -721,8 +809,9 @@ public sealed class SummaryViewModel : INotifyPropertyChanged, IDisposable
     public void RefreshSpeedDisplayFormat()
     {
         speedHistory.NotifyDisplayFormatChanged();
-        OnPropertyChanged(nameof(DownloadSpeedText));
-        OnPropertyChanged(nameof(UploadSpeedText));
+        if (speedActive)
+            NotifySpeedTextsChanged();
+        WidgetStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
 
@@ -746,6 +835,8 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
     private long currentUploadBytes;
     private long totalDownloadBytes;
     private long totalUploadBytes;
+    // False while the Summary page isn't on screen: values keep advancing but nothing is raised (see SetUiActive).
+    private bool uiActive = true;
 
     public SummaryProcessRowViewModel(string processName, IExternalLinkService externalLinkService, IImage? icon = null)
     {
@@ -785,6 +876,20 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>
+    /// Holds back the value change notifications while the page isn't on screen; the values themselves keep
+    /// advancing. Going back to active raises one refresh of every value.
+    /// </summary>
+    public void SetUiActive(bool active)
+    {
+        if (uiActive == active)
+            return;
+
+        uiActive = active;
+        if (active)
+            NotifyValuesChanged();
+    }
+
     public void ApplyTick(long secondDownloadBytes, long secondUploadBytes)
     {
         currentDownloadBytes = secondDownloadBytes;
@@ -792,6 +897,28 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
         totalDownloadBytes += secondDownloadBytes;
         totalUploadBytes += secondUploadBytes;
 
+        if (uiActive)
+            NotifyValuesChanged();
+    }
+
+    public void ResetCurrent()
+    {
+        if (currentDownloadBytes == 0 && currentUploadBytes == 0)
+            return;
+
+        currentDownloadBytes = 0;
+        currentUploadBytes = 0;
+        if (!uiActive)
+            return;
+
+        OnPropertyChanged(nameof(CurrentDownloadBytes));
+        OnPropertyChanged(nameof(CurrentUploadBytes));
+        OnPropertyChanged(nameof(CurrentDownload));
+        OnPropertyChanged(nameof(CurrentUpload));
+    }
+
+    private void NotifyValuesChanged()
+    {
         OnPropertyChanged(nameof(CurrentDownloadBytes));
         OnPropertyChanged(nameof(CurrentUploadBytes));
         OnPropertyChanged(nameof(TotalDownloadBytes));
@@ -802,25 +929,15 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(TotalUpload));
     }
 
-    public void ResetCurrent()
-    {
-        if (currentDownloadBytes == 0 && currentUploadBytes == 0)
-            return;
-
-        currentDownloadBytes = 0;
-        currentUploadBytes = 0;
-        OnPropertyChanged(nameof(CurrentDownloadBytes));
-        OnPropertyChanged(nameof(CurrentUploadBytes));
-        OnPropertyChanged(nameof(CurrentDownload));
-        OnPropertyChanged(nameof(CurrentUpload));
-    }
-
     public void ApplyTraffic(long bytes, bool isReceive)
     {
         if (isReceive) // kept for compatibility with older call sites
         {
             currentDownloadBytes = bytes;
             totalDownloadBytes += bytes;
+            if (!uiActive)
+                return;
+
             OnPropertyChanged(nameof(CurrentDownloadBytes));
             OnPropertyChanged(nameof(TotalDownloadBytes));
             OnPropertyChanged(nameof(CurrentDownload));
@@ -830,6 +947,9 @@ public sealed class SummaryProcessRowViewModel : INotifyPropertyChanged
         {
             currentUploadBytes = bytes;
             totalUploadBytes += bytes;
+            if (!uiActive)
+                return;
+
             OnPropertyChanged(nameof(CurrentUploadBytes));
             OnPropertyChanged(nameof(TotalUploadBytes));
             OnPropertyChanged(nameof(CurrentUpload));

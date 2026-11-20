@@ -19,6 +19,12 @@ public partial class App : Application
 {
     private static bool unhandledHandlersRegistered;
 
+    /// <summary>
+    /// How long after the capture start a /StartMinimized launch waits before pre-warming the main window: long enough
+    /// that startup (widget, tray icon, capture, database) is done and the machine is idle again.
+    /// </summary>
+    private static readonly TimeSpan PreWarmDelay = TimeSpan.FromSeconds(3);
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -115,8 +121,18 @@ public partial class App : Application
             _ = captureStart.ContinueWith(
                 started =>
                 {
-                    if (started.Result)
-                        Dispatcher.UIThread.Post(viewModel.OnCaptureStartCompleted);
+                    if (!started.Result)
+                        return;
+
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        viewModel.OnCaptureStartCompleted();
+
+                        // A minimized launch never shows the main window, so its first-show cost would land on the
+                        // user's first open. Pay it a few seconds from now, invisibly, while the app is idle.
+                        if (startMinimized)
+                            DispatcherTimer.RunOnce(() => EnsureMainWindow().StartPreWarm(startMinimized), PreWarmDelay, DispatcherPriority.Background);
+                    });
                 },
                 TaskScheduler.Default);
 
