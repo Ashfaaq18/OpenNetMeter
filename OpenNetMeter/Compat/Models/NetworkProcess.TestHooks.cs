@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 
 namespace OpenNetMeter.Models
@@ -15,6 +17,28 @@ namespace OpenNetMeter.Models
         {
             currentAdapterId = adapterId;
             IsNetworkOnline = isNetworkOnline;
+        }
+
+        // Gives the process the database session a started capture would hold, without starting capture.
+        internal void TestUseDatabase(string adapterName, ApplicationDB db)
+        {
+            AdapterName = adapterName;
+            sessionDb = db;
+        }
+
+        internal bool TestHasDatabase => sessionDb != null;
+
+        internal void TestPushPendingToDb() => PushPendingToDb();
+
+        // What the retry queue holds: adapter -> process -> (received, sent).
+        internal Dictionary<string, Dictionary<string, (long Received, long Sent)>> TestQueuedBatches()
+        {
+            lock (failedBatches)
+            {
+                return failedBatches.ToDictionary(
+                    entry => entry.Key,
+                    entry => new Dictionary<string, (long Received, long Sent)>(entry.Value));
+            }
         }
 
         internal void TestInvokeRecvProcess(IPAddress src, IPAddress dest, int size, string name)

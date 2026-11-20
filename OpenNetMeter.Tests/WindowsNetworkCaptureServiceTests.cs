@@ -81,6 +81,46 @@ public class WindowsNetworkCaptureServiceTests
     }
 
     [Fact]
+    public void EmitProcessTraffic_StagesEachTickForTheDatabaseAndTheTicksAddUp()
+    {
+        using var networkType = new NetworkTypeScope(2);
+        using var netProc = CreateNetworkProcess();
+        using var service = new WindowsNetworkCaptureService(netProc);
+
+        bool pendingLockHeldDuringEvent = false;
+        service.TrafficObserved += (_, _) => pendingLockHeldDuringEvent |= Monitor.IsEntered(netProc.PushToDBBuffer);
+
+        var remote = IPAddress.Parse("93.184.216.34");
+        var local = IPAddress.Parse("192.168.1.50");
+        netProc.TestInvokeRecvProcess(remote, local, 400, "chrome");
+        netProc.TestInvokeSendProcess(local, remote, 50, "chrome");
+        netProc.TestInvokeRecvProcess(remote, local, 200, "teams");
+        netProc.DownloadSpeed = 1;
+
+        lock (netProc.PushToDBBuffer)
+        {
+            Assert.Equal(2, netProc.PushToDBBuffer.Count);
+            Assert.Equal((400L, 50L), (netProc.PushToDBBuffer["chrome"]!.CurrentDataRecv, netProc.PushToDBBuffer["chrome"]!.CurrentDataSend));
+        }
+
+        netProc.TestInvokeRecvProcess(remote, local, 100, "chrome");
+        netProc.TestInvokeSendProcess(local, remote, 7, "code");
+        netProc.DownloadSpeed = 2;
+        // A tick with no traffic stages nothing new.
+        netProc.DownloadSpeed = 3;
+
+        lock (netProc.PushToDBBuffer)
+        {
+            Assert.Equal(3, netProc.PushToDBBuffer.Count);
+            Assert.Equal((500L, 50L), (netProc.PushToDBBuffer["chrome"]!.CurrentDataRecv, netProc.PushToDBBuffer["chrome"]!.CurrentDataSend));
+            Assert.Equal((200L, 0L), (netProc.PushToDBBuffer["teams"]!.CurrentDataRecv, netProc.PushToDBBuffer["teams"]!.CurrentDataSend));
+            Assert.Equal((0L, 7L), (netProc.PushToDBBuffer["code"]!.CurrentDataRecv, netProc.PushToDBBuffer["code"]!.CurrentDataSend));
+        }
+
+        Assert.False(pendingLockHeldDuringEvent, "The pending-write buffer was locked while TrafficObserved was raised");
+    }
+
+    [Fact]
     public async Task RefreshAdapterSelection_DoesNotWaitForTheStartLock()
     {
         using var netProc = CreateNetworkProcess();

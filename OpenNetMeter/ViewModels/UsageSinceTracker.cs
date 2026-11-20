@@ -68,6 +68,15 @@ internal sealed class UsageSinceTracker
         sessionUploadBaseline = 0;
     }
 
+    // Filters ProcessDate by adapter id and date ids so it can use IX_ProcessDate_AdapterID_DateID instead of
+    // joining (and scanning) every row. Adapter.Name is unique, so the subquery yields at most one id.
+    internal const string TotalsSql =
+        "SELECT SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
+        "FROM ProcessDate pd " +
+        "WHERE pd.AdapterID = (SELECT ID FROM Adapter WHERE Name = @AdapterName) " +
+        "AND pd.DateID IN (SELECT ID FROM Date " +
+        "WHERE (Year * 10000 + Month * 100 + Day) BETWEEN @StartDate AND @EndDate)";
+
     internal static (long download, long upload) ReadDbTotals(string dbPath, string adapterName, DateTime startDate, DateTime endDate)
     {
         try
@@ -83,13 +92,7 @@ internal sealed class UsageSinceTracker
             using var connection = UsageDatabase.OpenReadOnlyConnection(dbPath);
             connection.Open();
             using var command = connection.CreateCommand();
-            command.CommandText =
-                "SELECT SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
-                "FROM ProcessDate pd " +
-                "JOIN Adapter a ON a.ID = pd.AdapterID " +
-                "JOIN Date d ON d.ID = pd.DateID " +
-                "WHERE a.Name = @AdapterName " +
-                "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate";
+            command.CommandText = TotalsSql;
             command.Parameters.AddWithValue("@AdapterName", adapterName);
             command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(fromDate));
             command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(toDate));

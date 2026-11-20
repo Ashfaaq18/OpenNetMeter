@@ -106,10 +106,27 @@ namespace OpenNetMeter.Models
         public Dictionary<string, MyProcess_Small?> MyProcessesBuffer { get; } = new();
 
         /// <summary>
-        /// Buffer for data pending database write.
-        /// Cleared after each successful DB push.
+        /// Buffer for data pending database write. Producers add a whole tick's deltas under its lock;
+        /// a DB push copies it out and clears it under the lock and writes outside it. A batch whose write
+        /// fails moves to the retry queue (see <c>failedBatches</c>) together with the adapter it belongs to.
         /// </summary>
         public Dictionary<string, MyProcess_Small?> PushToDBBuffer { get; } = new();
+
+        // Held from StartNetworkProcess to EndNetworkProcess so the shared SQLite connection stays open between
+        // flushes instead of being reopened (and its pragmas re-run) every few seconds.
+        private volatile ApplicationDB? sessionDb;
+
+        // True while database writes are failing; the error is logged once per failure streak, not every push.
+        private bool dbWriteFailing;
+
+        // Batches whose write failed, by the adapter they were observed on, summed per process name so repeated
+        // failures can't grow it beyond (adapters x processes). Each push retries these under their own adapter
+        // name before writing the current buffer, so a failure never moves usage to whichever adapter is current
+        // later. Survives EndNetworkProcess/StartNetworkProcess; guarded by itself.
+        private readonly Dictionary<string, Dictionary<string, (long Received, long Sent)>> failedBatches = new(StringComparer.Ordinal);
+
+        // Where a failed database write is reported. Tests replace it so they don't write to the Windows Event Log.
+        internal Action<string, Exception> DbWriteErrorLogger { get; set; } = (message, ex) => EventLogger.Error(message, ex);
 
         /// <summary>
         /// Controls which buffer receives incoming packet data.
@@ -583,18 +600,19 @@ namespace OpenNetMeter.Models
         /// </summary>
         public void StartNetworkProcess()
         {
-            // Ensure database table exists for this adapter
-            using (var db = new ApplicationDB(AdapterName))
+            // Ensure database table exists for this adapter. The instance is kept for the whole session (it is
+            // disposed in EndNetworkProcess) so the connection it holds stays open between flushes.
+            sessionDb?.Dispose();
+            var db = new ApplicationDB(AdapterName);
+            sessionDb = db;
+            if (db.CreateTable() < 0)
             {
-                if (db.CreateTable() < 0)
-                {
-                    EventLogger.Error("Error: Create table");
-                }
-                else
-                {
-                    db.InsertUniqueRow_AdapterTable(AdapterName);
-                    db.UpdateDatesInDB();
-                }
+                EventLogger.Error("Error: Create table");
+            }
+            else
+            {
+                db.InsertUniqueRow_AdapterTable(AdapterName);
+                db.UpdateDatesInDB();
             }
 
             TraceEventSession.GetActiveSession(KernelSessionName)?.Stop();
@@ -621,6 +639,10 @@ namespace OpenNetMeter.Models
             StopPeriodicWork(ref dbPushWork, "DB push");
 
             FlushPendingDbWrites();
+
+            // Last flush is done: release the session's reference so the connection closes (and SQLite checkpoints
+            // the WAL) when nothing else is using it.
+            ReleaseSessionDb();
 
             // Clear process data buffers
             lock (MyProcesses) MyProcesses.Clear();
@@ -688,25 +710,137 @@ namespace OpenNetMeter.Models
             }
         }
 
+        private void ReleaseSessionDb()
+        {
+            var db = sessionDb;
+            sessionDb = null;
+            db?.Dispose();
+        }
+
         private void FlushPendingDbWrites()
+        {
+            if (sessionDb == null || string.IsNullOrWhiteSpace(AdapterName))
+            {
+                lock (PushToDBBuffer)
+                    PushToDBBuffer.Clear();
+                return;
+            }
+
+            PushPendingToDb();
+        }
+
+        /// <summary>
+        /// Writes usage to the database: first the batches that failed earlier, each under the adapter it was observed
+        /// on, then everything staged in <see cref="PushToDBBuffer"/> under the current adapter. Each batch is one
+        /// transaction. The buffer is copied out and cleared under its lock and written outside it, so a slow write
+        /// never delays the per-second staging of traffic. A batch that fails is queued for the next push.
+        /// With no database session (between sessions) nothing is written and the queue simply waits.
+        /// </summary>
+        private void PushPendingToDb()
+        {
+            var db = sessionDb;
+            if (db == null)
+                return;
+
+            bool attempted = false;
+            bool failed = false;
+
+            foreach (var (adapter, rows) in TakeFailedBatches())
+            {
+                attempted = true;
+                failed |= !TryWriteBatch(db, adapter, rows);
+            }
+
+            var currentAdapter = AdapterName;
+            var batch = TakePending();
+            if (batch.Count > 0)
+            {
+                attempted = true;
+                failed |= !TryWriteBatch(db, currentAdapter, batch);
+            }
+
+            if (attempted && !failed)
+                dbWriteFailing = false;
+        }
+
+        private List<(string Name, long Received, long Sent)> TakePending()
         {
             lock (PushToDBBuffer)
             {
-                if (PushToDBBuffer.Count <= 0 || string.IsNullOrWhiteSpace(AdapterName))
+                var batch = new List<(string Name, long Received, long Sent)>(PushToDBBuffer.Count);
+                foreach (var (name, usage) in PushToDBBuffer)
                 {
-                    PushToDBBuffer.Clear();
-                    return;
-                }
-
-                using var db = new ApplicationDB(AdapterName);
-                foreach (var (key, proc) in PushToDBBuffer)
-                {
-                    if (proc != null)
-                        db.PushToDB(key, proc.CurrentDataRecv, proc.CurrentDataSend);
+                    if (usage != null)
+                        batch.Add((name, usage.CurrentDataRecv, usage.CurrentDataSend));
                 }
 
                 PushToDBBuffer.Clear();
+                return batch;
             }
+        }
+
+        /// <summary>Writes one batch; on failure queues it under <paramref name="adapter"/> and logs once per failure streak.</summary>
+        private bool TryWriteBatch(ApplicationDB db, string adapter, IReadOnlyCollection<(string Name, long Received, long Sent)> batch)
+        {
+            try
+            {
+                db.PushBatch(adapter, batch);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                QueueFailedBatch(adapter, batch);
+
+                if (!dbWriteFailing)
+                {
+                    dbWriteFailing = true;
+                    DbWriteErrorLogger("Failed to write network usage to the database; it is kept with its adapter and retried on the next push", ex);
+                }
+
+                return false;
+            }
+        }
+
+        private void QueueFailedBatch(string adapter, IEnumerable<(string Name, long Received, long Sent)> batch)
+        {
+            lock (failedBatches)
+            {
+                if (!failedBatches.TryGetValue(adapter, out var queued))
+                {
+                    queued = new Dictionary<string, (long Received, long Sent)>(StringComparer.Ordinal);
+                    failedBatches[adapter] = queued;
+                }
+
+                foreach (var (name, received, sent) in batch)
+                {
+                    queued.TryGetValue(name, out var existing);
+                    queued[name] = (existing.Received + received, existing.Sent + sent);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Empties the retry queue and returns it as batches. Entries that fail again are queued anew, so nothing
+        /// is lost if another thread queues a failure while these are being written.
+        /// </summary>
+        private List<(string Adapter, List<(string Name, long Received, long Sent)> Rows)> TakeFailedBatches()
+        {
+            var taken = new List<(string Adapter, List<(string Name, long Received, long Sent)> Rows)>();
+            lock (failedBatches)
+            {
+                foreach (var (adapter, queued) in failedBatches)
+                {
+                    var rows = new List<(string Name, long Received, long Sent)>(queued.Count);
+                    foreach (var (name, usage) in queued)
+                        rows.Add((name, usage.Received, usage.Sent));
+
+                    taken.Add((adapter, rows));
+                }
+
+                failedBatches.Clear();
+            }
+
+            return taken;
         }
 
         //---------- Periodic Tasks ------------//
@@ -761,19 +895,7 @@ namespace OpenNetMeter.Models
 #if DEBUG
                 var sw = Stopwatch.StartNew();
 #endif
-                lock (PushToDBBuffer)
-                {
-                    if (PushToDBBuffer.Count > 0)
-                    {
-                        using var db = new ApplicationDB(AdapterName);
-                        foreach (var (key, proc) in PushToDBBuffer)
-                        {
-                            if (proc != null)
-                                db.PushToDB(key, proc.CurrentDataRecv, proc.CurrentDataSend);
-                        }
-                        PushToDBBuffer.Clear();
-                    }
-                }
+                PushPendingToDb();
 #if DEBUG
                 sw.Stop();
                 Debug.WriteLine($"elapsed time (DBpush): {sw.ElapsedMilliseconds} | time {DateTime.Now:O}");
@@ -1028,6 +1150,9 @@ namespace OpenNetMeter.Models
 
             // Flush any remaining buffered data to database
             FlushPendingDbWrites();
+
+            // Normally released by EndNetworkProcess; this covers a start that failed before the network came online.
+            ReleaseSessionDb();
         }
     }
 }

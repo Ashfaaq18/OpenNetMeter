@@ -315,6 +315,18 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         }
     }
 
+    // Filters ProcessDate by adapter id and date ids so it can use IX_ProcessDate_AdapterID_DateID instead of
+    // joining (and scanning) every row. Adapter.Name is unique, so the subquery yields at most one id.
+    internal const string ProcessTotalsSql =
+        "SELECT p.Name, SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
+        "FROM ProcessDate pd " +
+        "JOIN Process p ON p.ID = pd.ProcessID " +
+        "WHERE pd.AdapterID = (SELECT ID FROM Adapter WHERE Name = @AdapterName) " +
+        "AND pd.DateID IN (SELECT ID FROM Date " +
+        "WHERE (Year * 10000 + Month * 100 + Day) BETWEEN @StartDate AND @EndDate) " +
+        "GROUP BY p.ID, p.Name " +
+        "ORDER BY p.Name";
+
     private void ApplyFilter()
     {
         Rows.Clear();
@@ -332,16 +344,7 @@ public sealed class HistoryViewModel : INotifyPropertyChanged
         connection.Open();
 
         using var command = connection.CreateCommand();
-        command.CommandText =
-            "SELECT p.Name, SUM(pd.DataReceived) AS TotalRecv, SUM(pd.DataSent) AS TotalSent " +
-            "FROM ProcessDate pd " +
-            "JOIN Process p ON p.ID = pd.ProcessID " +
-            "JOIN Adapter a ON a.ID = pd.AdapterID " +
-            "JOIN Date d ON d.ID = pd.DateID " +
-            "WHERE a.Name = @AdapterName " +
-            "AND (d.Year * 10000 + d.Month * 100 + d.Day) BETWEEN @StartDate AND @EndDate " +
-            "GROUP BY p.ID, p.Name " +
-            "ORDER BY p.Name";
+        command.CommandText = ProcessTotalsSql;
         command.Parameters.AddWithValue("@AdapterName", profile);
         command.Parameters.AddWithValue("@StartDate", UsageDatabase.ToDateInt(start));
         command.Parameters.AddWithValue("@EndDate", UsageDatabase.ToDateInt(end));

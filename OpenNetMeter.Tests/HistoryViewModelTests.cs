@@ -264,6 +264,27 @@ public class HistoryViewModelTests
     }
 
     [Fact]
+    public void Filter_ReturnsTheSameRowsAsTheJoinedQueryItReplaced()
+    {
+        using var db = UsageReadQueryTests.SeededDb();
+        var history = Create(db);
+        history.Activate();
+        var start = new DateTime(2025, 12, 31);
+        var end = new DateTime(2026, 2, 1);
+
+        history.SelectedProfile = "WiFi";
+        history.DateStart = new DateTimeOffset(start);
+        history.DateEnd = new DateTimeOffset(end);
+        history.FilterCommand.Execute(null);
+
+        var expected = UsageReadQueryTests.Rows(db.Connection, UsageReadQueryTests.OldProcessTotalsSql, "WiFi", start, end);
+        Assert.Equal(3, expected.Count);
+        Assert.Equal(expected, history.Rows.Select(r => $"{r.ProcessName}|{r.DownloadBytes}|{r.UploadBytes}"));
+        Assert.Equal(1 + 10 + 100 + 1000 + 7, history.TotalDownload);
+        Assert.Equal(2 + 20 + 200 + 2000 + 8, history.TotalUpload);
+    }
+
+    [Fact]
     public void Rows_StartWithTheCachedIconAndRequestTheRealOne()
     {
         using var db = new TestUsageDb();

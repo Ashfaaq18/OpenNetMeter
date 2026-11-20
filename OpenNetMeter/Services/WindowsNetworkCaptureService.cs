@@ -138,6 +138,10 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
             networkProcess.MyProcessesBuffer.Clear();
         }
 
+        // Staged before the events: the whole tick is merged under one short lock, and a throwing subscriber
+        // then can't keep the tick's traffic out of the database.
+        StageForDatabase(mainSnapshot, bufferSnapshot);
+
         EmitSnapshot(mainSnapshot);
         EmitSnapshot(bufferSnapshot);
     }
@@ -154,29 +158,38 @@ public sealed class WindowsNetworkCaptureService : INetworkCaptureService
 
             if (app.Value.CurrentDataSend > 0)
                 TrafficObserved?.Invoke(this, new NetworkTrafficEventArgs(app.Key, app.Value.CurrentDataSend, isReceive: false));
-
-            StageForDatabase(app.Key, app.Value.CurrentDataRecv, app.Value.CurrentDataSend);
         }
     }
 
-    private void StageForDatabase(string processName, long receivedBytes, long sentBytes)
+    /// <summary>
+    /// Adds a tick's per-process deltas to the buffer the next database push writes. One lock acquisition for the
+    /// whole tick rather than one per process, so a push copying the buffer out waits for at most one short merge.
+    /// </summary>
+    private void StageForDatabase(params Dictionary<string, MyProcess_Small?>[] snapshots)
     {
-        if (networkProcess == null)
+        var process = networkProcess;
+        if (process == null)
             return;
 
-        if (receivedBytes <= 0 && sentBytes <= 0)
-            return;
-
-        lock (networkProcess.PushToDBBuffer)
+        lock (process.PushToDBBuffer)
         {
-            if (!networkProcess.PushToDBBuffer.TryGetValue(processName, out var pending) || pending == null)
+            foreach (var snapshot in snapshots)
             {
-                pending = new MyProcess_Small(processName, 0, 0);
-                networkProcess.PushToDBBuffer[processName] = pending;
-            }
+                foreach (var (processName, usage) in snapshot)
+                {
+                    if (usage == null || (usage.CurrentDataRecv <= 0 && usage.CurrentDataSend <= 0))
+                        continue;
 
-            pending.CurrentDataRecv += receivedBytes;
-            pending.CurrentDataSend += sentBytes;
+                    if (!process.PushToDBBuffer.TryGetValue(processName, out var pending) || pending == null)
+                    {
+                        pending = new MyProcess_Small(processName, 0, 0);
+                        process.PushToDBBuffer[processName] = pending;
+                    }
+
+                    pending.CurrentDataRecv += usage.CurrentDataRecv;
+                    pending.CurrentDataSend += usage.CurrentDataSend;
+                }
+            }
         }
     }
 

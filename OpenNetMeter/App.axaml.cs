@@ -4,6 +4,8 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Microsoft.Data.Sqlite;
+using OpenNetMeter.Models;
 using OpenNetMeter.Services;
 using OpenNetMeter.ViewModels;
 using OpenNetMeter.Views;
@@ -64,6 +66,7 @@ public partial class App : Application
                 // Normally the main window's view model stops capture when the window closes, but the window may
                 // not exist yet if the app exits during startup. Disposing twice is harmless.
                 networkCaptureService.Dispose();
+                CloseDatabaseOnExit();
                 // Event Log entries are written on a background thread; give the last ones a moment to land.
                 EventLogger.Flush(TimeSpan.FromSeconds(1));
             };
@@ -182,6 +185,30 @@ public partial class App : Application
 
             return true;
         });
+    }
+
+    /// <summary>
+    /// Closing the last connection to a SQLite database checkpoints its WAL into the main file, so the next launch
+    /// doesn't have to replay it. Connections are pooled, so the shared write connection and the pooled read-only
+    /// ones are closed explicitly. Bounded: a slow close must not hold up exit.
+    /// </summary>
+    private static void CloseDatabaseOnExit()
+    {
+        try
+        {
+            var close = Task.Run(() =>
+            {
+                ApplicationDB.CloseSharedConnection();
+                SqliteConnection.ClearAllPools();
+            });
+
+            if (!close.Wait(TimeSpan.FromSeconds(2)))
+                EventLogger.Warn("Closing the database on exit timed out");
+        }
+        catch (Exception ex)
+        {
+            EventLogger.Error("Failed to close the database on exit", ex);
+        }
     }
 
     private static void RegisterUnhandledExceptionLoggingOnce()
