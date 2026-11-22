@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Template for the Microsoft Store package. scripts/build-msix-from-msi.ps1 fills in $(Version) from the MSI. -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 uap10 desktop rescap">
+  <Identity Name="Ashfaaq18.OpenNetMeter" Publisher="CN=472488E8-5ADB-4CA0-B9F6-30BB0DED678A" Version="$(Version)" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>OpenNetMeter</DisplayName>
+    <PublisherDisplayName>Ashfaaq18</PublisherDisplayName>
+    <Description>See your network speed and which apps use your data on Windows.</Description>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <uap10:PackageIntegrity>
+      <uap10:Content Enforcement="on" />
+    </uap10:PackageIntegrity>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <!-- ETW kernel capture needs admin; the exe's manifest requires elevation. -->
+    <rescap:Capability Name="allowElevation" />
+  </Capabilities>
+  <Applications>
+    <Application Id="OPENNETMETER" Executable="OpenNetMeter.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="OpenNetMeter" Description="See your network speed and which apps use your data on Windows."
+                          BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <!-- Stable launch path with package identity, used by the Start-with-Windows task.
+             Alias must match ExecutionAlias in OpenNetMeter/Services/WindowsStartupRegistrationService.cs. -->
+        <uap3:Extension Category="windows.appExecutionAlias" Executable="OpenNetMeter.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap3:AppExecutionAlias>
+            <desktop:ExecutionAlias Alias="OpenNetMeter.exe" />
+          </uap3:AppExecutionAlias>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>
