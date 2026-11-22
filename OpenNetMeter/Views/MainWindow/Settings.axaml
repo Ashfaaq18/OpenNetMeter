@@ -349,13 +349,14 @@
               <TextBlock Text="Support OpenNetMeter &#x2615;" FontSize="11" Foreground="{DynamicResource BrushLink}" TextDecorations="Underline"/>
             </Button>
           </StackPanel>
-          <StackPanel Grid.Column="3" Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Right">
+          <StackPanel Grid.Column="3" Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Right"
+                      IsVisible="{Binding ShowUpdateCheck}">
             <TextBlock Text="{Binding UpdateStatusMessage}" Foreground="{DynamicResource BrushTextSecondaryAlt}" FontSize="11"
                        TextAlignment="Right" TextWrapping="Wrap"
                        IsVisible="{Binding UpdateStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
             <ProgressBar IsVisible="{Binding IsCheckingForUpdates}" IsIndeterminate="True" Height="3" MinWidth="120"/>
           </StackPanel>
-          <Grid Grid.Column="4" VerticalAlignment="Center">
+          <Grid Grid.Column="4" VerticalAlignment="Center" IsVisible="{Binding ShowUpdateCheck}">
             <Button Classes="outlineBtn" Command="{Binding CheckForUpdatesCommand}"
                     IsVisible="{Binding !IsUpdateAvailable}">
               <StackPanel Orientation="Horizontal" Spacing="8">

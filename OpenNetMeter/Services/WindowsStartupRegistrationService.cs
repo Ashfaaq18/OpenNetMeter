@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OpenNetMeter.PlatformAbstractions;
 using OpenNetMeter.Utilities;
@@ -181,7 +180,7 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
         // MSIX: launching the exe by path runs it without package identity (separate AppData, so a second
         // database and settings file), and that path changes with every package update. The execution alias
         // keeps identity and a stable path. Requires the windows.appExecutionAlias manifest extension.
-        if (IsPackaged())
+        if (AppPackage.IsPackaged)
         {
             string aliasPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -213,24 +212,7 @@ public sealed class WindowsStartupRegistrationService : IStartupRegistrationServ
         return (fallbackExe, startMinimized ? "/StartMinimized" : null);
     }
 
-    private static bool IsPackaged()
-    {
-        try
-        {
-            uint length = 0;
-            return GetCurrentPackageFullName(ref length, null) != AppModelErrorNoPackage;
-        }
-        catch (EntryPointNotFoundException)
-        {
-            return false;
-        }
-    }
-
     // Must match <desktop:ExecutionAlias Alias="..."/> in the MSIX manifest.
     private const string ExecutionAlias = "OpenNetMeter.exe";
-    private const int AppModelErrorNoPackage = 15700;
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    private static extern int GetCurrentPackageFullName(ref uint packageFullNameLength, char[]? packageFullName);
 }
 

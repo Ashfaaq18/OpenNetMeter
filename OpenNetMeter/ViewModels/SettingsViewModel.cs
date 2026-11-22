@@ -623,6 +623,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    // Store (MSIX) builds are updated by the Microsoft Store, so the GitHub update check is hidden there.
+    public bool ShowUpdateCheck { get; } = !AppPackage.IsPackaged;
+
     public ICommand ResetDataCommand { get; }
     public ICommand ExportAllCommand { get; }
     public ICommand CheckForUpdatesCommand { get; }
@@ -710,6 +713,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     private async Task CheckForUpdatesAsync()
     {
+        if (!ShowUpdateCheck)
+            return;
+
         IsCheckingForUpdates = true;
         UpdateStatusMessage = "Checking for updates...";
         IsUpdateAvailable = false;
@@ -763,6 +769,9 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     private void DownloadUpdate()
     {
+        if (!ShowUpdateCheck)
+            return;
+
         if (string.IsNullOrWhiteSpace(downloadUrl))
         {
             UpdateStatusMessage = "No update download is available.";
